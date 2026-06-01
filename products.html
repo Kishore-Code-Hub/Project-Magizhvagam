@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore MAGIZHVAGAM Return Gifts catalog. Filter by occasion, material, colors, and price to find the perfect premium custom return gift.">
+  <title>Catalog | MAGIZHVAGAM - Return Gifts & customized Gifts</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+  
+  <style>
+    .catalog-layout {
+      display: flex;
+      gap: 30px;
+      padding: 100px 0 60px;
+    }
+    .filter-sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 90px;
+      height: fit-content;
+      padding: 24px;
+    }
+    .filter-title {
+      font-size: 18px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--card-border);
+      padding-bottom: 10px;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: rgba(0,0,0,0.02);
+      color: var(--text-color);
+      font-size: 13px;
+    }
+    .form-control:focus {
+      border-color: hsl(var(--primary-purple));
+      background: white;
+    }
+    .catalog-main {
+      flex-grow: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Shared Header -->
+  <header id="main-header"></header>
+
+  <div class="container">
+    <div class="catalog-layout">
+      
+      <!-- Filters Sidebar -->
+      <aside class="filter-sidebar glass animated scale-in">
+        <h3 class="filter-title" style="font-family:'Outfit';">Refine Search</h3>
+        
+        <form id="filter-form">
+          <div class="form-group">
+            <label for="filter-search">Keyword Search</label>
+            <input type="text" id="filter-search" class="form-control" placeholder="Key, title, tag...">
+          </div>
+          
+          <div class="form-group">
+            <label for="filter-category">Event Category</label>
+            <select id="filter-category" class="form-control">
+              <option value="">All Categories</option>
+              <!-- Loaded dynamically -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Price Range (₹)</label>
+            <div style="display:flex; gap:8px;">
+              <input type="number" id="filter-min-price" class="form-control" placeholder="Min" min="0">
+              <input type="number" id="filter-max-price" class="form-control" placeholder="Max" min="0">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="filter-material">Material</label>
+            <select id="filter-material" class="form-control">
+              <option value="">Any Material</option>
+              <option value="Brass">Brass</option>
+              <option value="Jute">Jute</option>
+              <option value="Wooden">Wooden</option>
+              <option value="Ceramic">Ceramic</option>
+              <option value="Clay">Clay / Terracotta</option>
+              <option value="Silver">Silver Plated</option>
+              <option value="Leather">Leather</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="filter-color">Color Accent</label>
+            <input type="text" id="filter-color" class="form-control" placeholder="e.g. Gold, Silver, Pink">
+          </div>
+
+          <div class="form-group">
+            <label for="filter-occasion">Occasion Tag</label>
+            <select id="filter-occasion" class="form-control">
+              <option value="">Any Occasion</option>
+              <option value="wedding">Wedding</option>
+              <option value="birthday">Birthday</option>
+              <option value="baby-shower">Baby Shower</option>
+              <option value="corporate">Corporate</option>
+              <option value="festival">Festival</option>
+              <option value="housewarming">Housewarming</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; font-size:13px; margin-bottom:10px;">Apply Filters</button>
+          <button type="button" onclick="clearAllFilters()" class="btn btn-secondary" style="width:100%; border-radius:8px; font-size:13px;">Clear All</button>
+        </form>
+      </aside>
+
+      <!-- Main Catalog Display -->
+      <main class="catalog-main">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+          <h2 style="font-size:24px; font-family:'Outfit'; color:var(--text-color);">Gifts Collection</h2>
+          
+          <div>
+            <select id="filter-sort" class="form-control" style="width:180px; font-weight:600;">
+              <option value="newest">Newest First</option>
+              <option value="priceLowHigh">Price: Low to High</option>
+              <option value="priceHighLow">Price: High to Low</option>
+              <option value="bestSelling">Best Selling</option>
+              <option value="mostPopular">Most Popular</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-3" id="catalog-grid" style="min-height:400px;">
+          <!-- Loaded dynamically -->
+        </div>
+
+        <!-- Pagination -->
+        <div id="catalog-pagination" style="display:flex; justify-content:center; align-items:center; margin-top:50px;">
+          <!-- Loaded dynamically -->
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- Shared Footer -->
+  <footer id="main-footer"></footer>
+
+  <!-- Scripts -->
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/products.js"></script>
+</body>
+</html>

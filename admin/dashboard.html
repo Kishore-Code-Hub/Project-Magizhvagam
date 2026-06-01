@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Dashboard Panel -->
+    <main class="admin-main">
+      <h1 style="font-family:'Outfit'; font-size:32px; margin-bottom:30px; color:var(--text-color);">Store Performance</h1>
+      
+      <!-- Metrics Widgets -->
+      <div class="metric-grid">
+        <div class="glass metric-card hover-lift animated scale-in">
+          <div style="font-size:12px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Total Revenue</div>
+          <div class="metric-number" id="metric-revenue">₹0.00</div>
+        </div>
+        <div class="glass metric-card hover-lift animated scale-in">
+          <div style="font-size:12px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Total Orders</div>
+          <div class="metric-number" id="metric-orders">0</div>
+        </div>
+        <div class="glass metric-card hover-lift animated scale-in">
+          <div style="font-size:12px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Total Customers</div>
+          <div class="metric-number" id="metric-customers">0</div>
+        </div>
+        <div class="glass metric-card hover-lift animated scale-in">
+          <div style="font-size:12px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Live Inventory</div>
+          <div class="metric-number" id="metric-products">0</div>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="gap:30px; margin-bottom:30px; align-items:start;">
+        <!-- SVGs Trend chart container -->
+        <div class="glass" id="dashboard-chart-box" style="padding:30px; border-radius:12px; min-height:220px;">
+          <div style="text-align:center; padding:50px 0;"><div class="spinner" style="margin:auto;"></div></div>
+        </div>
+
+        <!-- Recent Activity lists -->
+        <div class="glass" style="padding:30px; border-radius:12px;">
+          <h4 style="font-family:'Outfit'; font-size:16px; margin-bottom:16px;">Recent Orders</h4>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recent-orders-tbody">
+                <tr><td colspan="5" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/js/admin.js"></script>
+</body>
+</html>

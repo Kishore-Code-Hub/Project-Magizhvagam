@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal Login | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+  
+  <style>
+    body {
+      background-color: #FAF9F6;
+      color: #2E2538;
+      font-family: 'Outfit', 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    
+    .admin-login-container {
+      width: 100%;
+      max-width: 400px;
+    }
+    
+    .admin-logo-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .admin-logo-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: hsl(var(--primary-purple, 275, 45%, 25%));
+      margin: 0 0 4px;
+    }
+    
+    .admin-logo-subtitle {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: #A59AB0;
+      font-weight: 700;
+    }
+    
+    .admin-login-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(44, 28, 62, 0.08);
+      border-radius: 16px;
+      padding: 35px;
+      box-shadow: 0 10px 30px rgba(44, 28, 62, 0.05);
+    }
+    
+    .admin-login-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 25px;
+      text-align: center;
+      color: #2E2538;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #2E2538;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 14px;
+      border: 1px solid rgba(44, 28, 62, 0.15);
+      border-radius: 8px;
+      background-color: #fff;
+      color: #2E2538;
+      outline: none;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+    
+    .form-control:focus {
+      border-color: hsl(var(--primary-purple));
+      box-shadow: 0 0 0 3px rgba(106, 13, 173, 0.1);
+    }
+    
+    .btn-admin {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      background-color: hsl(var(--primary-purple));
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+    
+    .btn-admin:hover {
+      background-color: hsl(var(--primary-purple) / 0.9);
+      transform: translateY(-1px);
+    }
+    
+    .btn-admin:disabled {
+      background-color: #A59AB0;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .error-box {
+      background-color: #fef2f2;
+      border: 1px solid #fee2e2;
+      color: #ef4444;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      display: none;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-login-container">
+    <div class="admin-logo-header">
+      <h1 class="admin-logo-title">MAGIZHVAGAM</h1>
+      <span class="admin-logo-subtitle">Administrative Portal</span>
+    </div>
+    
+    <div class="admin-login-card">
+      <h2 class="admin-login-title">Sign In</h2>
+      
+      <div id="error-message" class="error-box"></div>
+      
+      <form id="admin-login-form">
+        <div class="form-group">
+          <label class="form-label" for="email">Email / Username</label>
+          <input type="email" id="email" class="form-control" placeholder="admin@domain.com" required autocomplete="username">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        
+        <button type="submit" id="submit-btn" class="btn-admin">Login to Dashboard</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Shared Toast Layer Dynamic Injector -->
+  <script src="/assets/js/app.js"></script>
+  <script>
+    document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const errorBox = document.getElementById('error-message');
+      const submitBtn = document.getElementById('submit-btn');
+      
+      errorBox.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Verifying...';
+      
+      try {
+        const res = await fetch('/api/auth/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        let data;
+        try {
+          data = await res.json();
+        } catch (parseErr) {
+          errorBox.textContent = 'Server returned an invalid response.';
+          errorBox.style.display = 'block';
+          return;
+        }
+
+        if (data.success && data.user && data.user.role === 'admin') {
+          if (typeof window.setSessionUser === 'function') {
+            window.setSessionUser(data.user);
+          }
+          showToast('Verification successful! Access granted.', 'success');
+          
+          setTimeout(() => {
+            // Read optional redirect query parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirect = urlParams.get('redirect') || 'admin/dashboard.html';
+            window.location.replace('/' + redirect);
+          }, 1000);
+        } else {
+          let errText = 'Access denied. Administrator account required.';
+          if (res.status === 401) errText = 'Invalid administrative credentials.';
+          else if (data.error) errText = data.error;
+          
+          errorBox.textContent = errText;
+          errorBox.style.display = 'block';
+        }
+      } catch (err) {
+        errorBox.textContent = 'Server connection error. Please try again.';
+        errorBox.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Login to Dashboard';
+      }
+    });
+  </script>
+</body>
+</html>

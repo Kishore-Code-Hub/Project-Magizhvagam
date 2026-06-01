@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products Manager | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Products Panel -->
+    <main class="admin-main">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap:wrap; gap:15px;">
+        <h1 style="font-family:'Outfit'; font-size:32px; color:var(--text-color);">Products Catalogue</h1>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button onclick="exportProductsCSV()" class="btn btn-secondary" style="border-radius:8px; display:flex; align-items:center; gap:5px;"><i data-lucide="download"></i> Export CSV</button>
+          <button onclick="document.getElementById('csv-import-file').click()" class="btn btn-secondary" style="border-radius:8px; display:flex; align-items:center; gap:5px;"><i data-lucide="upload"></i> Import CSV</button>
+          <input type="file" id="csv-import-file" accept=".csv" style="display:none;" onchange="importProductsCSV(event)">
+          <button onclick="toggleModal('add-product-modal', true)" class="btn btn-primary" style="border-radius:8px;">Add New Product</button>
+        </div>
+      </div>
+
+      <!-- Bulk actions panel -->
+      <div class="glass" id="bulk-actions-panel" style="display:none; padding:15px; margin-bottom:20px; border-radius:12px; align-items:center; gap:15px; flex-wrap:wrap;">
+        <span style="font-size:14px; font-weight:600; color:var(--primary-color);" id="bulk-selected-count">0 products selected</span>
+        
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <select id="bulk-action-select" class="admin-form-control" style="width:200px; padding:6px; margin:0;">
+            <option value="">Choose Bulk Action...</option>
+            <option value="delete">Delete Selected</option>
+            <option value="update-stock">Update Stock Level</option>
+            <option value="change-category">Change Category</option>
+          </select>
+          
+          <!-- Contextual inputs for bulk actions -->
+          <div id="bulk-stock-input-container" style="display:none; gap:5px; align-items:center;">
+            <select id="bulk-stock-action" class="admin-form-control" style="width:100px; padding:6px; margin:0;">
+              <option value="set">Set to</option>
+              <option value="add">Add</option>
+              <option value="subtract">Subtract</option>
+            </select>
+            <input type="number" id="bulk-stock-val" class="admin-form-control" style="width:80px; padding:6px; margin:0;" min="0" placeholder="Qty">
+          </div>
+
+          <div id="bulk-category-input-container" style="display:none;">
+            <select id="bulk-category-select" class="admin-form-control" style="width:180px; padding:6px; margin:0;">
+              <!-- Loaded dynamically -->
+            </select>
+          </div>
+
+          <button id="bulk-action-apply" class="btn btn-primary" style="border-radius:6px; padding:6px 15px;">Apply</button>
+        </div>
+      </div>
+
+      <!-- Products Inventory Table -->
+      <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;"><input type="checkbox" id="select-all-products" style="cursor:pointer;"></th>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Base Price</th>
+              <th>Stock Level</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-products-tbody">
+            <tr><td colspan="7" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Add Product Modal Overlay -->
+  <div class="modal-overlay" id="add-product-modal">
+    <div class="modal-content glass animated scale-in">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--card-border); padding-bottom:10px;">
+        <h3 style="font-family:'Outfit'; font-size:20px;">Add New Return Gift</h3>
+        <button onclick="toggleModal('add-product-modal', false)" style="background:transparent; cursor:pointer; font-size:18px; font-weight:bold; color:var(--text-muted);">✕</button>
+      </div>
+      
+      <form id="add-product-form" enctype="multipart/form-data">
+        <div class="admin-form-group">
+          <label>Product Name *</label>
+          <input type="text" id="prod-name" class="admin-form-control" required>
+        </div>
+        <div class="admin-form-group">
+          <label>Category *</label>
+          <select id="prod-category" class="admin-form-control" required>
+            <!-- Categories loaded dynamically -->
+          </select>
+        </div>
+        <div class="grid grid-3" style="gap:10px;">
+          <div class="admin-form-group">
+            <label>Price (₹) *</label>
+            <input type="number" id="prod-price" class="admin-form-control" required min="1">
+          </div>
+          <div class="admin-form-group">
+            <label>Discount Price (₹)</label>
+            <input type="number" id="prod-discount" class="admin-form-control" min="0">
+          </div>
+          <div class="admin-form-group">
+            <label>Stock Level *</label>
+            <input type="number" id="prod-stock" class="admin-form-control" required min="0" value="100">
+          </div>
+        </div>
+        
+        <div style="border: 1px dashed var(--card-border); padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+          <h4 style="font-family:'Outfit'; font-size:14px; margin-bottom: 10px;">Product Images</h4>
+          <div class="grid grid-3" style="gap:10px;">
+            <div class="admin-form-group">
+              <label style="font-size:12px; font-weight:600;">Primary Image *</label>
+              <input type="file" id="prod-primary-image" class="admin-form-control" accept="image/*" required>
+              <div id="add-primary-preview" style="margin-top:5px; width:60px; height:60px; border-radius:6px; border:1px solid var(--card-border); display:none; overflow:hidden;"></div>
+            </div>
+            <div class="admin-form-group">
+              <label style="font-size:12px; font-weight:600;">Secondary Image</label>
+              <input type="file" id="prod-secondary-image" class="admin-form-control" accept="image/*">
+              <div id="add-secondary-preview" style="margin-top:5px; width:60px; height:60px; border-radius:6px; border:1px solid var(--card-border); display:none; overflow:hidden;"></div>
+            </div>
+            <div class="admin-form-group">
+              <label style="font-size:12px; font-weight:600;">Gallery (Max 3)</label>
+              <input type="file" id="prod-gallery-images" class="admin-form-control" multiple accept="image/*">
+              <div id="add-gallery-preview" style="margin-top:5px; display:flex; gap:5px; overflow-x:auto;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-form-group">
+          <label>Description *</label>
+          <textarea id="prod-description" class="admin-form-control" rows="3" required style="resize:none;"></textarea>
+        </div>
+
+        <!-- Spec Accordion -->
+        <h4 style="font-family:'Outfit'; font-size:14px; margin:20px 0 10px; border-top:1px solid var(--card-border); padding-top:14px;">Technical Specifications</h4>
+        <div class="grid grid-2" style="gap:10px;">
+          <div class="admin-form-group">
+            <label>Material</label>
+            <input type="text" id="prod-material" class="admin-form-control" placeholder="e.g. Brass, Jute">
+          </div>
+          <div class="admin-form-group">
+            <label>Dimensions</label>
+            <input type="text" id="prod-dimensions" class="admin-form-control" placeholder="e.g. 5x5 inches">
+          </div>
+          <div class="admin-form-group">
+            <label>Weight</label>
+            <input type="text" id="prod-weight" class="admin-form-control" placeholder="e.g. 200g">
+          </div>
+          <div class="admin-form-group">
+            <label>Color</label>
+            <input type="text" id="prod-color" class="admin-form-control" placeholder="e.g. Gold, Silver">
+          </div>
+        </div>
+
+        <div class="admin-form-group">
+          <label>Tags (Comma separated)</label>
+          <input type="text" id="prod-tags" class="admin-form-control" placeholder="e.g. traditional, brass, wedding">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:20px;">Submit Product</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Product Modal Overlay -->
+  <div class="modal-overlay" id="edit-product-modal">
+    <div class="modal-content glass animated scale-in">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--card-border); padding-bottom:10px;">
+        <h3 style="font-family:'Outfit'; font-size:20px;">Edit Return Gift</h3>
+        <button onclick="toggleModal('edit-product-modal', false)" style="background:transparent; cursor:pointer; font-size:18px; font-weight:bold; color:var(--text-muted);">✕</button>
+      </div>
+      
+      <form id="edit-product-form" enctype="multipart/form-data">
+        <input type="hidden" id="edit-prod-id">
+        <div class="admin-form-group">
+          <label>Product Name *</label>
+          <input type="text" id="edit-prod-name" class="admin-form-control" required>
+        </div>
+        <div class="admin-form-group">
+          <label>Category *</label>
+          <select id="edit-prod-category" class="admin-form-control" required>
+            <!-- Categories loaded dynamically -->
+          </select>
+        </div>
+        <div class="grid grid-3" style="gap:10px;">
+          <div class="admin-form-group">
+            <label>Price (₹) *</label>
+            <input type="number" id="edit-prod-price" class="admin-form-control" required min="1">
+          </div>
+          <div class="admin-form-group">
+            <label>Discount Price (₹)</label>
+            <input type="number" id="edit-prod-discount" class="admin-form-control" min="0">
+          </div>
+          <div class="admin-form-group">
+            <label>Stock Level *</label>
+            <input type="number" id="edit-prod-stock" class="admin-form-control" required min="0">
+          </div>
+        </div>
+        
+        <!-- Manage Active Images -->
+        <div class="admin-form-group" style="background:rgba(255,255,255,0.02); padding:12px; border-radius:8px; border:1px solid var(--card-border);">
+          <label style="font-weight:600; margin-bottom:10px;">Preserved / Ordered Images</label>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:12px;">
+            <div>
+              <span style="font-size:11px; color:var(--text-muted);">Primary:</span>
+              <div id="edit-primary-existing" style="margin-top:4px;"></div>
+            </div>
+            <div>
+              <span style="font-size:11px; color:var(--text-muted);">Secondary:</span>
+              <div id="edit-secondary-existing" style="margin-top:4px;"></div>
+            </div>
+            <div>
+              <span style="font-size:11px; color:var(--text-muted);">Gallery:</span>
+              <div id="edit-gallery-existing" style="display:flex; gap:6px; overflow-x:auto; margin-top:4px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border: 1px dashed var(--card-border); padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+          <h4 style="font-family:'Outfit'; font-size:13px; margin-bottom: 8px;">Upload Replacements / Add Images</h4>
+          <div class="grid grid-3" style="gap:10px;">
+            <div class="admin-form-group">
+              <label style="font-size:11px; font-weight:600;">New Primary Image</label>
+              <input type="file" id="edit-prod-primary-image" class="admin-form-control" accept="image/*">
+              <div id="edit-primary-preview" style="margin-top:5px; width:60px; height:60px; border-radius:6px; border:1px solid var(--card-border); display:none; overflow:hidden;"></div>
+            </div>
+            <div class="admin-form-group">
+              <label style="font-size:11px; font-weight:600;">New Secondary Image</label>
+              <input type="file" id="edit-prod-secondary-image" class="admin-form-control" accept="image/*">
+              <div id="edit-secondary-preview" style="margin-top:5px; width:60px; height:60px; border-radius:6px; border:1px solid var(--card-border); display:none; overflow:hidden;"></div>
+            </div>
+            <div class="admin-form-group">
+              <label style="font-size:11px; font-weight:600;">New Gallery Images</label>
+              <input type="file" id="edit-prod-gallery-images" class="admin-form-control" multiple accept="image/*">
+              <div id="edit-gallery-preview" style="margin-top:5px; display:flex; gap:5px; overflow-x:auto;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-form-group">
+          <label>Description *</label>
+          <textarea id="edit-prod-description" class="admin-form-control" rows="3" required style="resize:none;"></textarea>
+        </div>
+
+        <h4 style="font-family:'Outfit'; font-size:14px; margin:20px 0 10px; border-top:1px solid var(--card-border); padding-top:14px;">Technical Specifications</h4>
+        <div class="grid grid-2" style="gap:10px;">
+          <div class="admin-form-group">
+            <label>Material</label>
+            <input type="text" id="edit-prod-material" class="admin-form-control">
+          </div>
+          <div class="admin-form-group">
+            <label>Dimensions</label>
+            <input type="text" id="edit-prod-dimensions" class="admin-form-control">
+          </div>
+          <div class="admin-form-group">
+            <label>Weight</label>
+            <input type="text" id="edit-prod-weight" class="admin-form-control">
+          </div>
+          <div class="admin-form-group">
+            <label>Color</label>
+            <input type="text" id="edit-prod-color" class="admin-form-control">
+          </div>
+        </div>
+
+        <div class="admin-form-group">
+          <label>Tags (Comma separated)</label>
+          <input type="text" id="edit-prod-tags" class="admin-form-control">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:20px;">Save Product</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/js/admin.js"></script>
+  <script>
+    let preservedImages = [];
+
+    function toggleModal(modalId, show) {
+      document.getElementById(modalId).style.display = show ? 'flex' : 'none';
+      if (!show) {
+        // Reset previews
+        const previews = ['add-primary-preview', 'add-secondary-preview', 'add-gallery-preview', 'edit-primary-preview', 'edit-secondary-preview', 'edit-gallery-preview'];
+        previews.forEach(p => {
+          const el = document.getElementById(p);
+          if (el) {
+            el.innerHTML = '';
+            el.style.display = 'none';
+          }
+        });
+      }
+    }
+
+    // Setup live previews helper
+    function setupImagePreview(inputId, previewContainerId, isMultiple = false) {
+      const input = document.getElementById(inputId);
+      const container = document.getElementById(previewContainerId);
+      if (!input || !container) return;
+
+      input.addEventListener('change', () => {
+        container.innerHTML = '';
+        if (input.files && input.files.length > 0) {
+          container.style.display = isMultiple ? 'flex' : 'block';
+          Array.from(input.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const img = document.createElement('img');
+              img.src = e.target.result;
+              img.style.width = '60px';
+              img.style.height = '60px';
+              img.style.objectFit = 'cover';
+              img.style.borderRadius = '4px';
+              if (isMultiple) {
+                img.style.marginRight = '5px';
+                container.appendChild(img);
+              } else {
+                container.appendChild(img);
+              }
+            };
+            reader.readAsDataURL(file);
+          });
+        } else {
+          container.style.display = 'none';
+        }
+      });
+    }
+
+    // Bind previews
+    setupImagePreview('prod-primary-image', 'add-primary-preview');
+    setupImagePreview('prod-secondary-image', 'add-secondary-preview');
+    setupImagePreview('prod-gallery-images', 'add-gallery-preview', true);
+    setupImagePreview('edit-prod-primary-image', 'edit-primary-preview');
+    setupImagePreview('edit-prod-secondary-image', 'edit-secondary-preview');
+    setupImagePreview('edit-prod-gallery-images', 'edit-gallery-preview', true);
+
+    // Load dynamic data in Edit Modal
+    async function openProductEditModal(productId) {
+      try {
+        const res = await adminFetch(`/api/products/${productId}`);
+        const data = await res.json();
+        if (data.success && data.product) {
+          const p = data.product;
+          
+          document.getElementById('edit-prod-id').value = p._id;
+          document.getElementById('edit-prod-name').value = p.name;
+          const catId = p.category && (p.category._id || p.category);
+          document.getElementById('edit-prod-category').value = catId || '';
+          document.getElementById('edit-prod-price').value = p.price;
+          document.getElementById('edit-prod-discount').value = p.discountPrice || '';
+          document.getElementById('edit-prod-stock').value = p.stock;
+          document.getElementById('edit-prod-description').value = p.description;
+          const specs = p.specifications || {};
+          document.getElementById('edit-prod-material').value = specs.material || '';
+          document.getElementById('edit-prod-dimensions').value = specs.dimensions || '';
+          document.getElementById('edit-prod-weight').value = specs.weight || '';
+          document.getElementById('edit-prod-color').value = specs.color || '';
+          document.getElementById('edit-prod-tags').value = (p.tags || []).join(', ');
+          
+          // Map to primary, secondary, and gallery role structures
+          preservedImages = p.images.map((img, idx) => {
+            let role = 'gallery';
+            if (idx === 0) role = 'primary';
+            else if (idx === 1) role = 'secondary';
+            return { url: img.url, publicId: img.publicId, role };
+          });
+
+          renderExistingImagesList();
+          toggleModal('edit-product-modal', true);
+        }
+      } catch (err) {
+        showToast('Error loading product details', 'error');
+      }
+    }
+
+    function renderExistingImagesList() {
+      const primaryContainer = document.getElementById('edit-primary-existing');
+      const secondaryContainer = document.getElementById('edit-secondary-existing');
+      const galleryContainer = document.getElementById('edit-gallery-existing');
+
+      const primary = preservedImages.find(img => img.role === 'primary');
+      const secondary = preservedImages.find(img => img.role === 'secondary');
+      const galleries = preservedImages.filter(img => img.role === 'gallery');
+
+      if (primary) {
+        primaryContainer.innerHTML = `
+          <div style="position:relative; width:65px; height:65px; border-radius:6px; border:1px solid var(--card-border); overflow:hidden;">
+            <img src="${primary.url}" style="width:100%; height:100%; object-fit:cover;">
+            <button type="button" onclick="deleteExistingImg('primary')" style="position:absolute; top:2px; right:2px; width:16px; height:16px; border-radius:50%; background:#ef4444; color:white; border:none; font-size:9px; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+          </div>
+        `;
+      } else {
+        primaryContainer.innerHTML = '<span style="color:var(--text-muted); font-size:10px;">None</span>';
+      }
+
+      if (secondary) {
+        secondaryContainer.innerHTML = `
+          <div style="position:relative; width:65px; height:65px; border-radius:6px; border:1px solid var(--card-border); overflow:hidden;">
+            <img src="${secondary.url}" style="width:100%; height:100%; object-fit:cover;">
+            <button type="button" onclick="deleteExistingImg('secondary')" style="position:absolute; top:2px; right:2px; width:16px; height:16px; border-radius:50%; background:#ef4444; color:white; border:none; font-size:9px; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+          </div>
+        `;
+      } else {
+        secondaryContainer.innerHTML = '<span style="color:var(--text-muted); font-size:10px;">None</span>';
+      }
+
+      if (galleries.length > 0) {
+        galleryContainer.innerHTML = galleries.map((img, idx) => `
+          <div style="display:flex; flex-direction:column; align-items:center; gap:2px; border:1px solid var(--card-border); padding:3px; border-radius:4px; background:rgba(255,255,255,0.02); flex-shrink:0;">
+            <div style="position:relative; width:50px; height:50px; border-radius:3px; overflow:hidden;">
+              <img src="${img.url}" style="width:100%; height:100%; object-fit:cover;">
+              <button type="button" onclick="deleteExistingGalleryImg(${idx})" style="position:absolute; top:2px; right:2px; width:14px; height:14px; border-radius:50%; background:#ef4444; color:white; border:none; font-size:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+            </div>
+            <div style="display:flex; gap:2px;">
+              <button type="button" style="padding:1px 3px; font-size:8px; border-radius:2px; cursor:pointer; background:var(--card-bg); color:var(--text-color); border:1px solid var(--card-border);" onclick="moveGalleryImg(${idx}, -1)" ${idx === 0 ? 'disabled' : ''}>▲</button>
+              <button type="button" style="padding:1px 3px; font-size:8px; border-radius:2px; cursor:pointer; background:var(--card-bg); color:var(--text-color); border:1px solid var(--card-border);" onclick="moveGalleryImg(${idx}, 1)" ${idx === galleries.length - 1 ? 'disabled' : ''}>▼</button>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        galleryContainer.innerHTML = '<span style="color:var(--text-muted); font-size:10px;">None</span>';
+      }
+    }
+
+    function deleteExistingImg(role) {
+      preservedImages = preservedImages.filter(img => img.role !== role);
+      renderExistingImagesList();
+    }
+
+    function deleteExistingGalleryImg(idx) {
+      const galleries = preservedImages.filter(img => img.role === 'gallery');
+      const target = galleries[idx];
+      preservedImages = preservedImages.filter(img => img !== target);
+      renderExistingImagesList();
+    }
+
+    function moveGalleryImg(idx, direction) {
+      const galleries = preservedImages.filter(img => img.role === 'gallery');
+      if (idx + direction < 0 || idx + direction >= galleries.length) return;
+      
+      const temp = galleries[idx];
+      galleries[idx] = galleries[idx + direction];
+      galleries[idx + direction] = temp;
+
+      const primary = preservedImages.find(img => img.role === 'primary');
+      const secondary = preservedImages.find(img => img.role === 'secondary');
+      
+      preservedImages = [];
+      if (primary) preservedImages.push(primary);
+      if (secondary) preservedImages.push(secondary);
+      preservedImages.push(...galleries);
+
+      renderExistingImagesList();
+    }
+
+    // Submit Add Product Form (FormData for files upload)
+    document.getElementById('add-product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Uploading Product...';
+
+      const formData = new FormData();
+      formData.append('name', document.getElementById('prod-name').value.trim());
+      formData.append('category', document.getElementById('prod-category').value);
+      formData.append('price', document.getElementById('prod-price').value);
+      formData.append('discountPrice', document.getElementById('prod-discount').value);
+      formData.append('stock', document.getElementById('prod-stock').value);
+      formData.append('description', document.getElementById('prod-description').value.trim());
+      
+      const specs = {
+        material: document.getElementById('prod-material').value.trim(),
+        dimensions: document.getElementById('prod-dimensions').value.trim(),
+        weight: document.getElementById('prod-weight').value.trim(),
+        color: document.getElementById('prod-color').value.trim()
+      };
+      formData.append('specifications', JSON.stringify(specs));
+      
+      const tags = document.getElementById('prod-tags').value.split(',').map(s => s.trim()).filter(Boolean);
+      formData.append('tags', JSON.stringify(tags));
+
+      // Append separate fields
+      const primaryFile = document.getElementById('prod-primary-image').files[0];
+      const secondaryFile = document.getElementById('prod-secondary-image').files[0];
+      const galleryFiles = document.getElementById('prod-gallery-images').files;
+
+      if (primaryFile) formData.append('primaryImage', primaryFile);
+      if (secondaryFile) formData.append('secondaryImage', secondaryFile);
+      for (const file of galleryFiles) {
+        formData.append('galleryImages', file);
+      }
+
+      try {
+        const res = await adminFetch('/api/products', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Product added successfully!', 'success');
+          toggleModal('add-product-modal', false);
+          form.reset();
+          loadAdminProducts();
+        } else {
+          showToast(data.error || 'Upload failed', 'error');
+        }
+      } catch (err) {
+        showToast('Connection error during upload', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Product';
+      }
+    });
+
+    // Submit Edit Product Form
+    document.getElementById('edit-product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const id = document.getElementById('edit-prod-id').value;
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving Changes...';
+
+      const formData = new FormData();
+      formData.append('name', document.getElementById('edit-prod-name').value.trim());
+      formData.append('category', document.getElementById('edit-prod-category').value);
+      formData.append('price', document.getElementById('edit-prod-price').value);
+      formData.append('discountPrice', document.getElementById('edit-prod-discount').value);
+      formData.append('stock', document.getElementById('edit-prod-stock').value);
+      formData.append('description', document.getElementById('edit-prod-description').value.trim());
+      
+      const specs = {
+        material: document.getElementById('edit-prod-material').value.trim(),
+        dimensions: document.getElementById('edit-prod-dimensions').value.trim(),
+        weight: document.getElementById('edit-prod-weight').value.trim(),
+        color: document.getElementById('edit-prod-color').value.trim()
+      };
+      formData.append('specifications', JSON.stringify(specs));
+      
+      const tags = document.getElementById('edit-prod-tags').value.split(',').map(s => s.trim()).filter(Boolean);
+      formData.append('tags', JSON.stringify(tags));
+
+      // Send retained image indices with roles as JSON string
+      formData.append('existingImages', JSON.stringify(preservedImages));
+
+      // Append separate fields if provided
+      const primaryFile = document.getElementById('edit-prod-primary-image').files[0];
+      const secondaryFile = document.getElementById('edit-prod-secondary-image').files[0];
+      const galleryFiles = document.getElementById('edit-prod-gallery-images').files;
+
+      if (primaryFile) formData.append('primaryImage', primaryFile);
+      if (secondaryFile) formData.append('secondaryImage', secondaryFile);
+      for (const file of galleryFiles) {
+        formData.append('galleryImages', file);
+      }
+
+      try {
+        const res = await adminFetch(`/api/products/${id}`, {
+          method: 'PUT',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Product changes saved!', 'success');
+          toggleModal('edit-product-modal', false);
+          form.reset();
+          loadAdminProducts();
+        } else {
+          showToast(data.error || 'Failed to save edits', 'error');
+        }
+      } catch (err) {
+        showToast('Connection error updating product', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Product';
+      }
+    });
+
+    window.toggleModal = toggleModal;
+    window.openProductEditModal = openProductEditModal;
+    window.deleteExistingImg = deleteExistingImg;
+    window.deleteExistingGalleryImg = deleteExistingGalleryImg;
+    window.moveGalleryImg = moveGalleryImg;
+  </script>
+</body>
+</html>

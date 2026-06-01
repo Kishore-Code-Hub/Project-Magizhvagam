@@ -1,0 +1,101 @@
+/* Media Query Breakpoints for MAGIZHVAGAM E-Commerce */
+
+@media (max-width: 1024px) {
+  .grid-4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-4, .grid-3, .grid-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Navigation mobile layout */
+  .nav-menu {
+    position: fixed;
+    top: 70px;
+    left: -100%;
+    width: 100%;
+    height: calc(100vh - 70px);
+    background: var(--bg-color);
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 0;
+    gap: 30px;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition);
+    z-index: 999;
+  }
+  
+  .nav-menu.active {
+    left: 0;
+  }
+
+  .hamburger {
+    display: block !important;
+    cursor: pointer;
+  }
+
+  /* Catalog Page adjustments */
+  .catalog-layout {
+    flex-direction: column;
+  }
+  
+  .filter-sidebar {
+    width: 100% !important;
+    position: static !important;
+  }
+
+  /* Cart Layout adjustments */
+  .cart-container {
+    flex-direction: column;
+  }
+  .cart-summary {
+    width: 100% !important;
+  }
+
+  /* Detail Tabs mobile adjustments */
+  .tab-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Admin Dashboard Layout Adjustments */
+  .admin-layout {
+    flex-direction: column;
+  }
+  .admin-sidebar {
+    width: 100% !important;
+    height: auto !important;
+    position: static !important;
+  }
+  .admin-main {
+    margin-left: 0 !important;
+    padding: 20px 10px !important;
+  }
+  .table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 16px;
+  }
+  
+  .btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+  
+  .hero-content h1 {
+    font-size: 32px !important;
+  }
+}

@@ -1,0 +1,60 @@
+/* ==========================================================================
+   responsive.css — MAGIZHVAGAM
+   Legacy responsive rules preserved (admin, catalog, cart layouts).
+   Header/nav responsive rules are now in main.css Phase 1 block.
+   ========================================================================== */
+
+/* Inner page top-padding when header is fixed */
+/* Controlled dynamically via JS (--header-height CSS var) */
+
+/* Admin layout on tablet/mobile */
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+  .admin-sidebar {
+    width: 100% !important;
+    height: auto !important;
+    position: static !important;
+  }
+  .admin-main {
+    margin-left: 0 !important;
+    padding: 20px 10px !important;
+  }
+  .table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Catalog layout on mobile */
+  .catalog-layout {
+    flex-direction: column;
+  }
+  .filter-sidebar {
+    width: 100% !important;
+    position: static !important;
+  }
+  /* Cart layout on mobile */
+  .cart-container {
+    flex-direction: column;
+  }
+  .cart-summary {
+    width: 100% !important;
+  }
+  /* Checkout layout on mobile */
+  .checkout-layout {
+    flex-direction: column;
+  }
+  /* Detail tabs on mobile */
+  .tab-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 16px;
+  }
+}

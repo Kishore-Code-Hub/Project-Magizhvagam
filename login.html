@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | MAGIZHVAGAM - Premium Return Gifts</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+  <style>
+    .auth-wrapper {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 20px 60px;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      padding: 40px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: rgba(0, 0, 0, 0.02);
+      color: var(--text-color);
+      transition: var(--transition);
+    }
+    .form-control:focus {
+      border-color: hsl(var(--primary-purple));
+      background: rgba(255, 255, 255, 0.9);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Shared Header Injection Element -->
+  <header id="main-header"></header>
+
+  <div class="auth-wrapper">
+    <div class="auth-card glass animated scale-in">
+      <h2 style="font-size: 28px; text-align: center; margin-bottom: 8px; font-family: 'Outfit';">Welcome Back</h2>
+      <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 30px;">Login to manage your profile and orders</p>
+      
+      <form id="login-form">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" class="form-control" placeholder="name@domain.com" required>
+        </div>
+        <div class="form-group" style="position: relative;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label for="password" style="margin: 0;">Password</label>
+            <a href="#" onclick="event.preventDefault(); showToast('Password recovery is currently disabled. Please contact customer support.', 'error');" style="font-size: 12px; color: hsl(var(--primary-purple)); font-weight: 600;">Forgot Password?</a>
+          </div>
+          <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; border-radius: 8px;">Sign In</button>
+      </form>
+      
+      <div style="text-align: center; margin-top: 24px; font-size: 14px;">
+        <span style="color: var(--text-muted);">Don't have an account?</span>
+        <a href="/register.html" style="color: hsl(var(--primary-purple)); font-weight: 700; margin-left: 4px;">Sign Up</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shared Footer Injection Element -->
+  <footer id="main-footer"></footer>
+
+  <!-- Scripts -->
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    const getQueryParam = window.getQueryParam || ((name) => {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    });
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      
+      // Determine redirection target (e.g., from query string)
+      let redirect = getQueryParam('redirect') || 'index.html';
+      if (!redirect.startsWith('/')) {
+        redirect = '/' + redirect;
+      }
+      const redirectUrl = redirect.replace(/\/+/g, '/');
+      
+      await handleLogin(email, password, redirectUrl);
+    });
+  </script>
+</body>
+</html>

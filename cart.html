@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+  
+  <style>
+    .cart-layout {
+      padding: 100px 0 60px;
+    }
+    .cart-container {
+      display: flex;
+      gap: 30px;
+      margin-top: 30px;
+      align-items: start;
+    }
+    .cart-main {
+      flex-grow: 1;
+    }
+    .cart-summary {
+      width: 380px;
+      flex-shrink: 0;
+      padding: 30px;
+      border-radius: 16px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Shared Header -->
+  <header id="main-header"></header>
+
+  <main class="container cart-layout">
+    <h1 style="font-family:'Outfit'; font-size:32px; color:var(--text-color);">Your Shopping Cart</h1>
+    
+    <div class="cart-container">
+      
+      <!-- Cart Items list -->
+      <div class="cart-main" id="cart-items-container">
+        <div style="text-align:center; padding:50px 0;">
+          <div class="spinner" style="margin:auto;"></div>
+        </div>
+      </div>
+      
+      <!-- Summary Box -->
+      <aside class="cart-summary glass animated scale-in">
+        <h3 style="font-family:'Outfit'; font-size:18px; margin-bottom:20px; border-bottom:1px solid var(--card-border); padding-bottom:10px;">Order Summary</h3>
+        
+        <div class="summary-row">
+          <span style="color:var(--text-muted);">Subtotal</span>
+          <strong id="summary-subtotal">₹0.00</strong>
+        </div>
+        
+        <div class="summary-row" id="summary-discount-row" style="display:none;">
+          <span style="color:hsl(var(--rose-pink)); font-weight:700;">Coupon Discount</span>
+          <strong id="summary-discount" style="color:hsl(var(--rose-pink));">-₹0.00</strong>
+        </div>
+
+        <div class="summary-row">
+          <span style="color:var(--text-muted);">GST Tax (5%)</span>
+          <strong id="summary-tax">₹0.00</strong>
+        </div>
+
+        <div class="summary-row">
+          <span style="color:var(--text-muted);">Estimated Shipping</span>
+          <strong id="summary-shipping">₹0.00</strong>
+        </div>
+
+        <div class="summary-row" style="border-top:1px solid var(--card-border); padding-top:16px; margin-top:16px; font-size:18px;">
+          <strong style="color:var(--text-color);">Total Price</strong>
+          <strong id="summary-total" style="color:hsl(var(--primary-purple)); font-weight:800;">₹0.00</strong>
+        </div>
+
+        <p style="font-size:11px; color:var(--text-muted); margin: 10px 0 24px; line-height:1.4;">
+          * Free shipping on orders above ₹1,500. GST added at checkout.
+        </p>
+
+        <!-- Coupon code form -->
+        <form id="coupon-form" style="display:flex; gap:8px; margin-bottom:24px;">
+          <input type="text" id="coupon-code-input" placeholder="COUPON" class="form-control" style="border: 1px solid var(--card-border); text-transform:uppercase;" required>
+          <button type="submit" class="btn btn-secondary" style="border-radius:8px; padding:8px 16px; font-size:12px;">Apply</button>
+        </form>
+
+        <button onclick="proceedToCheckout()" class="btn btn-primary" style="width:100%; border-radius:8px;">Proceed to Checkout</button>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Shared Footer -->
+  <footer id="main-footer"></footer>
+
+  <!-- Scripts -->
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/cart.js"></script>
+</body>
+</html>

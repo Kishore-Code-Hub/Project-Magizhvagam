@@ -1,0 +1,173 @@
+{
+  "testedAt": "2026-05-31T14:32:13.023Z",
+  "base": "http://localhost:5000",
+  "pages": [
+    {
+      "name": "Home",
+      "path": "/",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    },
+    {
+      "name": "Products",
+      "path": "/products.html",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    },
+    {
+      "name": "Product Details",
+      "path": "/product-details.html?id=6a1b26d0208845c1e49c6c35",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    },
+    {
+      "name": "Profile",
+      "path": "/profile.html",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    },
+    {
+      "name": "Wishlist",
+      "path": "/wishlist.html",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    },
+    {
+      "name": "Cart",
+      "path": "/cart.html",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    },
+    {
+      "name": "Checkout",
+      "path": "/checkout.html",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    },
+    {
+      "name": "Login",
+      "path": "/login.html",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    },
+    {
+      "name": "Register",
+      "path": "/register.html",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    },
+    {
+      "name": "Admin Dashboard",
+      "path": "/admin/dashboard.html",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    },
+    {
+      "name": "Admin Products",
+      "path": "/admin/products.html",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    },
+    {
+      "name": "Admin Orders",
+      "path": "/admin/orders.html",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    },
+    {
+      "name": "Admin Reports",
+      "path": "/admin/reports.html",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    },
+    {
+      "name": "Admin Settings",
+      "path": "/admin/settings.html",
+      "consoleErrors": [],
+      "networkFailures": [],
+      "status": "PASS"
+    }
+  ],
+  "elements": [
+    {
+      "page": "Profile",
+      "element": "Profile Details",
+      "status": "WORKING",
+      "note": ""
+    },
+    {
+      "page": "Profile",
+      "element": "Address Book",
+      "status": "WORKING",
+      "note": ""
+    },
+    {
+      "page": "Profile",
+      "element": "Order History",
+      "status": "WORKING",
+      "note": ""
+    },
+    {
+      "page": "Profile",
+      "element": "Wishlist",
+      "status": "WORKING",
+      "note": ""
+    },
+    {
+      "page": "Profile",
+      "element": "Sign Out (handleLogout exists)",
+      "status": "WORKING"
+    },
+    {
+      "page": "Admin Products",
+      "element": "Add New Product modal",
+      "status": "WORKING"
+    },
+    {
+      "page": "Admin Products",
+      "element": "Export CSV function",
+      "status": "WORKING"
+    },
+    {
+      "page": "Admin Products",
+      "element": "Import CSV function",
+      "status": "WORKING"
+    },
+    {
+      "page": "Admin Products",
+      "element": "Edit modal function",
+      "status": "WORKING"
+    },
+    {
+      "page": "Admin Products",
+      "element": "Delete function",
+      "status": "WORKING"
+    },
+    {
+      "page": "Admin Products",
+      "element": "Clone function",
+      "status": "WORKING"
+    },
+    {
+      "page": "Admin Reports",
+      "element": "Export CSV Log",
+      "status": "WORKING",
+      "note": ""
+    }
+  ],
+  "consoleErrors": [],
+  "networkFailures": []
+}

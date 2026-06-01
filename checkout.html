@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+  
+  <style>
+    .checkout-layout {
+      padding: 100px 0 60px;
+    }
+    .checkout-container {
+      display: flex;
+      gap: 30px;
+      margin-top: 30px;
+      align-items: start;
+    }
+    .checkout-main {
+      flex-grow: 1;
+    }
+    .checkout-sidebar {
+      width: 380px;
+      flex-shrink: 0;
+      padding: 30px;
+      border-radius: 16px;
+    }
+    .section-title {
+      font-family: 'Outfit';
+      font-size: 18px;
+      border-bottom: 2px solid var(--card-border);
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+      color: hsl(var(--primary-purple));
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: rgba(0,0,0,0.02);
+      color: var(--text-color);
+      font-size: 13px;
+    }
+    .form-control:focus {
+      border-color: hsl(var(--primary-purple));
+      background: white;
+    }
+    .payment-option {
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: var(--transition);
+    }
+    .payment-option:hover {
+      background: rgba(106, 13, 173, 0.03);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Shared Header -->
+  <header id="main-header"></header>
+
+  <main class="container checkout-layout">
+    <h1 style="font-family:'Outfit'; font-size:32px; color:var(--text-color);">Checkout Order</h1>
+    
+    <div class="checkout-container" id="checkout-form-wrapper">
+      
+      <!-- Checkout Forms (Left side) -->
+      <form class="checkout-main" id="checkout-form">
+        
+        <!-- Step 1: User details -->
+        <fieldset class="glass" id="guest-details-section" style="padding:30px; border-radius:12px; border:none; margin-bottom:24px;">
+          <legend class="section-title">Step 1: Contact Information</legend>
+          
+          <div class="grid grid-2" style="gap:16px;">
+            <div class="form-group">
+              <label for="guest-name">Full Name</label>
+              <input type="text" id="guest-name" class="form-control" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+              <label for="guest-phone">Contact Phone</label>
+              <input type="tel" id="guest-phone" class="form-control" placeholder="e.g. 9876543210">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="guest-email">Email Address</label>
+            <input type="email" id="guest-email" class="form-control" placeholder="name@domain.com">
+          </div>
+          <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">
+            Already have an account? <a href="/login.html?redirect=checkout.html" style="color:hsl(var(--primary-purple)); font-weight:700;">Login here</a>
+          </p>
+        </fieldset>
+
+        <fieldset class="glass" id="member-details-section" style="padding:30px; border-radius:12px; border:none; margin-bottom:24px; display:none;">
+          <legend class="section-title">Step 1: Account Context</legend>
+          <div style="font-size:14px; line-height:1.6;">
+            Logged in as: <strong id="member-name">Name</strong> (<span id="member-email" style="color:var(--text-muted);">Email</span>)
+          </div>
+        </fieldset>
+
+        <!-- Step 2: Shipping Address -->
+        <fieldset class="glass" style="padding:30px; border-radius:12px; border:none; margin-bottom:24px;">
+          <legend class="section-title">Step 2: Shipping Coordinates</legend>
+          
+          <div class="grid grid-2" style="gap:16px;">
+            <div class="form-group">
+              <label for="shipping-name">Recipient Full Name</label>
+              <input type="text" id="shipping-name" class="form-control" placeholder="John Doe" required>
+            </div>
+            <div class="form-group">
+              <label for="shipping-phone">Delivery Phone</label>
+              <input type="tel" id="shipping-phone" class="form-control" placeholder="e.g. 9876543210" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="shipping-street">Street Address</label>
+            <input type="text" id="shipping-street" class="form-control" placeholder="House no, Building, Street name" required>
+          </div>
+
+          <div class="grid grid-3" style="gap:16px;">
+            <div class="form-group">
+              <label for="shipping-city">City</label>
+              <input type="text" id="shipping-city" class="form-control" placeholder="Chennai" required>
+            </div>
+            <div class="form-group">
+              <label for="shipping-state">State</label>
+              <input type="text" id="shipping-state" class="form-control" placeholder="Tamil Nadu" required>
+            </div>
+            <div class="form-group">
+              <label for="shipping-zip">Zip/Postal Code</label>
+              <input type="text" id="shipping-zip" class="form-control" placeholder="600001" required>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Step 3: Payment Selection -->
+        <fieldset class="glass" style="padding:30px; border-radius:12px; border:none;">
+          <legend class="section-title">Step 3: Payment Method</legend>
+          
+          <label class="payment-option">
+            <input type="radio" name="payment-method" value="UPI" checked style="accent-color:hsl(var(--primary-purple));">
+            <span>BHIM UPI / Google Pay / PhonePe (Simulated Pay)</span>
+          </label>
+          
+          <label class="payment-option">
+            <input type="radio" name="payment-method" value="Card" style="accent-color:hsl(var(--primary-purple));">
+            <span>Credit / Debit Card (Simulated Pay)</span>
+          </label>
+
+          <label class="payment-option">
+            <input type="radio" name="payment-method" value="COD" style="accent-color:hsl(var(--primary-purple));">
+            <span>Cash on Delivery (COD)</span>
+          </label>
+        </fieldset>
+
+        <button type="submit" id="place-order-btn" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:30px; padding:16px;">Place Order</button>
+      </form>
+
+      <!-- Sidebar summary (Right side) -->
+      <aside class="checkout-sidebar glass animated scale-in">
+        <h3 style="font-family:'Outfit'; font-size:18px; margin-bottom:20px; border-bottom:1px solid var(--card-border); padding-bottom:10px;">Order Review</h3>
+        
+        <div id="checkout-items-list" style="max-height:220px; overflow-y:auto; margin-bottom:20px;">
+          <!-- Loaded dynamically -->
+        </div>
+
+        <div style="font-size:13px; display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--card-border); padding-top:16px;">
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-muted);">Cart Subtotal</span>
+            <span id="checkout-subtotal">₹0.00</span>
+          </div>
+
+          <div style="display:none; justify-content:space-between;" id="checkout-discount-row">
+            <span style="color:hsl(var(--rose-pink)); font-weight:700;">Coupon Discount</span>
+            <span id="checkout-discount-val" style="color:hsl(var(--rose-pink));">-₹0.00</span>
+          </div>
+
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-muted);">GST (5%)</span>
+            <span id="checkout-tax">₹0.00</span>
+          </div>
+
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-muted);">Shipping</span>
+            <span id="checkout-shipping">₹0.00</span>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; font-size:16px; border-top:1px solid var(--card-border); padding-top:12px; margin-top:4px;">
+            <strong style="color:var(--text-color);">Grand Total</strong>
+            <strong id="checkout-total" style="color:hsl(var(--primary-purple)); font-weight:800;">₹0.00</strong>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Shared Footer -->
+  <footer id="main-footer"></footer>
+
+  <!-- Scripts -->
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/checkout.js"></script>
+</body>
+</html>

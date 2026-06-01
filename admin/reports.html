@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Reports | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Reports Panel -->
+    <main class="admin-main">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+        <h1 style="font-family:'Outfit'; font-size:32px; color:var(--text-color);">Sales Performance Reports</h1>
+        <button type="button" onclick="exportReportsCSV()" class="btn btn-primary" style="border-radius:8px; padding:10px 20px; font-size:13px;">Export CSV Log</button>
+      </div>
+
+      <div class="grid grid-2" style="gap:30px; align-items:start;">
+        <!-- Top Selling Products list -->
+        <div class="glass" style="padding:30px; border-radius:12px;">
+          <h3 style="font-family:'Outfit'; font-size:18px; margin-bottom:20px; color:hsl(var(--primary-purple));">Top Selling Return Gifts</h3>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Thumbnail</th>
+                  <th>Product Name</th>
+                  <th>Qty Sold</th>
+                  <th>Revenue Generated</th>
+                </tr>
+              </thead>
+              <tbody id="reports-top-tbody">
+                <tr><td colspan="4" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sales Performance breakdown -->
+        <div class="glass" style="padding:30px; border-radius:12px;">
+          <h3 style="font-family:'Outfit'; font-size:18px; margin-bottom:20px; color:hsl(var(--primary-purple));">Period Performance Breakdown</h3>
+          <div style="display:flex; flex-direction:column; gap:16px; font-size:14px; line-height:1.8;">
+            <div style="display:flex; justify-content:space-between; border-bottom:1px dashed var(--card-border); padding-bottom:10px;">
+              <span style="color:var(--text-muted);">Daily Average Revenue</span>
+              <strong id="rep-daily-avg">₹0.00</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-bottom:1px dashed var(--card-border); padding-bottom:10px;">
+              <span style="color:var(--text-muted);">Weekly Total Sales</span>
+              <strong id="rep-weekly-sales">₹0.00</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-bottom:1px dashed var(--card-border); padding-bottom:10px;">
+              <span style="color:var(--text-muted);">Monthly Total Sales</span>
+              <strong id="rep-monthly-sales">₹0.00</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--text-muted);">Estimated Projected Annual Revenue</span>
+              <strong id="rep-annual-proj" style="color:hsl(var(--primary-purple));">₹0.00</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/js/admin.js"></script>
+</body>
+</html>
