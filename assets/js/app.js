@@ -20,6 +20,15 @@ window.setSessionUser = (user) => {
   if (!user) {
     window.__sessionUser = null;
     localStorage.removeItem('magizhvagam_user');
+    
+    // Reset user name displays to default guest state
+    const userNameEl = document.getElementById('user-name-display');
+    if (userNameEl) userNameEl.textContent = 'Guest';
+    const profileNameEls = document.querySelectorAll('.profile-name');
+    profileNameEls.forEach(el => { el.textContent = 'Guest'; });
+    const memberNameEl = document.getElementById('member-name');
+    if (memberNameEl) memberNameEl.textContent = 'Name';
+    
     return;
   }
   const normalized = {
@@ -30,13 +39,24 @@ window.setSessionUser = (user) => {
   };
   window.__sessionUser = normalized;
   localStorage.setItem('magizhvagam_user', JSON.stringify(normalized));
-  // Legacy global wishlist key must not leak across users
+  
+  // Update user name displays dynamically
+  const userNameEl = document.getElementById('user-name-display');
+  if (userNameEl) userNameEl.textContent = normalized.name;
+  const profileNameEls = document.querySelectorAll('.profile-name');
+  profileNameEls.forEach(el => { el.textContent = normalized.name; });
+  const memberNameEl = document.getElementById('member-name');
+  if (memberNameEl) memberNameEl.textContent = normalized.name;
+
+  // Legacy global wishlist/cart keys must not leak across users
   localStorage.removeItem('magizhvagam_wishlist');
+  localStorage.removeItem('magizhvagam_cart');
 };
 
 function getStoredUser() {
   return window.__sessionUser || null;
 }
+window.getStoredUser = getStoredUser;
 
 window.resolveProductImage = (url) => {
   if (!url || typeof url !== 'string') {
@@ -100,13 +120,16 @@ window.validateUserSession = async function validateUserSession() {
 
     const path = window.location.pathname;
     const isAuthPage = ['/login.html', '/register.html'].some((p) => path.endsWith(p));
-    const isProtected = ['/profile.html', '/wishlist.html', '/checkout.html'].some(p => path.endsWith(p)) || path.includes('/admin/');
+    const isProtected = ['/profile.html', '/wishlist.html', '/checkout.html', '/cart.html'].some(p => path.endsWith(p)) || path.includes('/admin/');
     if (isProtected && !isAuthPage) {
       const redirectPath = window.location.pathname.substring(1) + window.location.search;
       if (path.includes('/admin/')) {
         window.location.replace('/admin/login?redirect=' + encodeURIComponent(redirectPath));
       } else {
-        window.location.replace('/login.html?redirect=' + encodeURIComponent(redirectPath));
+        showToast('Please login or create a customer account to continue.', 'error');
+        setTimeout(() => {
+          window.location.replace('/login.html?redirect=' + encodeURIComponent(redirectPath));
+        }, 1500);
       }
     }
     return null;
@@ -217,6 +240,7 @@ window.handleLogout = async () => {
   localStorage.removeItem('magizhvagam_cart');
   localStorage.removeItem('magizhvagam_wishlist');
   if (prevUser?.id) {
+    localStorage.removeItem(`magizhvagam_cart_${prevUser.id}`);
     localStorage.removeItem(`magizhvagam_wishlist_${prevUser.id}`);
   }
   localStorage.removeItem('magizhvagam_applied_coupon');
@@ -255,6 +279,43 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function initGlobalClickHandlers() {
   document.addEventListener('click', (e) => {
+    // Intercept guest attempts to open Cart/Checkout
+    const cartOrCheckoutLink = e.target.closest('a[href*="cart.html"], a[href*="checkout.html"]');
+    if (cartOrCheckoutLink) {
+      if (!getStoredUser()) {
+        e.preventDefault();
+        e.stopPropagation();
+        showToast('Please login or create a customer account to continue.', 'error');
+        window.showLoginRegisterModal('cart');
+        return;
+      }
+    }
+
+    // Intercept guest attempts to open Wishlist from header
+    const wishlistLink = e.target.closest('#header-wishlist-link');
+    if (wishlistLink) {
+      if (!getStoredUser()) {
+        e.preventDefault();
+        e.stopPropagation();
+        showToast('Please login or create a customer account to continue.', 'error');
+        window.showLoginRegisterModal('wishlist');
+        return;
+      }
+    }
+
+    // Intercept guest clicks on "Buy Now" elements/text
+    const buyBtn = e.target.closest('.buy-now-btn, .buy-now, [data-buy-now]');
+    const isBuyNowText = e.target.textContent && e.target.textContent.toLowerCase().includes('buy now');
+    if (buyBtn || (e.target.closest('button, a') && isBuyNowText)) {
+      if (!getStoredUser()) {
+        e.preventDefault();
+        e.stopPropagation();
+        showToast('Please login or create a customer account to continue.', 'error');
+        window.showLoginRegisterModal('cart');
+        return;
+      }
+    }
+
     const wishlistBtn = e.target.closest('.wishlist-btn[data-product-id]');
     if (wishlistBtn) {
       e.preventDefault();
@@ -331,9 +392,22 @@ function isLoggedInCustomer() {
   return user && user.role === 'customer';
 }
 
-function setCartCache(cart) {
-  localStorage.setItem('magizhvagam_cart', JSON.stringify(cart || []));
+function getCartStorageKey() {
+  const user = getStoredUser();
+  if (user && user.role === 'customer' && user.id) {
+    return `magizhvagam_cart_${user.id}`;
+  }
+  return null;
 }
+
+function setCartCache(cart) {
+  const key = getCartStorageKey();
+  if (key) {
+    localStorage.setItem(key, JSON.stringify(cart || []));
+  }
+  localStorage.removeItem('magizhvagam_cart');
+}
+window.setCartCache = setCartCache;
 
 function getWishlistStorageKey() {
   const user = getStoredUser();
@@ -365,8 +439,11 @@ function setWishlistCache(wishlist) {
 window.setWishlistCache = setWishlistCache;
 
 window.getCart = () => {
+  if (!isLoggedInCustomer()) return [];
+  const key = getCartStorageKey();
+  if (!key) return [];
   try {
-    const val = localStorage.getItem('magizhvagam_cart');
+    const val = localStorage.getItem(key);
     if (!val || val === 'undefined' || val === 'null') return [];
     return JSON.parse(val) || [];
   } catch (err) {
@@ -462,6 +539,8 @@ window.mergeCartAndWishlistAfterLogin = async () => {
 window.clearServerCart = async () => {
   if (!isLoggedInCustomer()) {
     localStorage.removeItem('magizhvagam_cart');
+    const key = getCartStorageKey();
+    if (key) localStorage.removeItem(key);
     syncCartCounters();
     window.dispatchEvent(new Event('cartUpdated'));
     return;
@@ -477,6 +556,8 @@ window.clearServerCart = async () => {
   } catch (err) {
     console.error('Failed to clear server cart:', err);
     localStorage.removeItem('magizhvagam_cart');
+    const key = getCartStorageKey();
+    if (key) localStorage.removeItem(key);
     syncCartCounters();
     window.dispatchEvent(new Event('cartUpdated'));
   }
@@ -508,6 +589,7 @@ async function addToCartAsync(productId, name, price, image, quantity, silent) {
 window.addToCart = (productId, name, price, image, quantity = 1, silent = false) => {
   const user = getStoredUser();
   if (!user) {
+    showToast('Please login or create a customer account to continue.', 'error');
     window.showLoginRegisterModal('cart');
     return;
   }
@@ -547,6 +629,7 @@ async function toggleWishlistAsync(productId, name, price, image) {
 window.toggleWishlist = async (productId, name, price, image) => {
   const user = getStoredUser();
   if (!user) {
+    showToast('Please login or create a customer account to continue.', 'error');
     window.showLoginRegisterModal('wishlist');
     return false;
   }
@@ -663,6 +746,7 @@ function injectComponents(settings, user = null) {
           </svg>
         </button>
         <div class="account-dropdown">
+          <div class="dropdown-link" style="font-weight: 700; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; color: var(--text-color);">Hello, <span id="user-name-display" class="profile-name">${user.name}</span></div>
           <a href="/profile.html" class="dropdown-link">My Profile</a>
           <a href="/profile.html#orders" class="dropdown-link">My Orders</a>
           <a href="/wishlist.html" class="dropdown-link">Wishlist</a>
@@ -694,7 +778,7 @@ function injectComponents(settings, user = null) {
   } else {
     // Accordion: tap Account to expand sub-links
     mobileSidebarAuthLinks = `
-      <button class="sidebar-account-toggle" id="sidebar-account-toggle" type="button">Account <span class="arrow" id="sidebar-account-arrow">&#9658;</span></button>
+      <button class="sidebar-account-toggle" id="sidebar-account-toggle" type="button">Account (<span class="profile-name">${user.name}</span>) <span class="arrow" id="sidebar-account-arrow">&#9658;</span></button>
       <div class="sidebar-account-submenu" id="sidebar-account-submenu">
         <a href="/profile.html">My Profile</a>
         <a href="/profile.html#orders">My Orders</a>
@@ -1112,9 +1196,9 @@ window.showLoginRegisterModal = (context = 'action') => {
   modal.style.display = 'flex';
   modal.style.zIndex = '10000';
   
-  let reasonText = 'You must be logged in to access this feature.';
-  if (context === 'wishlist') reasonText = 'You must be logged in to manage your wishlist.';
-  if (context === 'cart') reasonText = 'You must be logged in to add items to your shopping cart.';
+  let reasonText = 'Please login or create a customer account to continue.';
+  if (context === 'wishlist') reasonText = 'Please login or create a customer account to continue.';
+  if (context === 'cart') reasonText = 'Please login or create a customer account to continue.';
 
   modal.innerHTML = `
     <div class="modal-content glass scale-in" style="max-width: 420px; padding: 30px; text-align: center; border-radius: 16px; position:relative; background:#FAF9F6; border:1px solid var(--card-border); color:var(--text-color);">

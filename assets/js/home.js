@@ -134,7 +134,8 @@ async function renderCategoryHighlights(catIds) {
       let filtered = data.categories;
       if (catIds && catIds.length > 0) {
         const ids = catIds.map(id => id.toString());
-        filtered = data.categories.filter(c => ids.includes(c._id.toString()));
+        const catMap = new Map(data.categories.map(c => [c._id.toString(), c]));
+        filtered = ids.map(id => catMap.get(id)).filter(c => !!c);
       }
 
       if (filtered.length === 0) {
@@ -164,40 +165,52 @@ async function loadProductSection(productIds, elementId) {
   try {
     grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:30px;"><div class="spinner" style="margin:auto;"></div></div>';
     
-    // Fetch products by querying their individual IDs or fetching all and filtering
-    const res = await fetch('/api/products?limit=50');
-    console.log('response:', res);
+    let url = '/api/products?limit=50';
+    if (productIds && productIds.length > 0) {
+      url = `/api/products?ids=${productIds.map(id => id.toString()).join(',')}&limit=${productIds.length}`;
+    }
+    
+    const res = await fetch(url);
     const data = await res.json();
     
     if (data.success) {
-      console.log('products:', data.products);
-      let filtered = [];
-      if (productIds && productIds.length > 0) {
-        const ids = productIds.map(id => id.toString());
-        filtered = data.products.filter(p => ids.includes(p._id.toString()));
+      let products = data.products || [];
+      
+      // If we queried specific IDs, let's keep the order defined in productIds
+      if (productIds && productIds.length > 0 && products.length > 0) {
+        const idMap = new Map(products.map(p => [p._id.toString(), p]));
+        products = productIds
+          .map(id => idMap.get(id.toString()))
+          .filter(p => !!p);
       }
 
-      if (filtered.length === 0) {
-        if (elementId.includes('featured')) {
-          filtered = data.products.slice(0, 4);
-        } else if (elementId.includes('bestseller')) {
-          filtered = data.products.filter(p => p.tags && (p.tags.includes('bestseller') || p.tags.includes('best-seller'))).slice(0, 4);
-          if (filtered.length === 0) filtered = data.products.slice(4, 8);
-        } else if (elementId.includes('newarrival')) {
-          filtered = data.products.slice(0, 4);
+      // Fallback: If no products were returned from the specified IDs, run automated query
+      if (products.length === 0) {
+        const fallbackRes = await fetch('/api/products?limit=50');
+        const fallbackData = await fallbackRes.json();
+        if (fallbackData.success) {
+          if (elementId.includes('featured')) {
+            products = fallbackData.products.slice(0, 4);
+          } else if (elementId.includes('bestseller')) {
+            products = fallbackData.products.filter(p => p.tags && (p.tags.includes('bestseller') || p.tags.includes('best-seller'))).slice(0, 4);
+            if (products.length === 0) products = fallbackData.products.slice(4, 8);
+          } else if (elementId.includes('newarrival')) {
+            products = fallbackData.products.slice(0, 4);
+          }
         }
       }
 
-      if (filtered.length === 0) {
+      if (products.length === 0) {
         grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted);">No products in this collection.</p>';
         return;
       }
 
-      grid.innerHTML = filtered.map(p => createProductCardHTML(p)).join('');
+      grid.innerHTML = products.map(p => createProductCardHTML(p)).join('');
     } else {
       grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted);">Could not load products.</p>';
     }
   } catch (err) {
+    console.error(`Error loading section ${elementId}:`, err);
     grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:red;">Connection error. Could not fetch products.</p>';
   }
 }

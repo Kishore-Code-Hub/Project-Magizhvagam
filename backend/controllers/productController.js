@@ -31,10 +31,19 @@ exports.getProducts = async (req, res) => {
   try {
     const { 
       search, category, minPrice, maxPrice, 
-      material, color, occasion, sort, page = 1, limit = 12 
+      material, color, occasion, sort, page = 1, limit = 12,
+      ids
     } = req.query;
 
     const query = {};
+
+    // Filter by specific product IDs
+    if (ids) {
+      const idArray = ids.split(',').map(id => id.trim()).filter(id => id.match(/^[0-9a-fA-F]{24}$/));
+      if (idArray.length > 0) {
+        query._id = { $in: idArray };
+      }
+    }
 
     // Search filter
     if (search) {

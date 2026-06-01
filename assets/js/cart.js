@@ -107,7 +107,11 @@ window.changeCartQty = async (productId, val) => {
       });
       const data = await res.json();
       if (data.success) {
-        localStorage.setItem('magizhvagam_cart', JSON.stringify(data.cart));
+        if (typeof window.setCartCache === 'function') {
+          window.setCartCache(data.cart);
+        } else {
+          localStorage.setItem('magizhvagam_cart', JSON.stringify(data.cart));
+        }
         renderCart();
         syncCartCounters();
         window.dispatchEvent(new Event('cartUpdated'));
@@ -119,7 +123,11 @@ window.changeCartQty = async (productId, val) => {
   }
 
   cart[index].quantity = newQty < 1 ? 1 : newQty;
-  localStorage.setItem('magizhvagam_cart', JSON.stringify(cart));
+  if (typeof window.setCartCache === 'function') {
+    window.setCartCache(cart);
+  } else {
+    localStorage.setItem('magizhvagam_cart', JSON.stringify(cart));
+  }
   renderCart();
   syncCartCounters();
   window.dispatchEvent(new Event('cartUpdated'));
@@ -136,7 +144,11 @@ window.removeFromCart = async (productId) => {
       });
       const data = await res.json();
       if (data.success) {
-        localStorage.setItem('magizhvagam_cart', JSON.stringify(data.cart));
+        if (typeof window.setCartCache === 'function') {
+          window.setCartCache(data.cart);
+        } else {
+          localStorage.setItem('magizhvagam_cart', JSON.stringify(data.cart));
+        }
         renderCart();
         syncCartCounters();
         window.dispatchEvent(new Event('cartUpdated'));
@@ -149,7 +161,11 @@ window.removeFromCart = async (productId) => {
   }
 
   let cart = getCart().filter(item => item.productId !== productId);
-  localStorage.setItem('magizhvagam_cart', JSON.stringify(cart));
+  if (typeof window.setCartCache === 'function') {
+    window.setCartCache(cart);
+  } else {
+    localStorage.setItem('magizhvagam_cart', JSON.stringify(cart));
+  }
   renderCart();
   syncCartCounters();
   window.dispatchEvent(new Event('cartUpdated'));
@@ -252,6 +268,13 @@ async function handleCouponApply(e) {
 }
 
 window.proceedToCheckout = () => {
+  if (typeof getStoredUser === 'function' && !getStoredUser()) {
+    showToast('Please login or create a customer account to continue.', 'error');
+    if (typeof window.showLoginRegisterModal === 'function') {
+      window.showLoginRegisterModal('cart');
+    }
+    return;
+  }
   if (getCart().length === 0) {
     showToast('Your cart is empty', 'error');
     return;

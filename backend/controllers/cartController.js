@@ -10,6 +10,9 @@ const formatCart = (items) =>
   }));
 
 exports.getCart = async (req, res) => {
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({ success: false, error: 'Unauthorized: User authentication required' });
+  }
   try {
     const user = await User.findById(req.user._id).select('cartItems');
     if (!user) {
@@ -22,6 +25,9 @@ exports.getCart = async (req, res) => {
 };
 
 exports.mergeCart = async (req, res) => {
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({ success: false, error: 'Unauthorized: User authentication required' });
+  }
   try {
     const { items } = req.body;
     if (!Array.isArray(items) || items.length === 0) {
@@ -61,6 +67,9 @@ exports.mergeCart = async (req, res) => {
 };
 
 exports.addCartItem = async (req, res) => {
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({ success: false, error: 'Unauthorized: User authentication required' });
+  }
   try {
     const { productId, name, price, image, quantity = 1 } = req.body;
     if (!productId || !name) {
@@ -95,6 +104,9 @@ exports.addCartItem = async (req, res) => {
 };
 
 exports.updateCartItem = async (req, res) => {
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({ success: false, error: 'Unauthorized: User authentication required' });
+  }
   try {
     const { quantity } = req.body;
     const user = await User.findById(req.user._id);
@@ -124,6 +136,9 @@ exports.updateCartItem = async (req, res) => {
 };
 
 exports.removeCartItem = async (req, res) => {
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({ success: false, error: 'Unauthorized: User authentication required' });
+  }
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -141,6 +156,9 @@ exports.removeCartItem = async (req, res) => {
 };
 
 exports.clearCart = async (req, res) => {
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({ success: false, error: 'Unauthorized: User authentication required' });
+  }
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
