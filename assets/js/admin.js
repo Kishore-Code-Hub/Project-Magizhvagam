@@ -127,7 +127,7 @@ async function loadDashboardData() {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No orders yet.</td></tr>';
       } else {
         tbody.innerHTML = data.recentOrders.map(o => {
-          const customerName = o.userId ? (o.userId.name || 'Customer') : (o.guestDetails ? o.guestDetails.fullName : 'Guest');
+          const customerName = o.userId ? (o.userId.name || 'Customer') : (o.guestDetails ? (o.guestDetails.fullName || 'Guest') : 'Guest');
           const orderTotal = (o.summary && o.summary.total != null) ? o.summary.total : 0;
           const orderStatus = o.status || 'Pending';
           return `
@@ -237,6 +237,7 @@ async function loadAdminProducts() {
     loadCategoriesDropdown();
 
   } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Failed to load products list.</td></tr>';
     showToast('Failed to fetch products', 'error');
   }
 }
@@ -593,10 +594,10 @@ async function loadAdminOrders() {
 
     tbody.innerHTML = data.orders.map(o => `
       <tr>
-        <td><strong>#${o._id.substr(-6)}</strong></td>
-        <td>${o.userId ? o.userId.name : o.guestDetails.fullName}</td>
+        <td><strong>#${(o._id || '').substr(-6)}</strong></td>
+        <td>${o.userId ? (o.userId.name || 'Customer') : (o.guestDetails ? (o.guestDetails.fullName || 'Guest') : 'Guest')}</td>
         <td>${new Date(o.createdAt).toLocaleDateString('en-IN')}</td>
-        <td>₹${o.summary.total}</td>
+        <td>₹${o.summary ? o.summary.total : 0}</td>
         <td>
           <select onchange="updateOrderStatus('${o._id}', this.value)" style="padding:6px; border-radius:4px; font-size:12px; background:var(--card-bg); color:var(--text-color); border:1px solid var(--card-border); font-weight:600;">
             <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
@@ -612,6 +613,7 @@ async function loadAdminOrders() {
       </tr>
     `).join('');
   } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to load orders list.</td></tr>';
     showToast('Failed to fetch orders list', 'error');
   }
 }
@@ -660,6 +662,7 @@ async function loadAdminCustomers() {
       </tr>
     `).join('');
   } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Failed to load customers list.</td></tr>';
     showToast('Failed to load customers list', 'error');
   }
 }
@@ -679,6 +682,9 @@ async function loadHomepageBuilderSettings() {
       document.getElementById('whatsapp-contact-field').value = setting.whatsappContact || '';
       
       // Load Branding & Appearance fields
+      const bannerField = document.getElementById('announcement-banner-field');
+      if (bannerField) bannerField.value = setting.announcementBanner || '';
+      
       document.getElementById('brand-name-field').value = setting.brandName || '';
       document.getElementById('logo-field').value = setting.logo || '';
       document.getElementById('primary-color-field').value = setting.primaryColor || '#6A0DAD';
@@ -715,6 +721,7 @@ async function loadHomepageBuilderSettings() {
     try {
       const updatedValue = {
         whatsappContact: document.getElementById('whatsapp-contact-field').value.trim(),
+        announcementBanner: document.getElementById('announcement-banner-field')?.value.trim() || '',
         brandName: document.getElementById('brand-name-field').value.trim(),
         logo: document.getElementById('logo-field').value.trim(),
         primaryColor: document.getElementById('primary-color-field').value,
@@ -961,14 +968,26 @@ function initDashboardEvents() {
   const modal = document.getElementById('reset-stats-modal');
   const confirmBtn = document.getElementById('confirm-reset-btn');
   const cancelBtn = document.getElementById('cancel-reset-btn');
+  const modalText = document.getElementById('reset-modal-text');
+
+  let confirmationStep = 1;
 
   if (openBtn && modal && confirmBtn && cancelBtn) {
     openBtn.addEventListener('click', () => {
+      confirmationStep = 1;
+      if (modalText) {
+        modalText.textContent = 'Are you sure you want to initialize this module data? This action is permanent.';
+      }
+      if (confirmBtn) {
+        confirmBtn.textContent = 'Initialize';
+        confirmBtn.style.background = '#ef4444';
+      }
       modal.style.display = 'flex';
     });
 
     const closeModal = () => {
       modal.style.display = 'none';
+      confirmationStep = 1;
     };
 
     cancelBtn.addEventListener('click', closeModal);
@@ -980,35 +999,48 @@ function initDashboardEvents() {
     });
 
     confirmBtn.addEventListener('click', async () => {
-      try {
-        confirmBtn.disabled = true;
-        confirmBtn.textContent = 'Clearing...';
-
-        const res = await adminFetch('/api/reports/reset-stats', {
-          method: 'POST'
-        });
-
-        let data;
+      if (confirmationStep === 1) {
+        confirmationStep = 2;
+        if (modalText) {
+          modalText.textContent = 'Please confirm once more. This will permanently wipe all order transactions and customer accounts.';
+        }
+        if (confirmBtn) {
+          confirmBtn.textContent = 'Yes, Wipe Everything!';
+          confirmBtn.style.background = '#b91c1c';
+        }
+      } else {
         try {
-          data = await res.json();
-        } catch (parseErr) {
-          showToast('Server returned an invalid response. Please try again.', 'error');
-          return;
-        }
+          confirmBtn.disabled = true;
+          confirmBtn.textContent = 'Initializing...';
 
-        if (data.success) {
-          showToast(data.message || 'Statistics reset completed!', 'success');
-          closeModal();
-          // Reload dashboard details
-          await loadDashboardData();
-        } else {
-          showToast(data.error || 'Failed to reset statistics', 'error');
+          const res = await adminFetch('/api/reports/reset-stats', {
+            method: 'POST'
+          });
+
+          let data;
+          try {
+            data = await res.json();
+          } catch (parseErr) {
+            showToast('Server returned an invalid response. Please try again.', 'error');
+            return;
+          }
+
+          if (data.success) {
+            showToast(data.message || 'Module initialization completed!', 'success');
+            closeModal();
+            // Reload dashboard details
+            await loadDashboardData();
+          } else {
+            showToast(data.error || 'Failed to initialize statistics', 'error');
+          }
+        } catch (err) {
+          showToast('Connection error during metrics reset', 'error');
+        } finally {
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'Initialize';
+          confirmBtn.style.background = '#ef4444';
+          confirmationStep = 1;
         }
-      } catch (err) {
-        showToast('Connection error during metrics reset', 'error');
-      } finally {
-        confirmBtn.disabled = false;
-        confirmBtn.textContent = 'Clear Stats';
       }
     });
   }

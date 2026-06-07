@@ -300,10 +300,10 @@
   <script src="/assets/js/auth.js"></script>
   <script>
     let activeUser = null;
-    let editingIndex = -1;
-    window.currentEditingAddressId = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
+      let currentEditingAddressId = null;
+
       activeUser = await loadUserProfile();
       if (!activeUser || activeUser.role !== 'customer') {
         if (typeof window.setSessionUser === 'function') window.setSessionUser(null);
@@ -394,18 +394,22 @@
             showToast('Maximum limit of 3 addresses reached.', 'error');
             return;
           }
-          // Show empty form
-          window.currentEditingAddressId = null;
           const formWrapper = document.getElementById('address-form-wrapper');
-          const formTitle = document.getElementById('address-form-title');
-          const submitBtn = document.getElementById('address-submit-btn');
-          const addrForm = document.getElementById('address-edit-form');
-          if (addrForm) addrForm.reset();
-          if (formTitle) formTitle.textContent = 'Add New Address';
-          if (submitBtn) submitBtn.textContent = 'Save Address';
-          if (formWrapper) formWrapper.style.display = 'block';
-          const addrNameEl = document.getElementById('addr-name');
-          if (addrNameEl) addrNameEl.focus();
+          if (formWrapper.style.display === 'block' && !currentEditingAddressId) {
+            formWrapper.style.display = 'none';
+          } else {
+            // Show empty form
+            currentEditingAddressId = null;
+            const formTitle = document.getElementById('address-form-title');
+            const submitBtn = document.getElementById('address-submit-btn');
+            const addrForm = document.getElementById('address-edit-form');
+            if (addrForm) addrForm.reset();
+            if (formTitle) formTitle.textContent = 'Add New Address';
+            if (submitBtn) submitBtn.textContent = 'Save Address';
+            if (formWrapper) formWrapper.style.display = 'block';
+            const addrNameEl = document.getElementById('addr-name');
+            if (addrNameEl) addrNameEl.focus();
+          }
         });
       }
 
@@ -415,7 +419,7 @@
         cancelAddrBtn.addEventListener('click', () => {
           const formWrapper = document.getElementById('address-form-wrapper');
           if (formWrapper) formWrapper.style.display = 'none';
-          window.currentEditingAddressId = null;
+          currentEditingAddressId = null;
           const addrForm = document.getElementById('address-edit-form');
           if (addrForm) addrForm.reset();
           const submitBtn = document.getElementById('address-submit-btn');
@@ -438,7 +442,7 @@
           }
 
           // Enforce 3-address cap on new address creation
-          if (!window.currentEditingAddressId && activeUser.addresses && activeUser.addresses.length >= 3) {
+          if (!currentEditingAddressId && activeUser.addresses && activeUser.addresses.length >= 3) {
             showToast('Maximum limit of 3 addresses reached.', 'error');
             return;
           }
@@ -455,13 +459,13 @@
           };
 
           // Auto-default first address
-          if (!window.currentEditingAddressId && (!activeUser.addresses || activeUser.addresses.length === 0)) {
+          if (!currentEditingAddressId && (!activeUser.addresses || activeUser.addresses.length === 0)) {
             newAddr.isDefault = true;
           }
 
           try {
             let res;
-            if (!window.currentEditingAddressId) {
+            if (!currentEditingAddressId) {
               res = await fetch('/api/auth/profile/address', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -469,7 +473,7 @@
                 body: JSON.stringify(newAddr)
               });
             } else {
-              res = await fetch(`/api/auth/profile/address/${window.currentEditingAddressId}`, {
+              res = await fetch(`/api/auth/profile/address/${currentEditingAddressId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
@@ -482,7 +486,7 @@
               if (typeof window.setSessionUser === 'function') {
                 window.setSessionUser(activeUser);
               }
-              showToast(!window.currentEditingAddressId ? 'Address added successfully!' : 'Address updated successfully!', 'success');
+              showToast(!currentEditingAddressId ? 'Address added successfully!' : 'Address updated successfully!', 'success');
               
               // Live Refresh
               await loadAddresses();
@@ -492,7 +496,7 @@
               if (addrForm) addrForm.reset();
               const submitBtn = document.getElementById('address-submit-btn');
               if (submitBtn) submitBtn.textContent = 'Save Address';
-              window.currentEditingAddressId = null;
+              currentEditingAddressId = null;
 
               // Hide form after save
               const formWrapper = document.getElementById('address-form-wrapper');
@@ -506,121 +510,143 @@
           }
         });
       }
-    });
 
-    async function loadAddresses() {
-      const container = document.getElementById('saved-addresses-container');
-      if (!container) return;
+      // Event delegation on saved addresses container
+      const savedAddressesContainer = document.getElementById('saved-addresses-container');
+      if (savedAddressesContainer) {
+        savedAddressesContainer.addEventListener('click', async (e) => {
+          const btn = e.target.closest('.address-action-btn');
+          if (btn) {
+            const index = parseInt(btn.getAttribute('data-index'), 10);
+            if (btn.classList.contains('edit-address-btn')) {
+              editAddress(index);
+            } else if (btn.classList.contains('delete-address-btn')) {
+              await deleteAddress(index);
+            }
+          }
+        });
 
-      // Fetch fresh user data from server
-      const user = await loadUserProfile();
-      if (user) {
-        activeUser = user;
+        savedAddressesContainer.addEventListener('change', async (e) => {
+          if (e.target.classList.contains('address-radio-selector')) {
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            await setDefaultAddress(index);
+          }
+        });
       }
 
-      // Update + button state based on address count
-      const addBtn = document.getElementById('add-address-btn');
-      if (addBtn) {
-        if (activeUser.addresses && activeUser.addresses.length >= 3) {
-          addBtn.classList.add('disabled');
-          addBtn.setAttribute('title', 'Maximum limit of 3 addresses reached');
-        } else {
-          addBtn.classList.remove('disabled');
-          addBtn.setAttribute('title', 'Add new address');
+      async function loadAddresses() {
+        const container = document.getElementById('saved-addresses-container');
+        if (!container) return;
+
+        // Fetch fresh user data from server
+        const user = await loadUserProfile();
+        if (user) {
+          activeUser = user;
+        }
+
+        // Update + button state based on address count
+        const addBtn = document.getElementById('add-address-btn');
+        if (addBtn) {
+          if (activeUser.addresses && activeUser.addresses.length >= 3) {
+            addBtn.classList.add('disabled');
+            addBtn.setAttribute('title', 'Maximum limit of 3 addresses reached');
+          } else {
+            addBtn.classList.remove('disabled');
+            addBtn.setAttribute('title', 'Add new address');
+          }
+        }
+
+        if (!activeUser.addresses || activeUser.addresses.length === 0) {
+          container.innerHTML = '<p style="color:var(--text-muted); font-size:13px; font-style:italic; grid-column:1/-1;">No addresses saved yet. Click "+ Add New Address" above to add your first delivery address.</p>';
+          return;
+        }
+
+        container.innerHTML = activeUser.addresses.map((addr, index) => {
+          return `
+          <div class="address-card ${addr.isDefault ? 'is-default' : ''}">
+            <div style="display:flex; gap:12px; align-items:flex-start;">
+              <input type="radio" name="default-address-radio" class="address-radio-selector" ${addr.isDefault ? 'checked' : ''}
+                data-index="${index}"
+                title="${addr.isDefault ? 'Current default address' : 'Set as default'}">
+              <div class="address-card-body">
+                ${addr.isDefault ? '<div class="address-default-chip">✓ Default</div>' : ''}
+                <div class="address-card-name">${addr.fullName || 'N/A'}</div>
+                <div class="address-card-phone">${addr.phone || 'N/A'}</div>
+                <div style="margin-top:6px;">${addr.street || ''}${addr.street2 ? ', ' + addr.street2 : ''}<br>${addr.city || ''}, ${addr.state || ''} — ${addr.zipCode || ''}</div>
+              </div>
+            </div>
+            <div class="address-card-actions">
+              <button type="button" data-index="${index}" class="address-action-btn edit-address-btn" title="Edit Address">✏️ Edit</button>
+              <button type="button" data-index="${index}" class="address-action-btn delete-btn delete-address-btn" title="Delete Address">🗑️ Delete</button>
+            </div>
+          </div>
+        `;
+        }).join('');
+      }
+
+      function editAddress(index) {
+        if (!activeUser.addresses || !activeUser.addresses[index]) return;
+        const addr = activeUser.addresses[index];
+
+        // Populate form fields (defensive)
+        const fields = {
+          'addr-name': addr.fullName || '',
+          'addr-phone': addr.phone || '',
+          'addr-street': addr.street || '',
+          'addr-street2': addr.street2 || '',
+          'addr-city': addr.city || '',
+          'addr-state': addr.state || '',
+          'addr-zip': addr.zipCode || ''
+        };
+        for (const [id, val] of Object.entries(fields)) {
+          const el = document.getElementById(id);
+          if (el) el.value = val;
+        }
+        const defaultEl = document.getElementById('addr-default');
+        if (defaultEl) defaultEl.checked = !!addr.isDefault;
+
+        currentEditingAddressId = addr._id || addr.id;
+
+        // Show form and update labels
+        const formWrapper = document.getElementById('address-form-wrapper');
+        const formTitle = document.getElementById('address-form-title');
+        const submitBtn = document.getElementById('address-submit-btn');
+        if (formWrapper) formWrapper.style.display = 'block';
+        if (formTitle) formTitle.textContent = 'Update Address';
+        if (submitBtn) submitBtn.textContent = 'Update Address';
+        
+        // Shift focus to form input
+        const addrNameEl = document.getElementById('addr-name');
+        if (addrNameEl) addrNameEl.focus();
+      }
+
+      async function setDefaultAddress(index) {
+        const addresses = (activeUser.addresses || []).map((addr, i) => ({
+          ...addr,
+          isDefault: i === index
+        }));
+        const updated = await updateUserProfile({ addresses });
+        if (updated) {
+          activeUser = updated;
+          await loadAddresses();
         }
       }
 
-      if (!activeUser.addresses || activeUser.addresses.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted); font-size:13px; font-style:italic; grid-column:1/-1;">No addresses saved yet. Click \"+ Add New Address\" above to add your first delivery address.</p>';
-        return;
+      async function deleteAddress(index) {
+        if (!confirm('Are you sure you want to delete this address?')) return;
+        const addresses = [...activeUser.addresses];
+        const wasDefault = addresses[index]?.isDefault;
+        addresses.splice(index, 1);
+        if (wasDefault && addresses.length > 0) {
+          addresses[0].isDefault = true;
+        }
+        const updated = await updateUserProfile({ addresses });
+        if (updated) {
+          activeUser = updated;
+          await loadAddresses();
+        }
       }
-
-      container.innerHTML = activeUser.addresses.map((addr, index) => {
-        const addrId = addr._id || addr.id || index;
-        return `
-        <div class="address-card ${addr.isDefault ? 'is-default' : ''}">
-          <div style="display:flex; gap:12px; align-items:flex-start;">
-            <input type="radio" name="default-address-radio" class="address-radio-selector" ${addr.isDefault ? 'checked' : ''}
-              onclick="setDefaultAddress(${index})"
-              title="${addr.isDefault ? 'Current default address' : 'Set as default'}">
-            <div class="address-card-body">
-              ${addr.isDefault ? '<div class="address-default-chip">✓ Default</div>' : ''}
-              <div class="address-card-name">${addr.fullName || 'N/A'}</div>
-              <div class="address-card-phone">${addr.phone || 'N/A'}</div>
-              <div style="margin-top:6px;">${addr.street || ''}${addr.street2 ? ', ' + addr.street2 : ''}<br>${addr.city || ''}, ${addr.state || ''} — ${addr.zipCode || ''}</div>
-            </div>
-          </div>
-          <div class="address-card-actions">
-            <button type="button" onclick="editAddress(${index})" class="address-action-btn" title="Edit Address">✏️ Edit</button>
-            <button type="button" onclick="deleteAddress(${index})" class="address-action-btn delete-btn" title="Delete Address">🗑️ Delete</button>
-          </div>
-        </div>
-      `;
-      }).join('');
-    }
-
-    function editAddress(index) {
-      if (!activeUser.addresses || !activeUser.addresses[index]) return;
-      const addr = activeUser.addresses[index];
-
-      // Populate form fields (defensive)
-      const fields = {
-        'addr-name': addr.fullName || '',
-        'addr-phone': addr.phone || '',
-        'addr-street': addr.street || '',
-        'addr-street2': addr.street2 || '',
-        'addr-city': addr.city || '',
-        'addr-state': addr.state || '',
-        'addr-zip': addr.zipCode || ''
-      };
-      for (const [id, val] of Object.entries(fields)) {
-        const el = document.getElementById(id);
-        if (el) el.value = val;
-      }
-      const defaultEl = document.getElementById('addr-default');
-      if (defaultEl) defaultEl.checked = !!addr.isDefault;
-
-      window.currentEditingAddressId = addr._id || addr.id;
-
-      // Show form and update labels
-      const formWrapper = document.getElementById('address-form-wrapper');
-      const formTitle = document.getElementById('address-form-title');
-      const submitBtn = document.getElementById('address-submit-btn');
-      if (formWrapper) formWrapper.style.display = 'block';
-      if (formTitle) formTitle.textContent = 'Edit Address';
-      if (submitBtn) submitBtn.textContent = 'Update Address';
-      
-      // Shift focus to form input
-      const addrNameEl = document.getElementById('addr-name');
-      if (addrNameEl) addrNameEl.focus();
-    }
-
-    async function setDefaultAddress(index) {
-      const addresses = (activeUser.addresses || []).map((addr, i) => ({
-        ...addr,
-        isDefault: i === index
-      }));
-      const updated = await updateUserProfile({ addresses });
-      if (updated) {
-        activeUser = updated;
-        await loadAddresses();
-      }
-    }
-
-    async function deleteAddress(index) {
-      if (!confirm('Are you sure you want to delete this address?')) return;
-      const addresses = [...activeUser.addresses];
-      const wasDefault = addresses[index]?.isDefault;
-      addresses.splice(index, 1);
-      if (wasDefault && addresses.length > 0) {
-        addresses[0].isDefault = true;
-      }
-      const updated = await updateUserProfile({ addresses });
-      if (updated) {
-        activeUser = updated;
-        await loadAddresses();
-      }
-    }
+    });
 
     async function loadHistoryOrders() {
       const container = document.getElementById('orders-list-display');
@@ -733,10 +759,6 @@
     }
 
     window.switchProfileTab = switchProfileTab;
-    window.editAddress = editAddress;
-    window.deleteAddress = deleteAddress;
-    window.setDefaultAddress = setDefaultAddress;
-    window.loadAddresses = loadAddresses;
   </script>
 </body>
 

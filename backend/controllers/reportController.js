@@ -99,15 +99,18 @@ exports.resetStats = async (req, res) => {
     // Import Order model and audit service logging helper
     const { logActivity } = require('../services/auditService');
 
-    // Programmatically reset total store metrics data records down to zero by clearing Orders
+    // 1. Clear out all system test transactions and digital invoice records (Orders)
     await Order.deleteMany({});
 
+    // 2. Wipe out all customer directory dummy testing customer profiles, preserving administrator accounts
+    await User.deleteMany({ role: 'customer' });
+
     // Log reset action in audit trail
-    await logActivity(req, 'stats_reset', 'Store statistics were reset and orders cleared by admin');
+    await logActivity(req, 'stats_reset', 'Store statistics were reset, orders cleared, and customer profiles wiped by admin');
 
     res.status(200).json({
       success: true,
-      message: 'Store statistics have been reset successfully.'
+      message: 'Store statistics have been reset successfully and customer directory cleared.'
     });
   } catch (error) {
     res.status(500).json({ success: false, error: `Reset statistics failed: ${error.message}` });

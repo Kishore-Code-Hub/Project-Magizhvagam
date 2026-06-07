@@ -4,9 +4,9 @@
  */
 
 // Global fetch interceptor for 401 Unauthorized API responses
-(function() {
+(function () {
   const originalFetch = window.fetch;
-  window.fetch = async function(...args) {
+  window.fetch = async function (...args) {
     try {
       const response = await originalFetch(...args);
       if (response.status === 401) {
@@ -31,7 +31,7 @@
           localStorage.removeItem('magizhvagam_cart');
           localStorage.removeItem('magizhvagam_wishlist');
           sessionStorage.clear();
-          
+
           // Clear all user-scoped cart/wishlist cache keys in localStorage
           for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
@@ -40,7 +40,7 @@
               i--; // Adjust index since key was deleted
             }
           }
-          
+
           window.location.replace('/login.html?redirect=' + encodeURIComponent(redirectPath));
         }
       }
@@ -62,9 +62,9 @@ window.formatPrice = (price) => {
 
 // Disable console logs in production context to prevent browser context pollution
 if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-  console.log = function() {};
-  console.info = function() {};
-  console.debug = function() {};
+  console.log = function () { };
+  console.info = function () { };
+  console.debug = function () { };
 }
 
 let globalSettings = null;
@@ -75,7 +75,7 @@ window.setSessionUser = (user) => {
   if (!user) {
     window.__sessionUser = null;
     localStorage.removeItem('magizhvagam_user');
-    
+
     // Reset user name displays to default guest state
     const userNameEl = document.getElementById('user-name-display');
     if (userNameEl) userNameEl.textContent = 'Guest';
@@ -83,7 +83,7 @@ window.setSessionUser = (user) => {
     profileNameEls.forEach(el => { el.textContent = 'Guest'; });
     const memberNameEl = document.getElementById('member-name');
     if (memberNameEl) memberNameEl.textContent = 'Name';
-    
+
     return;
   }
   const normalized = {
@@ -94,7 +94,7 @@ window.setSessionUser = (user) => {
   };
   window.__sessionUser = normalized;
   localStorage.setItem('magizhvagam_user', JSON.stringify(normalized));
-  
+
   // Update user name displays dynamically
   const userNameEl = document.getElementById('user-name-display');
   if (userNameEl) userNameEl.textContent = normalized.name;
@@ -144,7 +144,7 @@ let settingsPromise = null;
 async function fetchSettings() {
   if (globalSettings) return globalSettings;
   if (settingsPromise) return settingsPromise;
-  
+
   settingsPromise = (async () => {
     try {
       const res = await fetch('/api/settings/homepage');
@@ -179,7 +179,7 @@ window.fetchSettings = fetchSettings;
 let sessionPromise = null;
 window.validateUserSession = async function validateUserSession() {
   if (sessionPromise) return sessionPromise;
-  
+
   sessionPromise = (async () => {
     try {
       const res = await fetch('/api/auth/session', { credentials: 'same-origin' });
@@ -191,7 +191,7 @@ window.validateUserSession = async function validateUserSession() {
         console.error('Failed to parse auth session JSON. Raw response:', text);
         throw e;
       }
-      
+
       if (data.success && data.user) {
         setSessionUser(data.user);
         if (data.user.role === 'customer') {
@@ -225,7 +225,7 @@ window.validateUserSession = async function validateUserSession() {
       sessionPromise = null;
     }
   })();
-  
+
   return sessionPromise;
 };
 
@@ -327,7 +327,7 @@ window.handleLogout = async () => {
   } catch (err) {
     console.error('Logout API request failed:', err);
   }
-  
+
   const prevUser = getStoredUser();
   setSessionUser(null);
   localStorage.removeItem('magizhvagam_cart');
@@ -352,6 +352,22 @@ function isStandaloneAdminLoginPage() {
   return path.includes('/admin/login');
 }
 
+window.featureToggles = null;
+
+async function fetchFeatureToggles() {
+  try {
+    const res = await fetch('/api/settings/feature-toggles');
+    const data = await res.json();
+    if (data.success) {
+      window.featureToggles = data.toggles;
+      return data.toggles;
+    }
+  } catch (err) {
+    console.error('Error fetching feature toggles:', err);
+  }
+  return {};
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   if (isStandaloneAdminLoginPage()) {
     initIcons();
@@ -362,7 +378,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const settings = await fetchSettings();
   applyAppearanceSettings(settings);
+
+  const toggles = await fetchFeatureToggles();
+
   injectComponents(settings, user);
+
+  // Enforce wishlist system toggle
+  if (toggles && toggles.wishlistEnabled === false) {
+    const wishLink = document.getElementById('header-wishlist-link');
+    if (wishLink) wishLink.style.display = 'none';
+
+    document.querySelectorAll('.wishlist-btn').forEach(btn => btn.style.display = 'none');
+  }
 
   syncCartCounters();
   setupWhatsApp(settings);
@@ -567,14 +594,17 @@ window.syncCartFromServer = async () => {
     if (data.success) {
       setCartCache(data.cart || []);
       syncCartCounters();
+      window.dispatchEvent(new Event('cartUpdated'));
     } else {
       setCartCache([]);
       syncCartCounters();
+      window.dispatchEvent(new Event('cartUpdated'));
     }
   } catch (err) {
     console.error('Failed to sync cart from server:', err);
     setCartCache([]);
     syncCartCounters();
+    window.dispatchEvent(new Event('cartUpdated'));
     if (typeof showToast === 'function') {
       showToast('Failed to sync cart with server.', 'error');
     }
@@ -590,14 +620,17 @@ window.syncWishlistFromServer = async () => {
     if (data.success) {
       setWishlistCache(data.wishlist || []);
       syncCartCounters();
+      window.dispatchEvent(new Event('wishlistUpdated'));
     } else {
       setWishlistCache([]);
       syncCartCounters();
+      window.dispatchEvent(new Event('wishlistUpdated'));
     }
   } catch (err) {
     console.error('Failed to sync wishlist from server:', err);
     setWishlistCache([]);
     syncCartCounters();
+    window.dispatchEvent(new Event('wishlistUpdated'));
     if (typeof showToast === 'function') {
       showToast('Failed to sync wishlist with server.', 'error');
     }
@@ -755,13 +788,13 @@ window.toggleWishlist = async (productId, name, price, image) => {
 function syncCartCounters() {
   const cartCountEl = document.getElementById('cart-badge-count');
   const wishlistCountEl = document.getElementById('wishlist-badge-count');
-  
+
   if (cartCountEl) {
     const totalQty = getCart().reduce((sum, item) => sum + item.quantity, 0);
     cartCountEl.textContent = totalQty;
     cartCountEl.style.display = totalQty > 0 ? 'inline-flex' : 'none';
   }
-  
+
   if (wishlistCountEl) {
     const totalQty = isLoggedInCustomer() ? getWishlist().length : 0;
     wishlistCountEl.textContent = totalQty;
@@ -899,9 +932,16 @@ function injectComponents(settings, user = null) {
       </div>`;
   }
 
-  // â”€â”€ INJECT HEADER HTML â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── INJECT HEADER HTML ──────────────────────────────────────────────────
   if (headerEl) {
-    headerEl.innerHTML = `
+    const announcementText = (settings && settings.announcementBanner) || '';
+    const bannerHtml = announcementText.trim() ? `
+      <div id="site-announcement-banner" class="announcement-banner">
+        <span>${announcementText}</span>
+      </div>
+    ` : '';
+
+    headerEl.innerHTML = bannerHtml + `
       <div class="header-container-wrapper">
         <div class="container">
 
@@ -1055,7 +1095,7 @@ function injectComponents(settings, user = null) {
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const text = await res.text();
             let data;
-            try { data = JSON.parse(text); } catch(ex) { data = { success: false, products: [] }; }
+            try { data = JSON.parse(text); } catch (ex) { data = { success: false, products: [] }; }
             if (data.success && data.products && data.products.length > 0) {
               searchAutocompleteBox.innerHTML = data.products.map(p => `
                 <a href="/product-details.html?id=${p._id}" style="padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); color:var(--text-color); font-weight:500; font-size:13px;">
@@ -1068,7 +1108,7 @@ function injectComponents(settings, user = null) {
               searchAutocompleteBox.innerHTML = '<div style="padding:12px 14px; color:var(--text-muted); font-size:13px;">No results found.</div>';
               searchAutocompleteBox.style.display = 'flex';
             }
-          } catch(err) {
+          } catch (err) {
             searchAutocompleteBox.style.display = 'none';
             if (typeof showToast === 'function') {
               showToast('Search autocomplete failed.', 'error');
@@ -1135,7 +1175,7 @@ function injectComponents(settings, user = null) {
           if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
           const text = await res.text();
           let data;
-          try { data = JSON.parse(text); } catch(ex) { data = { success: false, products: [] }; }
+          try { data = JSON.parse(text); } catch (ex) { data = { success: false, products: [] }; }
           if (data.success && data.products && data.products.length > 0) {
             mobileAutocompleteResults.innerHTML = data.products.map(p => `
               <a href="/product-details.html?id=${p._id}" class="glass" style="padding:12px 16px; display:flex; justify-content:space-between; align-items:center; border-radius:8px; color:var(--text-color); font-weight:500; font-size:14px;">
@@ -1146,7 +1186,7 @@ function injectComponents(settings, user = null) {
           } else {
             mobileAutocompleteResults.innerHTML = '<div style="color:var(--text-muted); font-size:14px;">No results found.</div>';
           }
-        } catch(err) {
+        } catch (err) {
           mobileAutocompleteResults.innerHTML = '';
           if (typeof showToast === 'function') {
             showToast('Search autocomplete failed.', 'error');
@@ -1239,7 +1279,7 @@ function injectComponents(settings, user = null) {
 // Float WhatsApp support injector
 async function setupWhatsApp() {
   let number = '919876543210';
-  
+
   // Try fetching active contact number from server setting
   try {
     const setting = await fetchSettings();
@@ -1304,32 +1344,49 @@ async function setupWhatsApp() {
 window.showLoginRegisterModal = (context = 'action') => {
   const existing = document.getElementById('guest-auth-modal');
   if (existing) existing.remove();
+  const existingBackdrop = document.getElementById('guest-auth-backdrop');
+  if (existingBackdrop) existingBackdrop.remove();
 
   const redirectPath = encodeURIComponent(window.location.pathname.substring(1) + window.location.search);
+
+  // Create backdrop overlay wrapper
+  const backdrop = document.createElement('div');
+  backdrop.id = 'guest-auth-backdrop';
+  backdrop.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; backdrop-filter: blur(10px) !important; background: rgba(0, 0, 0, 0.5) !important; z-index: 100004 !important;';
+
+  // Create modal container
   const modal = document.createElement('div');
   modal.id = 'guest-auth-modal';
-  modal.className = 'modal-overlay';
-  modal.style.display = 'flex';
-  modal.style.zIndex = '10000';
-  
+  modal.style.cssText = 'position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; z-index: 100005 !important; display: block !important;';
+
+  const closeModal = () => {
+    backdrop.remove();
+    modal.remove();
+  };
+  backdrop.addEventListener('click', closeModal);
+
   let reasonText = 'Please login or create a customer account to continue.';
   if (context === 'wishlist') reasonText = 'Please login or create a customer account to continue.';
   if (context === 'cart') reasonText = 'Please login or create a customer account to continue.';
 
   modal.innerHTML = `
     <div class="modal-content glass scale-in" style="max-width: 420px; padding: 30px; text-align: center; border-radius: 16px; position:relative; background:#FAF9F6; border:1px solid var(--card-border); color:var(--text-color);">
-      <button onclick="document.getElementById('guest-auth-modal').remove()" style="position:absolute; top:15px; right:15px; background:transparent; font-size:18px; font-weight:bold; color:var(--text-muted); cursor:pointer; border:none;">✕</button>
+      <button id="close-guest-modal-btn" style="position:absolute; top:15px; right:15px; background:transparent; font-size:18px; font-weight:bold; color:var(--text-muted); cursor:pointer; border:none;">✕</button>
       <div style="font-size: 40px; margin-bottom:15px;">🔒</div>
-      <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:10px; color:var(--text-color);">Session Required</h3>
+      <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:10px; color:var(--text-color);">Login Required</h3>
       <p style="font-size:14px; color:var(--text-muted); line-height:1.6; margin-bottom:24px;">${reasonText}</p>
       <div style="display:flex; flex-direction:column; gap:10px;">
         <a href="/login.html?redirect=${redirectPath}" class="btn btn-primary" style="padding:10px; border-radius:8px; font-weight:600; text-decoration:none; text-align:center; display:block;">Sign In / Login</a>
         <a href="/register.html?redirect=${redirectPath}" class="btn btn-secondary" style="padding:10px; border-radius:8px; border-width:1px; font-weight:600; text-decoration:none; text-align:center; display:block; border-color:hsl(var(--primary-purple)); color:hsl(var(--primary-purple));">Create An Account</a>
-        <button onclick="document.getElementById('guest-auth-modal').remove()" class="btn" style="background:transparent; color:var(--text-muted); font-size:13px; font-weight:600; cursor:pointer; border:none; margin-top:5px;">Cancel</button>
+        <button id="cancel-guest-modal-btn" class="btn" style="background:transparent; color:var(--text-muted); font-size:13px; font-weight:600; cursor:pointer; border:none; margin-top:5px;">Cancel</button>
       </div>
     </div>
   `;
+  document.body.appendChild(backdrop);
   document.body.appendChild(modal);
+
+  modal.querySelector('#close-guest-modal-btn').addEventListener('click', closeModal);
+  modal.querySelector('#cancel-guest-modal-btn').addEventListener('click', closeModal);
 };
 
 // Redirect helpers for dynamic search URL extraction
@@ -1431,9 +1488,10 @@ window.openQuickViewModal = async (productId) => {
             <button class="btn btn-primary" onclick="addToCart('${p._id}', '${p.name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', ${finalPrice}, '${imgUrl}'); document.getElementById('global-quickview-modal').remove();" style="flex-grow:1; border-radius:8px; padding:10px;" ${p.stock === 0 ? 'disabled' : ''}>
               ${p.stock === 0 ? 'Sold Out' : 'Add To Cart'}
             </button>
+            ${(window.featureToggles && window.featureToggles.wishlistEnabled === false) ? '' : `
             <button class="btn btn-secondary" onclick="toggleWishlist('${p._id}', '${p.name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', ${finalPrice}, '${imgUrl}'); document.getElementById('global-quickview-modal').remove();" style="border-radius:8px; padding:10px; border-width:1px;" aria-label="Add to Wishlist">
               ❤️ 
-            </button>
+            </button>`}
           </div>
         </div>
       </div>
@@ -1453,7 +1511,7 @@ window.createProductCardHTML = (p) => {
   const pId = p._id ? p._id.toString() : '';
   const name = p.name || 'Unnamed Gift';
   const description = p.description || '';
-  
+
   // Safe price parsing
   const price = typeof p.price === 'number' ? p.price : Number(p.price) || 0;
   const discountPrice = (p.discountPrice !== undefined && p.discountPrice !== null && p.discountPrice !== '') ? Number(p.discountPrice) : null;
@@ -1467,7 +1525,7 @@ window.createProductCardHTML = (p) => {
   const secondaryImgUrl = rawSecondary ? resolveProductImage(rawSecondary) : imgUrl;
   const hasAltImage = !!(rawSecondary && secondaryImgUrl !== imgUrl);
   const altImageClass = hasAltImage ? ' has-alt-image' : '';
-  
+
   // Dynamic wishlist check
   const wishlist = getWishlist();
   const isInWishlist = wishlist.some(item => item.productId === pId);
@@ -1513,7 +1571,7 @@ window.createProductCardHTML = (p) => {
           Quick View
         </button>
 
-        ${hideShopActions ? '' : `<button type="button" class="wishlist-btn" data-product-id="${pId}" data-product-name="${encodeURIComponent(name)}" data-product-price="${finalPrice}" data-product-image="${encodeURIComponent(imgUrl)}" style="position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.85); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; border:none; box-shadow:0 2px 5px rgba(0,0,0,0.1);" aria-label="Add to wishlist">
+        ${(hideShopActions || (window.featureToggles && window.featureToggles.wishlistEnabled === false)) ? '' : `<button type="button" class="wishlist-btn" data-product-id="${pId}" data-product-name="${encodeURIComponent(name)}" data-product-price="${finalPrice}" data-product-image="${encodeURIComponent(imgUrl)}" style="position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.85); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; border:none; box-shadow:0 2px 5px rgba(0,0,0,0.1);" aria-label="Add to wishlist">
           <svg style="width:18px; height:18px; ${heartFill} stroke-width:2; pointer-events:none;" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
         </button>`}
       </div>
@@ -1537,8 +1595,8 @@ window.createProductCardHTML = (p) => {
           </div>
           
           ${hideShopActions
-            ? ''
-            : `<button type="button" class="btn btn-primary" data-add-to-cart data-product-id="${pId}" data-product-name="${encodeURIComponent(name)}" data-product-price="${finalPrice}" data-product-image="${encodeURIComponent(imgUrl)}" data-quantity="1" style="width:100%; border-radius:8px; padding:8px 16px; font-size:13px;" ${stock === 0 ? 'disabled' : ''}>
+      ? ''
+      : `<button type="button" class="btn btn-primary" data-add-to-cart data-product-id="${pId}" data-product-name="${encodeURIComponent(name)}" data-product-price="${finalPrice}" data-product-image="${encodeURIComponent(imgUrl)}" data-quantity="1" style="width:100%; border-radius:8px; padding:8px 16px; font-size:13px;" ${stock === 0 ? 'disabled' : ''}>
             ${stock === 0 ? 'Sold Out' : 'Add to Cart'}
           </button>`}
         </div>
