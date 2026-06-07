@@ -617,6 +617,7 @@ window.syncWishlistFromServer = async () => {
     const res = await fetch('/api/wishlist', { credentials: 'same-origin' });
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const data = await res.json();
+
     if (data.success) {
       setWishlistCache(data.wishlist || []);
       syncCartCounters();
@@ -627,13 +628,19 @@ window.syncWishlistFromServer = async () => {
       window.dispatchEvent(new Event('wishlistUpdated'));
     }
   } catch (err) {
-    console.error('Failed to sync wishlist from server:', err);
+    // Modern Best Practice: Log background errors quietly to the console for developers,
+    // never interrupt the user with popups for passive background sync failures.
+    console.warn('Wishlist synchronization suspended or disabled by server:', err.message);
+
     setWishlistCache([]);
     syncCartCounters();
     window.dispatchEvent(new Event('wishlistUpdated'));
-    if (typeof showToast === 'function') {
-      showToast('Failed to sync wishlist with server.', 'error');
-    }
+
+    /* REMOVED: INTRUSIVE TOAST POPUP
+       if (typeof showToast === 'function') {
+         showToast('Wishlist is disabled', 'error');
+       }
+    */
   }
 };
 

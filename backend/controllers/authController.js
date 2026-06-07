@@ -15,7 +15,7 @@ exports.register = async (req, res) => {
     // Check if registration is globally enabled
     const toggles = await getFeatureToggleValues();
     if (!toggles.registrationEnabled) {
-      return res.status(403).json({ success: false, error: 'This feature is temporarily undergoing holiday maintenance.' });
+      return res.status(403).json({ success: false, error: 'This feature is temporarily disabled.' });
     }
 
     const { name, email, phone, password, address1, city, state, pincode } = req.body;

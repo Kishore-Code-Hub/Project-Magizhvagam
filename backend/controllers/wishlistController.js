@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const { getFeatureToggleValues } = require('./settingController');
 
-const WISHLIST_DISABLED_MSG = 'This feature is temporarily undergoing holiday maintenance.';
+const WISHLIST_DISABLED_MSG = 'This feature is temporarily disabled.';
 
 const formatWishlist = (items) =>
   (items || []).map((item) => ({
