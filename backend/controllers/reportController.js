@@ -90,3 +90,26 @@ exports.getDashboardStats = async (req, res) => {
     res.status(500).json({ success: false, error: `Report aggregation failed: ${error.message}` });
   }
 };
+
+// @desc    Reset store metrics and clear all orders (Admin Only)
+// @route   POST /api/reports/reset-stats
+// @access  Private (Admin Only)
+exports.resetStats = async (req, res) => {
+  try {
+    // Import Order model and audit service logging helper
+    const { logActivity } = require('../services/auditService');
+
+    // Programmatically reset total store metrics data records down to zero by clearing Orders
+    await Order.deleteMany({});
+
+    // Log reset action in audit trail
+    await logActivity(req, 'stats_reset', 'Store statistics were reset and orders cleared by admin');
+
+    res.status(200).json({
+      success: true,
+      message: 'Store statistics have been reset successfully.'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: `Reset statistics failed: ${error.message}` });
+  }
+};

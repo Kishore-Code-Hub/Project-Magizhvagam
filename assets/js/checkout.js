@@ -104,10 +104,10 @@ async function loadStoredUserAddress() {
     const res = await fetch('/api/auth/profile');
     const data = await res.json();
     if (data.success && data.user.addresses && data.user.addresses.length > 0) {
-      const addr = data.user.addresses[0];
+      const addr = data.user.addresses.find(a => a.isDefault) || data.user.addresses[0];
       document.getElementById('shipping-name').value = addr.fullName || '';
       document.getElementById('shipping-phone').value = addr.phone || '';
-      document.getElementById('shipping-street').value = addr.street || '';
+      document.getElementById('shipping-street').value = addr.street + (addr.street2 ? ', ' + addr.street2 : '');
       document.getElementById('shipping-city').value = addr.city || '';
       document.getElementById('shipping-state').value = addr.state || '';
       document.getElementById('shipping-zip').value = addr.zipCode || '';

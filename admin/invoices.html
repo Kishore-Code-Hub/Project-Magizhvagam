@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Hub | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+  <style>
+    @media print {
+      /* Hide sidebar, search form, heading, and print action button */
+      .admin-sidebar,
+      #admin-sidebar-container,
+      .glass:first-of-type,
+      #invoice-search-form,
+      h1,
+      .btn,
+      button,
+      #print-invoice-btn {
+        display: none !important;
+      }
+      /* Expand result card for full width print */
+      .admin-main {
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      #invoice-result-card,
+      #invoice-result-card .glass {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Invoices Panel -->
+    <main class="admin-main">
+      <h1 style="font-family:'Outfit'; font-size:32px; margin-bottom:30px; color:var(--text-color);">Invoice Resolution Hub</h1>
+
+      <!-- Search Component -->
+      <div class="glass" style="padding:25px; border-radius:12px; margin-bottom:30px; border:1px solid var(--card-border);">
+        <h4 style="font-family:'Outfit'; margin-bottom:15px; font-size:16px; color:var(--text-color);">Search Invoice by Order ID</h4>
+        <form id="invoice-search-form" style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
+          <input type="text" id="search-order-id" class="admin-form-control" placeholder="Enter complete Order ID..." required style="margin:0; flex-grow:1; min-width:250px; background:rgba(0,0,0,0.02); color:var(--text-color); border:1px solid var(--card-border); border-radius:8px; padding:12px;">
+          <button type="submit" class="btn btn-primary" style="border-radius:8px; white-space:nowrap; padding:12px 24px; font-weight:600; cursor:pointer;">Search Invoice</button>
+        </form>
+      </div>
+
+      <!-- Invoice Content Display Area -->
+      <div id="invoice-result-card" style="display:none;" class="animated fadeIn">
+        <!-- Will be compiled dynamically by Javascript -->
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/js/admin.js"></script>
+</body>
+</html>

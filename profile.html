@@ -1,28 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customer Dashboard | MAGIZHVAGAM</title>
-  
+
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="stylesheet" href="/assets/css/animations.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
-  
+
   <style>
     .profile-layout {
       padding: 100px 0 60px;
       visibility: hidden;
     }
+
     .profile-layout.profile-ready {
       visibility: visible;
     }
+
     .profile-container {
       display: flex;
       gap: 30px;
       margin-top: 30px;
     }
+
     .profile-sidebar {
       width: 250px;
       flex-shrink: 0;
@@ -32,6 +36,7 @@
       position: relative;
       z-index: 2;
     }
+
     .menu-link {
       display: block;
       padding: 12px 16px;
@@ -42,38 +47,47 @@
       transition: var(--transition);
       color: var(--text-muted);
     }
-    .menu-link.active, .menu-link:hover {
+
+    .menu-link.active,
+    .menu-link:hover {
       background: rgba(106, 13, 173, 0.05);
       color: hsl(var(--primary-purple));
     }
+
     .profile-main {
       flex-grow: 1;
     }
+
     .profile-tab {
       display: none;
     }
+
     .profile-tab.active {
       display: block;
       animation: fadeInUp 0.5s ease;
     }
+
     .form-group {
       margin-bottom: 16px;
     }
+
     .form-group label {
       display: block;
       font-size: 13px;
       font-weight: 600;
       margin-bottom: 6px;
     }
+
     .form-control {
       width: 100%;
       padding: 10px 14px;
       border-radius: 8px;
       border: 1px solid var(--card-border);
-      background: rgba(0,0,0,0.02);
+      background: rgba(0, 0, 0, 0.02);
       color: var(--text-color);
       font-size: 13px;
     }
+
     .form-control:focus {
       border-color: hsl(var(--primary-purple));
       background: white;
@@ -86,6 +100,7 @@
       margin: 20px 0;
       position: relative;
     }
+
     .tracking-steps::after {
       content: '';
       position: absolute;
@@ -96,6 +111,7 @@
       background: var(--card-border);
       z-index: 1;
     }
+
     .step-node {
       width: 32px;
       height: 32px;
@@ -110,11 +126,13 @@
       font-size: 12px;
       color: var(--text-muted);
     }
+
     .step-node.completed {
       border-color: #22c55e;
       background: #22c55e;
       color: white;
     }
+
     .step-node.active {
       border-color: hsl(var(--primary-purple));
       background: hsl(var(--primary-purple));
@@ -122,6 +140,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- Shared Header -->
@@ -129,87 +148,126 @@
 
   <main class="container profile-layout">
     <h1 style="font-family:'Outfit'; font-size:32px; color:var(--text-color);">My Account Dashboard</h1>
-    
+
     <div class="profile-container">
-      
+
       <!-- Sidebar Options -->
       <aside class="profile-sidebar glass animated scale-in">
-        <div class="menu-link profile-nav-link active" data-tab="tab-profile" role="button" tabindex="0">Profile details</div>
+        <div class="menu-link profile-nav-link active" data-tab="tab-profile" role="button" tabindex="0">Profile details
+        </div>
         <div class="menu-link profile-nav-link" data-tab="tab-addresses" role="button" tabindex="0">Address book</div>
         <div class="menu-link profile-nav-link" data-tab="tab-orders" role="button" tabindex="0">Order history</div>
         <div class="menu-link profile-nav-link" data-tab="tab-wishlist" role="button" tabindex="0">Wishlist</div>
-        <div class="menu-link profile-sign-out" id="profile-sign-out-btn" role="button" tabindex="0" style="color:#ef4444; border-top:1px solid var(--card-border); margin-top:20px; border-radius:0; padding-top:20px;">Sign Out</div>
+        <div class="menu-link profile-sign-out" id="profile-sign-out-btn" role="button" tabindex="0"
+          style="color:#ef4444; border-top:1px solid var(--card-border); margin-top:20px; border-radius:0; padding-top:20px;">
+          Sign Out</div>
       </aside>
 
       <!-- Main Dash Panel -->
       <section class="profile-main">
-        
+
         <!-- Tab 1: Profile details -->
         <div class="profile-tab active glass" id="tab-profile" style="padding:30px; border-radius:12px;">
-          <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:20px; color:hsl(var(--primary-purple));">Personal Information</h3>
-          
+          <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:20px; color:hsl(var(--primary-purple));">
+            Personal Information</h3>
+
           <form id="profile-edit-form">
             <div class="form-group">
               <label for="profile-name">Full Name</label>
-              <input type="text" id="profile-name" class="form-control" required style="border: 1px solid var(--card-border);">
+              <input type="text" id="profile-name" class="form-control" required
+                style="border: 1px solid var(--card-border);">
             </div>
             <div class="form-group">
               <label for="profile-email">Email Address</label>
-              <input type="email" id="profile-email" class="form-control" required style="border: 1px solid var(--card-border);">
+              <input type="email" id="profile-email" class="form-control" required
+                style="border: 1px solid var(--card-border);">
             </div>
-            <button type="submit" class="btn btn-primary" style="border-radius:8px; padding:10px 24px;">Save Modifications</button>
+            <button type="submit" class="btn btn-primary" style="border-radius:8px; padding:10px 24px;">Save
+              Modifications</button>
           </form>
         </div>
 
         <!-- Tab 2: Address book -->
         <div class="profile-tab glass" id="tab-addresses" style="padding:30px; border-radius:12px;">
-          <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:20px; color:hsl(var(--primary-purple));">Saved Addresses</h3>
           
-          <form id="address-edit-form" style="margin-bottom:30px; border-bottom:1px dashed var(--card-border); padding-bottom:30px;">
-            <div class="grid grid-2" style="gap:16px;">
-              <div class="form-group">
-                <label for="addr-name">Recipient Name</label>
-                <input type="text" id="addr-name" class="form-control" placeholder="John Doe" required style="border: 1px solid var(--card-border);">
-              </div>
-              <div class="form-group">
-                <label for="addr-phone">Phone Number</label>
-                <input type="tel" id="addr-phone" class="form-control" placeholder="e.g. 9876543210" required style="border: 1px solid var(--card-border);">
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="addr-street">Street Address</label>
-              <input type="text" id="addr-street" class="form-control" required style="border: 1px solid var(--card-border);">
-            </div>
-            <div class="grid grid-3" style="gap:16px;">
-              <div class="form-group">
-                <label for="addr-city">City</label>
-                <input type="text" id="addr-city" class="form-control" required style="border: 1px solid var(--card-border);">
-              </div>
-              <div class="form-group">
-                <label for="addr-state">State</label>
-                <input type="text" id="addr-state" class="form-control" required style="border: 1px solid var(--card-border);">
-              </div>
-              <div class="form-group">
-                <label for="addr-zip">Zip/Postal Code</label>
-                <input type="text" id="addr-zip" class="form-control" required style="border: 1px solid var(--card-border);">
-              </div>
-            </div>
-            <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-top:4px;">
-              <input type="checkbox" id="addr-default" style="width:auto;">
-              <label for="addr-default" style="margin:0; font-size:13px;">Set as default shipping address</label>
-            </div>
-            <button type="submit" id="address-submit-btn" class="btn btn-primary" style="border-radius:8px; padding:10px 24px;">Save Address</button>
-          </form>
-          
-          <div id="address-list-display" style="display:flex; flex-direction:column; gap:16px;">
+          <!-- Address Book Heading with Add Button -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+            <h3 style="font-family:'Outfit'; font-size:20px; margin:0; color:hsl(var(--primary-purple));">Address Book</h3>
+            <button type="button" id="add-address-btn" class="add-address-pill" title="Add new address">
+              <span style="font-size:16px;">+</span> Add New Address
+            </button>
+          </div>
+
+          <!-- Saved Addresses Card Grid (always visible) -->
+          <div id="saved-addresses-container" class="address-grid">
             <!-- Loaded dynamically -->
           </div>
+
+          <!-- Address Entry Form (hidden by default, shown on + click or edit) -->
+          <div id="address-form-wrapper" style="display:none; border-top:1px dashed var(--card-border); padding-top:20px;">
+            <h4 style="font-family:'Outfit'; font-size:16px; margin-bottom:16px; color:hsl(var(--primary-purple));" id="address-form-title">Add New Address</h4>
+            <form id="address-edit-form">
+              <div class="grid grid-2" style="gap:16px;">
+                <div class="form-group">
+                  <label for="addr-name">Recipient Name *</label>
+                  <input type="text" id="addr-name" class="form-control" placeholder="Name" required
+                    style="border: 1px solid var(--card-border);">
+                </div>
+                <div class="form-group">
+                  <label for="addr-phone">Phone Number *</label>
+                  <input type="tel" id="addr-phone" class="form-control" placeholder="e.g. 9876543210" required
+                    style="border: 1px solid var(--card-border);">
+                </div>
+              </div>
+              <div class="grid grid-2" style="gap:16px;">
+                <div class="form-group">
+                  <label for="addr-street">Address Line 1 *</label>
+                  <input type="text" id="addr-street" class="form-control" required
+                    style="border: 1px solid var(--card-border);">
+                </div>
+                <div class="form-group">
+                  <label for="addr-street2">Address Line 2 (Optional)</label>
+                  <input type="text" id="addr-street2" class="form-control" placeholder="Flat, Apartment, Suite number"
+                    style="border: 1px solid var(--card-border);">
+                </div>
+              </div>
+              <div class="grid grid-3" style="gap:16px;">
+                <div class="form-group">
+                  <label for="addr-city">City</label>
+                  <input type="text" id="addr-city" class="form-control" required
+                    style="border: 1px solid var(--card-border);">
+                </div>
+                <div class="form-group">
+                  <label for="addr-state">State</label>
+                  <input type="text" id="addr-state" class="form-control" required
+                    style="border: 1px solid var(--card-border);">
+                </div>
+                <div class="form-group">
+                  <label for="addr-zip">Zip/Postal Code</label>
+                  <input type="text" id="addr-zip" class="form-control" required
+                    style="border: 1px solid var(--card-border);">
+                </div>
+              </div>
+              <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                <input type="checkbox" id="addr-default" style="width:auto;">
+                <label for="addr-default" style="margin:0; font-size:13px;">Set as default shipping address</label>
+              </div>
+              <div style="display:flex; gap:12px; align-items:center;">
+                <button type="submit" id="address-submit-btn" class="btn btn-primary"
+                  style="border-radius:8px; padding:10px 24px;">Save Address</button>
+                <button type="button" id="address-cancel-btn" class="btn btn-secondary"
+                  style="border-radius:8px; padding:10px 24px; font-size:13px;">Cancel</button>
+              </div>
+            </form>
+          </div>
+
         </div>
 
         <!-- Tab 3: Order history -->
         <div class="profile-tab glass" id="tab-orders" style="padding:30px; border-radius:12px;">
-          <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:20px; color:hsl(var(--primary-purple));">My Order Logs</h3>
-          
+          <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:20px; color:hsl(var(--primary-purple));">My
+            Order Logs</h3>
+
           <div id="orders-list-display" style="display:flex; flex-direction:column; gap:20px;">
             <!-- Loaded dynamically -->
           </div>
@@ -217,9 +275,12 @@
 
         <!-- Tab 4: Wishlist -->
         <div class="profile-tab glass" id="tab-wishlist" style="padding:30px; border-radius:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
-            <h3 style="font-family:'Outfit'; font-size:20px; margin:0; color:hsl(var(--primary-purple));">My Wishlist</h3>
-            <a href="/wishlist.html" class="btn btn-secondary" style="border-radius:8px; padding:8px 16px; font-size:13px;">Open full wishlist</a>
+          <div
+            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+            <h3 style="font-family:'Outfit'; font-size:20px; margin:0; color:hsl(var(--primary-purple));">My Wishlist
+            </h3>
+            <a href="/wishlist.html" class="btn btn-secondary"
+              style="border-radius:8px; padding:8px 16px; font-size:13px;">Open full wishlist</a>
           </div>
           <div id="profile-wishlist-grid" class="grid grid-4" style="gap:20px;">
             <p style="color:var(--text-muted); font-size:13px;">Loading wishlist...</p>
@@ -240,6 +301,7 @@
   <script>
     let activeUser = null;
     let editingIndex = -1;
+    window.currentEditingAddressId = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
       activeUser = await loadUserProfile();
@@ -251,8 +313,6 @@
       if (typeof window.setSessionUser === 'function') {
         window.setSessionUser(activeUser);
       }
-      if (typeof syncWishlistFromServer === 'function') await syncWishlistFromServer();
-      if (typeof syncCartFromServer === 'function') await syncCartFromServer();
 
       document.querySelector('.profile-layout')?.classList.add('profile-ready');
 
@@ -280,11 +340,13 @@
         });
       }
 
-      // Bind profile details
-      document.getElementById('profile-name').value = activeUser.name;
-      document.getElementById('profile-email').value = activeUser.email;
-      
-      renderSavedAddresses();
+      // Bind profile details (defensive null checks)
+      const profileNameEl = document.getElementById('profile-name');
+      const profileEmailEl = document.getElementById('profile-email');
+      if (profileNameEl) profileNameEl.value = activeUser.name || '';
+      if (profileEmailEl) profileEmailEl.value = activeUser.email || '';
+
+      await loadAddresses();
       loadHistoryOrders();
       renderProfileWishlist();
 
@@ -305,98 +367,232 @@
           if (link) switchProfileTab(link, panelId);
         }
       };
-      
+
       handleHashChange();
       window.addEventListener('hashchange', handleHashChange);
 
-      // Submit edits
-      document.getElementById('profile-edit-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('profile-name').value.trim();
-        const email = document.getElementById('profile-email').value.trim();
-        const updated = await updateUserProfile({ name, email });
-        if (updated) activeUser = updated;
-      });
+      // Submit edits (defensive null check)
+      const profileEditForm = document.getElementById('profile-edit-form');
+      if (profileEditForm) {
+        profileEditForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const nameEl = document.getElementById('profile-name');
+          const emailEl = document.getElementById('profile-email');
+          const name = nameEl ? nameEl.value.trim() : '';
+          const email = emailEl ? emailEl.value.trim() : '';
+          const updated = await updateUserProfile({ name, email });
+          if (updated) activeUser = updated;
+        });
+      }
 
-      // Submit addresses
-      document.getElementById('address-edit-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const newAddr = {
-          fullName: document.getElementById('addr-name').value.trim(),
-          phone: document.getElementById('addr-phone').value.trim(),
-          street: document.getElementById('addr-street').value.trim(),
-          city: document.getElementById('addr-city').value.trim(),
-          state: document.getElementById('addr-state').value.trim(),
-          zipCode: document.getElementById('addr-zip').value.trim(),
-          isDefault: document.getElementById('addr-default')?.checked || false
-        };
+      // + Add Address button handler
+      const addAddrBtn = document.getElementById('add-address-btn');
+      if (addAddrBtn) {
+        addAddrBtn.addEventListener('click', () => {
+          // Enforce 3-address cap
+          if (activeUser.addresses && activeUser.addresses.length >= 3) {
+            showToast('Maximum limit of 3 addresses reached.', 'error');
+            return;
+          }
+          // Show empty form
+          window.currentEditingAddressId = null;
+          const formWrapper = document.getElementById('address-form-wrapper');
+          const formTitle = document.getElementById('address-form-title');
+          const submitBtn = document.getElementById('address-submit-btn');
+          const addrForm = document.getElementById('address-edit-form');
+          if (addrForm) addrForm.reset();
+          if (formTitle) formTitle.textContent = 'Add New Address';
+          if (submitBtn) submitBtn.textContent = 'Save Address';
+          if (formWrapper) formWrapper.style.display = 'block';
+          const addrNameEl = document.getElementById('addr-name');
+          if (addrNameEl) addrNameEl.focus();
+        });
+      }
 
-        let addresses = [...(activeUser.addresses || [])];
-        const currentEditIndex = editingIndex;
+      // Cancel button handler
+      const cancelAddrBtn = document.getElementById('address-cancel-btn');
+      if (cancelAddrBtn) {
+        cancelAddrBtn.addEventListener('click', () => {
+          const formWrapper = document.getElementById('address-form-wrapper');
+          if (formWrapper) formWrapper.style.display = 'none';
+          window.currentEditingAddressId = null;
+          const addrForm = document.getElementById('address-edit-form');
+          if (addrForm) addrForm.reset();
+          const submitBtn = document.getElementById('address-submit-btn');
+          if (submitBtn) submitBtn.textContent = 'Save Address';
+        });
+      }
 
-        if (currentEditIndex > -1) {
-          addresses[currentEditIndex] = { ...addresses[currentEditIndex], ...newAddr };
-          editingIndex = -1;
-          document.getElementById('address-submit-btn').textContent = 'Save Address';
-        } else {
-          addresses.push(newAddr);
-        }
+      // Submit addresses (defensive null check)
+      const addressEditForm = document.getElementById('address-edit-form');
+      if (addressEditForm) {
+        addressEditForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
 
-        if (newAddr.isDefault) {
-          const defaultIdx = currentEditIndex > -1 ? currentEditIndex : addresses.length - 1;
-          addresses = addresses.map((a, i) => ({ ...a, isDefault: i === defaultIdx }));
-        } else if (!addresses.some((a) => a.isDefault) && addresses.length > 0) {
-          addresses[0].isDefault = true;
-        }
+          const phoneEl = document.getElementById('addr-phone');
+          const phone = phoneEl ? phoneEl.value.trim() : '';
+          const phoneRegex = /^[0-9]{10,15}$/;
+          if (!phoneRegex.test(phone)) {
+            showToast('Please enter a valid 10-15 digit phone number.', 'error');
+            return;
+          }
 
-        const updated = await updateUserProfile({ addresses });
-        if (updated) {
-          activeUser = updated;
-          renderSavedAddresses();
-          document.getElementById('address-edit-form').reset();
-        }
-      });
+          // Enforce 3-address cap on new address creation
+          if (!window.currentEditingAddressId && activeUser.addresses && activeUser.addresses.length >= 3) {
+            showToast('Maximum limit of 3 addresses reached.', 'error');
+            return;
+          }
+
+          const newAddr = {
+            fullName: (document.getElementById('addr-name')?.value || '').trim(),
+            phone: phone,
+            street: (document.getElementById('addr-street')?.value || '').trim(),
+            street2: (document.getElementById('addr-street2')?.value || '').trim(),
+            city: (document.getElementById('addr-city')?.value || '').trim(),
+            state: (document.getElementById('addr-state')?.value || '').trim(),
+            zipCode: (document.getElementById('addr-zip')?.value || '').trim(),
+            isDefault: document.getElementById('addr-default')?.checked || false
+          };
+
+          // Auto-default first address
+          if (!window.currentEditingAddressId && (!activeUser.addresses || activeUser.addresses.length === 0)) {
+            newAddr.isDefault = true;
+          }
+
+          try {
+            let res;
+            if (!window.currentEditingAddressId) {
+              res = await fetch('/api/auth/profile/address', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(newAddr)
+              });
+            } else {
+              res = await fetch(`/api/auth/profile/address/${window.currentEditingAddressId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(newAddr)
+              });
+            }
+            const data = await res.json();
+            if (data.success) {
+              activeUser = data.user;
+              if (typeof window.setSessionUser === 'function') {
+                window.setSessionUser(activeUser);
+              }
+              showToast(!window.currentEditingAddressId ? 'Address added successfully!' : 'Address updated successfully!', 'success');
+              
+              // Live Refresh
+              await loadAddresses();
+              
+              // Form Reset & State Pointer Reset
+              const addrForm = document.getElementById('address-edit-form');
+              if (addrForm) addrForm.reset();
+              const submitBtn = document.getElementById('address-submit-btn');
+              if (submitBtn) submitBtn.textContent = 'Save Address';
+              window.currentEditingAddressId = null;
+
+              // Hide form after save
+              const formWrapper = document.getElementById('address-form-wrapper');
+              if (formWrapper) formWrapper.style.display = 'none';
+            } else {
+              showToast(data.error || 'Failed to save address', 'error');
+            }
+          } catch (err) {
+            console.error(err);
+            showToast('Connection error saving address', 'error');
+          }
+        });
+      }
     });
 
-    function renderSavedAddresses() {
-      const container = document.getElementById('address-list-display');
+    async function loadAddresses() {
+      const container = document.getElementById('saved-addresses-container');
+      if (!container) return;
+
+      // Fetch fresh user data from server
+      const user = await loadUserProfile();
+      if (user) {
+        activeUser = user;
+      }
+
+      // Update + button state based on address count
+      const addBtn = document.getElementById('add-address-btn');
+      if (addBtn) {
+        if (activeUser.addresses && activeUser.addresses.length >= 3) {
+          addBtn.classList.add('disabled');
+          addBtn.setAttribute('title', 'Maximum limit of 3 addresses reached');
+        } else {
+          addBtn.classList.remove('disabled');
+          addBtn.setAttribute('title', 'Add new address');
+        }
+      }
+
       if (!activeUser.addresses || activeUser.addresses.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted); font-size:13px; font-style:italic;">No addresses saved yet.</p>';
+        container.innerHTML = '<p style="color:var(--text-muted); font-size:13px; font-style:italic; grid-column:1/-1;">No addresses saved yet. Click \"+ Add New Address\" above to add your first delivery address.</p>';
         return;
       }
 
-      container.innerHTML = activeUser.addresses.map((addr, index) => `
-        <div class="glass" style="padding:16px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-          <div style="font-size:13px; line-height:1.6;">
-            ${addr.isDefault ? '<span style="font-size:10px; font-weight:700; color:hsl(var(--primary-purple)); background:rgba(106,13,173,0.08); padding:2px 8px; border-radius:4px; margin-right:6px;">DEFAULT</span>' : ''}
-            <strong>${addr.fullName}</strong> (${addr.phone})<br>
-            ${addr.street}, ${addr.city}, ${addr.state} - ${addr.zipCode}
+      container.innerHTML = activeUser.addresses.map((addr, index) => {
+        const addrId = addr._id || addr.id || index;
+        return `
+        <div class="address-card ${addr.isDefault ? 'is-default' : ''}">
+          <div style="display:flex; gap:12px; align-items:flex-start;">
+            <input type="radio" name="default-address-radio" class="address-radio-selector" ${addr.isDefault ? 'checked' : ''}
+              onclick="setDefaultAddress(${index})"
+              title="${addr.isDefault ? 'Current default address' : 'Set as default'}">
+            <div class="address-card-body">
+              ${addr.isDefault ? '<div class="address-default-chip">✓ Default</div>' : ''}
+              <div class="address-card-name">${addr.fullName || 'N/A'}</div>
+              <div class="address-card-phone">${addr.phone || 'N/A'}</div>
+              <div style="margin-top:6px;">${addr.street || ''}${addr.street2 ? ', ' + addr.street2 : ''}<br>${addr.city || ''}, ${addr.state || ''} — ${addr.zipCode || ''}</div>
+            </div>
           </div>
-          <div style="display:flex; gap:10px; align-items:center;">
-            ${!addr.isDefault ? `<button type="button" onclick="setDefaultAddress(${index})" style="font-size:11px; font-weight:600; color:hsl(var(--primary-purple)); background:transparent; cursor:pointer; border:none;">Set Default</button>` : ''}
-            <button type="button" onclick="editAddress(${index})" style="background:transparent; cursor:pointer; border:none;" title="Edit Address">
-              <svg style="width:18px; height:18px; fill:hsl(var(--primary-purple));" viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.07,6.19L3,17.25Z"/></svg>
-            </button>
-            <button type="button" onclick="deleteAddress(${index})" style="background:transparent; cursor:pointer; border:none;" title="Delete Address">
-              <svg style="width:18px; height:18px; fill:#ef4444;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
-            </button>
+          <div class="address-card-actions">
+            <button type="button" onclick="editAddress(${index})" class="address-action-btn" title="Edit Address">✏️ Edit</button>
+            <button type="button" onclick="deleteAddress(${index})" class="address-action-btn delete-btn" title="Delete Address">🗑️ Delete</button>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
     }
 
     function editAddress(index) {
+      if (!activeUser.addresses || !activeUser.addresses[index]) return;
       const addr = activeUser.addresses[index];
-      document.getElementById('addr-name').value = addr.fullName || '';
-      document.getElementById('addr-phone').value = addr.phone || '';
-      document.getElementById('addr-street').value = addr.street || '';
-      document.getElementById('addr-city').value = addr.city || '';
-      document.getElementById('addr-state').value = addr.state || '';
-      document.getElementById('addr-zip').value = addr.zipCode || '';
-      document.getElementById('addr-default').checked = !!addr.isDefault;
+
+      // Populate form fields (defensive)
+      const fields = {
+        'addr-name': addr.fullName || '',
+        'addr-phone': addr.phone || '',
+        'addr-street': addr.street || '',
+        'addr-street2': addr.street2 || '',
+        'addr-city': addr.city || '',
+        'addr-state': addr.state || '',
+        'addr-zip': addr.zipCode || ''
+      };
+      for (const [id, val] of Object.entries(fields)) {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      }
+      const defaultEl = document.getElementById('addr-default');
+      if (defaultEl) defaultEl.checked = !!addr.isDefault;
+
+      window.currentEditingAddressId = addr._id || addr.id;
+
+      // Show form and update labels
+      const formWrapper = document.getElementById('address-form-wrapper');
+      const formTitle = document.getElementById('address-form-title');
+      const submitBtn = document.getElementById('address-submit-btn');
+      if (formWrapper) formWrapper.style.display = 'block';
+      if (formTitle) formTitle.textContent = 'Edit Address';
+      if (submitBtn) submitBtn.textContent = 'Update Address';
       
-      editingIndex = index;
-      document.getElementById('address-submit-btn').textContent = 'Update Address';
+      // Shift focus to form input
+      const addrNameEl = document.getElementById('addr-name');
+      if (addrNameEl) addrNameEl.focus();
     }
 
     async function setDefaultAddress(index) {
@@ -407,7 +603,7 @@
       const updated = await updateUserProfile({ addresses });
       if (updated) {
         activeUser = updated;
-        renderSavedAddresses();
+        await loadAddresses();
       }
     }
 
@@ -422,25 +618,31 @@
       const updated = await updateUserProfile({ addresses });
       if (updated) {
         activeUser = updated;
-        renderSavedAddresses();
+        await loadAddresses();
       }
     }
 
     async function loadHistoryOrders() {
       const container = document.getElementById('orders-list-display');
+      if (!container) return;
       try {
         container.innerHTML = '<div style="text-align:center; padding:30px;"><div class="spinner" style="margin:auto;"></div></div>';
         const res = await fetch('/api/orders/history', { credentials: 'same-origin' });
         const data = await res.json();
-        
-        if (!data.success || data.orders.length === 0) {
+
+        if (!data.success || !data.orders || data.orders.length === 0) {
           container.innerHTML = '<p style="color:var(--text-muted); font-size:13px; font-style:italic;">You have not placed any orders yet.</p>';
           return;
         }
 
         container.innerHTML = data.orders.map(o => {
-          // Compute active tracking node
-          const status = o.status; // Pending, Processing, Shipped, Delivered
+          // Safe field evaluation
+          const orderId = o._id || 'N/A';
+          const orderDate = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : 'N/A';
+          const paymentStatus = (o.payment && o.payment.status) ? o.payment.status : 'Pending';
+          const orderItems = Array.isArray(o.items) ? o.items : [];
+          const orderTotal = (o.summary && o.summary.total != null) ? o.summary.total : 0;
+          const status = o.status || 'Pending';
           const steps = ['Pending', 'Processing', 'Shipped', 'Delivered'];
           const currentIndex = steps.indexOf(status);
 
@@ -448,41 +650,41 @@
             <div class="glass" style="padding:24px; border-radius:12px;">
               <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed var(--card-border); padding-bottom:12px; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
                 <div style="font-size:13px;">
-                  Order ID: <strong style="color:hsl(var(--primary-purple));">${o._id}</strong><br>
-                  Date: <span style="color:var(--text-muted);">${new Date(o.createdAt).toLocaleDateString('en-IN')}</span>
+                  Order ID: <strong style="color:hsl(var(--primary-purple));">${orderId}</strong><br>
+                  Date: <span style="color:var(--text-muted);">${orderDate}</span>
                 </div>
                 <div style="text-align:right;">
-                  <span class="badge ${o.payment.status === 'Paid' ? 'badge-featured' : 'badge-new'}" style="font-size:10px; margin-bottom:4px; display:inline-block;">
-                    Payment: ${o.payment.status}
+                  <span class="badge ${paymentStatus === 'Paid' ? 'badge-featured' : 'badge-new'}" style="font-size:10px; margin-bottom:4px; display:inline-block;">
+                    Payment: ${paymentStatus}
                   </span><br>
-                  <a href="/api/orders/${o._id}/invoice" target="_blank" style="font-size:12px; color:hsl(var(--primary-purple)); font-weight:700; text-decoration:underline;">Print Invoice</a>
+                  <a href="/api/orders/${orderId}/invoice" target="_blank" class="btn btn-secondary" style="font-size:12px; color:hsl(var(--primary-purple)); font-weight:700; padding:6px 12px; border-radius:6px; border:1px solid var(--card-border); margin-top:5px; display:inline-block; text-decoration:none;">View Invoice</a>
                 </div>
               </div>
 
               <!-- Tracking Timeline -->
               <div class="tracking-steps">
                 ${steps.map((st, sidx) => {
-                  let cls = '';
-                  if (sidx < currentIndex) cls = 'completed';
-                  else if (sidx === currentIndex) cls = 'active';
-                  return `
+            let cls = '';
+            if (sidx < currentIndex) cls = 'completed';
+            else if (sidx === currentIndex) cls = 'active';
+            return `
                     <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
                       <div class="step-node ${cls}">${sidx < currentIndex ? '✓' : sidx + 1}</div>
                       <span style="font-size:11px; margin-top:8px; font-weight:600; color: ${sidx <= currentIndex ? 'var(--text-color)' : 'var(--text-muted)'}">${st}</span>
                     </div>
                   `;
-                }).join('')}
+          }).join('')}
               </div>
 
               <div style="margin-top:20px; font-size:13px; line-height:1.6;">
                 <strong>Items ordered:</strong>
                 <ul style="padding-left:20px; margin:8px 0; color:var(--text-muted);">
-                  ${o.items.map(item => `
-                    <li>${item.name} x ${item.quantity} (${formatPrice(item.price)} each)</li>
+                  ${orderItems.map(item => `
+                    <li>${item.name || 'Item'} x ${item.quantity || 0} (${formatPrice(item.price)} each)</li>
                   `).join('')}
                 </ul>
                 <div style="border-top:1px solid var(--card-border); padding-top:10px; margin-top:10px; text-align:right;">
-                  Grand Total: <strong style="font-size:15px; color:hsl(var(--primary-purple));">${formatPrice(o.summary.total)}</strong>
+                  Grand Total: <strong style="font-size:15px; color:hsl(var(--primary-purple));">${formatPrice(orderTotal)}</strong>
                 </div>
               </div>
             </div>
@@ -522,7 +724,7 @@
       if (!link || !panelId) return;
       document.querySelectorAll('.profile-nav-link').forEach(l => l.classList.remove('active'));
       document.querySelectorAll('.profile-tab').forEach(p => p.classList.remove('active'));
-      
+
       link.classList.add('active');
       const panel = document.getElementById(panelId);
       if (panel) panel.classList.add('active');
@@ -534,6 +736,8 @@
     window.editAddress = editAddress;
     window.deleteAddress = deleteAddress;
     window.setDefaultAddress = setDefaultAddress;
+    window.loadAddresses = loadAddresses;
   </script>
 </body>
+
 </html>

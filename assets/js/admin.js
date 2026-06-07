@@ -49,11 +49,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const path = window.location.pathname;
   if (path.includes('dashboard.html')) {
     loadDashboardData();
+    loadFeatureToggles();
+    initDashboardEvents();
   } else if (path.includes('products.html')) {
     loadAdminProducts();
     initProductsPageEvents();
   } else if (path.includes('orders.html')) {
     loadAdminOrders();
+  } else if (path.includes('invoices.html')) {
+    initInvoiceSearch();
   } else if (path.includes('customers.html')) {
     loadAdminCustomers();
   } else if (path.includes('settings.html')) {
@@ -78,13 +82,13 @@ function injectAdminSidebar() {
       <li class="${activeCls('dashboard.html')}"><a href="/admin/dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
       <li class="${activeCls('products.html')}"><a href="/admin/products.html"><i data-lucide="gift"></i> Products</a></li>
       <li class="${activeCls('orders.html')}"><a href="/admin/orders.html"><i data-lucide="shopping-bag"></i> Orders</a></li>
+      <li class="${activeCls('invoices.html')}"><a href="/admin/invoices.html"><i data-lucide="file-text"></i> Invoices</a></li>
       <li class="${activeCls('customers.html')}"><a href="/admin/customers.html"><i data-lucide="users"></i> Customers</a></li>
       <li class="${activeCls('reports.html')}"><a href="/admin/reports.html"><i data-lucide="bar-chart-2"></i> Reports</a></li>
       <li class="${activeCls('settings.html')}"><a href="/admin/settings.html"><i data-lucide="settings"></i> Site Settings</a></li>
       <li style="margin-top:40px; border-top:1px solid rgba(255,255,255,0.08); padding-top:20px;">
-        <a href="/index.html" style="color:#FAF9F6;"><i data-lucide="globe"></i> Public Site</a>
+        <a href="#" onclick="window.handleLogout(); return false;" style="color:#ef4444;"><i data-lucide="log-out"></i> Sign Out</a>
       </li>
-      <li><a href="#" onclick="window.handleLogout(); return false;" style="color:#ef4444;"><i data-lucide="log-out"></i> Sign Out</a></li>
     </ul>
   `;
   window.renderIcons();
@@ -100,32 +104,47 @@ async function loadDashboardData() {
       return;
     }
 
+    const stats = data.stats || {};
+    const totalRevenue = Number(stats.totalRevenue) || 0;
+    const totalOrders = Number(stats.totalOrders) || 0;
+    const totalCustomers = Number(stats.totalCustomers) || 0;
+    const totalProducts = Number(stats.totalProducts) || 0;
+
     // Set metrics
-    document.getElementById('metric-revenue').textContent = `₹${data.stats.totalRevenue.toLocaleString('en-IN')}`;
-    document.getElementById('metric-orders').textContent = data.stats.totalOrders;
-    document.getElementById('metric-customers').textContent = data.stats.totalCustomers;
-    document.getElementById('metric-products').textContent = data.stats.totalProducts;
+    const revEl = document.getElementById('metric-revenue');
+    if (revEl) revEl.textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
+    const ordersEl = document.getElementById('metric-orders');
+    if (ordersEl) ordersEl.textContent = totalOrders;
+    const customersEl = document.getElementById('metric-customers');
+    if (customersEl) customersEl.textContent = totalCustomers;
+    const productsEl = document.getElementById('metric-products');
+    if (productsEl) productsEl.textContent = totalProducts;
 
     // Render Recent orders list
     const tbody = document.getElementById('recent-orders-tbody');
     if (tbody) {
-      if (data.recentOrders.length === 0) {
+      if (data.recentOrders && data.recentOrders.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No orders yet.</td></tr>';
       } else {
-        tbody.innerHTML = data.recentOrders.map(o => `
+        tbody.innerHTML = data.recentOrders.map(o => {
+          const customerName = o.userId ? (o.userId.name || 'Customer') : (o.guestDetails ? o.guestDetails.fullName : 'Guest');
+          const orderTotal = (o.summary && o.summary.total != null) ? o.summary.total : 0;
+          const orderStatus = o.status || 'Pending';
+          return `
           <tr>
-            <td><strong>#${o._id.substr(-6)}</strong></td>
-            <td>${o.userId ? o.userId.name : o.guestDetails.fullName}</td>
+            <td><strong>#${(o._id || '').substr(-6)}</strong></td>
+            <td>${customerName}</td>
             <td>${new Date(o.createdAt).toLocaleDateString('en-IN')}</td>
-            <td>₹${o.summary.total}</td>
-            <td><span class="badge ${o.status === 'Delivered' ? 'badge-featured' : 'badge-new'}">${o.status}</span></td>
+            <td>₹${orderTotal}</td>
+            <td><span class="badge ${orderStatus === 'Delivered' ? 'badge-success' : orderStatus === 'Cancelled' ? 'badge-danger' : 'badge-warning'}">${orderStatus}</span></td>
           </tr>
-        `).join('');
+        `;
+        }).join('');
       }
     }
 
     // Render Sales trend chart (Placeholder for simplicity using SVG rendering)
-    renderSvgTrendChart(data.chartData);
+    renderSvgTrendChart(data.chartData || []);
 
   } catch (err) {
     showToast('Error fetching dashboard analytics', 'error');
@@ -203,6 +222,9 @@ async function loadAdminProducts() {
         <td>${p.category ? p.category.name : 'Uncategorized'}</td>
         <td>₹${p.price}</td>
         <td>${p.stock} pcs</td>
+        <td>
+          <input type="checkbox" style="cursor:pointer;" ${p.isFeatured ? 'checked' : ''} onchange="window.toggleProductFeatured('${p._id}', this.checked)">
+        </td>
         <td>
           <button onclick="openProductEditModal('${p._id}')" class="btn btn-secondary" style="padding:4px 10px; font-size:11px; border-radius:4px; border-width:1px; margin-right:6px;">Edit</button>
           <button onclick="duplicateProductById('${p._id}')" class="btn btn-secondary" style="padding:4px 10px; font-size:11px; border-radius:4px; border-width:1px; margin-right:6px;">Clone</button>
@@ -825,7 +847,8 @@ async function loadReportsPageData() {
       }
     }
 
-    const revenue = data.stats.totalRevenue || 0;
+    const stats = data.stats || {};
+    const revenue = stats.totalRevenue || 0;
     const daily = document.getElementById('rep-daily-avg');
     const weekly = document.getElementById('rep-weekly-sales');
     const monthly = document.getElementById('rep-monthly-sales');
@@ -896,6 +919,27 @@ window.updateOrderStatus = updateOrderStatus;
 window.deleteProductById = deleteProductById;
 window.duplicateProductById = duplicateProductById;
 
+async function toggleProductFeatured(id, isFeatured) {
+  try {
+    const res = await adminFetch(`/api/products/${id}/featured`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isFeatured })
+    });
+    const data = await res.json();
+    if (!data.success) {
+      showToast(data.error || 'Failed to update featured status', 'error');
+      loadAdminProducts();
+    } else {
+      showToast('Product featured status updated!', 'success');
+    }
+  } catch (err) {
+    showToast('Connection error updating featured status', 'error');
+    loadAdminProducts();
+  }
+}
+window.toggleProductFeatured = toggleProductFeatured;
+
 window.resetSettingsToDefault = async () => {
   if (!confirm('Are you sure you want to reset all store custom settings to default?')) return;
   try {
@@ -911,3 +955,258 @@ window.resetSettingsToDefault = async () => {
     showToast('Connection error during reset', 'error');
   }
 };
+
+function initDashboardEvents() {
+  const openBtn = document.getElementById('open-reset-modal-btn');
+  const modal = document.getElementById('reset-stats-modal');
+  const confirmBtn = document.getElementById('confirm-reset-btn');
+  const cancelBtn = document.getElementById('cancel-reset-btn');
+
+  if (openBtn && modal && confirmBtn && cancelBtn) {
+    openBtn.addEventListener('click', () => {
+      modal.style.display = 'flex';
+    });
+
+    const closeModal = () => {
+      modal.style.display = 'none';
+    };
+
+    cancelBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    confirmBtn.addEventListener('click', async () => {
+      try {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Clearing...';
+
+        const res = await adminFetch('/api/reports/reset-stats', {
+          method: 'POST'
+        });
+
+        let data;
+        try {
+          data = await res.json();
+        } catch (parseErr) {
+          showToast('Server returned an invalid response. Please try again.', 'error');
+          return;
+        }
+
+        if (data.success) {
+          showToast(data.message || 'Statistics reset completed!', 'success');
+          closeModal();
+          // Reload dashboard details
+          await loadDashboardData();
+        } else {
+          showToast(data.error || 'Failed to reset statistics', 'error');
+        }
+      } catch (err) {
+        showToast('Connection error during metrics reset', 'error');
+      } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Clear Stats';
+      }
+    });
+  }
+}
+
+function initInvoiceSearch() {
+  const form = document.getElementById('invoice-search-form');
+  const resultCard = document.getElementById('invoice-result-card');
+  if (!form || !resultCard) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const orderId = document.getElementById('search-order-id').value.trim();
+    if (!orderId) return;
+
+    try {
+      resultCard.style.display = 'none';
+      const res = await adminFetch(`/api/orders/${orderId}`);
+      
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        showToast('Server returned an invalid response. Please try again.', 'error');
+        return;
+      }
+
+      if (!data.success || !data.order) {
+        showToast(data.error || 'Order not found. Please verify the ID.', 'error');
+        return;
+      }
+
+      const order = data.order;
+      const customerName = order.userId ? (order.userId.name || 'Customer') : order.guestDetails?.fullName || 'Guest';
+      const customerEmail = order.userId ? (order.userId.email || '') : order.guestDetails?.email || '';
+      const customerPhone = order.userId ? (order.userId.phone || '') : order.guestDetails?.phone || '';
+
+      // Interface compilation engine resolving items, quantities, coupon discounts, customer name, delivery address, final price.
+      resultCard.innerHTML = `
+        <div class="glass" style="padding:30px; border-radius:12px; max-width:800px; margin:auto; border: 1px solid var(--card-border);">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed var(--card-border); padding-bottom:20px; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+            <div>
+              <h2 style="font-family:'Outfit'; font-size:24px; color:hsl(var(--primary-purple)); margin:0 0 5px 0;">INVOICE</h2>
+              <span style="font-size:13px; color:var(--text-muted);">Order ID: #${order._id}</span>
+            </div>
+            <div style="text-align:right;">
+              <span style="font-size:13px; color:var(--text-muted);">Date: ${new Date(order.createdAt).toLocaleDateString('en-IN')}</span><br>
+              <span style="font-size:13px; color:var(--text-muted);">Payment: <strong>${order.payment?.status || 'COD'}</strong></span>
+            </div>
+          </div>
+
+          <div class="grid grid-2" style="gap:20px; margin-bottom:30px;">
+            <div>
+              <h5 style="font-family:'Outfit'; font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; font-weight:700;">Customer Info</h5>
+              <div style="font-size:14px; line-height:1.5;">
+                <strong>${customerName}</strong><br>
+                ${customerEmail ? `${customerEmail}<br>` : ''}
+                ${customerPhone ? `Phone: ${customerPhone}` : ''}
+              </div>
+            </div>
+            <div>
+              <h5 style="font-family:'Outfit'; font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; font-weight:700;">Shipping Address</h5>
+              <div style="font-size:14px; line-height:1.5;">
+                <strong>${order.shippingAddress?.fullName}</strong><br>
+                ${order.shippingAddress?.street}${order.shippingAddress?.street2 ? ', ' + order.shippingAddress.street2 : ''}<br>
+                ${order.shippingAddress?.city}, ${order.shippingAddress?.state} - ${order.shippingAddress?.zipCode}<br>
+                Phone: ${order.shippingAddress?.phone}
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive" style="margin-bottom:30px;">
+            <table class="admin-table" style="width:100%;">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th style="text-align:center;">Price</th>
+                  <th style="text-align:center;">Qty</th>
+                  <th style="text-align:right;">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${order.items.map(item => `
+                  <tr>
+                    <td><strong>${item.name}</strong></td>
+                    <td style="text-align:center;">₹${item.price}</td>
+                    <td style="text-align:center;">${item.quantity}</td>
+                    <td style="text-align:right;">₹${(item.price * item.quantity).toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px; font-size:14px; margin-bottom:30px; line-height:1.6;">
+            <div>Subtotal: <strong>₹${order.summary?.subtotal?.toFixed(2)}</strong></div>
+            ${order.summary?.discount > 0 ? `<div style="color:#ef4444;">Discount Coupon (${order.couponCode || 'Promo'}): <strong>-₹${order.summary?.discount?.toFixed(2)}</strong></div>` : ''}
+            <div>GST (5%): <strong>₹${order.summary?.tax?.toFixed(2)}</strong></div>
+            <div>Shipping: <strong>${order.summary?.shipping > 0 ? `₹${order.summary.shipping.toFixed(2)}` : 'FREE'}</strong></div>
+            <div style="font-size:18px; font-weight:700; color:hsl(var(--primary-purple)); border-top:1px solid var(--card-border); padding-top:10px; margin-top:5px;">Grand Total: ₹${order.summary?.total?.toFixed(2)}</div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:15px; border-top:1px solid var(--card-border); padding-top:20px;">
+            <button type="button" id="print-invoice-btn" class="btn btn-primary" style="border-radius:8px; padding:10px 24px; font-weight:600; cursor:pointer;">Print Invoice</button>
+          </div>
+        </div>
+      `;
+
+      resultCard.style.display = 'block';
+
+      // Attach print action
+      document.getElementById('print-invoice-btn').addEventListener('click', () => {
+        const printWindow = window.open(`/api/orders/${order._id}/invoice`, '_blank');
+        if (printWindow) {
+          printWindow.focus();
+        } else {
+          showToast('Popup blocked! Please allow popups to print.', 'error');
+        }
+      });
+
+    } catch (err) {
+      showToast('Error searching for invoice', 'error');
+    }
+  });
+}
+
+// ─── Feature Control Center Toggle Management ────────────────────────────────
+async function loadFeatureToggles() {
+  try {
+    const res = await adminFetch('/api/settings/feature-toggles');
+    const data = await res.json();
+    if (!data.success || !data.toggles) return;
+
+    const toggles = data.toggles;
+    const toggleMap = {
+      wishlistEnabled: { checkbox: 'toggle-wishlistEnabled', status: 'toggle-status-wishlist' },
+      couponsEnabled: { checkbox: 'toggle-couponsEnabled', status: 'toggle-status-coupon' },
+      registrationEnabled: { checkbox: 'toggle-registrationEnabled', status: 'toggle-status-registration' }
+    };
+
+    for (const [key, ids] of Object.entries(toggleMap)) {
+      const checkbox = document.getElementById(ids.checkbox);
+      const statusBadge = document.getElementById(ids.status);
+      const isEnabled = toggles[key] !== false;
+
+      if (checkbox) checkbox.checked = isEnabled;
+      if (statusBadge) {
+        statusBadge.textContent = isEnabled ? 'Active' : 'Disabled';
+        statusBadge.className = `feature-toggle-status ${isEnabled ? 'active' : 'inactive'}`;
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load feature toggles:', err);
+  }
+}
+
+async function handleFeatureToggle(key, enabled) {
+  try {
+    const toggles = {};
+    toggles[key] = enabled;
+
+    const res = await adminFetch('/api/settings/feature-toggles', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ toggles })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      // Update status badges
+      const statusMap = {
+        wishlistEnabled: 'toggle-status-wishlist',
+        couponsEnabled: 'toggle-status-coupon',
+        registrationEnabled: 'toggle-status-registration'
+      };
+      const labelMap = {
+        wishlistEnabled: 'Wishlist System',
+        couponsEnabled: 'Coupon Engine',
+        registrationEnabled: 'Registration Portal'
+      };
+      const statusBadge = document.getElementById(statusMap[key]);
+      if (statusBadge) {
+        statusBadge.textContent = enabled ? 'Active' : 'Disabled';
+        statusBadge.className = `feature-toggle-status ${enabled ? 'active' : 'inactive'}`;
+      }
+      showToast(`${labelMap[key] || key} ${enabled ? 'enabled' : 'disabled'} successfully!`, 'success');
+    } else {
+      showToast(data.error || 'Failed to update toggle', 'error');
+      // Revert checkbox
+      const checkbox = document.getElementById(`toggle-${key}`);
+      if (checkbox) checkbox.checked = !enabled;
+    }
+  } catch (err) {
+    showToast('Connection error updating toggle', 'error');
+    const checkbox = document.getElementById(`toggle-${key}`);
+    if (checkbox) checkbox.checked = !enabled;
+  }
+}
+
+window.handleFeatureToggle = handleFeatureToggle;
+window.loadFeatureToggles = loadFeatureToggles;

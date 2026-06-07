@@ -6,6 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
+const compression = require('compression');
 require('dotenv').config();
 
 const mongoose = require('mongoose');
@@ -25,6 +26,8 @@ const wishlistRoutes = require('./routes/wishlistRoutes');
 const adminPageRoutes = require('./routes/adminPageRoutes');
 
 const app = express();
+
+app.use(compression());
 
 // 1. Database Connection
 connectDB();
@@ -95,7 +98,27 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/admin/login', authLimiter);
-app.use('/api/auth/register', authLimiter);
+// Rate limiting for state-mutating checkout and product write operations
+const checkoutLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15,
+  message: { success: false, error: 'Too many checkout requests from this IP, please try again after 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.method === 'GET'
+});
+
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30,
+  message: { success: false, error: 'Too many product write requests from this IP, please try again after 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.method === 'GET'
+});
+
+app.use('/api/orders', checkoutLimiter);
+app.use('/api/products', uploadLimiter);
 
 // 3. Mount Backend API Routes
 app.use('/api/auth', authRoutes);
@@ -111,6 +134,7 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use(adminPageRoutes);
 
 // 5. Serve Assets and Uploads statically
+app.use('/assets/images/products', express.static(path.join(__dirname, '../assets/images/products')));
 app.use('/assets', express.static(path.join(__dirname, '../assets')));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 

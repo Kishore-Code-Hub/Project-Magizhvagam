@@ -12,9 +12,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  if (typeof syncWishlistFromServer === 'function') {
-    await syncWishlistFromServer();
-  }
   renderWishlist();
 
   const container = document.getElementById('wishlist-grid-container');
@@ -69,7 +66,7 @@ function renderWishlist() {
 
       <div style="height:220px; background:#FAF9F6; display:flex; align-items:center; justify-content:center; border-bottom:1px solid var(--card-border);">
         <a href="/product-details.html?id=${item.productId}" style="width:100%; height:100%;">
-          <img src="${item.image || '/assets/images/default-product.webp'}" alt="${item.name}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/images/default-product.webp'">
+          <img src="${item.image || '/assets/images/default-product.webp'}" alt="${item.name}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
         </a>
       </div>
 
@@ -108,10 +105,11 @@ window.removeFromWishlist = async (productId, encodedName) => {
       method: 'DELETE',
       credentials: 'same-origin'
     });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const data = await res.json();
-    if (data.success) {
+    if (data && data.success) {
       if (typeof window.setWishlistCache === 'function') {
-        window.setWishlistCache(data.wishlist);
+        window.setWishlistCache(data.wishlist || []);
       }
       renderWishlist();
       syncCartCounters();
@@ -119,7 +117,7 @@ window.removeFromWishlist = async (productId, encodedName) => {
       showToast(`Removed "${name}" from Wishlist`, 'success');
       return;
     }
-    showToast(data.error || 'Failed to remove item', 'error');
+    showToast(data ? data.error : 'Failed to remove item', 'error');
   } catch (err) {
     console.error('Failed to remove wishlist item:', err);
     showToast('Connection error updating wishlist', 'error');
@@ -145,12 +143,16 @@ window.moveItemToCart = async (productId, encodedName, price, encodedImage) => {
       method: 'DELETE',
       credentials: 'same-origin'
     });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const data = await res.json();
-    if (data.success && typeof window.setWishlistCache === 'function') {
-      window.setWishlistCache(data.wishlist);
+    if (data && data.success && typeof window.setWishlistCache === 'function') {
+      window.setWishlistCache(data.wishlist || []);
     }
   } catch (err) {
     console.error('Failed to remove item from wishlist after move:', err);
+    if (typeof showToast === 'function') {
+      showToast('Connection error updating wishlist after cart transfer', 'error');
+    }
   }
 
   renderWishlist();

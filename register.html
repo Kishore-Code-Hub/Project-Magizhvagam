@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register | MAGIZHVAGAM - Premium Return Gifts</title>
@@ -16,20 +17,24 @@
       justify-content: center;
       padding: 100px 20px 60px;
     }
+
     .auth-card {
       width: 100%;
       max-width: 440px;
       padding: 40px;
     }
+
     .form-group {
       margin-bottom: 20px;
     }
+
     .form-group label {
       display: block;
       margin-bottom: 8px;
       font-weight: 600;
       font-size: 14px;
     }
+
     .form-control {
       width: 100%;
       padding: 12px 16px;
@@ -39,12 +44,14 @@
       color: var(--text-color);
       transition: var(--transition);
     }
+
     .form-control:focus {
       border-color: hsl(var(--primary-purple));
       background: rgba(255, 255, 255, 0.9);
     }
   </style>
 </head>
+
 <body>
 
   <!-- Shared Header Injection Element -->
@@ -53,29 +60,64 @@
   <div class="auth-wrapper">
     <div class="auth-card glass animated scale-in">
       <h2 style="font-size: 28px; text-align: center; margin-bottom: 8px; font-family: 'Outfit';">Create Account</h2>
-      <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">Sign up to start saving and ordering premium gifts</p>
-      
+      <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">Sign up to start
+        saving and ordering premium gifts</p>
+
       <form id="register-form">
         <div class="form-group">
           <label for="name">Full Name</label>
-          <input type="text" id="name" class="form-control" placeholder="John Doe" required>
+          <input type="text" id="name" class="form-control" placeholder="Name" required>
         </div>
         <div class="form-group">
           <label for="email">Email Address</label>
           <input type="email" id="email" class="form-control" placeholder="name@domain.com" required>
         </div>
         <div class="form-group">
+          <label for="phone">Mobile Number</label>
+          <input type="tel" id="phone" class="form-control" placeholder="e.g. 9876543210" required>
+        </div>
+        <div class="form-group">
           <label for="password">Password</label>
-          <input type="password" id="password" class="form-control" placeholder="Minimum 6 characters" minlength="6" required>
+          <input type="password" id="password" class="form-control" placeholder="Minimum 6 characters" minlength="6"
+            required>
         </div>
         <div class="form-group">
           <label for="confirm-password">Confirm Password</label>
           <input type="password" id="confirm-password" class="form-control" placeholder="••••••••" required>
         </div>
-        
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; border-radius: 8px;">Register</button>
+        <div class="form-group">
+          <label for="address1">Address Line 1</label>
+          <input type="text" id="address1" class="form-control" placeholder="House/Flat No, Street" required>
+        </div>
+        <div class="form-group">
+          <label for="pincode">Pincode</label>
+          <input type="text" id="pincode" class="form-control" placeholder="6-digit numeric" required maxlength="6" pattern="^[1-9][0-9]{5}$">
+        </div>
+        <div class="form-group">
+          <label for="city">City</label>
+          <input type="text" id="city" class="form-control" placeholder="City" required>
+        </div>
+        <div class="form-group">
+          <label for="state">State</label>
+          <input type="text" id="state" class="form-control" placeholder="State" required>
+        </div>
+
+        <div id="otp-group" class="otp-verification-card">
+          <div class="otp-card-header">
+            <div class="otp-shield-icon">🔐</div>
+            <div>
+              <div class="otp-card-title">Phone Verification</div>
+              <div class="otp-card-subtitle">Enter the 4-digit code sent to your phone</div>
+            </div>
+          </div>
+          <input type="text" id="otp" class="otp-input-field" placeholder="• • • •" maxlength="4" inputmode="numeric" autocomplete="one-time-code">
+          <button type="button" id="verify-otp-btn" class="otp-verify-btn">Verify OTP & Create Account</button>
+        </div>
+
+        <button type="submit" class="btn btn-primary"
+          style="width: 100%; margin-top: 10px; border-radius: 8px;">Register</button>
       </form>
-      
+
       <div style="text-align: center; margin-top: 24px; font-size: 14px;">
         <span style="color: var(--text-muted);">Already have an account?</span>
         <a href="/login.html" style="color: hsl(var(--primary-purple)); font-weight: 700; margin-left: 4px;">Sign In</a>
@@ -90,20 +132,121 @@
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script>
+    document.getElementById('pincode').addEventListener('input', async (e) => {
+      const pincode = e.target.value.trim();
+      const cityInput = document.getElementById('city');
+      const stateInput = document.getElementById('state');
+
+      // Check if it matches a valid 6-digit pincode format before fetching
+      if (/^[1-9][0-9]{5}$/.test(pincode)) {
+        try {
+          const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+          if (!res.ok) throw new Error('API response error');
+          const data = await res.json();
+          
+          if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice && data[0].PostOffice.length > 0) {
+            const postOffice = data[0].PostOffice[0];
+            cityInput.value = postOffice.District;
+            stateInput.value = postOffice.State;
+            
+            // Lock fields
+            cityInput.readOnly = true;
+            stateInput.readOnly = true;
+          } else {
+            showToast('Invalid Indian Pincode. Please verify.', 'error');
+            cityInput.value = '';
+            stateInput.value = '';
+            cityInput.readOnly = false;
+            stateInput.readOnly = false;
+          }
+        } catch (err) {
+          console.error('Pincode fetch failed:', err);
+          showToast('Pincode verification service unavailable. Please enter City and State manually.', 'warning');
+          // Fallback: unlock fields so user isn't blocked
+          cityInput.readOnly = false;
+          stateInput.readOnly = false;
+        }
+      } else {
+        // Unlock fields if pincode is partially typed or cleared
+        cityInput.readOnly = false;
+        stateInput.readOnly = false;
+      }
+    });
+
+    let otpSent = false;
+
     document.getElementById('register-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirm-password').value;
+      const address1 = document.getElementById('address1').value.trim();
+      const pincode = document.getElementById('pincode').value.trim();
+      const city = document.getElementById('city').value.trim();
+      const state = document.getElementById('state').value.trim();
+
+      const phoneRegex = /^[0-9]{10}$/;
+      if (!phoneRegex.test(phone)) {
+        showToast('Please enter a valid 10 digit mobile number.', 'error');
+        return;
+      }
+
+      const pincodeRegex = /^[1-9][0-9]{5}$/;
+      if (!pincodeRegex.test(pincode)) {
+        showToast('Please enter a valid 6 digit Indian pincode.', 'error');
+        return;
+      }
 
       if (password !== confirmPassword) {
         showToast('Passwords do not match!', 'error');
         return;
       }
-      
-      await handleRegister(name, email, password);
+
+      if (!otpSent) {
+        // Lock form inputs
+        ['name', 'email', 'phone', 'password', 'confirm-password', 'address1', 'pincode', 'city', 'state'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.disabled = true;
+        });
+        
+        // Disable main Register submit button
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.style.opacity = '0.6';
+          submitBtn.style.cursor = 'not-allowed';
+        }
+
+        // Show OTP entry group with animation
+        document.getElementById('otp-group').classList.add('visible');
+        showToast('Simulated OTP sent to your phone! Use 1234 to verify.', 'success');
+        otpSent = true;
+      }
+    });
+
+    document.getElementById('verify-otp-btn').addEventListener('click', async () => {
+      const otpVal = document.getElementById('otp').value.trim();
+      if (otpVal === '1234') {
+        showToast('OTP verified successfully! Creating account...', 'success');
+        
+        // Fetch values
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const password = document.getElementById('password').value;
+        const address1 = document.getElementById('address1').value.trim();
+        const pincode = document.getElementById('pincode').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const state = document.getElementById('state').value.trim();
+
+        await handleRegister(name, email, phone, password, address1, pincode, city, state);
+      } else {
+        showToast('Invalid OTP code. Please try again.', 'error');
+      }
     });
   </script>
 </body>
+
 </html>

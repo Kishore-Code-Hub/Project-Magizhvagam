@@ -73,11 +73,12 @@
               <th>Category</th>
               <th>Base Price</th>
               <th>Stock Level</th>
+              <th>Featured</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody id="admin-products-tbody">
-            <tr><td colspan="7" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
+            <tr><td colspan="8" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -169,6 +170,11 @@
         <div class="admin-form-group">
           <label>Tags (Comma separated)</label>
           <input type="text" id="prod-tags" class="admin-form-control" placeholder="e.g. traditional, brass, wedding">
+        </div>
+
+        <div class="admin-form-group" style="display:flex; align-items:center; gap:8px; margin-bottom:15px;">
+          <input type="checkbox" id="prod-featured" style="width:auto; cursor:pointer;">
+          <label for="prod-featured" style="margin:0; cursor:pointer;">Mark as Featured (Display on Homepage)</label>
         </div>
 
         <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:20px;">Submit Product</button>
@@ -281,6 +287,11 @@
           <input type="text" id="edit-prod-tags" class="admin-form-control">
         </div>
 
+        <div class="admin-form-group" style="display:flex; align-items:center; gap:8px; margin-bottom:15px;">
+          <input type="checkbox" id="edit-prod-featured" style="width:auto; cursor:pointer;">
+          <label for="edit-prod-featured" style="margin:0; cursor:pointer;">Mark as Featured (Display on Homepage)</label>
+        </div>
+
         <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:20px;">Save Product</button>
       </form>
     </div>
@@ -374,6 +385,7 @@
           document.getElementById('edit-prod-weight').value = specs.weight || '';
           document.getElementById('edit-prod-color').value = specs.color || '';
           document.getElementById('edit-prod-tags').value = (p.tags || []).join(', ');
+          document.getElementById('edit-prod-featured').checked = !!p.isFeatured;
           
           // Map to primary, secondary, and gallery role structures
           preservedImages = p.images.map((img, idx) => {
@@ -497,6 +509,7 @@
       
       const tags = document.getElementById('prod-tags').value.split(',').map(s => s.trim()).filter(Boolean);
       formData.append('tags', JSON.stringify(tags));
+      formData.append('isFeatured', document.getElementById('prod-featured').checked);
 
       // Append separate fields
       const primaryFile = document.getElementById('prod-primary-image').files[0];
@@ -559,6 +572,7 @@
       
       const tags = document.getElementById('edit-prod-tags').value.split(',').map(s => s.trim()).filter(Boolean);
       formData.append('tags', JSON.stringify(tags));
+      formData.append('isFeatured', document.getElementById('edit-prod-featured').checked);
 
       // Send retained image indices with roles as JSON string
       formData.append('existingImages', JSON.stringify(preservedImages));

@@ -3,6 +3,54 @@
  * Manages shared components, styling, session checking, cart states, and alerts
  */
 
+// Global fetch interceptor for 401 Unauthorized API responses
+(function() {
+  const originalFetch = window.fetch;
+  window.fetch = async function(...args) {
+    try {
+      const response = await originalFetch(...args);
+      if (response.status === 401) {
+        const path = window.location.pathname.toLowerCase();
+        // Prevent redirect looping on login, register, or admin login pages
+        const isAuthPage = ['/login.html', '/register.html', '/admin/login'].some(p => path.endsWith(p));
+        if (!isAuthPage) {
+          const redirectPath = window.location.pathname.substring(1) + window.location.search;
+
+          if (path.includes('/admin')) {
+            // Admin page: redirect directly without wiping customer session/cart/wishlist
+            window.location.replace('/admin/login?redirect=' + encodeURIComponent(redirectPath));
+            return response;
+          }
+
+          // Clear session and user info
+          if (typeof window.setSessionUser === 'function') {
+            window.setSessionUser(null);
+          } else {
+            localStorage.removeItem('magizhvagam_user');
+          }
+          localStorage.removeItem('magizhvagam_cart');
+          localStorage.removeItem('magizhvagam_wishlist');
+          sessionStorage.clear();
+          
+          // Clear all user-scoped cart/wishlist cache keys in localStorage
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('magizhvagam_cart_') || key.startsWith('magizhvagam_wishlist_'))) {
+              localStorage.removeItem(key);
+              i--; // Adjust index since key was deleted
+            }
+          }
+          
+          window.location.replace('/login.html?redirect=' + encodeURIComponent(redirectPath));
+        }
+      }
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+})();
+
 // Global price formatter — consistent UTF-8 rupee symbol, never NaN/null
 window.formatPrice = (price) => {
   const num = Number(price);
@@ -11,6 +59,13 @@ window.formatPrice = (price) => {
   }
   return '\u20B9 ' + Math.round(num).toLocaleString('en-IN');
 };
+
+// Disable console logs in production context to prevent browser context pollution
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  console.log = function() {};
+  console.info = function() {};
+  console.debug = function() {};
+}
 
 let globalSettings = null;
 // Set only after /api/auth/profile succeeds — never trust localStorage alone for header auth
@@ -58,82 +113,120 @@ function getStoredUser() {
 }
 window.getStoredUser = getStoredUser;
 
+// Global capturing-phase listener to intercept broken images and replace them with a branded placeholder
+window.addEventListener('error', function (e) {
+  if (e.target && e.target.tagName === 'IMG') {
+    const placeholder = '/assets/images/products/placeholder.webp';
+    const fullPlaceholderUrl = window.location.origin + placeholder;
+    if (e.target.src !== fullPlaceholderUrl) {
+      e.target.src = placeholder;
+    }
+  }
+}, true);
+
 window.resolveProductImage = (url) => {
   if (!url || typeof url !== 'string') {
-    return '/assets/images/default-product.webp';
+    return '/assets/images/products/placeholder.webp';
   }
   const trimmed = url.trim();
   if (!trimmed || trimmed === 'undefined' || trimmed === 'null') {
-    return '/assets/images/default-product.webp';
+    return '/assets/images/products/placeholder.webp';
+  }
+  if (trimmed.startsWith('/') || trimmed.startsWith('assets/') || trimmed.startsWith('uploads/')) {
+    const prefix = trimmed.startsWith('/') ? '' : '/';
+    return window.location.origin + prefix + trimmed;
   }
   return trimmed;
 };
 
 // Dynamic settings fetcher
+let settingsPromise = null;
 async function fetchSettings() {
   if (globalSettings) return globalSettings;
-  try {
-    const res = await fetch('/api/settings/homepage');
-    const text = await res.text();
-    let data;
+  if (settingsPromise) return settingsPromise;
+  
+  settingsPromise = (async () => {
     try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error('Failed to parse settings JSON. Raw response:', text);
-      throw e;
+      const res = await fetch('/api/settings/homepage');
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error('Failed to parse settings JSON. Raw response:', text);
+        data = { success: false, setting: {} };
+      }
+      if (data.success && data.setting) {
+        globalSettings = data.setting;
+        return globalSettings;
+      }
+    } catch (err) {
+      console.error('Error fetching settings:', err);
+      if (typeof showToast === 'function') {
+        showToast('Failed to load site settings.', 'error');
+      }
+    } finally {
+      settingsPromise = null;
     }
-    if (data.success && data.setting) {
-      globalSettings = data.setting;
-    }
-  } catch (err) {
-    console.error('Error fetching settings:', err);
-  }
-  return globalSettings;
+    return {};
+  })();
+  return settingsPromise;
 }
+window.fetchSettings = fetchSettings;
 
 // Session validation handler
+let sessionPromise = null;
 window.validateUserSession = async function validateUserSession() {
-  try {
-    const res = await fetch('/api/auth/session', { credentials: 'same-origin' });
-    const text = await res.text();
-    let data;
+  if (sessionPromise) return sessionPromise;
+  
+  sessionPromise = (async () => {
     try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error('Failed to parse auth session JSON. Raw response:', text);
-      throw e;
-    }
-    
-    if (data.success && data.user) {
-      setSessionUser(data.user);
-      if (data.user.role === 'customer') {
-        await syncCartFromServer();
-        await syncWishlistFromServer();
+      const res = await fetch('/api/auth/session', { credentials: 'same-origin' });
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error('Failed to parse auth session JSON. Raw response:', text);
+        throw e;
       }
-      return data.user;
-    } else {
-      throw new Error('Verification failed');
-    }
-  } catch (err) {
-    setSessionUser(null);
-    localStorage.removeItem('magizhvagam_wishlist');
-
-    const path = window.location.pathname;
-    const isAuthPage = ['/login.html', '/register.html'].some((p) => path.endsWith(p));
-    const isProtected = ['/profile.html', '/wishlist.html', '/checkout.html', '/cart.html'].some(p => path.endsWith(p)) || path.includes('/admin/');
-    if (isProtected && !isAuthPage) {
-      const redirectPath = window.location.pathname.substring(1) + window.location.search;
-      if (path.includes('/admin/')) {
-        window.location.replace('/admin/login?redirect=' + encodeURIComponent(redirectPath));
+      
+      if (data.success && data.user) {
+        setSessionUser(data.user);
+        if (data.user.role === 'customer') {
+          await syncCartFromServer();
+          await syncWishlistFromServer();
+        }
+        return data.user;
       } else {
-        showToast('Please login or create a customer account to continue.', 'error');
-        setTimeout(() => {
-          window.location.replace('/login.html?redirect=' + encodeURIComponent(redirectPath));
-        }, 1500);
+        throw new Error('Verification failed');
       }
+    } catch (err) {
+      setSessionUser(null);
+      localStorage.removeItem('magizhvagam_wishlist');
+
+      const path = window.location.pathname;
+      const isAuthPage = ['/login.html', '/register.html'].some((p) => path.endsWith(p));
+      const isProtected = ['/profile.html', '/wishlist.html', '/checkout.html', '/cart.html'].some(p => path.endsWith(p)) || path.includes('/admin/');
+      if (isProtected && !isAuthPage) {
+        const redirectPath = window.location.pathname.substring(1) + window.location.search;
+        if (path.includes('/admin/')) {
+          window.location.replace('/admin/login?redirect=' + encodeURIComponent(redirectPath));
+        } else {
+          showToast('Please login or create a customer account to continue.', 'error');
+          setTimeout(() => {
+            window.location.replace('/login.html?redirect=' + encodeURIComponent(redirectPath));
+          }, 1500);
+        }
+      }
+      return null;
+    } finally {
+      sessionPromise = null;
     }
-    return null;
-  }
+  })();
+  
+  return sessionPromise;
 };
 
 // Global dynamic layout customizer
@@ -367,6 +460,7 @@ window.showToast = (message, type = 'success') => {
   if (!container) {
     container = document.createElement('div');
     container.id = 'toast-container';
+    container.style.cssText = 'position: fixed !important; z-index: 9999 !important; top: 20px !important; right: 20px !important; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
     document.body.appendChild(container);
   }
 
@@ -468,13 +562,22 @@ window.syncCartFromServer = async () => {
   if (!isLoggedInCustomer()) return;
   try {
     const res = await fetch('/api/cart', { credentials: 'same-origin' });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const data = await res.json();
     if (data.success) {
-      setCartCache(data.cart);
+      setCartCache(data.cart || []);
+      syncCartCounters();
+    } else {
+      setCartCache([]);
       syncCartCounters();
     }
   } catch (err) {
     console.error('Failed to sync cart from server:', err);
+    setCartCache([]);
+    syncCartCounters();
+    if (typeof showToast === 'function') {
+      showToast('Failed to sync cart with server.', 'error');
+    }
   }
 };
 
@@ -482,13 +585,22 @@ window.syncWishlistFromServer = async () => {
   if (!isLoggedInCustomer()) return;
   try {
     const res = await fetch('/api/wishlist', { credentials: 'same-origin' });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const data = await res.json();
     if (data.success) {
-      setWishlistCache(data.wishlist);
+      setWishlistCache(data.wishlist || []);
+      syncCartCounters();
+    } else {
+      setWishlistCache([]);
       syncCartCounters();
     }
   } catch (err) {
     console.error('Failed to sync wishlist from server:', err);
+    setWishlistCache([]);
+    syncCartCounters();
+    if (typeof showToast === 'function') {
+      showToast('Failed to sync wishlist with server.', 'error');
+    }
   }
 };
 
@@ -939,10 +1051,11 @@ function injectComponents(settings, user = null) {
           const val = e.target.value.trim();
           if (val.length < 2) { searchAutocompleteBox.style.display = 'none'; return; }
           try {
-            const res = await fetch(`/api/products?search=${encodeURIComponent(val)}&limit=6`);
+            const res = await fetch(`/api/products?search=${encodeURIComponent(val)}&limit=6&select=_id,name,price,discountPrice,images`);
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const text = await res.text();
             let data;
-            try { data = JSON.parse(text); } catch(ex) { searchAutocompleteBox.style.display = 'none'; return; }
+            try { data = JSON.parse(text); } catch(ex) { data = { success: false, products: [] }; }
             if (data.success && data.products && data.products.length > 0) {
               searchAutocompleteBox.innerHTML = data.products.map(p => `
                 <a href="/product-details.html?id=${p._id}" style="padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); color:var(--text-color); font-weight:500; font-size:13px;">
@@ -955,7 +1068,12 @@ function injectComponents(settings, user = null) {
               searchAutocompleteBox.innerHTML = '<div style="padding:12px 14px; color:var(--text-muted); font-size:13px;">No results found.</div>';
               searchAutocompleteBox.style.display = 'flex';
             }
-          } catch(err) { searchAutocompleteBox.style.display = 'none'; }
+          } catch(err) {
+            searchAutocompleteBox.style.display = 'none';
+            if (typeof showToast === 'function') {
+              showToast('Search autocomplete failed.', 'error');
+            }
+          }
         });
       }
     }
@@ -1013,10 +1131,11 @@ function injectComponents(settings, user = null) {
         const val = e.target.value.trim();
         if (val.length < 2) { mobileAutocompleteResults.innerHTML = ''; return; }
         try {
-          const res = await fetch(`/api/products?search=${encodeURIComponent(val)}&limit=6`);
+          const res = await fetch(`/api/products?search=${encodeURIComponent(val)}&limit=6&select=_id,name,price,discountPrice,images`);
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
           const text = await res.text();
           let data;
-          try { data = JSON.parse(text); } catch(ex) { return; }
+          try { data = JSON.parse(text); } catch(ex) { data = { success: false, products: [] }; }
           if (data.success && data.products && data.products.length > 0) {
             mobileAutocompleteResults.innerHTML = data.products.map(p => `
               <a href="/product-details.html?id=${p._id}" class="glass" style="padding:12px 16px; display:flex; justify-content:space-between; align-items:center; border-radius:8px; color:var(--text-color); font-weight:500; font-size:14px;">
@@ -1027,7 +1146,12 @@ function injectComponents(settings, user = null) {
           } else {
             mobileAutocompleteResults.innerHTML = '<div style="color:var(--text-muted); font-size:14px;">No results found.</div>';
           }
-        } catch(err) { mobileAutocompleteResults.innerHTML = ''; }
+        } catch(err) {
+          mobileAutocompleteResults.innerHTML = '';
+          if (typeof showToast === 'function') {
+            showToast('Search autocomplete failed.', 'error');
+          }
+        }
       });
     }
 
@@ -1118,17 +1242,9 @@ async function setupWhatsApp() {
   
   // Try fetching active contact number from server setting
   try {
-    const res = await fetch('/api/settings/homepage');
-    const text = await res.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error('Failed to parse WhatsApp settings JSON. Raw response:', text);
-      throw e;
-    }
-    if (data.success && data.setting && data.setting.whatsappContact) {
-      number = data.setting.whatsappContact;
+    const setting = await fetchSettings();
+    if (setting && setting.whatsappContact) {
+      number = setting.whatsappContact;
     }
   } catch (err) {
     console.error('Failed to load WhatsApp settings:', err);
@@ -1278,12 +1394,12 @@ window.openQuickViewModal = async (productId) => {
         <!-- Left: Images -->
         <div style="display:flex; flex-direction:column; gap:12px;">
           <div style="height:300px; border-radius:12px; overflow:hidden; border:1px solid var(--card-border); background:#FAF9F6; display:flex; align-items:center; justify-content:center;">
-            <img id="qv-main-img" src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/images/default-product.webp'">
+            <img id="qv-main-img" src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
           </div>
           <div style="display:flex; gap:10px; overflow-x:auto;">
             ${(p.images || []).map((img, idx) => `
               <button onclick="document.getElementById('qv-main-img').src='${img.url}'" style="width:60px; height:60px; border-radius:6px; overflow:hidden; border:1px solid var(--card-border); cursor:pointer;">
-                <img src="${img.url}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/images/default-product.webp'">
+                <img src="${img.url}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
               </button>
             `).join('')}
           </div>
@@ -1388,8 +1504,8 @@ window.createProductCardHTML = (p) => {
       
       <div class="image-zoom-container" style="height:220px; background:#FAF9F6; display:flex; align-items:center; justify-content:center; position:relative; border-bottom:1px solid var(--card-border); overflow:hidden;">
         <a href="/product-details.html?id=${pId}" style="width:100%; height:100%; display:block; position:relative;">
-          <img src="${imgUrl}" alt="${nameEscaped}" class="product-primary-img" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/images/default-product.webp'">
-          ${hasAltImage ? `<img src="${secondaryImgUrl}" alt="${nameEscaped}" class="product-secondary-img" onerror="this.src='/assets/images/default-product.webp'">` : ''}
+          <img src="${imgUrl}" alt="${nameEscaped}" class="product-primary-img" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
+          ${hasAltImage ? `<img src="${secondaryImgUrl}" alt="${nameEscaped}" class="product-secondary-img" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">` : ''}
         </a>
         
         <!-- Quick View Overlay Button -->

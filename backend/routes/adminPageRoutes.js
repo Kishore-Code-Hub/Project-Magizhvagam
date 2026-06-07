@@ -11,7 +11,8 @@ const ALLOWED_ADMIN_PAGES = new Set([
   'orders.html',
   'customers.html',
   'settings.html',
-  'reports.html'
+  'reports.html',
+  'invoices.html'
 ]);
 
 // Authenticate helper for HTML pages (redirect-based instead of JSON error responses)

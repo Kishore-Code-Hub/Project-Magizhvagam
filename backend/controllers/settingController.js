@@ -1,6 +1,71 @@
 const Setting = require('../models/Setting');
 const Coupon = require('../models/Coupon');
 
+// Default feature toggle values
+const DEFAULT_FEATURE_TOGGLES = {
+  wishlistEnabled: true,
+  couponsEnabled: true,
+  registrationEnabled: true
+};
+
+// @desc    Get feature toggles (cached helper for internal use)
+// @access  Internal
+const getFeatureToggleValues = async () => {
+  try {
+    const setting = await Setting.findOne({ key: 'featureToggles' });
+    if (setting && setting.value) {
+      return { ...DEFAULT_FEATURE_TOGGLES, ...setting.value };
+    }
+    return { ...DEFAULT_FEATURE_TOGGLES };
+  } catch (err) {
+    return { ...DEFAULT_FEATURE_TOGGLES };
+  }
+};
+exports.getFeatureToggleValues = getFeatureToggleValues;
+
+// @desc    Get feature toggles
+// @route   GET /api/settings/feature-toggles
+// @access  Public
+exports.getFeatureToggles = async (req, res) => {
+  try {
+    const toggles = await getFeatureToggleValues();
+    res.status(200).json({ success: true, toggles });
+  } catch (error) {
+    res.status(500).json({ success: false, error: `Error fetching feature toggles: ${error.message}` });
+  }
+};
+
+// @desc    Update feature toggles
+// @route   PUT /api/settings/feature-toggles
+// @access  Private (Admin Only)
+exports.updateFeatureToggles = async (req, res) => {
+  try {
+    const { toggles } = req.body;
+    if (!toggles || typeof toggles !== 'object') {
+      return res.status(400).json({ success: false, error: 'Please provide toggles object' });
+    }
+
+    // Only allow known toggle keys
+    const sanitized = {};
+    if (toggles.wishlistEnabled !== undefined) sanitized.wishlistEnabled = !!toggles.wishlistEnabled;
+    if (toggles.couponsEnabled !== undefined) sanitized.couponsEnabled = !!toggles.couponsEnabled;
+    if (toggles.registrationEnabled !== undefined) sanitized.registrationEnabled = !!toggles.registrationEnabled;
+
+    let setting = await Setting.findOne({ key: 'featureToggles' });
+    if (!setting) {
+      setting = await Setting.create({ key: 'featureToggles', value: { ...DEFAULT_FEATURE_TOGGLES, ...sanitized } });
+    } else {
+      setting.value = { ...DEFAULT_FEATURE_TOGGLES, ...setting.value, ...sanitized };
+      setting.markModified('value');
+      await setting.save();
+    }
+
+    res.status(200).json({ success: true, message: 'Feature toggles updated successfully!', toggles: setting.value });
+  } catch (error) {
+    res.status(500).json({ success: false, error: `Error updating feature toggles: ${error.message}` });
+  }
+};
+
 // @desc    Get store setting by key (e.g., "homepage")
 // @route   GET /api/settings/:key
 // @access  Public

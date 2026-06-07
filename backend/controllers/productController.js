@@ -11,15 +11,41 @@ const escapeRegex = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
 
 const DEFAULT_PRODUCT_IMAGE = '/assets/images/default-product.webp';
 
+// Helper to safely delete local product images from either assets/images/products/ or uploads/products/
+const deleteLocalProductImage = (publicId) => {
+  if (!publicId) return;
+  // Try assets/images/products/ first
+  let localPath = path.join(__dirname, '../../assets/images/products', publicId);
+  if (fs.existsSync(localPath)) {
+    try {
+      fs.unlinkSync(localPath);
+      return;
+    } catch (err) {
+      console.error(`Error deleting file ${localPath}:`, err);
+    }
+  }
+  // Fallback to uploads/products/
+  localPath = path.join(__dirname, '../../uploads/products', publicId);
+  if (fs.existsSync(localPath)) {
+    try {
+      fs.unlinkSync(localPath);
+    } catch (err) {
+      console.error(`Error deleting file ${localPath}:`, err);
+    }
+  }
+};
+
 const normalizeProductDoc = (product) => {
   const doc = product.toObject ? product.toObject() : { ...product };
-  if (!doc.images || !doc.images.length) {
-    doc.images = [{ url: DEFAULT_PRODUCT_IMAGE, publicId: null }];
-  } else {
-    doc.images = doc.images.map((img) => ({
-      ...img,
-      url: img && img.url && String(img.url).trim() ? img.url : DEFAULT_PRODUCT_IMAGE
-    }));
+  if ('images' in doc) {
+    if (!doc.images || !doc.images.length) {
+      doc.images = [{ url: DEFAULT_PRODUCT_IMAGE, publicId: null }];
+    } else {
+      doc.images = doc.images.map((img) => ({
+        ...img,
+        url: img && img.url && String(img.url).trim() ? img.url : DEFAULT_PRODUCT_IMAGE
+      }));
+    }
   }
   return doc;
 };
@@ -32,22 +58,45 @@ exports.getProducts = async (req, res) => {
     const { 
       search, category, minPrice, maxPrice, 
       material, color, occasion, sort, page = 1, limit = 12,
-      ids
+      ids, select, isFeatured
     } = req.query;
 
     const query = {};
 
+    // Coerce query parameters to safe primitive types to prevent NoSQL injection
+    const cleanString = (val) => (typeof val === 'string' ? val.trim() : '');
+    const cleanNumberString = (val) => (typeof val === 'string' || typeof val === 'number' ? String(val).trim() : '');
+
+    const searchVal = cleanString(search);
+    const categoryVal = cleanString(category);
+    const materialVal = cleanString(material);
+    const colorVal = cleanString(color);
+    const occasionVal = cleanString(occasion);
+    const sortVal = cleanString(sort);
+    const idsVal = cleanString(ids);
+    const selectVal = cleanString(select);
+    const isFeaturedVal = cleanString(isFeatured);
+
+    if (isFeaturedVal === 'true') {
+      query.isFeatured = true;
+    } else if (isFeaturedVal === 'false') {
+      query.isFeatured = false;
+    }
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 12);
+
     // Filter by specific product IDs
-    if (ids) {
-      const idArray = ids.split(',').map(id => id.trim()).filter(id => id.match(/^[0-9a-fA-F]{24}$/));
+    if (idsVal) {
+      const idArray = idsVal.split(',').map(id => id.trim()).filter(id => id.match(/^[0-9a-fA-F]{24}$/));
       if (idArray.length > 0) {
         query._id = { $in: idArray };
       }
     }
 
     // Search filter
-    if (search) {
-      const cleanSearch = escapeRegex(search);
+    if (searchVal) {
+      const cleanSearch = escapeRegex(searchVal);
       query.$or = [
         { name: { $regex: cleanSearch, $options: 'i' } },
         { description: { $regex: cleanSearch, $options: 'i' } },
@@ -56,38 +105,40 @@ exports.getProducts = async (req, res) => {
     }
 
     // Category filter
-    if (category) {
+    if (categoryVal) {
       // Find category by slug or ID
-      const cat = await Category.findOne({ $or: [{ slug: category }, { name: category }] });
+      const cat = await Category.findOne({ $or: [{ slug: categoryVal }, { name: categoryVal }] });
       if (cat) {
         query.category = cat._id;
-      } else if (category.match(/^[0-9a-fA-F]{24}$/)) {
-        query.category = category;
+      } else if (categoryVal.match(/^[0-9a-fA-F]{24}$/)) {
+        query.category = categoryVal;
       }
     }
 
     // Price range filter
-    if (minPrice || maxPrice) {
+    const minP = minPrice !== undefined && minPrice !== '' ? Number(minPrice) : NaN;
+    const maxP = maxPrice !== undefined && maxPrice !== '' ? Number(maxPrice) : NaN;
+    if (Number.isFinite(minP) || Number.isFinite(maxP)) {
       query.price = {};
-      if (minPrice) query.price.$gte = Number(minPrice);
-      if (maxPrice) query.price.$lte = Number(maxPrice);
+      if (Number.isFinite(minP)) query.price.$gte = minP;
+      if (Number.isFinite(maxP)) query.price.$lte = maxP;
     }
 
     // Specification filters
-    if (material) {
-      query['specifications.material'] = { $regex: escapeRegex(material), $options: 'i' };
+    if (materialVal) {
+      query['specifications.material'] = { $regex: escapeRegex(materialVal), $options: 'i' };
     }
-    if (color) {
-      query['specifications.color'] = { $regex: escapeRegex(color), $options: 'i' };
+    if (colorVal) {
+      query['specifications.color'] = { $regex: escapeRegex(colorVal), $options: 'i' };
     }
-    if (occasion) {
-      query.tags = { $in: [new RegExp(escapeRegex(occasion), 'i')] };
+    if (occasionVal) {
+      query.tags = { $in: [new RegExp(escapeRegex(occasionVal), 'i')] };
     }
 
     // Sorting configurations
     let sortQuery = { createdAt: -1 }; // default newest
-    if (sort) {
-      switch (sort) {
+    if (sortVal) {
+      switch (sortVal) {
         case 'priceLowHigh':
           sortQuery = { price: 1 };
           break;
@@ -109,17 +160,29 @@ exports.getProducts = async (req, res) => {
     }
 
     const count = await Product.countDocuments(query);
-    const products = await Product.find(query)
-      .populate('category', 'name slug')
+    
+    let productQuery = Product.find(query);
+    if (selectVal) {
+      const allowedFields = ['_id', 'name', 'price', 'discountPrice', 'images'];
+      const selectFields = selectVal.split(',')
+        .map(f => f.trim())
+        .filter(f => allowedFields.includes(f))
+        .join(' ');
+      productQuery = productQuery.select(selectFields || '_id name price discountPrice images');
+    } else {
+      productQuery = productQuery.populate('category', 'name slug');
+    }
+
+    const products = await productQuery
       .sort(sortQuery)
-      .limit(Number(limit))
-      .skip((Number(page) - 1) * Number(limit));
+      .limit(limitNum)
+      .skip((pageNum - 1) * limitNum);
 
     res.status(200).json({
       success: true,
       count,
-      page: Number(page),
-      pages: Math.ceil(count / Number(limit)),
+      page: pageNum,
+      pages: Math.ceil(count / limitNum),
       products: products.map(normalizeProductDoc)
     });
   } catch (error) {
@@ -164,7 +227,7 @@ exports.getProductById = async (req, res) => {
 // @access  Private (Admin Only)
 exports.createProduct = async (req, res) => {
   try {
-    const { name, description, price, discountPrice, stock, category, specifications, tags } = req.body;
+    const { name, description, price, discountPrice, stock, category, specifications, tags, isFeatured } = req.body;
 
     if (!name || !description || !price || !category) {
       return res.status(400).json({ success: false, error: 'Please provide name, description, price and category' });
@@ -201,8 +264,10 @@ exports.createProduct = async (req, res) => {
       stock: Number(stock) || 0,
       category,
       images,
+      imageFolder: req.imageFolder,
       specifications: specs,
-      tags: productTags
+      tags: productTags,
+      isFeatured: isFeatured === 'true' || isFeatured === true
     });
 
     res.status(201).json({ success: true, message: 'Product created successfully!', product });
@@ -216,7 +281,7 @@ exports.createProduct = async (req, res) => {
 // @access  Private (Admin Only)
 exports.updateProduct = async (req, res) => {
   try {
-    const { name, description, price, discountPrice, stock, category, specifications, tags, existingImages } = req.body;
+    const { name, description, price, discountPrice, stock, category, specifications, tags, existingImages, isFeatured } = req.body;
     
     let product = await Product.findById(req.params.id);
     if (!product) {
@@ -229,6 +294,10 @@ exports.updateProduct = async (req, res) => {
     if (discountPrice !== undefined) product.discountPrice = discountPrice ? Number(discountPrice) : null;
     if (stock !== undefined) product.stock = Number(stock);
     if (category) product.category = category;
+    if (req.imageFolder) product.imageFolder = req.imageFolder;
+    if (isFeatured !== undefined) {
+      product.isFeatured = isFeatured === 'true' || isFeatured === true;
+    }
 
     if (specifications) {
       product.specifications = typeof specifications === 'string' ? JSON.parse(specifications) : specifications;
@@ -301,14 +370,7 @@ exports.updateProduct = async (req, res) => {
     for (const img of imagesToDelete) {
       if (img.publicId) {
         if (img.publicId.endsWith('.webp')) {
-          const localPath = path.join(__dirname, '../../uploads/products', img.publicId);
-          if (fs.existsSync(localPath)) {
-            try {
-              fs.unlinkSync(localPath);
-            } catch (err) {
-              console.error(`Error deleting file ${localPath}:`, err);
-            }
-          }
+          deleteLocalProductImage(img.publicId);
         } else {
           try {
             await deleteFromCloudinary(img.publicId);
@@ -342,10 +404,33 @@ exports.deleteProduct = async (req, res) => {
     for (const img of product.images) {
       if (img.publicId) {
         if (img.publicId.endsWith('.webp')) {
-          const localPath = path.join(__dirname, '../../uploads/products', img.publicId);
-          if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
+          deleteLocalProductImage(img.publicId);
         } else {
-          await deleteFromCloudinary(img.publicId);
+          try {
+            await deleteFromCloudinary(img.publicId);
+          } catch (err) {}
+        }
+      }
+    }
+
+    // Recursively delete the product's image directory if it exists locally
+    if (product.imageFolder) {
+      const productDir = path.join(__dirname, '../../assets/images/products', product.imageFolder);
+      if (fs.existsSync(productDir)) {
+        try {
+          fs.rmSync(productDir, { recursive: true, force: true });
+        } catch (err) {
+          console.error(`Error deleting product directory ${productDir}:`, err);
+        }
+      }
+    } else {
+      // Fallback for previous implementation (ID-based uploads directory)
+      const productDir = path.join(__dirname, '../../uploads/products', product._id.toString());
+      if (fs.existsSync(productDir)) {
+        try {
+          fs.rmSync(productDir, { recursive: true, force: true });
+        } catch (err) {
+          console.error(`Error deleting legacy product directory ${productDir}:`, err);
         }
       }
     }
@@ -506,22 +591,34 @@ exports.bulkDeleteProducts = async (req, res) => {
 
     const products = await Product.find({ _id: { $in: ids } });
     
-    // Delete attached images
+    // Delete attached images & directory
     for (const product of products) {
       for (const img of product.images) {
         if (img.publicId) {
           if (img.publicId.endsWith('.webp')) {
-            const localPath = path.join(__dirname, '../../uploads/products', img.publicId);
-            if (fs.existsSync(localPath)) {
-              try {
-                fs.unlinkSync(localPath);
-              } catch (e) {}
-            }
+            deleteLocalProductImage(img.publicId);
           } else {
             try {
               await deleteFromCloudinary(img.publicId);
             } catch (e) {}
           }
+        }
+      }
+      // Recursively delete the product's image directory if it exists locally
+      if (product.imageFolder) {
+        const productDir = path.join(__dirname, '../../assets/images/products', product.imageFolder);
+        if (fs.existsSync(productDir)) {
+          try {
+            fs.rmSync(productDir, { recursive: true, force: true });
+          } catch (e) {}
+        }
+      } else {
+        // Fallback for previous implementation (ID-based uploads directory)
+        const productDir = path.join(__dirname, '../../uploads/products', product._id.toString());
+        if (fs.existsSync(productDir)) {
+          try {
+            fs.rmSync(productDir, { recursive: true, force: true });
+          } catch (e) {}
         }
       }
     }
@@ -675,5 +772,25 @@ exports.bulkImportProducts = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, error: `Bulk import error: ${error.message}` });
+  }
+};
+
+// @desc    Toggle product featured flag
+// @route   PUT /api/products/:id/featured
+// @access  Private (Admin Only)
+exports.toggleProductFeatured = async (req, res) => {
+  try {
+    const { isFeatured } = req.body;
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { isFeatured: !!isFeatured },
+      { new: true }
+    );
+    if (!product) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+    res.status(200).json({ success: true, message: 'Featured status toggled successfully', product });
+  } catch (error) {
+    res.status(500).json({ success: false, error: `Featured toggle error: ${error.message}` });
   }
 };

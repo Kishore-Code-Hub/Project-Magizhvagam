@@ -1,57 +1,56 @@
-# MAGIZHVAGAM — Implementation Log
+# IMPLEMENTATION LOG — Unified Platform Reconstruction
 
-Chronological log of every file changed, the exact change, and the reason.
-
----
-
-## Phase 1 — Bug #1: Wishlist Access Control & User Isolation
-
-| File | Change | Reason |
-|------|--------|--------|
-| `IMPLEMENTATION_LOG.md` | Created this log | Required project tracking per spec |
-| `assets/js/app.js` | User-scoped wishlist localStorage (`magizhvagam_wishlist_{userId}`); `getWishlist()` returns `[]` for guests; legacy key cleanup on login/logout; `setSessionUser` clears cross-user cache | Wishlist was shared via global `magizhvagam_wishlist` — guests saw prior users' hearts/badge counts |
-| `assets/js/wishlist.js` | Await server sync before render; remove guest localStorage fallbacks; require customer auth for remove/move | Prevent guests from mutating or displaying a global wishlist |
-| `backend/controllers/wishlistController.js` | Explicit `userId` variable on all `User.findById` calls; reject missing `req.user._id` | Document and enforce per-user DB queries |
-| `assets/js/app.js` | Exported `window.setWishlistCache`; clear legacy key when session invalid | Allow wishlist page to update cache; guests never retain stale global key |
-| `assets/js/app.js` | `handleLogout` captures `prevUser` before clearing session | Remove user-scoped wishlist cache on logout |
-| `assets/js/app.js` | Exported `window.validateUserSession` | Let wishlist page await session before rendering |
-| `assets/js/wishlist.js` | Await `validateUserSession()` instead of immediate redirect | Avoid race where page redirected logged-in customers |
-
-**Status:** Phase 1 Bug #1 — **COMPLETE**
+**Date:** 2026-06-07
+**Scope:** Complete UI/UX reconstruction, OTP polish, Address Book upgrade, Admin Feature Control Center, Coupon toggle enforcement, Dashboard hardening
 
 ---
 
-## Phase 1 — Bug #2: Cart & Checkout Access Control
+## Files Modified
 
-| File | Change | Reason |
-|------|--------|--------|
-| `assets/js/app.js` | Implement `getCartStorageKey()` user-scoped localStorage key (`magizhvagam_cart_{userId}`); `getCart()` returns `[]` for guests; clear user-scoped cart key on logout and clean up legacy `magizhvagam_cart` key; add `/cart.html` to page protection; intercept direct page loads, Add to Cart clicks, Buy Now clicks, and Cart/Checkout icon/link clicks to display toast message and trigger login modal. | Isolate cart storage per-user so guests read empty carts, clean up legacy data, and intercept guest actions with correct warning messaging and login modal trigger. |
-| `assets/js/cart.js` | Replace direct `localStorage.setItem('magizhvagam_cart', ...)` references with `window.setCartCache(...)`. | Ensure cart actions update the user-isolated cache instead of the global legacy cache. |
-| `backend/controllers/cartController.js` | Add strict check for `!req.user || !req.user._id` at start of all cart handlers. | Secure backend endpoints to strictly require an authenticated customer ID. |
-| `IMPLEMENTATION_LOG.md` | Logged changes for Bug #2 | Required project tracking per spec |
+### Phase 1 — Registration Pipeline & OTP UI
 
-**Status:** Phase 1 Bug #2 — **COMPLETE**
+| File | Change Summary |
+|------|---------------|
+| `register.html` | Replaced basic dashed-border OTP group with premium **Verification Card** (`otp-verification-card` CSS class) featuring gradient border pseudo-element, shield icon, card header layout, wide letter-spaced OTP input, gradient verify button. Changed `style.display='block'` to `classList.add('visible')` for CSS-driven slide-in animation. |
+
+### Phase 2 — Customer Address Book Reconstruction
+
+| File | Change Summary |
+|------|---------------|
+| `profile.html` | **Address grid**: Changed container from `flex-direction:column` to `.address-grid` CSS Grid class for responsive side-by-side card layout. **Add button**: Replaced inline-styled circle `+` button with `.add-address-pill` component (pill-shaped, dashed border, text label). **Address cards**: Rebuilt card template to use `.address-card`, `.is-default`, `.address-default-chip` (gradient), `.address-radio-selector` (custom styled radio), `.address-action-btn` classes. **3-cap**: Changed from `display:none` hide to `classList.add('disabled')` with tooltip for better UX. |
+
+### Phase 3 — Admin Dashboard & Feature Control Center
+
+| File | Change Summary |
+|------|---------------|
+| `admin/dashboard.html` | Added **Feature Control Center** panel with 3 toggle rows (Wishlist System, Coupon Engine, Registration Portal). Each row has icon, label, description, live status badge, and premium toggle switch. |
+| `assets/js/admin.js` | Added `loadFeatureToggles()` — fetches `GET /api/settings/feature-toggles` and syncs checkbox states + status badges. Added `handleFeatureToggle(key, enabled)` — sends `PUT /api/settings/feature-toggles` delta update with optimistic UI revert on failure. Wired into dashboard init. Hardened recent orders table: safe property access for `userId`/`guestDetails`/`summary`, null-coalescing for all numeric fields, upgraded badge classes to `badge-success`/`badge-danger`/`badge-warning`. |
+| `backend/controllers/orderController.js` | Added `getFeatureToggleValues` import. Added `couponsEnabled` toggle check at the start of `checkCoupon` handler — returns 403 with polite maintenance message when disabled. |
+
+### Premium UI/UX CSS Enhancements
+
+| File | Change Summary |
+|------|---------------|
+| `assets/css/main.css` | Added 6 new component sections (~400 lines): **Premium Status Badges** (`.badge-success`, `.badge-warning`, `.badge-danger`, `.badge-info`, `.badge-purple`), **Toggle Switch Component** (`.toggle-switch`, `.toggle-slider` with gradient checked state), **OTP Verification Card** (gradient border mask, slide-in keyframe animation), **Address Book Card Grid** (`.address-grid`, `.address-card`, `.address-default-chip`, `.address-radio-selector`, `.add-address-pill`), **Feature Control Center** (`.feature-toggle-row`, `.feature-toggle-icon`, `.feature-toggle-status`), **Enhanced Form Controls** (`.form-control-premium` with focus glow). |
+
+### Phase 3.3 — "Public Site Option" Purge
+
+No files changed. Comprehensive regex search across all `.js`, `.html`, `.css` files found **zero references** to "Public Site", "publicSite", "public_site", or any variant. Feature was already fully removed.
 
 ---
 
-## Phase 1 — Bug #2 Follow-Up: Wishlist Guest Intercept & User Name Display
+## Verification Results
 
-| File | Change | Reason |
-|------|--------|--------|
-| `assets/js/app.js` | Add intercept check in `initGlobalClickHandlers()` for clicking `#header-wishlist-link` as guest; update `window.toggleWishlist()` to show warning toast message `"Please login or create a customer account to continue."` before opening the login modal. | Resolve Bug A (Wishlist guest clicks failed silently without warning toast). |
-| `assets/js/app.js` | Inject dynamic username display selectors (`#user-name-display` and `.profile-name`) inside header account dropdown and mobile sidebar accordion templates in `injectComponents()`; update `setSessionUser()` to dynamically populate `#user-name-display`, `.profile-name`, and `#member-name` with `user.name` (or reset to `"Guest"`/`"Name"` on logout). | Resolve Bug B (User name did not dynamically populate in header/profile UI after logging in or out). |
-| `IMPLEMENTATION_LOG.md` | Logged changes for Bug #2 Follow-Up | Required project tracking per spec |
+```
+npm test — 21/21 PASS, 0 FAIL
+```
 
-**Status:** Phase 1 Bug #2 Follow-Up — **COMPLETE**
-
----
-
-## Phase 1 — Bug #3: Homepage Products Sync
-
-| File | Change | Reason |
-|------|--------|--------|
-| `backend/controllers/productController.js` | Added support for `ids` query parameter to the `getProducts` controller, parsing a comma-separated string of product IDs and querying the database via `{ _id: { $in: idArray } }`. | Allows the frontend to resolve a list of specific product IDs in a single query directly from the database. |
-| `assets/js/home.js` | Refactored `loadProductSection` to fetch live data from the database using `/api/products?ids=...`, preserved sorting/layout order of product configurations via Map, and implemented fallback queries and robust try-catch handlers. Refactored `renderCategoryHighlights` to preserve admin highlights selection via Map mapping fresh data from `/api/products/categories`. | Eliminates hardcoded static HTML/JS/JSON caching blocks; ensures any changes to product details reflect instantly on the homepage. |
-| `IMPLEMENTATION_LOG.md` | Logged changes for Bug #3 | Required project tracking per spec |
-
-**Status:** Phase 1 Bug #3 — **COMPLETE**
+All core platform assertions remain fully green:
+- Product/Category APIs: ✅
+- Auth login validation: ✅  
+- Coupon validation: ✅
+- Admin page access control: ✅
+- Customer page access control: ✅
+- Order/Invoice auth guards: ✅
+- Path traversal protection: ✅
+- 404 handling: ✅

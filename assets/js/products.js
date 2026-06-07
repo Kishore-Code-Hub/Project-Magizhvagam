@@ -47,8 +47,9 @@ async function loadSidebarCategories() {
 
   try {
     const res = await fetch('/api/products/categories');
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const data = await res.json();
-    if (data.success) {
+    if (data.success && data.categories) {
       data.categories.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.slug;
@@ -58,6 +59,9 @@ async function loadSidebarCategories() {
     }
   } catch (err) {
     console.error('Error fetching sidebar categories:', err);
+    if (typeof showToast === 'function') {
+      showToast('Failed to load categories.', 'error');
+    }
   }
 }
 
@@ -90,13 +94,14 @@ async function loadCatalogProducts() {
 
   try {
     const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const text = await res.text();
     let data;
     try {
       data = JSON.parse(text);
     } catch (parseErr) {
       console.error('Catalog API returned non-JSON:', text.slice(0, 200));
-      throw parseErr;
+      data = { success: false, products: [], page: 1, pages: 1 };
     }
 
     if (!data.success || !data.products || data.products.length === 0) {
@@ -113,10 +118,13 @@ async function loadCatalogProducts() {
 
     grid.innerHTML = data.products.map(p => createProductCardHTML(p)).join('');
 
-    renderPagination(data.page, data.pages);
+    renderPagination(data.page || 1, data.pages || 1);
 
   } catch (error) {
     grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:red; padding:30px;">Connection failed. Please reload catalog page.</p>';
+    if (typeof showToast === 'function') {
+      showToast('Connection failed. Please reload the catalog page.', 'error');
+    }
   }
 }
 

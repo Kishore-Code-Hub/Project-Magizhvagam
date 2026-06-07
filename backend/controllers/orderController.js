@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Coupon = require('../models/Coupon');
+const { getFeatureToggleValues } = require('./settingController');
 
 const canAccessOrder = (order, user) => {
   if (!user) return false;
@@ -193,7 +194,16 @@ exports.updateOrderStatus = async (req, res) => {
 // @access  Public
 exports.checkCoupon = async (req, res) => {
   try {
+    // Check if coupons feature is globally enabled
+    const toggles = await getFeatureToggleValues();
+    if (!toggles.couponsEnabled) {
+      return res.status(403).json({ success: false, error: 'Coupon promotions are currently undergoing scheduled maintenance. Please try again later.' });
+    }
+
     const { code, subtotal } = req.body;
+    if (typeof code !== 'string') {
+      return res.status(400).json({ success: false, error: 'Invalid coupon format' });
+    }
     if (!code || !subtotal) {
       return res.status(400).json({ success: false, error: 'Please provide coupon code and order subtotal' });
     }

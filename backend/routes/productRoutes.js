@@ -4,7 +4,8 @@ const {
   getProducts, getProductById, createProduct, 
   updateProduct, deleteProduct, createReview, 
   getCategories, createCategory, deleteCategory,
-  duplicateProduct, bulkDeleteProducts, bulkUpdateProducts, bulkImportProducts
+  duplicateProduct, bulkDeleteProducts, bulkUpdateProducts, bulkImportProducts,
+  toggleProductFeatured
 } = require('../controllers/productController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const { uploadMultiple, processImages } = require('../middleware/uploadMiddleware');
@@ -26,6 +27,7 @@ router.post('/', protect, adminOnly, uploadMultiple, processImages, createProduc
 // Parameterized public/admin routes last
 router.get('/:id', getProductById);
 router.post('/:id/reviews', createReview);
+router.put('/:id/featured', protect, adminOnly, toggleProductFeatured);
 router.put('/:id', protect, adminOnly, uploadMultiple, processImages, updateProduct);
 router.delete('/:id', protect, adminOnly, deleteProduct);
 

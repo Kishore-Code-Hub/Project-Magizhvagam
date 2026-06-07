@@ -20,7 +20,10 @@
 
     <!-- Main Dashboard Panel -->
     <main class="admin-main">
-      <h1 style="font-family:'Outfit'; font-size:32px; margin-bottom:30px; color:var(--text-color);">Store Performance</h1>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap:wrap; gap:15px;">
+        <h1 style="font-family:'Outfit'; font-size:32px; margin:0; color:var(--text-color);">Store Performance</h1>
+        <button type="button" id="open-reset-modal-btn" class="btn" style="background:#ef4444; color:white; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;">Reset Statistics</button>
+      </div>
       
       <!-- Metrics Widgets -->
       <div class="metric-grid">
@@ -39,6 +42,61 @@
         <div class="glass metric-card hover-lift animated scale-in">
           <div style="font-size:12px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Live Inventory</div>
           <div class="metric-number" id="metric-products">0</div>
+        </div>
+      </div>
+
+      <!-- Feature Control Center -->
+      <div class="glass feature-control-panel" style="padding:30px; border-radius:12px; margin-bottom:30px;">
+        <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:20px; color:hsl(var(--primary-purple)); display:flex; align-items:center; gap:10px;">
+          <span style="font-size:22px;">⚙️</span> Feature Control Center
+        </h3>
+
+        <!-- Wishlist Toggle -->
+        <div class="feature-toggle-row" id="toggle-row-wishlist">
+          <div class="feature-toggle-info">
+            <div class="feature-toggle-icon wishlist">❤️</div>
+            <div>
+              <div class="feature-toggle-label">Global Wishlist System</div>
+              <div class="feature-toggle-desc">Allow customers to save products to their wishlist</div>
+            </div>
+          </div>
+          <span class="feature-toggle-status active" id="toggle-status-wishlist">Active</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-wishlistEnabled" checked onchange="handleFeatureToggle('wishlistEnabled', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Coupon Engine Toggle -->
+        <div class="feature-toggle-row" id="toggle-row-coupon">
+          <div class="feature-toggle-info">
+            <div class="feature-toggle-icon coupon">🎟️</div>
+            <div>
+              <div class="feature-toggle-label">Coupon Discount Engine</div>
+              <div class="feature-toggle-desc">Enable promotional coupon codes at checkout</div>
+            </div>
+          </div>
+          <span class="feature-toggle-status active" id="toggle-status-coupon">Active</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-couponsEnabled" checked onchange="handleFeatureToggle('couponsEnabled', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Registration Portal Toggle -->
+        <div class="feature-toggle-row" id="toggle-row-registration">
+          <div class="feature-toggle-info">
+            <div class="feature-toggle-icon registration">📝</div>
+            <div>
+              <div class="feature-toggle-label">Customer Registration Portal</div>
+              <div class="feature-toggle-desc">Allow new customers to create accounts</div>
+            </div>
+          </div>
+          <span class="feature-toggle-status active" id="toggle-status-registration">Active</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-registrationEnabled" checked onchange="handleFeatureToggle('registrationEnabled', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
         </div>
       </div>
 
@@ -72,6 +130,18 @@
       
     </main>
 
+  </div>
+
+  <!-- Reset Statistics Confirmation Modal -->
+  <div id="reset-stats-modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
+    <div class="glass" style="background:var(--bg-color, #fff); padding:30px; border-radius:12px; max-width:400px; width:90%; text-align:center; border:1px solid var(--card-border); box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+      <h3 style="font-family:'Outfit'; font-size:22px; color:#ef4444; margin-bottom:15px;">Irreversible Action</h3>
+      <p style="font-size:14px; margin-bottom:25px; color:var(--text-color); line-height:1.5;">Are you sure you want to clear all statistics? This action is irreversible.</p>
+      <div style="display:flex; justify-content:center; gap:12px;">
+        <button id="confirm-reset-btn" class="btn" style="background:#ef4444; color:white; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600;">Clear Stats</button>
+        <button id="cancel-reset-btn" class="btn btn-secondary" style="border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600;">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <!-- Scripts -->

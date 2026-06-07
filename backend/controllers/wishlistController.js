@@ -1,4 +1,7 @@
 const User = require('../models/User');
+const { getFeatureToggleValues } = require('./settingController');
+
+const WISHLIST_DISABLED_MSG = 'This feature is temporarily undergoing holiday maintenance.';
 
 const formatWishlist = (items) =>
   (items || []).map((item) => ({
@@ -10,6 +13,11 @@ const formatWishlist = (items) =>
 
 exports.getWishlist = async (req, res) => {
   try {
+    const toggles = await getFeatureToggleValues();
+    if (!toggles.wishlistEnabled) {
+      return res.status(403).json({ success: false, error: WISHLIST_DISABLED_MSG });
+    }
+
     const userId = req.user?._id;
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -26,6 +34,11 @@ exports.getWishlist = async (req, res) => {
 
 exports.mergeWishlist = async (req, res) => {
   try {
+    const toggles = await getFeatureToggleValues();
+    if (!toggles.wishlistEnabled) {
+      return res.status(403).json({ success: false, error: WISHLIST_DISABLED_MSG });
+    }
+
     const userId = req.user?._id;
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -65,6 +78,11 @@ exports.mergeWishlist = async (req, res) => {
 
 exports.addWishlistItem = async (req, res) => {
   try {
+    const toggles = await getFeatureToggleValues();
+    if (!toggles.wishlistEnabled) {
+      return res.status(403).json({ success: false, error: WISHLIST_DISABLED_MSG });
+    }
+
     const userId = req.user?._id;
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -109,6 +127,11 @@ exports.addWishlistItem = async (req, res) => {
 
 exports.removeWishlistItem = async (req, res) => {
   try {
+    const toggles = await getFeatureToggleValues();
+    if (!toggles.wishlistEnabled) {
+      return res.status(403).json({ success: false, error: WISHLIST_DISABLED_MSG });
+    }
+
     const userId = req.user?._id;
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Authentication required' });

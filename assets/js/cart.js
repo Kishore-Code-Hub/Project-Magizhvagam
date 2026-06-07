@@ -60,7 +60,7 @@ function renderCart() {
     <div class="glass" style="display:flex; justify-content:space-between; align-items:center; padding:16px; margin-bottom:16px; border-radius:12px; flex-wrap:wrap; gap:16px;">
       <div style="display:flex; align-items:center; gap:16px; min-width:260px;">
         <div style="width:70px; height:70px; border-radius:8px; overflow:hidden; border:1px solid var(--card-border);">
-          <img src="${item.image || '/assets/images/default-product.webp'}" alt="${item.name}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/images/default-product.webp'">
+          <img src="${item.image || '/assets/images/default-product.webp'}" alt="${item.name}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
         </div>
         <div>
           <h4 style="font-family:'Outfit'; font-size:15px; font-weight:600;"><a href="/product-details.html?id=${item.productId}">${item.name}</a></h4>
@@ -105,12 +105,13 @@ window.changeCartQty = async (productId, val) => {
         credentials: 'same-origin',
         body: JSON.stringify({ quantity: newQty < 1 ? 1 : newQty })
       });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
-      if (data.success) {
+      if (data && data.success) {
         if (typeof window.setCartCache === 'function') {
-          window.setCartCache(data.cart);
+          window.setCartCache(data.cart || []);
         } else {
-          localStorage.setItem('magizhvagam_cart', JSON.stringify(data.cart));
+          localStorage.setItem('magizhvagam_cart', JSON.stringify(data.cart || []));
         }
         renderCart();
         syncCartCounters();
@@ -119,6 +120,9 @@ window.changeCartQty = async (productId, val) => {
       }
     } catch (err) {
       console.error('Failed to update cart quantity:', err);
+      if (typeof showToast === 'function') {
+        showToast('Connection error updating cart quantity', 'error');
+      }
     }
   }
 
@@ -142,12 +146,13 @@ window.removeFromCart = async (productId) => {
         method: 'DELETE',
         credentials: 'same-origin'
       });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
-      if (data.success) {
+      if (data && data.success) {
         if (typeof window.setCartCache === 'function') {
-          window.setCartCache(data.cart);
+          window.setCartCache(data.cart || []);
         } else {
-          localStorage.setItem('magizhvagam_cart', JSON.stringify(data.cart));
+          localStorage.setItem('magizhvagam_cart', JSON.stringify(data.cart || []));
         }
         renderCart();
         syncCartCounters();
@@ -157,6 +162,9 @@ window.removeFromCart = async (productId) => {
       }
     } catch (err) {
       console.error('Failed to remove cart item:', err);
+      if (typeof showToast === 'function') {
+        showToast('Connection error removing cart item', 'error');
+      }
     }
   }
 
@@ -244,10 +252,10 @@ async function handleCouponApply(e) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code, subtotal })
     });
-
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const data = await res.json();
-    if (!data.success) {
-      showToast(data.error || 'Invalid Coupon', 'error');
+    if (!data || !data.success) {
+      showToast(data ? data.error : 'Invalid Coupon', 'error');
       return;
     }
 

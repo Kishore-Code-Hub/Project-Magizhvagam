@@ -60,13 +60,13 @@ async function handleLogin(email, password, redirectUrl = '/index.html') {
 }
 
 // Customer sign-up handler
-async function handleRegister(name, email, password) {
+async function handleRegister(name, email, phone, password, address1, pincode, city, state) {
   try {
     const res = await fetch(`${AUTH_API}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ name, email, password })
+      body: JSON.stringify({ name, email, phone, password, address1, pincode, city, state })
     });
 
     const data = await res.json();
@@ -75,8 +75,22 @@ async function handleRegister(name, email, password) {
       return false;
     }
 
-    showToast('Account created! Signing you in...', 'success');
-    return await handleLogin(email, password, '/profile.html');
+    if (typeof window.setSessionUser === 'function') {
+      window.setSessionUser(data.user);
+    }
+
+    if (data.user && data.user.role === 'customer' && typeof window.mergeCartAndWishlistAfterLogin === 'function') {
+      await window.mergeCartAndWishlistAfterLogin();
+    }
+
+    showToast('Account created and logged in successfully!', 'success');
+    setTimeout(() => {
+      if (typeof window.setSessionUser === 'function') {
+        window.setSessionUser(data.user);
+      }
+      window.location.replace('/profile.html');
+    }, 1000);
+    return true;
   } catch (error) {
     showToast('Connection error during registration', 'error');
     return false;

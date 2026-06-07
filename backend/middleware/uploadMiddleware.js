@@ -2,6 +2,8 @@ const multer = require('multer');
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
+const mongoose = require('mongoose');
+const Product = require('../models/Product');
 const { isCloudinaryConfigured, uploadToCloudinary } = require('../services/cloudinary');
 
 // In-memory storage for raw buffers before optimization
@@ -26,14 +28,47 @@ const upload = multer({
 
 // Main middleware to process and upload/save images
 const processImages = async (req, res, next) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
-    req.processedImages = [];
-    return next();
-  }
-
   try {
+    let folderName = null;
+
+    if (req.params.id) {
+      // For updates, retrieve the existing product's assigned folder
+      const existingProduct = await Product.findById(req.params.id);
+      if (existingProduct && existingProduct.imageFolder) {
+        folderName = existingProduct.imageFolder;
+      }
+    }
+
+    if (!folderName) {
+      // Generate a new folder name based on the product name slug
+      const name = req.body.name || 'product';
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'product';
+      
+      folderName = slug;
+      let counter = 1;
+      const baseDir = path.join(__dirname, '../../assets/images/products');
+      
+      // Ensure products directory exists before checking slug existence
+      if (!fs.existsSync(baseDir)) {
+        fs.mkdirSync(baseDir, { recursive: true });
+      }
+
+      // Check for collisions and append suffix counter if directory already exists
+      while (fs.existsSync(path.join(baseDir, folderName))) {
+        folderName = `${slug}(${counter})`;
+        counter++;
+      }
+    }
+
+    req.imageFolder = folderName;
+
+    if (!req.files || Object.keys(req.files).length === 0) {
+      req.processedImages = [];
+      return next();
+    }
+
     const processedImages = [];
-    const uploadDir = path.join(__dirname, '../../uploads/products');
+    const uploadDir = path.join(__dirname, '../../assets/images/products', folderName);
 
     // Create upload directory locally if not using Cloudinary or as fallback
     if (!isCloudinaryConfigured && !fs.existsSync(uploadDir)) {
@@ -69,13 +104,13 @@ const processImages = async (req, res, next) => {
           });
         } else {
           // 3. Save Locally
-          const filename = `product-${Date.now()}-${Math.round(Math.random() * 1E9)}.webp`;
+          const filename = `image-${Date.now()}-${Math.round(Math.random() * 1E9)}.webp`;
           const filepath = path.join(uploadDir, filename);
           await fs.promises.writeFile(filepath, optimizedBuffer);
           
           processedImages.push({
-            url: `/uploads/products/${filename}`,
-            publicId: filename, // Save filename as publicId for easy local deletion later
+            url: `/assets/images/products/${folderName}/${filename}`,
+            publicId: `${folderName}/${filename}`, // Save relative path under assets/images/products/ as publicId for easy local deletion later
             fieldName: fieldName
           });
         }

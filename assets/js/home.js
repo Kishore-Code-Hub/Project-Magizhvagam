@@ -11,15 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadHomepageData() {
   try {
-    const res = await fetch('/api/settings/homepage');
-    const data = await res.json();
+    const config = await window.fetchSettings();
 
-    if (!data.success || !data.setting) {
+    if (!config) {
       console.error('Failed to load homepage settings');
       return;
     }
-
-    const config = data.setting;
 
     // 1. Load Hero Banners Slider
     renderHeroBanners(config.heroBanners);
@@ -40,6 +37,9 @@ async function loadHomepageData() {
 
   } catch (error) {
     console.error('Error loading homepage:', error);
+    if (typeof showToast === 'function') {
+      showToast('Failed to load some homepage sections. Please try refreshing.', 'error');
+    }
   }
 }
 
@@ -145,7 +145,7 @@ async function renderCategoryHighlights(catIds) {
       container.innerHTML = filtered.map(cat => `
         <a href="/products.html?category=${cat.slug}" class="glass hover-lift category-card animated fadeInUp" style="border-radius:16px; overflow:hidden; display:block; padding:12px; text-align:center;">
           <div style="height:150px; border-radius:12px; overflow:hidden; margin-bottom:12px;">
-            <img src="${cat.image || '/assets/images/default-category.webp'}" alt="${cat.name}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/images/default-category.webp'">
+            <img src="${cat.image || '/assets/images/default-category.webp'}" alt="${cat.name}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-category.webp'">
           </div>
           <h4 style="font-family:'Outfit'; font-size:15px; font-weight:600; color:var(--text-color);">${cat.name}</h4>
         </a>
@@ -153,11 +153,33 @@ async function renderCategoryHighlights(catIds) {
     }
   } catch (err) {
     console.error('Error rendering category highlights:', err);
+    if (typeof showToast === 'function' && !hasShownHomeErrorToast) {
+      showToast('Failed to load categories. Please check your connection.', 'error');
+      hasShownHomeErrorToast = true;
+    }
     container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted);">No categories available.</p>';
   }
 }
 
 // 3. Dynamic Products Grid Loader
+let wideCatalogPromise = null;
+let hasShownHomeErrorToast = false;
+
+function fetchWideCatalog() {
+  if (!wideCatalogPromise) {
+    wideCatalogPromise = fetch('/api/products?limit=50')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch wide catalog');
+        return res.json();
+      })
+      .catch(err => {
+        wideCatalogPromise = null; // Clear from cache so retry is possible
+        throw err;
+      });
+  }
+  return wideCatalogPromise;
+}
+
 async function loadProductSection(productIds, elementId) {
   const grid = document.getElementById(elementId);
   if (!grid) return;
@@ -165,53 +187,68 @@ async function loadProductSection(productIds, elementId) {
   try {
     grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:30px;"><div class="spinner" style="margin:auto;"></div></div>';
     
-    let url = '/api/products?limit=50';
-    if (productIds && productIds.length > 0) {
-      url = `/api/products?ids=${productIds.map(id => id.toString()).join(',')}&limit=${productIds.length}`;
+    let products = [];
+    
+    // Feature D: If loading featured products, check the live database attribute first
+    if (elementId === 'featured-products-grid') {
+      try {
+        const res = await fetch('/api/products?isFeatured=true&limit=4');
+        const data = await res.json();
+        if (data.success && data.products && data.products.length > 0) {
+          products = data.products;
+        }
+      } catch (err) {
+        console.error('Failed to fetch featured products by live attribute:', err);
+      }
     }
     
-    const res = await fetch(url);
-    const data = await res.json();
-    
-    if (data.success) {
-      let products = data.products || [];
-      
-      // If we queried specific IDs, let's keep the order defined in productIds
-      if (productIds && productIds.length > 0 && products.length > 0) {
-        const idMap = new Map(products.map(p => [p._id.toString(), p]));
-        products = productIds
-          .map(id => idMap.get(id.toString()))
-          .filter(p => !!p);
-      }
-
-      // Fallback: If no products were returned from the specified IDs, run automated query
-      if (products.length === 0) {
-        const fallbackRes = await fetch('/api/products?limit=50');
-        const fallbackData = await fallbackRes.json();
-        if (fallbackData.success) {
-          if (elementId.includes('featured')) {
-            products = fallbackData.products.slice(0, 4);
-          } else if (elementId.includes('bestseller')) {
-            products = fallbackData.products.filter(p => p.tags && (p.tags.includes('bestseller') || p.tags.includes('best-seller'))).slice(0, 4);
-            if (products.length === 0) products = fallbackData.products.slice(4, 8);
-          } else if (elementId.includes('newarrival')) {
-            products = fallbackData.products.slice(0, 4);
-          }
+    // Fallback/standard flow if not featured or if live query returned no products
+    if (products.length === 0 && productIds && productIds.length > 0) {
+      const url = `/api/products?ids=${productIds.map(id => id.toString()).join(',')}&limit=${productIds.length}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success) {
+        products = data.products || [];
+        
+        // If we queried specific IDs, let's keep the order defined in productIds
+        if (products.length > 0) {
+          const idMap = new Map(products.map(p => [p._id.toString(), p]));
+          products = productIds
+            .map(id => idMap.get(id.toString()))
+            .filter(p => !!p);
         }
       }
-
-      if (products.length === 0) {
-        grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted);">No products in this collection.</p>';
-        return;
-      }
-
-      grid.innerHTML = products.map(p => createProductCardHTML(p)).join('');
-    } else {
-      grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted);">Could not load products.</p>';
     }
+    
+    // Fallback: If no products were returned from the specified IDs (or if no IDs were provided), run unified cached query
+    if (products.length === 0) {
+      const fallbackData = await fetchWideCatalog();
+      if (fallbackData.success) {
+        const catalog = fallbackData.products || [];
+        if (elementId.includes('featured')) {
+          products = catalog.slice(0, 4);
+        } else if (elementId.includes('bestseller')) {
+          products = catalog.filter(p => p.tags && (p.tags.includes('bestseller') || p.tags.includes('best-seller'))).slice(0, 4);
+          if (products.length === 0) products = catalog.slice(4, 8);
+        } else if (elementId.includes('newarrival')) {
+          products = catalog.slice(0, 4);
+        }
+      }
+    }
+
+    if (products.length === 0) {
+      grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted);">No products in this collection.</p>';
+      return;
+    }
+
+    grid.innerHTML = products.map(p => createProductCardHTML(p)).join('');
   } catch (err) {
     console.error(`Error loading section ${elementId}:`, err);
     grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:red;">Connection error. Could not fetch products.</p>';
+    if (typeof showToast === 'function' && !hasShownHomeErrorToast) {
+      showToast('Failed to load products. Please check your connection.', 'error');
+      hasShownHomeErrorToast = true;
+    }
   }
 }
 
