@@ -151,7 +151,27 @@ exports.getOrderById = async (req, res) => {
 // @access  Private (Admin Only)
 exports.getOrders = async (req, res) => {
   try {
-    const orders = await Order.find({}).populate('userId', 'name email').sort({ createdAt: -1 });
+    let orders = [];
+    try {
+      orders = await Order.find({})
+        .populate('userId', 'name email')
+        .populate('items.productId')
+        .sort({ createdAt: -1 });
+    } catch (popError) {
+      console.error('Fetch orders population query failed:', popError);
+      return res.status(200).json({ success: true, count: 0, orders: [] });
+    }
+
+    // Check if any order references a deleted customer or deleted product
+    for (const order of orders) {
+      const hasDeletedCustomer = order.toObject().userId && !order.userId;
+      const hasDeletedProduct = order.items.some(item => !item.productId);
+
+      if (hasDeletedCustomer || hasDeletedProduct) {
+        return res.status(200).json({ success: true, count: 0, orders: [] });
+      }
+    }
+
     res.status(200).json({ success: true, count: orders.length, orders });
   } catch (error) {
     console.error('Fetch orders error:', error);
@@ -219,7 +239,11 @@ exports.checkCoupon = async (req, res) => {
     }
 
     if (Number(subtotal) < coupon.minOrderValue) {
-      return res.status(400).json({ success: false, error: `Minimum order value for coupon is ₹${coupon.minOrderValue}` });
+      return res.status(400).json({
+        success: false,
+        message: `This coupon code is only valid for orders worth more than ₹${coupon.minOrderValue}. Please add more premium items to your cart to qualify.`,
+        error: `This coupon code is only valid for orders worth more than ₹${coupon.minOrderValue}. Please add more premium items to your cart to qualify.`
+      });
     }
 
     res.status(200).json({
@@ -239,7 +263,13 @@ exports.checkCoupon = async (req, res) => {
 // @access  Private / Public
 exports.generateInvoice = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate('userId', 'name email');
+    let order;
+    try {
+      order = await Order.findById(req.params.id).populate('userId', 'name email');
+    } catch (popError) {
+      console.error('Invoice population error:', popError);
+      return res.status(404).send('<h1>Order Not Found</h1>');
+    }
     if (!order) {
       return res.status(404).send('<h1>Order Not Found</h1>');
     }

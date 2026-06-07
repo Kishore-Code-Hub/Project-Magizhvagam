@@ -144,7 +144,7 @@
             style="font-size:32px; font-family:'Outfit'; margin-bottom:12px; line-height:1.2; color:var(--text-color);">
             Product Name</h1>
 
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+          <div id="details-rating-summary-container" style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
             <div style="color:#D4AF37; font-size:18px;" id="details-rating-stars">★★★★★</div>
             <strong id="details-rating-avg" style="font-size:14px;">4.8</strong>
             <span id="details-rating-count" style="color:var(--text-muted); font-size:14px;">(24 reviews)</span>
@@ -315,8 +315,25 @@
   <script>
     let activeProduct = null;
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       loadProductDetails();
+
+      // Enforce reviews system toggle
+      try {
+        const toggles = window.featureToggles || await window.fetchFeatureToggles();
+        if (toggles && toggles.reviewsEnabled === false) {
+          const ratingSummary = document.getElementById('details-rating-summary-container');
+          if (ratingSummary) ratingSummary.style.display = 'none';
+          
+          const reviewsTabTitle = document.getElementById('tab-reviews-title');
+          if (reviewsTabTitle) reviewsTabTitle.style.display = 'none';
+          
+          const reviewsTabPanel = document.getElementById('tab-reviews');
+          if (reviewsTabPanel) reviewsTabPanel.style.display = 'none';
+        }
+      } catch (err) {
+        console.error('Error enforcing reviews toggle:', err);
+      }
 
       // Register Review Submission
       document.getElementById('review-form').addEventListener('submit', async (e) => {
@@ -618,11 +635,41 @@
         }
       } catch (err) { }
 
-      // Format clean message text block
-      const message = `Hello MAGIZHVAGAM,\n\nI would like to order:\n\nProduct: ${activeProduct.name}\nProduct ID: ${activeProduct._id}\nQuantity: ${qty}\nPrice: ${formatPrice(totalPrice)}\n\nCustomer Name: ${customerName}\n\nPlease contact me regarding this order.`;
+      // Get customer details block
+      let detailsBlock = `--- CUSTOMER DETAILS ---\nName: ${customerName}`;
+      if (user) {
+        const userPhone = user.phone || user.phoneNumber || user.mobile || 'No phone number linked';
+        detailsBlock += `\nPhone: ${userPhone}`;
+        
+        // Trace and extract the current selected address, or fall back natively to the user's default card entry
+        const selectedAddressObj = (typeof currentSelectedAddress !== 'undefined' ? currentSelectedAddress : null) || (user.addresses && user.addresses.find(a => a.isDefault)) || (user.addresses && user.addresses[0]) || null;
+        let addrStr = '';
+        if (selectedAddressObj) {
+          const street2Text = selectedAddressObj.street2 ? `, ${selectedAddressObj.street2}` : '';
+          addrStr = `${selectedAddressObj.street || ''}${street2Text}, ${selectedAddressObj.city || ''}, ${selectedAddressObj.state || ''} - ${selectedAddressObj.zipCode || ''}`;
+        } else if (user.address1) {
+          addrStr = `${user.address1}, ${user.city || ''}, ${user.state || ''} - ${user.pincode || ''}`;
+        } else {
+          addrStr = 'No shipping address provided.';
+        }
+        detailsBlock += `\nShipping Address: ${addrStr}`;
+      } else {
+        detailsBlock += `\nPhone: Not provided (Guest)\nShipping Address: Not provided (Guest)`;
+      }
 
-      const whatsappUrl = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
+      // Format clean message text block
+      const message = `Hello MAGIZHVAGAM,\n\nI would like to order:\n\nProduct: ${activeProduct.name}\nProduct ID: ${activeProduct._id}\nQuantity: ${qty}\nPrice: ${formatPrice(totalPrice)}\n\n${detailsBlock}`;
+
+      const triggerWhatsAppRedirect = () => {
+        const whatsappUrl = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+      };
+
+      if (typeof window.showWhatsAppConfirmationModal === 'function') {
+        window.showWhatsAppConfirmationModal({ itemCount: Number(qty), totalPrice: totalPrice }, triggerWhatsAppRedirect);
+      } else {
+        triggerWhatsAppRedirect();
+      }
     }
   </script>
 </body>

@@ -1,17 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 :root {
+  /* 8 Brand New Semantic CSS Root Variables */
+  --bg-main: #ffffff;
+  --bg-surface: #f8f9fa;
+  --text-main: #212529;
+  --text-muted: #6c757d;
+  --color-primary: #8a2be2;
+  --color-secondary: #ff1493;
+  --color-success: #28a745;
+  --color-error: #dc3545;
+
+  /* Typography & Colors */
+  --font-family-base: 'Inter', sans-serif;
+  --primary-color: var(--color-primary);
+  --primary-accent: var(--primary-color);
+
   /* HSL Color Palette */
   --primary-purple: 271, 76%, 53%; /* #6A0DAD */
   --primary-gold: 45, 100%, 50%;   /* #FFD700 */
   --rose-pink: 343, 100%, 60%;    /* #FF4F81 */
   --soft-cream: 54, 100%, 91%;     /* #FFFDD0 */
   
-  /* Light Theme Variables */
-  --bg-color: #FAF9F6;
-  --text-color: #2E2538;
-  --text-muted: #6C5F78;
-  --card-bg: rgba(255, 255, 255, 0.75);
+  /* Light Theme Variables mapped to semantic palette */
+  --bg-color: var(--bg-main);
+  --text-color: var(--text-main);
+  --text-muted: var(--text-muted);
+  --card-bg: var(--bg-surface);
   --card-border: rgba(106, 13, 173, 0.1);
   --header-bg: rgba(250, 249, 246, 0.85);
   --footer-bg: #1B0F26;
@@ -22,18 +37,20 @@
   --shadow-lg: 0 20px 25px -5px rgba(106, 13, 173, 0.12);
   
   --border-radius: 16px;
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: all 0.3s ease;
 }
 
-/* Global Reset */
+/* Global Reset & Font Override */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: var(--font-family-base) !important;
+  transition: all 0.3s ease;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-family-base) !important;
   background-color: var(--bg-color);
   color: var(--text-color);
   line-height: 1.6;
@@ -47,7 +64,7 @@ body, header, aside, .glass, .admin-sidebar, main, input, select, textarea, butt
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-family-base) !important;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -59,7 +76,7 @@ a {
 }
 
 button, input, select, textarea {
-  font-family: inherit;
+  font-family: var(--font-family-base) !important;
   outline: none;
   border: none;
 }

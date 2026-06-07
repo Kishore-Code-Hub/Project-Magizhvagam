@@ -83,6 +83,131 @@
           </label>
         </div>
 
+        <!-- WhatsApp Checkout Route Toggle -->
+        <div class="feature-toggle-row" id="toggle-row-whatsapp">
+          <div class="feature-toggle-info">
+            <div class="feature-toggle-icon whatsapp">💬</div>
+            <div>
+              <div class="feature-toggle-label">WhatsApp Checkout Routing</div>
+              <div class="feature-toggle-desc">Bypass payment gateways and redirect orders to WhatsApp</div>
+            </div>
+          </div>
+          <span class="feature-toggle-status active" id="toggle-status-whatsapp">Active</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-whatsappCheckoutEnabled" onchange="handleFeatureToggle('whatsappCheckoutEnabled', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- COD Payment Toggle -->
+        <div class="feature-toggle-row" id="toggle-row-cod">
+          <div class="feature-toggle-info">
+            <div class="feature-toggle-icon cod">💵</div>
+            <div>
+              <div class="feature-toggle-label">Cash on Delivery (COD)</div>
+              <div class="feature-toggle-desc">Enable Cash on Delivery option at checkout</div>
+            </div>
+          </div>
+          <span class="feature-toggle-status active" id="toggle-status-cod">Active</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-codEnabled" checked onchange="handleFeatureToggle('codEnabled', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- User Reviews Toggle -->
+        <div class="feature-toggle-row" id="toggle-row-reviews">
+          <div class="feature-toggle-info">
+            <div class="feature-toggle-icon reviews">⭐</div>
+            <div>
+              <div class="feature-toggle-label">Reviews & Ratings</div>
+              <div class="feature-toggle-desc">Show product rating aggregates and review lists</div>
+            </div>
+          </div>
+          <span class="feature-toggle-status active" id="toggle-status-reviews">Active</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-reviewsEnabled" checked onchange="handleFeatureToggle('reviewsEnabled', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Recommendation Engine Toggle -->
+        <div class="feature-toggle-row" id="toggle-row-recommendations">
+          <div class="feature-toggle-info">
+            <div class="feature-toggle-icon recommendations">🤖</div>
+            <div>
+              <div class="feature-toggle-label">Recommendation Engine</div>
+              <div class="feature-toggle-desc">Enable relational recommendations (AI) or best-sellers fallback</div>
+            </div>
+          </div>
+          <span class="feature-toggle-status active" id="toggle-status-recommendations">Active</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-recommendationsEnabled" checked onchange="handleFeatureToggle('recommendationsEnabled', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Flash Sales & Promos Toggle -->
+        <div class="feature-toggle-row" id="toggle-row-promos">
+          <div class="feature-toggle-info">
+            <div class="feature-toggle-icon promos">⚡</div>
+            <div>
+              <div class="feature-toggle-label">Flash Sales & Promo Banners</div>
+              <div class="feature-toggle-desc">Display flash sale countdown timers and promo cards</div>
+            </div>
+          </div>
+          <span class="feature-toggle-status active" id="toggle-status-promos">Active</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-promosEnabled" checked onchange="handleFeatureToggle('promosEnabled', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Live Announcement Banner Toggle -->
+        <div class="feature-toggle-row" id="toggle-row-announcement-banner">
+          <div class="feature-toggle-info">
+            <div class="feature-toggle-icon announcement-banner">📢</div>
+            <div>
+              <div class="feature-toggle-label">Live Announcement Banner</div>
+              <div class="feature-toggle-desc">Show site-wide announcement text banner at the top of header</div>
+            </div>
+          </div>
+          <span class="feature-toggle-status active" id="toggle-status-announcementBannerEnabled">Active</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-announcementBannerEnabled" checked onchange="handleFeatureToggle('announcementBannerEnabled', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Global Theme Accent Picker -->
+        <div class="feature-toggle-row" id="toggle-row-theme-accent">
+          <div class="feature-toggle-info">
+            <div class="feature-toggle-icon theme-accent">🎨</div>
+            <div>
+              <div class="feature-toggle-label">Theme Accent Color</div>
+              <div class="feature-toggle-desc">Set the primary UI theme brand color across pages</div>
+            </div>
+          </div>
+          <span class="feature-toggle-status active" id="toggle-status-themeAccentColor" style="color:var(--text-color); font-weight:700;">#6A0DAD</span>
+          <input type="color" id="toggle-themeAccentColor" value="#6A0DAD" style="cursor:pointer; width:45px; height:36px; border-radius:6px; border:1px solid var(--card-border); padding:2px;" onchange="handleFeatureToggle('themeAccentColor', this.value)">
+        </div>
+
+        <!-- Homepage Layout Featured Toggle -->
+        <div class="feature-toggle-row" id="toggle-row-featured">
+          <div class="feature-toggle-info">
+            <div class="feature-toggle-icon featured">🏠</div>
+            <div>
+              <div class="feature-toggle-label">Homepage Featured Curation</div>
+              <div class="feature-toggle-desc">Query featured database tags or fallback to static IDs list</div>
+            </div>
+          </div>
+          <span class="feature-toggle-status active" id="toggle-status-homepageLayoutFeatured">Active</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-homepageLayoutFeatured" checked onchange="handleFeatureToggle('homepageLayoutFeatured', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
         <!-- Registration Portal Toggle -->
         <div class="feature-toggle-row" id="toggle-row-registration">
           <div class="feature-toggle-info">
@@ -97,6 +222,37 @@
             <input type="checkbox" id="toggle-registrationEnabled" checked onchange="handleFeatureToggle('registrationEnabled', this.checked)">
             <span class="toggle-slider"></span>
           </label>
+        </div>
+
+        <!-- Flash Sale Curation Panel -->
+        <div style="border-top: 1px dashed var(--card-border); margin-top: 20px; padding-top: 20px;">
+          <h4 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--text-color);">⚡ Flash Sale Management</h4>
+          
+          <div class="feature-toggle-row" id="toggle-row-flash-sale">
+            <div class="feature-toggle-info">
+              <div class="feature-toggle-icon flash-sale">⏰</div>
+              <div>
+                <div class="feature-toggle-label">Publish Flash Sale Countdown Banner</div>
+                <div class="feature-toggle-desc">Instantly toggle the flash sale layout section on the storefront homepage</div>
+              </div>
+            </div>
+            <span class="feature-toggle-status active" id="toggle-status-flashSaleActive">Active</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-flashSaleActive" onchange="handleFeatureToggle('flashSaleActive', this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+            <div class="form-group">
+              <label for="input-flashSaleText" style="font-size:12px; font-weight:600; margin-bottom:6px; display:block;">Promotional Banner Text</label>
+              <input type="text" id="input-flashSaleText" class="form-control" style="border:1px solid var(--card-border);" placeholder="Mega Flash Sale! Get 20% off all return gifts!" onchange="handleFlashSaleTextUpdate(this.value)">
+            </div>
+            <div class="form-group">
+              <label for="input-flashSaleTargetDate" style="font-size:12px; font-weight:600; margin-bottom:6px; display:block;">Target Deadline Date & Time</label>
+              <input type="datetime-local" id="input-flashSaleTargetDate" class="form-control" style="border:1px solid var(--card-border);" onchange="handleFlashSaleDateUpdate(this.value)">
+            </div>
+          </div>
         </div>
       </div>
 

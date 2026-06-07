@@ -90,7 +90,13 @@ window.setSessionUser = (user) => {
     id: user._id || user.id,
     name: user.name,
     email: user.email,
-    role: user.role
+    role: user.role,
+    phone: user.phone || user.phoneNumber || user.mobile || '',
+    addresses: user.addresses || [],
+    address1: user.address1 || '',
+    city: user.city || '',
+    state: user.state || '',
+    pincode: user.pincode || ''
   };
   window.__sessionUser = normalized;
   localStorage.setItem('magizhvagam_user', JSON.stringify(normalized));
@@ -279,6 +285,8 @@ function applyAppearanceSettings(settings) {
   if (settings.primaryColor) {
     const pHsl = hexToHslString(settings.primaryColor);
     if (pHsl) document.documentElement.style.setProperty('--primary-purple', pHsl);
+    document.documentElement.style.setProperty('--primary-color', settings.primaryColor);
+    document.documentElement.style.setProperty('--primary-accent', settings.primaryColor);
   }
   if (settings.secondaryColor) {
     const sHsl = hexToHslString(settings.secondaryColor);
@@ -287,6 +295,36 @@ function applyAppearanceSettings(settings) {
   if (settings.accentColor) {
     const aHsl = hexToHslString(settings.accentColor);
     if (aHsl) document.documentElement.style.setProperty('--primary-gold', aHsl);
+  }
+
+  // 8 Brand New Semantic Colors Map
+  if (settings.paletteBgMain) {
+    document.documentElement.style.setProperty('--bg-main', settings.paletteBgMain);
+  }
+  if (settings.paletteBgSurface) {
+    document.documentElement.style.setProperty('--bg-surface', settings.paletteBgSurface);
+  }
+  if (settings.paletteTextMain) {
+    document.documentElement.style.setProperty('--text-main', settings.paletteTextMain);
+  }
+  if (settings.paletteTextMuted) {
+    document.documentElement.style.setProperty('--text-muted', settings.paletteTextMuted);
+  }
+  if (settings.paletteColorPrimary) {
+    document.documentElement.style.setProperty('--color-primary', settings.paletteColorPrimary);
+    const pHsl = hexToHslString(settings.paletteColorPrimary);
+    if (pHsl) document.documentElement.style.setProperty('--primary-purple', pHsl);
+  }
+  if (settings.paletteColorSecondary) {
+    document.documentElement.style.setProperty('--color-secondary', settings.paletteColorSecondary);
+    const sHsl = hexToHslString(settings.paletteColorSecondary);
+    if (sHsl) document.documentElement.style.setProperty('--rose-pink', sHsl);
+  }
+  if (settings.paletteColorSuccess) {
+    document.documentElement.style.setProperty('--color-success', settings.paletteColorSuccess);
+  }
+  if (settings.paletteColorError) {
+    document.documentElement.style.setProperty('--color-error', settings.paletteColorError);
   }
 
   // 3. Override Font Family
@@ -298,7 +336,19 @@ function applyAppearanceSettings(settings) {
       link.href = `https://fonts.googleapis.com/css2?family=${font.replace(/\s+/g, '+')}:wght@300;400;500;600;700;800&display=swap`;
       document.head.appendChild(link);
     }
-    document.body.style.fontFamily = `'${font}', 'Inter', sans-serif`;
+    document.documentElement.style.setProperty('--font-family-base', `'${font}', 'Inter', sans-serif`);
+    
+    let fontStyleEl = document.getElementById('dynamic-font-override');
+    if (!fontStyleEl) {
+      fontStyleEl = document.createElement('style');
+      fontStyleEl.id = 'dynamic-font-override';
+      document.head.appendChild(fontStyleEl);
+    }
+    fontStyleEl.textContent = `
+      body, h1, h2, h3, h4, h5, h6, p, span, button, input, select, textarea, a {
+        font-family: var(--font-family-base) !important;
+      }
+    `;
   }
 
   // 4. Override Button Style
@@ -353,20 +403,30 @@ function isStandaloneAdminLoginPage() {
 }
 
 window.featureToggles = null;
+let featureTogglesPromise = null;
 
 async function fetchFeatureToggles() {
-  try {
-    const res = await fetch('/api/settings/feature-toggles');
-    const data = await res.json();
-    if (data.success) {
-      window.featureToggles = data.toggles;
-      return data.toggles;
+  if (window.featureToggles) return window.featureToggles;
+  if (featureTogglesPromise) return featureTogglesPromise;
+
+  featureTogglesPromise = (async () => {
+    try {
+      const res = await fetch('/api/settings/feature-toggles');
+      const data = await res.json();
+      if (data.success) {
+        window.featureToggles = data.toggles;
+        return data.toggles;
+      }
+    } catch (err) {
+      console.error('Error fetching feature toggles:', err);
+    } finally {
+      featureTogglesPromise = null;
     }
-  } catch (err) {
-    console.error('Error fetching feature toggles:', err);
-  }
-  return {};
+    return {};
+  })();
+  return featureTogglesPromise;
 }
+window.fetchFeatureToggles = fetchFeatureToggles;
 
 document.addEventListener('DOMContentLoaded', async () => {
   if (isStandaloneAdminLoginPage()) {
@@ -395,6 +455,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupWhatsApp(settings);
   initIcons();
   initGlobalClickHandlers();
+
+  window.addEventListener('cartUpdated', () => {
+    syncCartCounters();
+  });
+  window.addEventListener('wishlistUpdated', () => {
+    syncCartCounters();
+  });
 });
 
 function initGlobalClickHandlers() {
@@ -1359,12 +1426,12 @@ window.showLoginRegisterModal = (context = 'action') => {
   // Create backdrop overlay wrapper
   const backdrop = document.createElement('div');
   backdrop.id = 'guest-auth-backdrop';
-  backdrop.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; backdrop-filter: blur(10px) !important; background: rgba(0, 0, 0, 0.5) !important; z-index: 100004 !important;';
+  backdrop.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; backdrop-filter: blur(12px) !important; background: rgba(0, 0, 0, 0.45) !important; z-index: 100008 !important;';
 
   // Create modal container
   const modal = document.createElement('div');
   modal.id = 'guest-auth-modal';
-  modal.style.cssText = 'position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; z-index: 100005 !important; display: block !important;';
+  modal.style.cssText = 'position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; z-index: 100009 !important; display: block !important;';
 
   const closeModal = () => {
     backdrop.remove();
@@ -1379,7 +1446,12 @@ window.showLoginRegisterModal = (context = 'action') => {
   modal.innerHTML = `
     <div class="modal-content glass scale-in" style="max-width: 420px; padding: 30px; text-align: center; border-radius: 16px; position:relative; background:#FAF9F6; border:1px solid var(--card-border); color:var(--text-color);">
       <button id="close-guest-modal-btn" style="position:absolute; top:15px; right:15px; background:transparent; font-size:18px; font-weight:bold; color:var(--text-muted); cursor:pointer; border:none;">✕</button>
-      <div style="font-size: 40px; margin-bottom:15px;">🔒</div>
+      <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
+        <svg style="width: 48px; height: 48px; fill: none; stroke: hsl(var(--primary-purple)); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transform: translate3d(0,0,0); backface-visibility: hidden;" viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
       <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:10px; color:var(--text-color);">Login Required</h3>
       <p style="font-size:14px; color:var(--text-muted); line-height:1.6; margin-bottom:24px;">${reasonText}</p>
       <div style="display:flex; flex-direction:column; gap:10px;">
@@ -1625,4 +1697,53 @@ window.toggleWishlistBtn = async (btn, id, name, price, img) => {
     svg.style.fill = 'none';
     svg.style.stroke = '#2E2538';
   }
+};
+
+window.showWhatsAppConfirmationModal = (summary, onConfirm) => {
+  const existingModal = document.getElementById('whatsapp-confirm-modal');
+  if (existingModal) existingModal.remove();
+  const existingBackdrop = document.getElementById('whatsapp-confirm-backdrop');
+  if (existingBackdrop) existingBackdrop.remove();
+
+  const backdrop = document.createElement('div');
+  backdrop.id = 'whatsapp-confirm-backdrop';
+  backdrop.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; backdrop-filter: blur(12px) !important; background: rgba(0, 0, 0, 0.45) !important; z-index: 100008 !important;';
+
+  const modal = document.createElement('div');
+  modal.id = 'whatsapp-confirm-modal';
+  modal.style.cssText = 'position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; z-index: 100009 !important; display: block !important;';
+
+  const closeModal = () => {
+    backdrop.remove();
+    modal.remove();
+  };
+  backdrop.addEventListener('click', closeModal);
+
+  modal.innerHTML = `
+    <div class="modal-content glass scale-in" style="max-width: 420px; padding: 30px; text-align: center; border-radius: 16px; position:relative; background:#FAF9F6; border:1px solid var(--card-border); color:var(--text-color);">
+      <button id="close-whatsapp-modal-btn" style="position:absolute; top:15px; right:15px; background:transparent; font-size:18px; font-weight:bold; color:var(--text-muted); cursor:pointer; border:none;">✕</button>
+      <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
+        <div style="background: rgba(37, 211, 102, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+          <svg style="width:32px; height:32px; fill:#25D366;" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.32a8.188 8.188 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24M8.53 7.33c-.15 0-.41.06-.63.29-.22.23-.84.82-.84 2s.87 2.33.99 2.49c.12.17 1.71 2.61 4.15 3.66.58.25 1.03.4 1.39.51.58.18 1.11.16 1.53.1.47-.07 1.45-.59 1.65-1.17.2-.58.2-1.07.14-1.17-.06-.1-.23-.16-.49-.29-.26-.13-1.53-.76-1.77-.85-.24-.09-.41-.13-.58.13-.17.26-.66.85-.81 1.02-.15.17-.3.19-.56.06-.26-.13-1.1-.41-2.1-1.3-.78-.7-1.31-1.56-1.46-1.82-.15-.26-.02-.4.11-.53.12-.11.26-.3.39-.46.13-.17.17-.29.26-.49.09-.19.04-.37-.02-.49-.06-.12-.58-1.4-1.8-1.82c-.22-.05-.44-.05-.63-.05z"/></svg>
+        </div>
+      </div>
+      <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:10px; color:var(--text-color);">WhatsApp Inquiry</h3>
+      <p style="font-size:14px; color:var(--text-muted); line-height:1.6; margin-bottom:24px;">
+        You are about to inquire about your order of <strong>${summary.itemCount} items</strong> for a total price of <strong>${formatPrice(summary.totalPrice)}</strong>.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button id="confirm-whatsapp-btn" class="btn btn-primary" style="padding:12px; border-radius:8px; font-weight:600; font-family:'Outfit';">Confirm & Open WhatsApp</button>
+        <button id="cancel-whatsapp-btn" class="btn btn-secondary" style="padding:12px; border-radius:8px; border-width:1px; font-weight:600; font-family:'Outfit'; border-color:hsl(var(--primary-purple)); color:hsl(var(--primary-purple));">Cancel / Back to Cart</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(backdrop);
+  document.body.appendChild(modal);
+
+  modal.querySelector('#close-whatsapp-modal-btn').addEventListener('click', closeModal);
+  modal.querySelector('#cancel-whatsapp-btn').addEventListener('click', closeModal);
+  modal.querySelector('#confirm-whatsapp-btn').addEventListener('click', () => {
+    closeModal();
+    onConfirm();
+  });
 };

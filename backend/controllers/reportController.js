@@ -103,7 +103,7 @@ exports.resetStats = async (req, res) => {
     await Order.deleteMany({});
 
     // 2. Wipe out all customer directory dummy testing customer profiles, preserving administrator accounts
-    await User.deleteMany({ role: 'customer' });
+    await User.deleteMany({ role: 'customer', email: { $ne: 'admin@magizhvagam.com' } });
 
     // Log reset action in audit trail
     await logActivity(req, 'stats_reset', 'Store statistics were reset, orders cleared, and customer profiles wiped by admin');

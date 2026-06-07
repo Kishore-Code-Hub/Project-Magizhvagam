@@ -5,11 +5,19 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   renderCart();
-  
-  // Register coupon apply form listener
-  const couponForm = document.getElementById('coupon-form');
-  if (couponForm) {
-    couponForm.addEventListener('submit', handleCouponApply);
+
+  // Hide coupon form if feature is disabled
+  const toggles = window.featureToggles || {};
+  if (toggles.couponsEnabled === false) {
+    const couponForm = document.getElementById('coupon-form');
+    if (couponForm) couponForm.style.display = 'none';
+    localStorage.removeItem('magizhvagam_applied_coupon');
+  } else {
+    // Register coupon apply form listener
+    const couponForm = document.getElementById('coupon-form');
+    if (couponForm) {
+      couponForm.addEventListener('submit', handleCouponApply);
+    }
   }
 
   // Event delegation for cart actions
@@ -18,10 +26,10 @@ document.addEventListener('DOMContentLoaded', () => {
     container.addEventListener('click', (e) => {
       const btn = e.target.closest('button');
       if (!btn) return;
-      
+
       const productId = btn.getAttribute('data-id');
       if (!productId) return;
-      
+
       if (btn.classList.contains('qty-minus')) {
         changeCartQty(productId, -1);
       } else if (btn.classList.contains('qty-plus')) {
@@ -187,7 +195,7 @@ function updateSummary(subtotal) {
   const discEl = document.getElementById('summary-discount');
   const totEl = document.getElementById('summary-total');
   const discRow = document.getElementById('summary-discount-row');
-  
+
   if (!subEl) return;
 
   if (subtotal === 0) {
@@ -216,7 +224,7 @@ function updateSummary(subtotal) {
         discount = coupon.discountValue;
       }
       discount = Math.min(discount, subtotal);
-      
+
       discRow.style.display = 'flex';
       discEl.textContent = `-${formatPrice(discount)}`;
     }
@@ -240,10 +248,16 @@ async function handleCouponApply(e) {
   const code = document.getElementById('coupon-code-input').value.toUpperCase().trim();
   const cart = getCart();
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const warningBanner = document.getElementById('coupon-warning-banner');
 
   if (cart.length === 0) {
     showToast('Add items to cart first!', 'error');
     return;
+  }
+
+  if (warningBanner) {
+    warningBanner.style.display = 'none';
+    warningBanner.textContent = '';
   }
 
   try {
@@ -252,10 +266,16 @@ async function handleCouponApply(e) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code, subtotal })
     });
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    const data = await res.json();
-    if (!data || !data.success) {
-      showToast(data ? data.error : 'Invalid Coupon', 'error');
+    
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || !data.success) {
+      const errMsg = data.message || data.error || 'Invalid Coupon';
+      if (warningBanner) {
+        warningBanner.textContent = errMsg;
+        warningBanner.style.display = 'block';
+      }
+      showToast(errMsg, 'error');
       return;
     }
 
@@ -271,21 +291,101 @@ async function handleCouponApply(e) {
     renderCart();
     document.getElementById('coupon-code-input').value = '';
   } catch (err) {
+    console.error(err);
+    if (warningBanner) {
+      warningBanner.textContent = 'Connection error applying coupon. Please try again.';
+      warningBanner.style.display = 'block';
+    }
     showToast('Connection error applying coupon', 'error');
   }
 }
 
-window.proceedToCheckout = () => {
-  if (typeof getStoredUser === 'function' && !getStoredUser()) {
+window.proceedToCheckout = async () => {
+  const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+  if (!user) {
     showToast('Please login or create a customer account to continue.', 'error');
     if (typeof window.showLoginRegisterModal === 'function') {
       window.showLoginRegisterModal('cart');
     }
     return;
   }
-  if (getCart().length === 0) {
+  const cart = getCart();
+  if (cart.length === 0) {
     showToast('Your cart is empty', 'error');
     return;
   }
+
+  const toggles = window.featureToggles || {};
+  if (toggles.whatsappCheckoutEnabled) {
+    const userPhone = user.phone || user.phoneNumber || user.mobile || 'No phone number linked';
+    
+    // Trace and extract the current selected address, or fall back natively to the user's default card entry
+    const selectedAddressObj = (typeof currentSelectedAddress !== 'undefined' ? currentSelectedAddress : null) || (user.addresses && user.addresses.find(a => a.isDefault)) || (user.addresses && user.addresses[0]) || null;
+    let fullAddrText = '';
+    if (selectedAddressObj) {
+      const street2Text = selectedAddressObj.street2 ? `, ${selectedAddressObj.street2}` : '';
+      fullAddrText = `${selectedAddressObj.street || ''}${street2Text}, ${selectedAddressObj.city || ''}, ${selectedAddressObj.state || ''} - ${selectedAddressObj.zipCode || ''}`;
+    } else if (user.address1) {
+      fullAddrText = `${user.address1}, ${user.city || ''}, ${user.state || ''} - ${user.pincode || ''}`;
+    } else {
+      fullAddrText = 'No shipping address provided.';
+    }
+
+    const itemsStr = cart.map(item => `- ${item.name} x ${item.quantity} (Price: ${formatPrice(item.price)})`).join('\n');
+
+    // Calculate pricing summary
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const appliedCoupon = JSON.parse(localStorage.getItem('magizhvagam_applied_coupon'));
+    let discount = 0;
+    if (appliedCoupon && subtotal >= appliedCoupon.minOrderValue) {
+      if (appliedCoupon.discountType === 'Percentage') {
+        discount = subtotal * (appliedCoupon.discountValue / 100);
+      } else {
+        discount = appliedCoupon.discountValue;
+      }
+    }
+    const taxable = subtotal - discount;
+    const tax = Math.round(taxable * 0.05 * 100) / 100;
+    const shipping = taxable >= 1500 ? 0 : 100;
+    const total = taxable + tax + shipping;
+
+    const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+    const message = `Hello Magizhvagam, I would like to place an order: \n\n *Items:*\n${itemsStr} \n\n *Summary:*\nSubtotal: ${formatPrice(subtotal)} \nDiscount: -${formatPrice(discount)} \nTax (5%): ${formatPrice(tax)} \nShipping: ${shipping === 0 ? 'FREE' : formatPrice(shipping)} \n *Total: ${formatPrice(total)}*\n\n--- CUSTOMER DETAILS ---\nName: ${user.name}\nPhone: ${userPhone}\nShipping Address: ${fullAddrText}`;
+
+    const triggerWhatsAppRedirect = async () => {
+      let whatsappNumber = '919876543210';
+      try {
+        const settings = typeof fetchSettings === 'function' ? await fetchSettings() : null;
+        if (settings && settings.whatsappContact) {
+          whatsappNumber = settings.whatsappContact;
+        }
+      } catch (err) { }
+
+      // Clear cart cache locally and on server
+      localStorage.removeItem('magizhvagam_applied_coupon');
+      if (typeof window.clearServerCart === 'function') {
+        await window.clearServerCart();
+      } else {
+        const userKey = `magizhvagam_cart_${user.id || user._id || ''}`;
+        localStorage.removeItem(userKey);
+        localStorage.removeItem('magizhvagam_cart');
+        if (typeof syncCartCounters === 'function') syncCartCounters();
+      }
+
+      window.dispatchEvent(new Event('cartUpdated'));
+
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+    };
+
+    if (typeof window.showWhatsAppConfirmationModal === 'function') {
+      window.showWhatsAppConfirmationModal({ itemCount: totalCount, totalPrice: total }, triggerWhatsAppRedirect);
+    } else {
+      triggerWhatsAppRedirect();
+    }
+    return;
+  }
+
   window.location.href = '/checkout.html';
 };

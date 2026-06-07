@@ -5,7 +5,18 @@ const Coupon = require('../models/Coupon');
 const DEFAULT_FEATURE_TOGGLES = {
   wishlistEnabled: true,
   couponsEnabled: true,
-  registrationEnabled: true
+  registrationEnabled: true,
+  whatsappCheckoutEnabled: false,
+  codEnabled: true,
+  reviewsEnabled: true,
+  recommendationsEnabled: true,
+  promosEnabled: true,
+  announcementBannerEnabled: true,
+  themeAccentColor: '#6A0DAD',
+  homepageLayoutFeatured: true,
+  flashSaleActive: false,
+  flashSaleText: "Mega Flash Sale! Get 20% off all return gifts!",
+  flashSaleTargetDate: null
 };
 
 // @desc    Get feature toggles (cached helper for internal use)
@@ -50,6 +61,17 @@ exports.updateFeatureToggles = async (req, res) => {
     if (toggles.wishlistEnabled !== undefined) sanitized.wishlistEnabled = !!toggles.wishlistEnabled;
     if (toggles.couponsEnabled !== undefined) sanitized.couponsEnabled = !!toggles.couponsEnabled;
     if (toggles.registrationEnabled !== undefined) sanitized.registrationEnabled = !!toggles.registrationEnabled;
+    if (toggles.whatsappCheckoutEnabled !== undefined) sanitized.whatsappCheckoutEnabled = !!toggles.whatsappCheckoutEnabled;
+    if (toggles.codEnabled !== undefined) sanitized.codEnabled = !!toggles.codEnabled;
+    if (toggles.reviewsEnabled !== undefined) sanitized.reviewsEnabled = !!toggles.reviewsEnabled;
+    if (toggles.recommendationsEnabled !== undefined) sanitized.recommendationsEnabled = !!toggles.recommendationsEnabled;
+    if (toggles.promosEnabled !== undefined) sanitized.promosEnabled = !!toggles.promosEnabled;
+    if (toggles.announcementBannerEnabled !== undefined) sanitized.announcementBannerEnabled = !!toggles.announcementBannerEnabled;
+    if (toggles.themeAccentColor !== undefined) sanitized.themeAccentColor = String(toggles.themeAccentColor || '#6A0DAD').trim();
+    if (toggles.homepageLayoutFeatured !== undefined) sanitized.homepageLayoutFeatured = !!toggles.homepageLayoutFeatured;
+    if (toggles.flashSaleActive !== undefined) sanitized.flashSaleActive = !!toggles.flashSaleActive;
+    if (toggles.flashSaleText !== undefined) sanitized.flashSaleText = String(toggles.flashSaleText || '').trim();
+    if (toggles.flashSaleTargetDate !== undefined) sanitized.flashSaleTargetDate = toggles.flashSaleTargetDate ? new Date(toggles.flashSaleTargetDate) : null;
 
     let setting = await Setting.findOne({ key: 'featureToggles' });
     if (!setting) {
@@ -191,6 +213,14 @@ exports.resetSetting = async (req, res) => {
       buttonStyle: 'rounded',
       footerContent: 'Making Every Celebration Memorable. Premium Return Gifts and Customized Gifts for weddings, baby showers, birthdays, and corporate events.',
       contactDetails: '12 Luxury Palace St, Chennai, Tamil Nadu - 600001',
+      paletteBgMain: '#ffffff',
+      paletteBgSurface: '#f8f9fa',
+      paletteTextMain: '#212529',
+      paletteTextMuted: '#6c757d',
+      paletteColorPrimary: '#8a2be2',
+      paletteColorSecondary: '#ff1493',
+      paletteColorSuccess: '#28a745',
+      paletteColorError: '#dc3545',
       heroBanners: [
         {
           image: '/assets/images/default-banner.webp',

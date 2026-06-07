@@ -643,12 +643,12 @@ async function loadAdminCustomers() {
   if (!tbody) return;
 
   try {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>';
     const res = await adminFetch('/api/auth/customers');
     const data = await res.json();
 
     if (!data.success || data.customers.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No customers registered.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No customers registered.</td></tr>';
       return;
     }
 
@@ -659,10 +659,13 @@ async function loadAdminCustomers() {
         <td>${c.role}</td>
         <td>${c.orderCount} orders</td>
         <td><strong>₹${c.totalSpent.toLocaleString('en-IN')}</strong></td>
+        <td>
+          <button onclick="viewCustomerDeepProfile('${c._id}')" class="btn btn-secondary" style="padding:6px 12px; font-size:12px; border-radius:6px; cursor:pointer;">👁️ View Deep Profile</button>
+        </td>
       </tr>
     `).join('');
   } catch (err) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Failed to load customers list.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to load customers list.</td></tr>';
     showToast('Failed to load customers list', 'error');
   }
 }
@@ -694,6 +697,16 @@ async function loadHomepageBuilderSettings() {
       document.getElementById('button-style-field').value = setting.buttonStyle || 'rounded';
       document.getElementById('footer-content-field').value = setting.footerContent || '';
       document.getElementById('contact-details-field').value = setting.contactDetails || '';
+
+      // Load custom color palette values
+      document.getElementById('palette-bg-main').value = setting.paletteBgMain || '#ffffff';
+      document.getElementById('palette-bg-surface').value = setting.paletteBgSurface || '#f8f9fa';
+      document.getElementById('palette-text-main').value = setting.paletteTextMain || '#212529';
+      document.getElementById('palette-text-muted').value = setting.paletteTextMuted || '#6c757d';
+      document.getElementById('palette-color-primary').value = setting.paletteColorPrimary || '#8a2be2';
+      document.getElementById('palette-color-secondary').value = setting.paletteColorSecondary || '#ff1493';
+      document.getElementById('palette-color-success').value = setting.paletteColorSuccess || '#28a745';
+      document.getElementById('palette-color-error').value = setting.paletteColorError || '#dc3545';
       
       // Load hero slide arrays textareas
       document.getElementById('hero-banners-json').value = JSON.stringify(setting.heroBanners, null, 2);
@@ -731,6 +744,16 @@ async function loadHomepageBuilderSettings() {
         buttonStyle: document.getElementById('button-style-field').value,
         footerContent: document.getElementById('footer-content-field').value.trim(),
         contactDetails: document.getElementById('contact-details-field').value.trim(),
+
+        paletteBgMain: document.getElementById('palette-bg-main').value,
+        paletteBgSurface: document.getElementById('palette-bg-surface').value,
+        paletteTextMain: document.getElementById('palette-text-main').value,
+        paletteTextMuted: document.getElementById('palette-text-muted').value,
+        paletteColorPrimary: document.getElementById('palette-color-primary').value,
+        paletteColorSecondary: document.getElementById('palette-color-secondary').value,
+        paletteColorSuccess: document.getElementById('palette-color-success').value,
+        paletteColorError: document.getElementById('palette-color-error').value,
+
         heroBanners: JSON.parse(document.getElementById('hero-banners-json').value),
         promotionalBanners: JSON.parse(document.getElementById('promo-banners-json').value),
         featuredProductIds: document.getElementById('featured-product-ids').value.split(',').map(s => s.trim()).filter(Boolean),
@@ -1176,20 +1199,58 @@ async function loadFeatureToggles() {
 
     const toggles = data.toggles;
     const toggleMap = {
-      wishlistEnabled: { checkbox: 'toggle-wishlistEnabled', status: 'toggle-status-wishlist' },
-      couponsEnabled: { checkbox: 'toggle-couponsEnabled', status: 'toggle-status-coupon' },
-      registrationEnabled: { checkbox: 'toggle-registrationEnabled', status: 'toggle-status-registration' }
+      wishlistEnabled: { type: 'checkbox', checkbox: 'toggle-wishlistEnabled', status: 'toggle-status-wishlist' },
+      couponsEnabled: { type: 'checkbox', checkbox: 'toggle-couponsEnabled', status: 'toggle-status-coupon' },
+      registrationEnabled: { type: 'checkbox', checkbox: 'toggle-registrationEnabled', status: 'toggle-status-registration' },
+      whatsappCheckoutEnabled: { type: 'checkbox', checkbox: 'toggle-whatsappCheckoutEnabled', status: 'toggle-status-whatsapp' },
+      codEnabled: { type: 'checkbox', checkbox: 'toggle-codEnabled', status: 'toggle-status-cod' },
+      reviewsEnabled: { type: 'checkbox', checkbox: 'toggle-reviewsEnabled', status: 'toggle-status-reviews' },
+      recommendationsEnabled: { type: 'checkbox', checkbox: 'toggle-recommendationsEnabled', status: 'toggle-status-recommendations' },
+      promosEnabled: { type: 'checkbox', checkbox: 'toggle-promosEnabled', status: 'toggle-status-promos' },
+      announcementBannerEnabled: { type: 'checkbox', checkbox: 'toggle-announcementBannerEnabled', status: 'toggle-status-announcement-banner' },
+      homepageLayoutFeatured: { type: 'checkbox', checkbox: 'toggle-homepageLayoutFeatured', status: 'toggle-status-homepageLayoutFeatured' },
+      flashSaleActive: { type: 'checkbox', checkbox: 'toggle-flashSaleActive', status: 'toggle-status-flashSaleActive' },
+      themeAccentColor: { type: 'color', input: 'toggle-themeAccentColor', status: 'toggle-status-themeAccentColor' }
     };
 
-    for (const [key, ids] of Object.entries(toggleMap)) {
-      const checkbox = document.getElementById(ids.checkbox);
-      const statusBadge = document.getElementById(ids.status);
-      const isEnabled = toggles[key] !== false;
+    for (const [key, prop] of Object.entries(toggleMap)) {
+      if (prop.type === 'checkbox') {
+        const checkbox = document.getElementById(prop.checkbox);
+        const statusBadge = document.getElementById(prop.status);
+        const isEnabled = toggles[key] !== false;
 
-      if (checkbox) checkbox.checked = isEnabled;
-      if (statusBadge) {
-        statusBadge.textContent = isEnabled ? 'Active' : 'Disabled';
-        statusBadge.className = `feature-toggle-status ${isEnabled ? 'active' : 'inactive'}`;
+        if (checkbox) checkbox.checked = isEnabled;
+        if (statusBadge) {
+          statusBadge.textContent = isEnabled ? 'Active' : 'Disabled';
+          statusBadge.className = `feature-toggle-status ${isEnabled ? 'active' : 'inactive'}`;
+        }
+      } else if (prop.type === 'color') {
+        const input = document.getElementById(prop.input);
+        const statusBadge = document.getElementById(prop.status);
+        const colorVal = toggles[key] || '#6A0DAD';
+
+        if (input) input.value = colorVal;
+        if (statusBadge) {
+          statusBadge.textContent = colorVal;
+        }
+      }
+    }
+
+    // Load flash sale inputs
+    const fsTextInput = document.getElementById('input-flashSaleText');
+    const fsDateInput = document.getElementById('input-flashSaleTargetDate');
+    if (fsTextInput) fsTextInput.value = toggles.flashSaleText || '';
+    if (fsDateInput) {
+      if (toggles.flashSaleTargetDate) {
+        const d = new Date(toggles.flashSaleTargetDate);
+        const formattedDate = d.getFullYear() + '-' +
+          String(d.getMonth() + 1).padStart(2, '0') + '-' +
+          String(d.getDate()).padStart(2, '0') + 'T' +
+          String(d.getHours()).padStart(2, '0') + ':' +
+          String(d.getMinutes()).padStart(2, '0');
+        fsDateInput.value = formattedDate;
+      } else {
+        fsDateInput.value = '';
       }
     }
   } catch (err) {
@@ -1210,35 +1271,248 @@ async function handleFeatureToggle(key, enabled) {
     const data = await res.json();
 
     if (data.success) {
-      // Update status badges
       const statusMap = {
         wishlistEnabled: 'toggle-status-wishlist',
         couponsEnabled: 'toggle-status-coupon',
-        registrationEnabled: 'toggle-status-registration'
+        registrationEnabled: 'toggle-status-registration',
+        whatsappCheckoutEnabled: 'toggle-status-whatsapp',
+        codEnabled: 'toggle-status-cod',
+        reviewsEnabled: 'toggle-status-reviews',
+        recommendationsEnabled: 'toggle-status-recommendations',
+        promosEnabled: 'toggle-status-promos',
+        announcementBannerEnabled: 'toggle-status-announcement-banner',
+        homepageLayoutFeatured: 'toggle-status-homepageLayoutFeatured',
+        flashSaleActive: 'toggle-status-flashSaleActive',
+        themeAccentColor: 'toggle-status-themeAccentColor'
       };
       const labelMap = {
         wishlistEnabled: 'Wishlist System',
         couponsEnabled: 'Coupon Engine',
-        registrationEnabled: 'Registration Portal'
+        registrationEnabled: 'Registration Portal',
+        whatsappCheckoutEnabled: 'WhatsApp Checkout',
+        codEnabled: 'Cash on Delivery',
+        reviewsEnabled: 'Reviews & Ratings',
+        recommendationsEnabled: 'Recommendation Engine',
+        promosEnabled: 'Flash Sales & Banners',
+        announcementBannerEnabled: 'Announcement Banner',
+        homepageLayoutFeatured: 'Homepage Featured Curation',
+        flashSaleActive: 'Flash Sale Countdown Banner',
+        themeAccentColor: 'Theme Accent Color'
       };
+      
       const statusBadge = document.getElementById(statusMap[key]);
       if (statusBadge) {
-        statusBadge.textContent = enabled ? 'Active' : 'Disabled';
-        statusBadge.className = `feature-toggle-status ${enabled ? 'active' : 'inactive'}`;
+        if (key === 'themeAccentColor') {
+          statusBadge.textContent = enabled;
+        } else {
+          statusBadge.textContent = enabled ? 'Active' : 'Disabled';
+          statusBadge.className = `feature-toggle-status ${enabled ? 'active' : 'inactive'}`;
+        }
       }
-      showToast(`${labelMap[key] || key} ${enabled ? 'enabled' : 'disabled'} successfully!`, 'success');
+      showToast(`${labelMap[key] || key} updated successfully!`, 'success');
     } else {
       showToast(data.error || 'Failed to update toggle', 'error');
-      // Revert checkbox
-      const checkbox = document.getElementById(`toggle-${key}`);
-      if (checkbox) checkbox.checked = !enabled;
+      revertFeatureToggleUI(key, enabled);
     }
   } catch (err) {
     showToast('Connection error updating toggle', 'error');
+    revertFeatureToggleUI(key, enabled);
+  }
+}
+
+function revertFeatureToggleUI(key, val) {
+  if (key === 'themeAccentColor') {
+    const input = document.getElementById('toggle-themeAccentColor');
+    if (input) input.value = '#6A0DAD';
+  } else {
     const checkbox = document.getElementById(`toggle-${key}`);
-    if (checkbox) checkbox.checked = !enabled;
+    if (checkbox) checkbox.checked = !val;
   }
 }
 
 window.handleFeatureToggle = handleFeatureToggle;
 window.loadFeatureToggles = loadFeatureToggles;
+
+window.handleFlashSaleTextUpdate = async (val) => {
+  try {
+    const res = await adminFetch('/api/settings/feature-toggles', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ toggles: { flashSaleText: val } })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Flash sale text updated!', 'success');
+    } else {
+      showToast(data.error || 'Failed to update flash sale text', 'error');
+    }
+  } catch (err) {
+    showToast('Connection error', 'error');
+  }
+};
+
+window.handleFlashSaleDateUpdate = async (val) => {
+  try {
+    const res = await adminFetch('/api/settings/feature-toggles', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ toggles: { flashSaleTargetDate: val ? new Date(val) : null } })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Flash sale target date updated!', 'success');
+    } else {
+      showToast(data.error || 'Failed to update target date', 'error');
+    }
+  } catch (err) {
+    showToast('Connection error', 'error');
+  }
+};
+
+window.viewCustomerDeepProfile = async (customerId) => {
+  try {
+    const custRes = await adminFetch('/api/auth/customers');
+    const custData = await custRes.json();
+    if (!custData.success) {
+      showToast('Failed to load customer details', 'error');
+      return;
+    }
+    const customer = custData.customers.find(c => String(c._id) === String(customerId));
+    if (!customer) {
+      showToast('Customer not found', 'error');
+      return;
+    }
+    
+    // Fetch orders to filter
+    const orderRes = await adminFetch('/api/orders');
+    const orderData = await orderRes.json();
+    const allOrders = orderData.success ? orderData.orders : [];
+    const userOrders = allOrders.filter(o => {
+      const oUserId = o.userId ? (o.userId._id || o.userId) : null;
+      return oUserId && String(oUserId) === String(customerId);
+    });
+    
+    // Create deep profile modal overlay
+    const existingBackdrop = document.getElementById('deep-profile-backdrop');
+    if (existingBackdrop) existingBackdrop.remove();
+    const existingModal = document.getElementById('deep-profile-modal');
+    if (existingModal) existingModal.remove();
+    
+    const backdrop = document.createElement('div');
+    backdrop.id = 'deep-profile-backdrop';
+    backdrop.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; backdrop-filter: blur(12px) !important; background: rgba(0, 0, 0, 0.5) !important; z-index: 100008 !important;';
+    
+    const modal = document.createElement('div');
+    modal.id = 'deep-profile-modal';
+    modal.style.cssText = 'position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; z-index: 100009 !important; display: block !important; width: 90% !important; max-width: 700px !important; max-height: 90vh !important; overflow-y: auto !important;';
+    
+    const closeModal = () => {
+      backdrop.remove();
+      modal.remove();
+    };
+    backdrop.addEventListener('click', closeModal);
+    
+    // Format addresses HTML
+    let addressesHTML = '<p style="color:var(--text-muted); font-size:13px;">No saved addresses found.</p>';
+    if (customer.addresses && customer.addresses.length > 0) {
+      addressesHTML = customer.addresses.map((addr, idx) => `
+        <div style="background: rgba(0,0,0,0.02); border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 13px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <strong>${addr.fullName || 'Address #' + (idx+1)}</strong>
+            ${addr.isDefault ? '<span style="font-size: 10px; padding: 2px 6px; background: hsl(var(--primary-purple)); color: white; border-radius: 10px; font-weight: 700;">DEFAULT</span>' : ''}
+          </div>
+          <div>Phone: ${addr.phone || 'N/A'}</div>
+          <div>${addr.street || ''}${addr.street2 ? ', ' + addr.street2 : ''}</div>
+          <div>${addr.city || ''}, ${addr.state || ''} - ${addr.zipCode || ''}</div>
+        </div>
+      `).join('');
+    }
+    
+    // Format orders history table
+    let ordersHTML = '<p style="color:var(--text-muted); font-size:13px; text-align:center; padding: 15px 0;">No order transactions found for this customer.</p>';
+    if (userOrders.length > 0) {
+      ordersHTML = `
+        <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--card-border);">
+              <th style="padding:8px 4px;">Order ID</th>
+              <th style="padding:8px 4px;">Date</th>
+              <th style="padding:8px 4px;">Total</th>
+              <th style="padding:8px 4px;">Fulfillment</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${userOrders.map(o => `
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding:8px 4px; font-family:monospace; font-weight:bold; color:hsl(var(--primary-purple));">${o._id}</td>
+                <td style="padding:8px 4px;">${new Date(o.createdAt).toLocaleDateString()}</td>
+                <td style="padding:8px 4px; font-weight:bold;">${formatPrice(o.summary ? o.summary.total : 0)}</td>
+                <td style="padding:8px 4px;">
+                  <span style="font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700; background:${
+                    o.status === 'Delivered' ? 'rgba(40,167,69,0.1); color:#28a745;' :
+                    o.status === 'Cancelled' ? 'rgba(220,53,69,0.1); color:#dc3545;' :
+                    'rgba(255,193,7,0.1); color:#ffc107;'
+                  }">${o.status}</span>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+    
+    const formattedDate = new Date(customer.createdAt).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    modal.innerHTML = `
+      <div class="modal-content glass scale-in" style="padding: 30px; border-radius: 16px; position:relative; background:#FAF9F6; border:1px solid var(--card-border); color:var(--text-color);">
+        <button id="close-profile-modal-btn" style="position:absolute; top:15px; right:15px; background:transparent; font-size:18px; font-weight:bold; color:var(--text-muted); cursor:pointer; border:none;">✕</button>
+        
+        <h3 style="font-family:'Outfit'; font-size:24px; margin-bottom:20px; color:hsl(var(--primary-purple)); border-bottom: 2px solid var(--card-border); padding-bottom:10px;">
+          Customer Profile Deep-Dive
+        </h3>
+        
+        <div class="grid grid-2" style="gap:20px; margin-bottom:25px; align-items:start;">
+          <!-- Left: Metadata -->
+          <div style="background:rgba(0,0,0,0.015); padding:16px; border-radius:12px; border:1px solid var(--card-border);">
+            <h4 style="font-family:'Outfit'; font-size:15px; margin-bottom:12px; color:hsl(var(--primary-purple)); font-weight:bold;">Metadata Profile</h4>
+            <div style="font-size:13px; line-height:1.8; display:flex; flex-direction:column; gap:6px;">
+              <div>Name: <strong style="color:var(--text-color);">${customer.name}</strong></div>
+              <div>Email: <span style="color:var(--text-muted);">${customer.email}</span></div>
+              <div>Phone: <strong style="color:var(--text-color);">${customer.phone || 'No phone number linked'}</strong></div>
+              <div>Role: <span style="text-transform:capitalize; padding:2px 8px; font-size:11px; font-weight:700; background:rgba(106,13,173,0.1); color:hsl(var(--primary-purple)); border-radius:10px;">${customer.role}</span></div>
+              <div>Registered: <span style="color:var(--text-muted);">${formattedDate}</span></div>
+            </div>
+          </div>
+          
+          <!-- Right: Addresses -->
+          <div style="background:rgba(0,0,0,0.015); padding:16px; border-radius:12px; border:1px solid var(--card-border);">
+            <h4 style="font-family:'Outfit'; font-size:15px; margin-bottom:12px; color:hsl(var(--primary-purple)); font-weight:bold;">Saved Addresses</h4>
+            <div style="max-height: 200px; overflow-y:auto; padding-right:5px;">
+              ${addressesHTML}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Bottom: Order History -->
+        <div style="background:rgba(0,0,0,0.015); padding:16px; border-radius:12px; border:1px solid var(--card-border);">
+          <h4 style="font-family:'Outfit'; font-size:15px; margin-bottom:12px; color:hsl(var(--primary-purple)); font-weight:bold;">Order Transactions History</h4>
+          <div style="max-height: 220px; overflow-y:auto; padding-right:5px;">
+            ${ordersHTML}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(backdrop);
+    document.body.appendChild(modal);
+    
+    modal.querySelector('#close-profile-modal-btn').addEventListener('click', closeModal);
+  } catch (err) {
+    console.error('Error rendering customer deep profile:', err);
+    showToast('Error displaying deep profile details', 'error');
+  }
+};
