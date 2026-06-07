@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   injectAdminSidebar();
-  
+
   // Route to page-specific loads
   const path = window.location.pathname;
   if (path.includes('dashboard.html')) {
@@ -177,14 +177,14 @@ function renderSvgTrendChart(chartData) {
       
       <!-- Node Dots -->
       ${chartData.map((d, i) => {
-        const x = (i * (width / (chartData.length - 1))) + 30;
-        const y = height - (d.revenue / maxVal * (height - 40)) - 20;
-        return `
+    const x = (i * (width / (chartData.length - 1))) + 30;
+    const y = height - (d.revenue / maxVal * (height - 40)) - 20;
+    return `
           <circle cx="${x}" cy="${y}" r="5" fill="var(--primary-gold)" stroke="hsl(var(--primary-purple))" stroke-width="2"/>
           <text x="${x}" y="${y - 10}" font-size="10" font-weight="700" text-anchor="middle" fill="var(--text-color)">₹${Math.round(d.revenue)}</text>
           <text x="${x}" y="${height}" font-size="9" text-anchor="middle" fill="var(--text-muted)">${d.label}</text>
         `;
-      }).join('')}
+  }).join('')}
     </svg>
   `;
 }
@@ -298,10 +298,10 @@ window.updateBulkSelectionState = () => {
   const checkboxes = document.querySelectorAll('.product-select-checkbox');
   const checked = Array.from(checkboxes).filter(cb => cb.checked);
   const count = checked.length;
-  
+
   const bulkPanel = document.getElementById('bulk-actions-panel');
   const countSpan = document.getElementById('bulk-selected-count');
-  
+
   if (bulkPanel && countSpan) {
     if (count > 0) {
       bulkPanel.style.display = 'flex';
@@ -310,7 +310,7 @@ window.updateBulkSelectionState = () => {
       bulkPanel.style.display = 'none';
     }
   }
-  
+
   const selectAll = document.getElementById('select-all-products');
   if (selectAll) {
     selectAll.checked = checkboxes.length > 0 && count === checkboxes.length;
@@ -343,10 +343,10 @@ window.exportProductsCSV = async () => {
       showToast('No products to export', 'warning');
       return;
     }
-    
+
     const headers = ['name', 'description', 'price', 'discountPrice', 'stock', 'categoryName', 'material', 'dimensions', 'weight', 'color', 'tags', 'images'];
     const rows = [headers.join(',')];
-    
+
     data.products.forEach(p => {
       const row = [
         `"${(p.name || '').replace(/"/g, '""')}"`,
@@ -364,7 +364,7 @@ window.exportProductsCSV = async () => {
       ];
       rows.push(row.join(','));
     });
-    
+
     const csvContent = '\uFEFF' + rows.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -383,7 +383,7 @@ window.exportProductsCSV = async () => {
 window.importProductsCSV = (event) => {
   const file = event.target.files[0];
   if (!file) return;
-  
+
   const reader = new FileReader();
   reader.onload = async (e) => {
     try {
@@ -393,16 +393,16 @@ window.importProductsCSV = (event) => {
         showToast('CSV is empty or lacks headers', 'warning');
         return;
       }
-      
+
       const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
       const products = [];
-      
+
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i];
         const values = [];
         let currentVal = '';
         let insideQuotes = false;
-        
+
         for (let j = 0; j < line.length; j++) {
           const char = line[j];
           if (char === '"') {
@@ -415,32 +415,32 @@ window.importProductsCSV = (event) => {
           }
         }
         values.push(currentVal.trim().replace(/^["']|["']$/g, ''));
-        
+
         if (values.length < headers.length) continue;
-        
+
         const prod = {};
         headers.forEach((header, idx) => {
           prod[header] = values[idx];
         });
-        
+
         products.push(prod);
       }
-      
+
       if (products.length === 0) {
         showToast('No valid rows found in CSV', 'warning');
         return;
       }
-      
+
       const confirmImport = confirm(`Parsed ${products.length} products. Do you want to import them now?`);
       if (!confirmImport) return;
-      
+
       const res = await adminFetch('/api/products/bulk-import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ products })
       });
       const data = await res.json();
-      
+
       if (data.success) {
         showToast(data.message || `Successfully imported ${data.count} products!`, 'success');
         loadAdminProducts();
@@ -477,10 +477,10 @@ function initProductsPageEvents() {
     actionSelect.addEventListener('change', (e) => {
       const stockContainer = document.getElementById('bulk-stock-input-container');
       const categoryContainer = document.getElementById('bulk-category-input-container');
-      
+
       if (stockContainer) stockContainer.style.display = 'none';
       if (categoryContainer) categoryContainer.style.display = 'none';
-      
+
       if (e.target.value === 'update-stock') {
         if (stockContainer) stockContainer.style.display = 'flex';
       } else if (e.target.value === 'change-category') {
@@ -501,7 +501,7 @@ function initProductsPageEvents() {
         showToast('Please select a bulk action', 'warning');
         return;
       }
-      
+
       const checkboxes = document.querySelectorAll('.product-select-checkbox:checked');
       const ids = Array.from(checkboxes).map(cb => cb.getAttribute('data-id'));
       if (ids.length === 0) {
@@ -592,26 +592,40 @@ async function loadAdminOrders() {
       return;
     }
 
-    tbody.innerHTML = data.orders.map(o => `
-      <tr>
-        <td><strong>#${(o._id || '').substr(-6)}</strong></td>
-        <td>${o.userId ? (o.userId.name || 'Customer') : (o.guestDetails ? (o.guestDetails.fullName || 'Guest') : 'Guest')}</td>
-        <td>${new Date(o.createdAt).toLocaleDateString('en-IN')}</td>
-        <td>₹${o.summary ? o.summary.total : 0}</td>
-        <td>
-          <select onchange="updateOrderStatus('${o._id}', this.value)" style="padding:6px; border-radius:4px; font-size:12px; background:var(--card-bg); color:var(--text-color); border:1px solid var(--card-border); font-weight:600;">
-            <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
-            <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
-            <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
-            <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-            <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-          </select>
-        </td>
-        <td>
-          <a href="/api/orders/${o._id}/invoice" target="_blank" class="btn btn-secondary" style="padding:4px 10px; font-size:11px; border-radius:4px; border-width:1px;">Invoice</a>
-        </td>
-      </tr>
-    `).join('');
+    const rows = [];
+    for (const o of data.orders) {
+      try {
+        if (!o || (!o._id && !o.orderId)) continue;
+        const displayOrderId = o.orderId || o._id || 'PENDING-ID';
+        const clientName = o.userId ? (o.userId.name || 'Customer') : (o.guestDetails ? (o.guestDetails.fullName || 'Guest') : 'Guest');
+        const formattedDate = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : 'N/A';
+        const totalAmount = o.summary ? o.summary.total : 0;
+
+        rows.push(`
+          <tr>
+            <td><strong style="color:var(--text-color); font-size:13px;">#${displayOrderId}</strong></td>
+            <td>${clientName}</td>
+            <td>${formattedDate}</td>
+            <td>${formatPrice(totalAmount)}</td>
+            <td>
+              <select onchange="updateOrderStatus('${o._id || o.orderId}', this.value)" style="padding:6px; border-radius:4px; font-size:12px; background:var(--card-bg); color:var(--text-color); border:1px solid var(--card-border); font-weight:600; cursor:pointer;">
+                <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+              </select>
+            </td>
+            <td>
+              <a href="/api/orders/${o._id || o.orderId}/invoice" target="_blank" class="btn btn-secondary" style="padding:4px 10px; font-size:11px; border-radius:4px; border-width:1px;">Invoice</a>
+            </td>
+          </tr>
+        `);
+      } catch (rowErr) {
+        console.error('Failed to map order row:', rowErr, o);
+      }
+    }
+    tbody.innerHTML = rows.join('');
   } catch (err) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to load orders list.</td></tr>';
     showToast('Failed to fetch orders list', 'error');
@@ -680,14 +694,14 @@ async function loadHomepageBuilderSettings() {
     const data = await res.json();
     if (data.success && data.setting) {
       const setting = data.setting;
-      
+
       // Load WhatsApp Contact field
       document.getElementById('whatsapp-contact-field').value = setting.whatsappContact || '';
-      
+
       // Load Branding & Appearance fields
       const bannerField = document.getElementById('announcement-banner-field');
       if (bannerField) bannerField.value = setting.announcementBanner || '';
-      
+
       document.getElementById('brand-name-field').value = setting.brandName || '';
       document.getElementById('logo-field').value = setting.logo || '';
       document.getElementById('primary-color-field').value = setting.primaryColor || '#6A0DAD';
@@ -707,11 +721,11 @@ async function loadHomepageBuilderSettings() {
       document.getElementById('palette-color-secondary').value = setting.paletteColorSecondary || '#ff1493';
       document.getElementById('palette-color-success').value = setting.paletteColorSuccess || '#28a745';
       document.getElementById('palette-color-error').value = setting.paletteColorError || '#dc3545';
-      
+
       // Load hero slide arrays textareas
       document.getElementById('hero-banners-json').value = JSON.stringify(setting.heroBanners, null, 2);
       document.getElementById('promo-banners-json').value = JSON.stringify(setting.promotionalBanners, null, 2);
-      
+
       // Load curated product list selectors
       document.getElementById('featured-product-ids').value = setting.featuredProductIds.join(', ');
       document.getElementById('bestseller-product-ids').value = setting.bestSellerProductIds.join(', ');
@@ -1082,7 +1096,7 @@ function initInvoiceSearch() {
     try {
       resultCard.style.display = 'none';
       const res = await adminFetch(`/api/orders/${orderId}`);
-      
+
       let data;
       try {
         data = await res.json();
@@ -1299,7 +1313,7 @@ async function handleFeatureToggle(key, enabled) {
         flashSaleActive: 'Flash Sale Countdown Banner',
         themeAccentColor: 'Theme Accent Color'
       };
-      
+
       const statusBadge = document.getElementById(statusMap[key]);
       if (statusBadge) {
         if (key === 'themeAccentColor') {
@@ -1382,7 +1396,7 @@ window.viewCustomerDeepProfile = async (customerId) => {
       showToast('Customer not found', 'error');
       return;
     }
-    
+
     // Fetch orders to filter
     const orderRes = await adminFetch('/api/orders');
     const orderData = await orderRes.json();
@@ -1391,34 +1405,34 @@ window.viewCustomerDeepProfile = async (customerId) => {
       const oUserId = o.userId ? (o.userId._id || o.userId) : null;
       return oUserId && String(oUserId) === String(customerId);
     });
-    
+
     // Create deep profile modal overlay
     const existingBackdrop = document.getElementById('deep-profile-backdrop');
     if (existingBackdrop) existingBackdrop.remove();
     const existingModal = document.getElementById('deep-profile-modal');
     if (existingModal) existingModal.remove();
-    
+
     const backdrop = document.createElement('div');
     backdrop.id = 'deep-profile-backdrop';
     backdrop.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; backdrop-filter: blur(12px) !important; background: rgba(0, 0, 0, 0.5) !important; z-index: 100008 !important;';
-    
+
     const modal = document.createElement('div');
     modal.id = 'deep-profile-modal';
     modal.style.cssText = 'position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; z-index: 100009 !important; display: block !important; width: 90% !important; max-width: 700px !important; max-height: 90vh !important; overflow-y: auto !important;';
-    
+
     const closeModal = () => {
       backdrop.remove();
       modal.remove();
     };
     backdrop.addEventListener('click', closeModal);
-    
+
     // Format addresses HTML
     let addressesHTML = '<p style="color:var(--text-muted); font-size:13px;">No saved addresses found.</p>';
     if (customer.addresses && customer.addresses.length > 0) {
       addressesHTML = customer.addresses.map((addr, idx) => `
         <div style="background: rgba(0,0,0,0.02); border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 13px;">
           <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-            <strong>${addr.fullName || 'Address #' + (idx+1)}</strong>
+            <strong>${addr.fullName || 'Address #' + (idx + 1)}</strong>
             ${addr.isDefault ? '<span style="font-size: 10px; padding: 2px 6px; background: hsl(var(--primary-purple)); color: white; border-radius: 10px; font-weight: 700;">DEFAULT</span>' : ''}
           </div>
           <div>Phone: ${addr.phone || 'N/A'}</div>
@@ -1427,7 +1441,7 @@ window.viewCustomerDeepProfile = async (customerId) => {
         </div>
       `).join('');
     }
-    
+
     // Format orders history table
     let ordersHTML = '<p style="color:var(--text-muted); font-size:13px; text-align:center; padding: 15px 0;">No order transactions found for this customer.</p>';
     if (userOrders.length > 0) {
@@ -1448,11 +1462,10 @@ window.viewCustomerDeepProfile = async (customerId) => {
                 <td style="padding:8px 4px;">${new Date(o.createdAt).toLocaleDateString()}</td>
                 <td style="padding:8px 4px; font-weight:bold;">${formatPrice(o.summary ? o.summary.total : 0)}</td>
                 <td style="padding:8px 4px;">
-                  <span style="font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700; background:${
-                    o.status === 'Delivered' ? 'rgba(40,167,69,0.1); color:#28a745;' :
-                    o.status === 'Cancelled' ? 'rgba(220,53,69,0.1); color:#dc3545;' :
-                    'rgba(255,193,7,0.1); color:#ffc107;'
-                  }">${o.status}</span>
+                  <span style="font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700; background:${o.status === 'Delivered' ? 'rgba(40,167,69,0.1); color:#28a745;' :
+          o.status === 'Cancelled' ? 'rgba(220,53,69,0.1); color:#dc3545;' :
+            'rgba(255,193,7,0.1); color:#ffc107;'
+        }">${o.status}</span>
                 </td>
               </tr>
             `).join('')}
@@ -1460,13 +1473,13 @@ window.viewCustomerDeepProfile = async (customerId) => {
         </table>
       `;
     }
-    
+
     const formattedDate = new Date(customer.createdAt).toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
-    
+
     modal.innerHTML = `
       <div class="modal-content glass scale-in" style="padding: 30px; border-radius: 16px; position:relative; background:#FAF9F6; border:1px solid var(--card-border); color:var(--text-color);">
         <button id="close-profile-modal-btn" style="position:absolute; top:15px; right:15px; background:transparent; font-size:18px; font-weight:bold; color:var(--text-muted); cursor:pointer; border:none;">✕</button>
@@ -1506,10 +1519,10 @@ window.viewCustomerDeepProfile = async (customerId) => {
         </div>
       </div>
     `;
-    
+
     document.body.appendChild(backdrop);
     document.body.appendChild(modal);
-    
+
     modal.querySelector('#close-profile-modal-btn').addEventListener('click', closeModal);
   } catch (err) {
     console.error('Error rendering customer deep profile:', err);

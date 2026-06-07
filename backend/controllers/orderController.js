@@ -106,7 +106,8 @@ exports.createOrder = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Order created successfully!',
-      orderId: order._id,
+      orderId: order.orderId || order._id,
+      id: order._id,
       order
     });
   } catch (error) {

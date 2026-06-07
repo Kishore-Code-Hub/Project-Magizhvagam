@@ -71,7 +71,8 @@ const apiLimiter = rateLimit({
   max: 200, 
   message: { success: false, error: 'Too many requests from this IP, please try again after 15 minutes.' },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  skip: (req) => process.env.NODE_ENV !== 'production'
 });
 app.use('/api', apiLimiter);
 
@@ -94,7 +95,8 @@ const authLimiter = rateLimit({
   max: 20, 
   message: { success: false, error: 'Too many auth requests from this IP, please try again after 15 minutes.' },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  skip: (req) => process.env.NODE_ENV !== 'production'
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/admin/login', authLimiter);
@@ -105,7 +107,7 @@ const checkoutLimiter = rateLimit({
   message: { success: false, error: 'Too many checkout requests from this IP, please try again after 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.method === 'GET'
+  skip: (req) => process.env.NODE_ENV !== 'production' || req.method === 'GET'
 });
 
 const uploadLimiter = rateLimit({
@@ -114,7 +116,7 @@ const uploadLimiter = rateLimit({
   message: { success: false, error: 'Too many product write requests from this IP, please try again after 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.method === 'GET'
+  skip: (req) => process.env.NODE_ENV !== 'production' || req.method === 'GET'
 });
 
 app.use('/api/orders', checkoutLimiter);

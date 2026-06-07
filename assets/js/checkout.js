@@ -3,8 +3,30 @@
  * Handles forms steps, checkout totals calculation, mock payment triggers, and API order post
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-  initCheckout();
+document.addEventListener('DOMContentLoaded', async () => {
+  const hideLoader = () => {
+    const spinner = document.getElementById('loading-overlay') || document.querySelector('.spinner') || document.querySelector('.loading');
+    if (spinner) spinner.style.display = 'none';
+  };
+
+  try {
+    // Await session validation to avoid empty cart redirect race condition
+    if (typeof window.validateUserSession === 'function') {
+      await window.validateUserSession();
+    }
+  } catch (err) {
+    console.error('Session validation failed during checkout start:', err);
+  }
+
+  try {
+    initCheckout();
+  } catch (error) {
+    console.error('CRITICAL CHECKOUT INITIALIZATION FAILURE:', error);
+    hideLoader();
+    if (typeof showToast === 'function') {
+      showToast('Checkout loading encountered an issue. Please check your profile details.', 'error');
+    }
+  }
 });
 
 function initCheckout() {
@@ -288,7 +310,7 @@ async function handleCheckoutSubmit(e) {
           
           <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
             <a href="/products.html" class="btn btn-secondary" style="border-radius:8px;">Continue Shopping</a>
-            <a href="/api/orders/${data.orderId}/invoice" target="_blank" class="btn btn-primary" style="border-radius:8px;">Print Invoice</a>
+            <a href="/api/orders/${data.id || data.orderId}/invoice" target="_blank" class="btn btn-primary" style="border-radius:8px;">Print Invoice</a>
           </div>
         </div>
       `;

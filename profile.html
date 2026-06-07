@@ -665,7 +665,8 @@
 
         container.innerHTML = data.orders.map(o => {
           // Safe field evaluation
-          const orderId = o._id || 'N/A';
+          const displayOrderId = o.orderId || o._id || 'N/A';
+          const routeId = o._id || 'N/A';
           const orderDate = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : 'N/A';
           const paymentStatus = (o.payment && o.payment.status) ? o.payment.status : 'Pending';
           const orderItems = Array.isArray(o.items) ? o.items : [];
@@ -678,14 +679,14 @@
             <div class="glass" style="padding:24px; border-radius:12px;">
               <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed var(--card-border); padding-bottom:12px; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
                 <div style="font-size:13px;">
-                  Order ID: <strong style="color:hsl(var(--primary-purple));">${orderId}</strong><br>
+                  Order ID: <strong style="color:hsl(var(--primary-purple));">${displayOrderId}</strong><br>
                   Date: <span style="color:var(--text-muted);">${orderDate}</span>
                 </div>
                 <div style="text-align:right;">
                   <span class="badge ${paymentStatus === 'Paid' ? 'badge-featured' : 'badge-new'}" style="font-size:10px; margin-bottom:4px; display:inline-block;">
                     Payment: ${paymentStatus}
                   </span><br>
-                  <a href="/api/orders/${orderId}/invoice" target="_blank" class="btn btn-secondary" style="font-size:12px; color:hsl(var(--primary-purple)); font-weight:700; padding:6px 12px; border-radius:6px; border:1px solid var(--card-border); margin-top:5px; display:inline-block; text-decoration:none;">View Invoice</a>
+                  <a href="/api/orders/${routeId}/invoice" target="_blank" class="btn btn-secondary" style="font-size:12px; color:hsl(var(--primary-purple)); font-weight:700; padding:6px 12px; border-radius:6px; border:1px solid var(--card-border); margin-top:5px; display:inline-block; text-decoration:none;">View Invoice</a>
                 </div>
               </div>
 

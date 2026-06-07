@@ -42,10 +42,21 @@ const OrderSchema = new mongoose.Schema({
     enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'], 
     default: 'Pending' 
   },
+  orderId: { type: String, unique: true, sparse: true },
   createdAt: { type: Date, default: Date.now }
 });
 
+OrderSchema.pre('save', function (next) {
+  if (!this.orderId) {
+    const timestamp = Date.now().toString().slice(-6);
+    const randomHex = Math.floor(1000 + Math.random() * 9000);
+    this.orderId = `MAG-${timestamp}-${randomHex}`;
+  }
+  next();
+});
+
 OrderSchema.index({ userId: 1 });
+OrderSchema.index({ orderId: 1 });
 OrderSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('Order', OrderSchema);

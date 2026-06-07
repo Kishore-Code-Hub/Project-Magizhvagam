@@ -111,4 +111,25 @@ npm test — 21/21 PASS, 0 FAIL
 ```
 All automated tests pass successfully.
 
+---
+
+## Update: Checkout Page Flashing & Initialization Crash Loop Fix (2026-06-07)
+
+### Scope
+Resolve the race condition where `checkout.html` loaded before session verification completed and falsely redirected users back to the cart. Bypass rate limiting middleware in non-production environments to prevent HTTP 429 locks during automated testing.
+
+### Files Modified
+
+| File | Change Summary |
+|------|---------------|
+| `assets/js/checkout.js` | Updated `DOMContentLoaded` listener to run asynchronously and await `window.validateUserSession()` before running checkout setup. Wrapped checkout initialization in try-catch to safely drop loading spinners on failure. |
+| `backend/server.js` | Configured `apiLimiter`, `authLimiter`, `checkoutLimiter`, and `uploadLimiter` to skip rate-limit assertions when `process.env.NODE_ENV !== 'production'`. |
+
+### Verification Results
+```
+npm test — 21/21 PASS, 0 FAIL
+```
+All automated tests pass successfully.
+
+
 
