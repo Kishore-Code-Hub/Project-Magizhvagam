@@ -15,7 +15,7 @@
 
   <style>
     .contact-layout {
-      padding: 120px 0 60px;
+      padding: 30px 0 60px;
     }
 
     .form-group {
@@ -111,8 +111,7 @@
       <!-- Contact form -->
       <div class="glass" style="padding:40px; border-radius:16px;">
         <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:24px;">Drop Us a Message</h3>
-        <form
-          onsubmit="event.preventDefault(); showToast('Your enquiry has been submitted. We will contact you soon.', 'success'); this.reset();">
+        <form id="contact-form">
           <div class="form-group">
             <label for="c-name">Full Name</label>
             <input type="text" id="c-name" class="form-control" placeholder="Name" required
@@ -145,6 +144,26 @@
 
   <!-- Scripts -->
   <script src="/assets/js/app.js"></script>
+  <script>
+    // Route "Drop us a Message" form directly to Gmail via mailto
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+      contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById('c-name').value.trim();
+        const email = document.getElementById('c-email').value.trim();
+        const subjectRaw = document.getElementById('c-subject').value.trim();
+        const message = document.getElementById('c-msg').value.trim();
+
+        const targetEmail = 'support@magizhvagam.com';
+        const subject = encodeURIComponent(`New Store Query from ${name}: ${subjectRaw}`);
+        const body = encodeURIComponent(`Name: ${name}\nReply-To: ${email}\n\nMessage:\n${message}`);
+
+        window.location.href = `mailto:${targetEmail}?subject=${subject}&body=${body}`;
+      });
+    }
+  </script>
 </body>
 
 </html>

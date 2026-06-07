@@ -132,4 +132,34 @@ npm test — 21/21 PASS, 0 FAIL
 All automated tests pass successfully.
 
 
+---
+
+## Update: Storefront Corrections — Component Deletion, Mail Routing & Responsive Realignment (2026-06-07)
+
+### Scope
+Eliminate duplicate newsletter blocks, route the customer contact form directly to Gmail via `mailto:`, fix tablet viewport header/hamburger alignment, and reduce excessive top spacing on the "Get in Touch" page.
+
+### Files Modified
+
+| # | Timestamp | File | Change Summary |
+|---|-----------|------|----------------|
+| 1 | 17:58 IST | `index.html` | Completely removed the "Get Exclusive Offers" newsletter subscription section (lines 147–158). The block contained a non-functional toast-only form. Surrounding footer links, testimonials section, and copyright elements remain unaffected. |
+| 2 | 17:58 IST | `contact.html` | Replaced the inline `onsubmit` toast handler on the "Drop Us a Message" form with a proper `mailto:` link router. On form submit, the browser now opens the user's default mail client pre-populated with name, email, subject, and message targeting `support@magizhvagam.com`. |
+| 3 | 17:58 IST | `contact.html` | Reduced `.contact-layout` padding-top from `120px` to `30px`, pulling the "Get in Touch" header and form cards into immediate viewport visibility. |
+| 4 | 17:59 IST | `assets/css/main.css` | In the `@media (max-width: 1024px)` block, switched `.header-row-1` from the 3-column CSS grid to strict `display: flex; align-items: center; justify-content: space-between` to prevent logo/utility/hamburger vertical axis misalignment on tablet widths. Also added `flex: 0 0 auto` on `.logo-wrapper` and enforced flex alignment on `.header-utilities`. |
+| 5 | 17:59 IST | `assets/css/main.css` | Added new `@media (min-width: 768px) and (max-width: 991px)` tablet-specific block with tightened header row padding, reduced logo font size (26px), compact utility gap (12px), and optimized hamburger padding (8px). |
+
+### Constraints Observed
+- ✅ No database schema changes
+- ✅ No color palette variable modifications
+- ✅ No search autocomplete logic alterations
+- ✅ No checkout page modifications
+- ✅ Zero regression on surrounding footer links, layout grids, or copyright elements
+
+### Verification Results
+```
+npm test — 21/21 PASS, 0 FAIL
+```
+All automated tests pass successfully.
+
 

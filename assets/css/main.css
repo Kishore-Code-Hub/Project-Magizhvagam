@@ -785,7 +785,7 @@ body.inner-page {
   padding-top: var(--header-height, 130px);
 }
 
-/* â”€â”€ Desktop large screens (>1024px): enforce desktop layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Desktop large screens (>1024px): enforce desktop layout ──────────────── */
 @media (min-width: 1025px) {
   /* Sidebar and hamburger always hidden */
   .mobile-sidebar,
@@ -834,9 +834,22 @@ body.inner-page {
   .guest-btn {
     display: none !important;
   }
-  /* Compact utilities gap */
+  /* Force header Row 1 into strict flex alignment for tablet */
+  .header-row-1 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px;
+  }
+  /* Keep logo centered and sized */
+  .logo-wrapper {
+    flex: 0 0 auto;
+  }
+  /* Compact utilities gap and center-aligned */
   .header-utilities {
     gap: 14px;
+    display: flex !important;
+    align-items: center !important;
   }
   /* Grid adjustments */
   .grid-4 {
@@ -861,6 +874,22 @@ body.inner-page {
   /* Inner page padding on tablet */
   body.inner-page {
     padding-top: var(--header-height, 100px);
+  }
+}
+
+/* ── Tablet-specific (768px–991px): precise alignment fixes ──────────── */
+@media (min-width: 768px) and (max-width: 991px) {
+  .header-row-1 {
+    padding: 10px 0 !important;
+  }
+  .logo-title {
+    font-size: 26px;
+  }
+  .header-utilities {
+    gap: 12px;
+  }
+  .hamburger {
+    padding: 8px !important;
   }
 }
 
