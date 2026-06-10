@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Store Configuration & Builder | MAGIZHVAGAM</title>
-  
+
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="stylesheet" href="/assets/css/admin.css">
   <link rel="stylesheet" href="/assets/css/animations.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
-  
+
   <style>
     .settings-grid {
       display: grid;
@@ -20,107 +21,138 @@
     }
   </style>
 </head>
+
 <body style="visibility:hidden">
 
   <div class="admin-layout">
-    
+
     <!-- Sidebar navigation placeholder -->
     <aside id="admin-sidebar-container"></aside>
 
     <!-- Main Settings Panel -->
     <main class="admin-main">
-      <h1 style="font-family:'Outfit'; font-size:32px; margin-bottom:30px; color:var(--text-color);">Store Customizations</h1>
+      <h1 style="font-family:'Outfit'; font-size:32px; margin-bottom:30px; color:var(--text-color);">Store
+        Customizations</h1>
 
       <div class="settings-grid">
-        
+
         <!-- Left: Homepage Builder -->
         <div class="glass" style="padding:30px; border-radius:12px;">
-          <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:20px; color:hsl(var(--primary-purple)); border-bottom:1px solid var(--card-border); padding-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <h3
+            style="font-family:'Outfit'; font-size:20px; margin-bottom:20px; color:hsl(var(--primary-purple)); border-bottom:1px solid var(--card-border); padding-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <span>Homepage Customizer</span>
             <div style="display:flex; gap:8px;">
-              <button type="button" onclick="exportSettingsBackup()" class="btn btn-secondary" style="padding:6px 12px; font-size:12px; border-radius:6px; border-width:1px;">Export JSON</button>
-              <button type="button" onclick="importSettingsBackup()" class="btn btn-secondary" style="padding:6px 12px; font-size:12px; border-radius:6px; border-width:1px;">Import JSON</button>
-              <button type="button" onclick="resetSettingsToDefault()" class="btn btn-secondary" style="padding:6px 12px; font-size:12px; border-radius:6px; border-width:1px; background:#ef4444; color:white; border:none;">Reset Default</button>
+              <button type="button" onclick="exportSettingsBackup()" class="btn btn-secondary"
+                style="padding:6px 12px; font-size:12px; border-radius:6px; border-width:1px;">Export JSON</button>
+              <button type="button" onclick="importSettingsBackup()" class="btn btn-secondary"
+                style="padding:6px 12px; font-size:12px; border-radius:6px; border-width:1px;">Import JSON</button>
+              <button type="button" onclick="resetSettingsToDefault()" class="btn btn-secondary"
+                style="padding:6px 12px; font-size:12px; border-radius:6px; border-width:1px; background:#ef4444; color:white; border:none;">Reset
+                Default</button>
             </div>
           </h3>
-          
+
           <form id="homepage-builder-form">
             <div class="admin-form-group">
-              <label for="whatsapp-contact-field">WhatsApp Checkout Phone Number (with Country Code, no spaces/plus)</label>
-              <input type="text" id="whatsapp-contact-field" class="admin-form-control" placeholder="e.g. 919876543210" required>
+              <label for="whatsapp-contact-field">WhatsApp Checkout Phone Number (with Country Code, no
+                spaces/plus)</label>
+              <input type="text" id="whatsapp-contact-field" class="admin-form-control" placeholder="e.g. 919876543210"
+                required>
             </div>
 
             <div class="admin-form-group">
-              <label for="announcement-banner-field">Announcement Banner Text (Site-wide sticky banner; leave empty to hide)</label>
-              <input type="text" id="announcement-banner-field" class="admin-form-control" placeholder="e.g. Special Offer: Use code WELCOME10 for 10% off your first order!">
+              <label for="announcement-banner-field">Announcement Banner Text (Site-wide sticky banner; leave empty to
+                hide)</label>
+              <input type="text" id="announcement-banner-field" class="admin-form-control"
+                placeholder="e.g. Special Offer: Use code WELCOME10 for 10% off your first order!">
             </div>
 
-            <div class="admin-form-group" style="border-top:1px dashed var(--card-border); padding-top:14px; margin-top:20px;">
-              <h4 style="font-family:'Outfit'; font-size:15px; margin-bottom:12px; color:hsl(var(--primary-purple));">Branding & Appearance</h4>
+            <div class="admin-form-group"
+              style="border-top:1px dashed var(--card-border); padding-top:14px; margin-top:20px;">
+              <h4 style="font-family:'Outfit'; font-size:15px; margin-bottom:12px; color:hsl(var(--primary-purple));">
+                Branding & Appearance</h4>
               <div class="grid grid-2" style="gap:15px; margin-bottom:15px;">
                 <div>
                   <label>Brand Name *</label>
-                  <input type="text" id="brand-name-field" class="admin-form-control" placeholder="e.g. MAGIZHVAGAM" required>
+                  <input type="text" id="brand-name-field" class="admin-form-control" placeholder="e.g. MAGIZHVAGAM"
+                    required>
                 </div>
                 <div>
                   <label>Logo (Text or Image URL) *</label>
                   <div style="display:flex; gap:10px;">
-                    <input type="text" id="logo-field" class="admin-form-control" placeholder="e.g. MAGIZHVAGAM" required>
-                    <input type="file" id="logo-upload-input" accept="image/*" style="display:none;" onchange="uploadSettingAsset('logo-upload-input', 'logo-field')">
-                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('logo-upload-input').click()" style="padding:10px 14px; font-size:12px; white-space:nowrap; border-radius:8px; border:1px solid var(--card-border); cursor:pointer;">Upload</button>
+                    <input type="text" id="logo-field" class="admin-form-control" placeholder="e.g. MAGIZHVAGAM"
+                      required>
+                    <input type="file" id="logo-upload-input" accept="image/*" style="display:none;"
+                      onchange="uploadSettingAsset('logo-upload-input', 'logo-field')">
+                    <button type="button" class="btn btn-secondary"
+                      onclick="document.getElementById('logo-upload-input').click()"
+                      style="padding:10px 14px; font-size:12px; white-space:nowrap; border-radius:8px; border:1px solid var(--card-border); cursor:pointer;">Upload</button>
                   </div>
                 </div>
               </div>
               <div class="grid grid-3" style="gap:15px; margin-bottom:15px;">
                 <div>
                   <label>Primary Color *</label>
-                  <input type="color" id="primary-color-field" class="admin-form-control" style="padding:4px; height:45px;" required>
+                  <input type="color" id="primary-color-field" class="admin-form-control"
+                    style="padding:4px; height:45px;" required>
                 </div>
                 <div>
                   <label>Secondary Color *</label>
-                  <input type="color" id="secondary-color-field" class="admin-form-control" style="padding:4px; height:45px;" required>
+                  <input type="color" id="secondary-color-field" class="admin-form-control"
+                    style="padding:4px; height:45px;" required>
                 </div>
                 <div>
                   <label>Accent Color *</label>
-                  <input type="color" id="accent-color-field" class="admin-form-control" style="padding:4px; height:45px;" required>
+                  <input type="color" id="accent-color-field" class="admin-form-control"
+                    style="padding:4px; height:45px;" required>
                 </div>
               </div>
-              <div style="border-top:1px dashed var(--card-border); padding-top:14px; margin-top:20px; margin-bottom:20px;">
-                <h4 style="font-family:'Outfit'; font-size:14px; margin-bottom:12px; color:hsl(var(--primary-purple));">Store Identity Color Palette</h4>
+              <div
+                style="border-top:1px dashed var(--card-border); padding-top:14px; margin-top:20px; margin-bottom:20px;">
+                <h4 style="font-family:'Outfit'; font-size:14px; margin-bottom:12px; color:hsl(var(--primary-purple));">
+                  Store Identity Color Palette</h4>
                 <div class="grid grid-4" style="gap:15px; margin-bottom:15px;">
                   <div>
                     <label>Main Background *</label>
-                    <input type="color" id="palette-bg-main" class="admin-form-control" style="padding:4px; height:45px;" required>
+                    <input type="color" id="palette-bg-main" class="admin-form-control"
+                      style="padding:4px; height:45px;" required>
                   </div>
                   <div>
                     <label>Surface/Card Background *</label>
-                    <input type="color" id="palette-bg-surface" class="admin-form-control" style="padding:4px; height:45px;" required>
+                    <input type="color" id="palette-bg-surface" class="admin-form-control"
+                      style="padding:4px; height:45px;" required>
                   </div>
                   <div>
                     <label>Main Text *</label>
-                    <input type="color" id="palette-text-main" class="admin-form-control" style="padding:4px; height:45px;" required>
+                    <input type="color" id="palette-text-main" class="admin-form-control"
+                      style="padding:4px; height:45px;" required>
                   </div>
                   <div>
                     <label>Muted Text *</label>
-                    <input type="color" id="palette-text-muted" class="admin-form-control" style="padding:4px; height:45px;" required>
+                    <input type="color" id="palette-text-muted" class="admin-form-control"
+                      style="padding:4px; height:45px;" required>
                   </div>
                 </div>
                 <div class="grid grid-4" style="gap:15px; margin-bottom:15px;">
                   <div>
                     <label>Primary Accent *</label>
-                    <input type="color" id="palette-color-primary" class="admin-form-control" style="padding:4px; height:45px;" required>
+                    <input type="color" id="palette-color-primary" class="admin-form-control"
+                      style="padding:4px; height:45px;" required>
                   </div>
                   <div>
                     <label>Secondary Accent *</label>
-                    <input type="color" id="palette-color-secondary" class="admin-form-control" style="padding:4px; height:45px;" required>
+                    <input type="color" id="palette-color-secondary" class="admin-form-control"
+                      style="padding:4px; height:45px;" required>
                   </div>
                   <div>
                     <label>Success Accent *</label>
-                    <input type="color" id="palette-color-success" class="admin-form-control" style="padding:4px; height:45px;" required>
+                    <input type="color" id="palette-color-success" class="admin-form-control"
+                      style="padding:4px; height:45px;" required>
                   </div>
                   <div>
                     <label>Error Accent *</label>
-                    <input type="color" id="palette-color-error" class="admin-form-control" style="padding:4px; height:45px;" required>
+                    <input type="color" id="palette-color-error" class="admin-form-control"
+                      style="padding:4px; height:45px;" required>
                   </div>
                 </div>
               </div>
@@ -155,38 +187,48 @@
 
             <div class="admin-form-group">
               <label>Hero Slider Banners Array (JSON Format)</label>
-              <textarea id="hero-banners-json" class="admin-form-control" rows="5" style="font-family:monospace; font-size:12px; resize:vertical;" required></textarea>
+              <textarea id="hero-banners-json" class="admin-form-control" rows="5"
+                style="font-family:monospace; font-size:12px; resize:vertical;" required></textarea>
             </div>
 
             <div class="admin-form-group">
               <label>Promo Card Banners Array (JSON Format)</label>
-              <textarea id="promo-banners-json" class="admin-form-control" rows="4" style="font-family:monospace; font-size:12px; resize:vertical;" required></textarea>
+              <textarea id="promo-banners-json" class="admin-form-control" rows="4"
+                style="font-family:monospace; font-size:12px; resize:vertical;" required></textarea>
             </div>
 
-            <div class="admin-form-group" style="border-top:1px dashed var(--card-border); padding-top:14px; margin-top:20px;">
-              <h4 style="font-family:'Outfit'; font-size:14px; margin-bottom:10px;">Curated Homepage Product IDs (Comma separated list)</h4>
+            <div class="admin-form-group"
+              style="border-top:1px dashed var(--card-border); padding-top:14px; margin-top:20px;">
+              <h4 style="font-family:'Outfit'; font-size:14px; margin-bottom:10px;">Curated Homepage Product IDs (Comma
+                separated list)</h4>
               <div style="display:flex; flex-direction:column; gap:12px;">
                 <div>
                   <label>Featured Products IDs</label>
-                  <input type="text" id="featured-product-ids" class="admin-form-control" placeholder="e.g. ID1, ID2, ID3">
+                  <input type="text" id="featured-product-ids" class="admin-form-control"
+                    placeholder="e.g. ID1, ID2, ID3">
                 </div>
                 <div>
                   <label>Best Sellers IDs</label>
-                  <input type="text" id="bestseller-product-ids" class="admin-form-control" placeholder="e.g. ID1, ID2, ID3">
+                  <input type="text" id="bestseller-product-ids" class="admin-form-control"
+                    placeholder="e.g. ID1, ID2, ID3">
                 </div>
                 <div>
                   <label>New Arrivals IDs</label>
-                  <input type="text" id="newarrival-product-ids" class="admin-form-control" placeholder="e.g. ID1, ID2, ID3">
+                  <input type="text" id="newarrival-product-ids" class="admin-form-control"
+                    placeholder="e.g. ID1, ID2, ID3">
                 </div>
               </div>
             </div>
 
-            <div class="admin-form-group" style="border-top:1px dashed var(--card-border); padding-top:14px; margin-top:20px;">
+            <div class="admin-form-group"
+              style="border-top:1px dashed var(--card-border); padding-top:14px; margin-top:20px;">
               <label>Customer Testimonials Array (JSON Format)</label>
-              <textarea id="testimonials-json" class="admin-form-control" rows="4" style="font-family:monospace; font-size:12px; resize:vertical;" required></textarea>
+              <textarea id="testimonials-json" class="admin-form-control" rows="4"
+                style="font-family:monospace; font-size:12px; resize:vertical;" required></textarea>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:20px; padding:12px;">Save Homepage Layout</button>
+            <button type="submit" class="btn btn-primary"
+              style="width:100%; border-radius:8px; margin-top:20px; padding:12px;">Save Homepage Layout</button>
           </form>
         </div>
 
@@ -195,16 +237,25 @@
           <!-- Image Asset Upload Tool -->
           <div class="glass" style="padding:24px; border-radius:12px;">
             <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px;">Asset Upload Helper</h3>
-            <p style="color:var(--text-muted); font-size:12px; margin-bottom:12px;">Upload images for Hero Slider or Promotional Banners, copy their URLs to paste in the JSON text areas.</p>
+            <p style="color:var(--text-muted); font-size:12px; margin-bottom:12px;">Upload images for Hero Slider or
+              Promotional Banners, copy their URLs to paste in the JSON text areas.</p>
             <div style="display:flex; flex-direction:column; gap:10px;">
-              <input type="file" id="general-asset-upload-file" accept="image/*" style="display:none;" onchange="uploadGeneralAsset()">
-              <button type="button" class="btn btn-secondary" onclick="document.getElementById('general-asset-upload-file').click()" style="padding:10px; font-size:13px; border-radius:6px; border:1px solid var(--card-border); width:100%; cursor:pointer;">Select & Upload Image</button>
-              <div id="general-upload-progress" style="display:none; font-size:12px; color:hsl(var(--primary-purple)); font-weight:700;">Uploading...</div>
+              <input type="file" id="general-asset-upload-file" accept="image/*" style="display:none;"
+                onchange="uploadGeneralAsset()">
+              <button type="button" class="btn btn-secondary"
+                onclick="document.getElementById('general-asset-upload-file').click()"
+                style="padding:10px; font-size:13px; border-radius:6px; border:1px solid var(--card-border); width:100%; cursor:pointer;">Select
+                & Upload Image</button>
+              <div id="general-upload-progress"
+                style="display:none; font-size:12px; color:hsl(var(--primary-purple)); font-weight:700;">Uploading...
+              </div>
               <div id="general-upload-result" style="display:none; margin-top:10px;">
                 <label style="font-size:11px; font-weight:700;">Uploaded Image URL:</label>
                 <div style="display:flex; gap:6px; margin-top:4px;">
-                  <input type="text" id="uploaded-asset-url" readonly style="padding:6px; font-size:11px; flex-grow:1; border-radius:4px; border:1px solid var(--card-border); background:rgba(255,255,255,0.05); color:var(--text-color);">
-                  <button type="button" onclick="copyUploadedAssetUrl()" class="btn btn-primary" style="padding:6px 12px; font-size:11px; border-radius:4px;">Copy</button>
+                  <input type="text" id="uploaded-asset-url" readonly
+                    style="padding:6px; font-size:11px; flex-grow:1; border-radius:4px; border:1px solid var(--card-border); background:rgba(255,255,255,0.05); color:var(--text-color);">
+                  <button type="button" onclick="copyUploadedAssetUrl()" class="btn btn-primary"
+                    style="padding:6px 12px; font-size:11px; border-radius:4px;">Copy</button>
                 </div>
               </div>
             </div>
@@ -216,7 +267,8 @@
             <form id="add-coupon-form" onsubmit="createNewCoupon(event)">
               <div class="admin-form-group">
                 <label>Code (Uppercase only)</label>
-                <input type="text" id="cp-code" class="admin-form-control" placeholder="WELCOME10" required style="text-transform:uppercase;">
+                <input type="text" id="cp-code" class="admin-form-control" placeholder="WELCOME10" required
+                  style="text-transform:uppercase;">
               </div>
               <div class="admin-form-group">
                 <label>Type</label>
@@ -237,43 +289,58 @@
                 <label>Expiry Date</label>
                 <input type="date" id="cp-expiry" class="admin-form-control" required>
               </div>
-              <button type="submit" class="btn btn-primary" style="width:100%; border-radius:6px; font-size:13px; padding:10px;">Create Coupon</button>
+              <button type="submit" class="btn btn-primary"
+                style="width:100%; border-radius:6px; font-size:13px; padding:10px;">Create Coupon</button>
             </form>
           </div>
 
           <!-- Coupon List -->
           <div class="glass" style="padding:24px; border-radius:12px;">
             <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:16px;">Active Coupons</h3>
-            <div id="coupons-list-container" style="display:flex; flex-direction:column; gap:12px; max-height:280px; overflow-y:auto;">
-              <div style="text-align:center;"><div class="spinner" style="margin:auto; width:20px; height:20px;"></div></div>
+            <div id="coupons-list-container"
+              style="display:flex; flex-direction:column; gap:12px; max-height:280px; overflow-y:auto;">
+              <div style="text-align:center;">
+                <div class="spinner" style="margin:auto; width:20px; height:20px;"></div>
+              </div>
             </div>
           </div>
 
           <!-- Category Manager -->
           <div class="glass" style="padding:24px; border-radius:12px;">
             <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:16px;">Category Manager</h3>
-            
+
             <!-- Category Add Form -->
-            <form id="add-category-form" onsubmit="createNewCategory(event)" style="margin-bottom:20px; border-bottom:1px dashed var(--card-border); padding-bottom:15px;">
+            <form id="add-category-form" onsubmit="createNewCategory(event)"
+              style="margin-bottom:20px; border-bottom:1px dashed var(--card-border); padding-bottom:15px;">
               <div class="admin-form-group" style="margin-bottom:10px;">
                 <label style="font-size:12px;">Category Name</label>
-                <input type="text" id="cat-name-field" class="admin-form-control" placeholder="e.g. Eco-Friendly Gifts" required style="padding:8px; font-size:13px;">
+                <input type="text" id="cat-name-field" class="admin-form-control" placeholder="e.g. Eco-Friendly Gifts"
+                  required style="padding:8px; font-size:13px;">
               </div>
               <div class="admin-form-group" style="margin-bottom:12px;">
                 <label style="font-size:12px;">Category Image</label>
                 <div style="display:flex; gap:6px;">
-                  <input type="text" id="cat-image-field" class="admin-form-control" placeholder="Image URL or upload" required style="padding:8px; font-size:13px;">
-                  <input type="file" id="cat-upload-input" accept="image/*" style="display:none;" onchange="uploadSettingAsset('cat-upload-input', 'cat-image-field')">
-                  <button type="button" class="btn btn-secondary" onclick="document.getElementById('cat-upload-input').click()" style="padding:8px 10px; font-size:11px; border-radius:4px; border:1px solid var(--card-border); cursor:pointer;">Upload</button>
+                  <input type="text" id="cat-image-field" class="admin-form-control" placeholder="Image URL or upload"
+                    required style="padding:8px; font-size:13px;">
+                  <input type="file" id="cat-upload-input" accept="image/*" style="display:none;"
+                    onchange="uploadSettingAsset('cat-upload-input', 'cat-image-field')">
+                  <button type="button" class="btn btn-secondary"
+                    onclick="document.getElementById('cat-upload-input').click()"
+                    style="padding:8px 10px; font-size:11px; border-radius:4px; border:1px solid var(--card-border); cursor:pointer;">Upload</button>
                 </div>
               </div>
-              <button type="submit" class="btn btn-primary" style="width:100%; border-radius:6px; font-size:12px; padding:8px;">Add Category</button>
+              <button type="submit" class="btn btn-primary"
+                style="width:100%; border-radius:6px; font-size:12px; padding:8px;">Add Category</button>
             </form>
 
             <!-- Category List -->
-            <h4 style="font-size:13px; font-family:'Outfit'; margin-bottom:10px; color:var(--text-color);">Existing Categories</h4>
-            <div id="categories-list-container" style="display:flex; flex-direction:column; gap:10px; max-height:220px; overflow-y:auto;">
-              <div style="text-align:center;"><div class="spinner" style="margin:auto; width:20px; height:20px;"></div></div>
+            <h4 style="font-size:13px; font-family:'Outfit'; margin-bottom:10px; color:var(--text-color);">Existing
+              Categories</h4>
+            <div id="categories-list-container"
+              style="display:flex; flex-direction:column; gap:10px; max-height:220px; overflow-y:auto;">
+              <div style="text-align:center;">
+                <div class="spinner" style="margin:auto; width:20px; height:20px;"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -302,7 +369,7 @@
       try {
         const res = await adminFetch('/api/settings/coupons/all');
         const data = await res.json();
-        
+
         if (!data.success || data.coupons.length === 0) {
           container.innerHTML = '<p style="color:var(--text-muted); font-size:12px; font-style:italic;">No coupons active.</p>';
           return;
@@ -522,4 +589,5 @@
     }
   </script>
 </body>
+
 </html>

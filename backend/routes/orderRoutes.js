@@ -4,7 +4,7 @@ const {
   createOrder, getOrderHistory, getOrderById, 
   getOrders, updateOrderStatus, checkCoupon, generateInvoice 
 } = require('../controllers/orderController');
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+const { protect, adminOnly, verifyEmailGuard } = require('../middleware/authMiddleware');
 
 // Public checkout & coupon check
 router.post('/', (req, res, next) => {
@@ -12,7 +12,7 @@ router.post('/', (req, res, next) => {
     return protect(req, res, next);
   }
   next();
-}, createOrder);
+}, verifyEmailGuard, createOrder);
 
 router.post('/check-coupon', checkCoupon);
 
@@ -26,3 +26,4 @@ router.get('/', protect, adminOnly, getOrders);
 router.put('/:id/status', protect, adminOnly, updateOrderStatus);
 
 module.exports = router;
+

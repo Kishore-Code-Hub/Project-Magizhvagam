@@ -337,7 +337,7 @@ function applyAppearanceSettings(settings) {
       document.head.appendChild(link);
     }
     document.documentElement.style.setProperty('--font-family-base', `'${font}', 'Inter', sans-serif`);
-    
+
     let fontStyleEl = document.getElementById('dynamic-font-override');
     if (!fontStyleEl) {
       fontStyleEl = document.createElement('style');

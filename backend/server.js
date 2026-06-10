@@ -67,8 +67,8 @@ app.use(mongoSanitize());
 
 // Rate Limiting (100 requests per 15 minutes)
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 200, 
+  windowMs: 15 * 60 * 1000,
+  max: 200,
   message: { success: false, error: 'Too many requests from this IP, please try again after 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -91,8 +91,8 @@ app.get('/api/health', (req, res) => {
 });
 // 3. Rate Limit Auth Routes specifically (max 20 attempts per 15 minutes)
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 20, 
+  windowMs: 15 * 60 * 1000,
+  max: 20,
   message: { success: false, error: 'Too many auth requests from this IP, please try again after 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -144,7 +144,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 const serveDefaultFallbackImage = (req, res) => {
   const urlPath = req.path.toLowerCase();
   let fallbackFile = 'default-product.webp';
-  
+
   if (urlPath.includes('category')) {
     fallbackFile = 'default-category.webp';
   } else if (urlPath.includes('/products/') || urlPath.includes('product')) {
@@ -203,7 +203,7 @@ const checkCustomerPageAuth = async (req, res, next) => {
             req.user = user;
             return next();
           }
-        } catch (err) {}
+        } catch (err) { }
       }
     }
     return res.redirect(`/login.html?redirect=${req.path.slice(1)}`);
@@ -213,7 +213,7 @@ const checkCustomerPageAuth = async (req, res, next) => {
 // 6. Serve Public and Protected HTML Pages Specifically
 const customerPages = ['profile.html', 'wishlist.html', 'checkout.html'];
 const publicPages = [
-  'index.html', 'about.html', 'contact.html', 'products.html', 
+  'index.html', 'about.html', 'contact.html', 'products.html',
   'product-details.html', 'cart.html', 'login.html', 'register.html'
 ];
 

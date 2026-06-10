@@ -657,32 +657,116 @@ async function loadAdminCustomers() {
   if (!tbody) return;
 
   try {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>';
     const res = await adminFetch('/api/auth/customers');
     const data = await res.json();
 
     if (!data.success || data.customers.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No customers registered.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No customers registered.</td></tr>';
       return;
     }
 
-    tbody.innerHTML = data.customers.map(c => `
+    tbody.innerHTML = data.customers.map(c => {
+      const isLocked = c.lockUntil && new Date(c.lockUntil) > new Date();
+      const lockStatusHTML = isLocked 
+        ? `<span class="badge badge-danger" style="padding:4px 8px; font-weight:700;">Locked</span>` 
+        : `<span class="badge badge-success" style="padding:4px 8px; font-weight:700;">Active</span>`;
+      
+      const verificationStatusHTML = c.emailVerified 
+        ? `<span style="color:#28a745; font-weight:700;">✓ Verified</span>` 
+        : `<span style="color:#dc3545; font-weight:700;">✗ Unverified</span>`;
+
+      return `
       <tr>
         <td><strong>${c.name}</strong></td>
         <td>${c.email}</td>
-        <td>${c.role}</td>
+        <td style="text-transform: capitalize;">${c.role}</td>
+        <td>${verificationStatusHTML}</td>
+        <td>${lockStatusHTML}</td>
         <td>${c.orderCount} orders</td>
         <td><strong>₹${c.totalSpent.toLocaleString('en-IN')}</strong></td>
         <td>
-          <button onclick="viewCustomerDeepProfile('${c._id}')" class="btn btn-secondary" style="padding:6px 12px; font-size:12px; border-radius:6px; cursor:pointer;">👁️ View Deep Profile</button>
+          <button onclick="viewCustomerDeepProfile('${c._id}')" class="btn btn-secondary" style="padding:6px 12px; font-size:12px; border-radius:6px; cursor:pointer;">👁️ Profile</button>
+          
+          <select onchange="handleAdminCustomerAction('${c._id}', this.value); this.value='';" style="padding:6px; font-size:12px; border-radius:6px; cursor:pointer; background:var(--card-bg); color:var(--text-color); border:1px solid var(--card-border); font-weight:600; margin-left:6px;">
+            <option value="">Actions</option>
+            <option value="toggle-role">Toggle Permissions (Customer ↔ Staff)</option>
+            <option value="force-reset">Force Account Password Reset</option>
+            <option value="unlock">Unlock Account / Clear Login Attempts</option>
+          </select>
         </td>
       </tr>
-    `).join('');
+    `;
+    }).join('');
   } catch (err) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to load customers list.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:red;">Failed to load customers list.</td></tr>';
     showToast('Failed to load customers list', 'error');
   }
 }
+
+// Handler for custom admin controls on users
+async function handleAdminCustomerAction(customerId, action) {
+  if (!action) return;
+
+  if (action === 'toggle-role') {
+    if (!confirm('Are you sure you want to toggle this customer role between Customer and Staff?')) return;
+    try {
+      const res = await adminFetch('/api/auth/admin/toggle-role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message, 'success');
+        loadAdminCustomers();
+      } else {
+        showToast(data.error || 'Failed to toggle user role', 'error');
+      }
+    } catch (err) {
+      showToast('Connection error during role toggle', 'error');
+    }
+  } else if (action === 'force-reset') {
+    if (!confirm('Are you sure you want to force reset this user password? This will generate a temporary password.')) return;
+    try {
+      const res = await adminFetch('/api/auth/admin/force-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message); // Explicit alert so admin can copy the temp password
+        showToast('Password forced reset successfully!', 'success');
+        loadAdminCustomers();
+      } else {
+        showToast(data.error || 'Failed to force reset password', 'error');
+      }
+    } catch (err) {
+      showToast('Connection error during password reset', 'error');
+    }
+  } else if (action === 'unlock') {
+    if (!confirm('Are you sure you want to manually unlock this user account and clear failed attempts?')) return;
+    try {
+      const res = await adminFetch('/api/auth/admin/unlock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Account unlocked successfully!', 'success');
+        loadAdminCustomers();
+      } else {
+        showToast(data.error || 'Failed to unlock account', 'error');
+      }
+    } catch (err) {
+      showToast('Connection error during account unlock', 'error');
+    }
+  }
+}
+window.handleAdminCustomerAction = handleAdminCustomerAction;
+
 
 // 5. Admin Homepage Builder and configuration values loader
 async function loadHomepageBuilderSettings() {

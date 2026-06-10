@@ -162,4 +162,55 @@ npm test — 21/21 PASS, 0 FAIL
 ```
 All automated tests pass successfully.
 
+---
 
+## Update: Enterprise Authentication & Security Modernization (2026-06-09)
+
+### Scope
+Modernize platform authentication and security via Google Sign-In (OAuth2), local credential checks, brute-force locking protection, verification/recovery emails, HttpOnly cookie storage, RBAC middleware, and administration control grids.
+
+### Files Modified / Created
+
+| File | Change Type | Change Summary |
+|------|-------------|----------------|
+| `backend/models/User.js` | Modified | Expanded schema parameters with Google sub id, enterprise password checks, verified states, lockout stats, audit logs, and timestamps. Kept legacy properties for compatibility. |
+| `backend/utils/emailService.js` | Created | Native Nodemailer configuration for transaction email dispatching with development console logging fallbacks. |
+| `backend/middleware/authMiddleware.js` | Modified | Integrated higher-order `authorizeRoles` and checkout/wishlist verified guards. |
+| `backend/controllers/authController.js` | Modified | Implemented new secure register, login, Google sign-in, verification redirects, password recovery, reset, and avatar uploading hooks. Appended administrator customer control APIs. |
+| `backend/routes/authRoutes.js` | Modified | Structured new routes, preserved and aliased older endpoints, and set up file upload middlewares. |
+| `login.html` | Modified | Added Google standard gsi login buttons, togglable recovery form views, reset views, and password strength checks. |
+| `register.html` | Modified | Embedded Google gsi buttons, enterprise password minimum length constraints, and real-time visual strength bars. |
+| `profile.html` | Modified | Inserted dismissible verification warning banner and profile avatar file upload containers. |
+| `admin/customers.html` | Modified | Updated table columns to show System Role, Verification Status, and Account Lock Status. |
+| `assets/js/admin.js` | Modified | Rendered the expanded table grid, added dropdown controls, and bound click handlers to toggle roles, reset passwords, and unlock accounts. |
+| `THEME_ENGINE_REPORT.md` | Created | Logged configuration audits, process lifecycles, and primitive string defaults. |
+
+### Verification Results
+```
+npm test — 21/21 PASS, 0 FAIL
+```
+All automated test runner assertions verified green.
+
+---
+
+## Update: Strip Google Auth & Fix Admin Lockout (2026-06-09)
+
+### Scope
+Completely remove all Google Authentication scripts, layouts, callbacks, and endpoints from the frontend and backend. Resolve a Mongoose required password validation error during seeding and fix the Bcrypt double-hashing login lockout.
+
+### Files Modified
+
+| File | Change Type | Change Summary |
+|------|-------------|----------------|
+| `backend/models/User.js` | Modified | Require password unconditionally, remove `googleId` field. Add `.pre('validate')` hook to synchronize `password` and `passwordHash` before validation, and `.pre('save')` hook to prevent double-hashing. |
+| `backend/controllers/authController.js` | Modified | Strip `handleGoogleLoginOAuth` endpoint handler. Refactor `adminLogin` password check to support fallback comparisons against `user.password || user.passwordHash`. |
+| `backend/routes/authRoutes.js` | Modified | Remove the `/api/auth/google` route definition and import. |
+| `login.html` | Modified | Strip Google Sign-In script tag, client button panel markup, and callback handler scripts. |
+| `register.html` | Modified | Strip Google Sign-In script tag, client button panel markup, and callback handler scripts. |
+
+### Verification Results
+```
+npm test — 21/21 PASS, 0 FAIL
+node scripts/verify-admin-api.mjs — OK admin login, Reports Dashboard and Cookie authentication verified.
+```
+All automated tests and admin login validations pass successfully.

@@ -97,7 +97,7 @@ exports.getSetting = async (req, res) => {
     if (!setting) {
       return res.status(404).json({ success: false, error: 'Setting not found' });
     }
-    
+
     let val = setting.value;
     if (req.params.key === 'homepage' && process.env.WHATSAPP_PHONE) {
       let phone = process.env.WHATSAPP_PHONE.trim();
@@ -223,7 +223,7 @@ exports.resetSetting = async (req, res) => {
       paletteColorError: '#dc3545',
       heroBanners: [
         {
-          image: '/assets/images/default-banner.webp',
+          image: '/assets/images/assets/hero_slide_1.jpg',
           title: 'Welcome to Magizhvagam',
           subtitle: 'Curated Premium Return Gifts for Every Celebration',
           link: '/products.html'

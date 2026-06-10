@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const CartItemSchema = new mongoose.Schema({
   productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
@@ -16,35 +17,80 @@ const WishlistItemSchema = new mongoose.Schema({
 });
 
 const AddressSchema = new mongoose.Schema({
-  fullName: { type: String, required: true },
-  phone: { type: String, required: true },
-  street: { type: String, required: true }, // Address Line 1
+  fullName: { type: String, default: '' },
+  phone: { type: String, default: '' },
+  street: { type: String, default: '' }, // Address Line 1
   street2: { type: String, default: '' },   // Address Line 2 (Optional)
-  city: { type: String, required: true },
-  state: { type: String, required: true },
-  zipCode: { type: String, required: true },
+  city: { type: String, default: '' },
+  state: { type: String, default: '' },
+  zipCode: { type: String, default: '' },
   country: { type: String, default: 'India' },
   isDefault: { type: Boolean, default: false }
 });
 
 const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true, index: true },
-  phone: { type: String, required: true, trim: true, default: '9876543210' },
-  passwordHash: { type: String, required: true },
-  role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
+  name: { type: String, required: true, trim: true },
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+  password: { type: String, required: true },
+  passwordHash: { type: String }, // Maintain for backward compatibility with old migrations/seeds
+  role: { type: String, enum: ['customer', 'admin', 'staff'], default: 'customer' },
+  
+  // Verification & Self-Service Token Containers
+  emailVerified: { type: Boolean, default: false },
+  verificationToken: { type: String, default: null },
+  verificationTokenExpires: { type: Date, default: null },
+  resetPasswordToken: { type: String, default: null },
+  resetPasswordExpires: { type: Date, default: null },
+  
+  // Free Brute-Force Lockout Counters
+  loginAttempts: { type: Number, default: 0 },
+  lockUntil: { type: Date, default: null },
+  
+  // Auditing Logs & Connected Media
+  profilePicture: { type: String, default: 'https://res.cloudinary.com/demo/image/upload/v1/avatar.png' },
+  lastLoginIP: { type: String, default: null },
+  lastLoginTimestamp: { type: Date, default: null },
+  
+  // Legacy / Helper fields for checkout & backward compat
+  phone: { type: String, trim: true, default: '' },
+  phoneVerified: { type: Boolean, default: false },
   address1: { type: String, default: '' },
   city: { type: String, default: '' },
   state: { type: String, default: '' },
   pincode: { type: String, default: '' },
-  phoneVerified: { type: Boolean, default: false },
+
+  // Nested Customer Arrays
   addresses: [AddressSchema],
   cartItems: { type: [CartItemSchema], default: [] },
   wishlistItems: { type: [WishlistItemSchema], default: [] },
-  refreshToken: { type: String, default: null },
-  loginAttempts: { type: Number, default: 0 },
-  lockUntil: { type: Date },
-  createdAt: { type: Date, default: Date.now }
+  refreshToken: { type: String, default: null }
+}, { timestamps: true });
+
+UserSchema.pre('validate', function(next) {
+  // Synchronize password and passwordHash if one is set but not the other
+  if (this.password && !this.passwordHash) {
+    this.passwordHash = this.password;
+  } else if (this.passwordHash && !this.password) {
+    this.password = this.passwordHash;
+  }
+  next();
+});
+
+UserSchema.pre('save', async function(next) {
+  // Only hash the password if it has been modified (or is new)
+  if (!this.isModified('password') && !this.isModified('passwordHash')) return next();
+
+  try {
+    if (this.password && !this.password.startsWith('$2')) {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+      this.passwordHash = this.password; // Synchronize both fields cleanly
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = mongoose.model('User', UserSchema);
+

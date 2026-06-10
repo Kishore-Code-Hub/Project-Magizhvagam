@@ -52,7 +52,7 @@ async function loadHomepageData() {
         flashEl.id = 'flash-sale-timer-section';
         flashEl.className = 'container glass animated scale-in';
         flashEl.style.cssText = 'padding: 20px 30px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, rgba(106, 13, 173, 0.1), rgba(255, 79, 129, 0.1)); border: 1px solid var(--card-border); border-radius: 16px; flex-wrap: wrap; gap: 15px;';
-        
+
         const categoriesSec = document.getElementById('categories');
         if (categoriesSec) {
           categoriesSec.parentNode.insertBefore(flashEl, categoriesSec);
@@ -162,12 +162,12 @@ function renderHeroBanners(banners) {
 
   const slides = (banners && banners.length > 0)
     ? banners.map((b, i) => ({
-        image: pickImage(b.image, defaultSlides[i % defaultSlides.length].image),
-        title: b.title || defaultSlides[i % defaultSlides.length].title,
-        subtitle: b.subtitle || defaultSlides[i % defaultSlides.length].subtitle,
-        btnText: b.btnText || defaultSlides[i % defaultSlides.length].btnText || 'Explore Collections',
-        link: b.link || '/products.html'
-      }))
+      image: pickImage(b.image, defaultSlides[i % defaultSlides.length].image),
+      title: b.title || defaultSlides[i % defaultSlides.length].title,
+      subtitle: b.subtitle || defaultSlides[i % defaultSlides.length].subtitle,
+      btnText: b.btnText || defaultSlides[i % defaultSlides.length].btnText || 'Explore Collections',
+      link: b.link || '/products.html'
+    }))
     : defaultSlides;
 
   container.innerHTML = slides.map((slide, index) => `
@@ -258,9 +258,9 @@ async function loadProductSection(productIds, elementId) {
 
   try {
     grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:30px;"><div class="spinner" style="margin:auto;"></div></div>';
-    
+
     let products = [];
-    
+
     // Feature D: If loading featured products, check the live database attribute first
     const toggles = window.featureToggles || await window.fetchFeatureToggles();
     const isFeaturedLayoutEnabled = !(toggles && toggles.homepageLayoutFeatured === false);
@@ -275,7 +275,7 @@ async function loadProductSection(productIds, elementId) {
         console.error('Failed to fetch featured products by live attribute:', err);
       }
     }
-    
+
     // Fallback/standard flow if not featured or if live query returned no products
     if (products.length === 0 && productIds && productIds.length > 0) {
       const url = `/api/products?ids=${productIds.map(id => id.toString()).join(',')}&limit=${productIds.length}`;
@@ -283,7 +283,7 @@ async function loadProductSection(productIds, elementId) {
       const data = await res.json();
       if (data.success) {
         products = data.products || [];
-        
+
         // If we queried specific IDs, let's keep the order defined in productIds
         if (products.length > 0) {
           const idMap = new Map(products.map(p => [p._id.toString(), p]));
@@ -293,7 +293,7 @@ async function loadProductSection(productIds, elementId) {
         }
       }
     }
-    
+
     // Fallback: If no products were returned from the specified IDs (or if no IDs were provided), run unified cached query
     if (products.length === 0) {
       const fallbackData = await fetchWideCatalog();
@@ -337,7 +337,7 @@ function renderPromotionalBanners(promos) {
   }
 
   container.innerHTML = promos.map(promo => `
-    <div class="glass hover-lift promo-banner animated fadeInUp" style="border-radius:16px; overflow:hidden; position:relative; height:200px; background:linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url('${promo.image || '/assets/images/default-banner.webp'}') no-repeat center center/cover; display:flex; align-items:flex-end; padding:24px; color:white;">
+    <div class="glass hover-lift promo-banner animated fadeInUp" style="border-radius:16px; overflow:hidden; position:relative; height:200px; background:linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url('${promo.image || '/assets/images/hero_slide_1.jpg'}') no-repeat center center/cover; display:flex; align-items:flex-end; padding:24px; color:white;">
       <div>
         <h3 style="font-size:20px; font-family:'Outfit'; margin-bottom:12px; line-height:1.3;">${promo.title}</h3>
         <a href="${promo.link || '/products.html'}" class="btn btn-gold" style="padding:6px 16px; font-size:12px; border-radius:4px;">Shop Now</a>
@@ -359,4 +359,22 @@ function renderTestimonials(testimonials) {
       <span style="font-size:11px; color:#D4AF37; font-weight:700; text-transform:uppercase;">Verified Purchase</span>
     </div>
   `).join('');
+}
+try {
+  const ids = productIds.map(String).join(',');
+  const res = await fetch(`/api/products?ids=${ids}&limit=${productIds.length}`);
+  const data = await res.json();
+  if (data.success && data.products && data.products.length > 0) {
+    // Sort to preserve original list order
+    const idMap = new Map(data.products.map(p => [p._id.toString(), p]));
+    const sorted = productIds.map(id => idMap.get(id.toString())).filter(Boolean);
+
+    gridElement.innerHTML = sorted.map(p => window.createProductCardHTML(p)).join('');
+  } else {
+    gridElement.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted);">No products in this collection.</p>';
+  }
+} catch (err) {
+  console.error('Failed loading products into grid:', err);
+  gridElement.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted);">Failed to load products.</p>';
+}
 }

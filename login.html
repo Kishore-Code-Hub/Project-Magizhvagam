@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="stylesheet" href="/assets/css/animations.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
+
   <style>
     .auth-wrapper {
       min-height: 80vh;
@@ -52,29 +53,76 @@
 
   <div class="auth-wrapper">
     <div class="auth-card glass animated scale-in">
-      <h2 style="font-size: 28px; text-align: center; margin-bottom: 8px; font-family: 'Outfit';">Welcome Back</h2>
-      <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 30px;">Login to manage your profile and orders</p>
       
-      <form id="login-form">
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" class="form-control" placeholder="name@domain.com" required>
-        </div>
-        <div class="form-group" style="position: relative;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <label for="password" style="margin: 0;">Password</label>
-            <a href="#" onclick="event.preventDefault(); showToast('Password recovery is currently disabled. Please contact customer support.', 'error');" style="font-size: 12px; color: hsl(var(--primary-purple)); font-weight: 600;">Forgot Password?</a>
-          </div>
-          <input type="password" id="password" class="form-control" placeholder="••••••••" required>
-        </div>
+      <!-- 1. STANDARD LOGIN FORM -->
+      <div id="login-container">
+        <h2 style="font-size: 28px; text-align: center; margin-bottom: 8px; font-family: 'Outfit';">Welcome Back</h2>
+        <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 30px;">Login to manage your profile and orders</p>
         
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; border-radius: 8px;">Sign In</button>
-      </form>
-      
-      <div style="text-align: center; margin-top: 24px; font-size: 14px;">
-        <span style="color: var(--text-muted);">Don't have an account?</span>
-        <a href="/register.html" style="color: hsl(var(--primary-purple)); font-weight: 700; margin-left: 4px;">Sign Up</a>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" class="form-control" placeholder="name@domain.com" required>
+          </div>
+          <div class="form-group" style="position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label for="password" style="margin: 0;">Password</label>
+              <a href="#" onclick="event.preventDefault(); toggleForgotForm(true);" style="font-size: 12px; color: hsl(var(--primary-purple)); font-weight: 600;">Forgot Password?</a>
+            </div>
+            <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+          </div>
+          
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; border-radius: 8px;">Sign In</button>
+        </form>
+
+
+
+        <div style="text-align: center; margin-top: 24px; font-size: 14px;">
+          <span style="color: var(--text-muted);">Don't have an account?</span>
+          <a href="/register.html" style="color: hsl(var(--primary-purple)); font-weight: 700; margin-left: 4px;">Sign Up</a>
+        </div>
       </div>
+
+      <!-- 2. FORGOT PASSWORD RECOVERY FORM -->
+      <div id="forgot-container" style="display: none;">
+        <h2 style="font-size: 26px; text-align: center; margin-bottom: 8px; font-family: 'Outfit';">Recover Password</h2>
+        <p style="text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">Enter your email to receive a secure recovery link.</p>
+        
+        <form id="forgot-password-form">
+          <div class="form-group">
+            <label for="forgot-email">Email Address</label>
+            <input type="email" id="forgot-email" class="form-control" placeholder="name@domain.com" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px; border-radius: 8px;">Send Recovery Link</button>
+          <button type="button" onclick="toggleForgotForm(false);" class="btn btn-secondary" style="width: 100%; margin-top: 10px; border-radius: 8px; font-size: 13px;">Back to Login</button>
+        </form>
+      </div>
+
+      <!-- 3. RESET PASSWORD FORM -->
+      <div id="reset-container" style="display: none;">
+        <h2 style="font-size: 26px; text-align: center; margin-bottom: 8px; font-family: 'Outfit';">Update Password</h2>
+        <p style="text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">Create a new secure, enterprise-grade password.</p>
+        
+        <form id="reset-password-form">
+          <div class="form-group">
+            <label for="reset-new-password">New Password</label>
+            <input type="password" id="reset-new-password" class="form-control" placeholder="••••••••" required>
+            <!-- Real-time Password Strength Indicator -->
+            <div style="margin-top: 8px;">
+              <div style="height: 6px; width: 100%; background: #eee; border-radius: 3px; overflow: hidden; position: relative;">
+                <div id="strength-bar" style="height: 100%; width: 0%; background: #ef4444; transition: all 0.3s ease;"></div>
+              </div>
+              <div id="strength-text" style="font-size: 11px; font-weight: 600; color: #ef4444; margin-top: 4px;">Very Weak</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="reset-confirm-password">Confirm Password</label>
+            <input type="password" id="reset-confirm-password" class="form-control" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px; border-radius: 8px;">Update Password</button>
+        </form>
+      </div>
+
     </div>
   </div>
 
@@ -90,12 +138,40 @@
       return urlParams.get(name);
     });
 
+    // Toggle back and forth between Login and Forgot containers
+    function toggleForgotForm(show) {
+      document.getElementById('login-container').style.display = show ? 'none' : 'block';
+      document.getElementById('forgot-container').style.display = show ? 'block' : 'none';
+      document.getElementById('reset-container').style.display = 'none';
+    }
+
+
+
+    // Check reset password URL state
+    const resetToken = getQueryParam('resetToken');
+    if (resetToken) {
+      document.getElementById('login-container').style.display = 'none';
+      document.getElementById('forgot-container').style.display = 'none';
+      document.getElementById('reset-container').style.display = 'block';
+    }
+
+    // Verified account alert check
+    if (getQueryParam('verified') === 'true') {
+      showToast('Email verified successfully! You can now log in.', 'success');
+    }
+
+    // 1. Submit standard login
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       
-      // Determine redirection target (e.g., from query string)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showToast('Please enter a valid email address format', 'error');
+        return;
+      }
+
       let redirect = getQueryParam('redirect') || 'index.html';
       if (!redirect.startsWith('/')) {
         redirect = '/' + redirect;
@@ -104,6 +180,106 @@
       
       await handleLogin(email, password, redirectUrl);
     });
+
+    // 2. Submit forgot password link request
+    document.getElementById('forgot-password-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('forgot-email').value.trim();
+      try {
+        const res = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message || 'Recovery email dispatched!', 'success');
+          toggleForgotForm(false);
+        } else {
+          showToast(data.error || 'Recovery request failed', 'error');
+        }
+      } catch (err) {
+        showToast('Connection error during recovery request', 'error');
+      }
+    });
+
+    // Real-time strength checking for password reset
+    const newPasswordInput = document.getElementById('reset-new-password');
+    const strengthBar = document.getElementById('strength-bar');
+    const strengthText = document.getElementById('strength-text');
+
+    newPasswordInput.addEventListener('input', () => {
+      const val = newPasswordInput.value;
+      let score = 0;
+      if (val.length >= 8) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[a-z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(val)) score++;
+
+      let percent = (score / 5) * 100;
+      strengthBar.style.width = percent + '%';
+
+      if (score <= 1) {
+        strengthBar.style.background = '#ef4444';
+        strengthText.textContent = 'Very Weak';
+        strengthText.style.color = '#ef4444';
+      } else if (score <= 3) {
+        strengthBar.style.background = '#f59e0b';
+        strengthText.textContent = 'Medium';
+        strengthText.style.color = '#f59e0b';
+      } else if (score === 4) {
+        strengthBar.style.background = '#3b82f6';
+        strengthText.textContent = 'Strong';
+        strengthText.style.color = '#3b82f6';
+      } else {
+        strengthBar.style.background = '#10b981';
+        strengthText.textContent = 'Enterprise Secure';
+        strengthText.style.color = '#10b981';
+      }
+    });
+
+    // 3. Submit reset password
+    document.getElementById('reset-password-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = document.getElementById('reset-new-password').value;
+      const confirmPassword = document.getElementById('reset-confirm-password').value;
+
+      if (password !== confirmPassword) {
+        showToast('Passwords do not match!', 'error');
+        return;
+      }
+
+      // Client-side strength assertion
+      const strengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+      if (!strengthRegex.test(password)) {
+        showToast('Password must be at least 8 characters, and include uppercase, lowercase, numbers, and special symbols.', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/auth/reset-password/${resetToken}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Password reset successfully! Redirecting to login...', 'success');
+          setTimeout(() => {
+            window.location.replace('/login.html');
+          }, 2000);
+        } else {
+          showToast(data.error || 'Password reset failed', 'error');
+        }
+      } catch (err) {
+        showToast('Connection error during password reset', 'error');
+      }
+    });
   </script>
+</body>
+</html>
 </body>
 </html>

@@ -155,11 +155,36 @@ const customerOnly = (req, res, next) => {
   return res.status(403).json({ success: false, error: 'This feature is for customer accounts only' });
 };
 
+// Higher-order role validation middleware
+const authorizeRoles = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ success: false, error: "Access denied. Insufficient administrative privileges." });
+    }
+    next();
+  };
+};
+
+// Guard to block users with unverified email from state-mutating checkout/wishlist actions
+const verifyEmailGuard = (req, res, next) => {
+  if (req.user && req.user.role === 'customer' && req.user.emailVerified === false) {
+    return res.status(403).json({
+      success: false,
+      emailVerified: false,
+      error: 'Please verify your email address to proceed. Check your inbox for the verification link.'
+    });
+  }
+  next();
+};
+
 module.exports = {
   protect,
   optionalProtect,
   adminOnly,
   customerOnly,
+  authorizeRoles,
+  verifyEmailGuard,
   generateAccessToken,
   generateRefreshToken
 };
+

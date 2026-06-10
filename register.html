@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="stylesheet" href="/assets/css/animations.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
+
   <style>
     .auth-wrapper {
       min-height: 85vh;
@@ -78,8 +79,14 @@
         </div>
         <div class="form-group">
           <label for="password">Password</label>
-          <input type="password" id="password" class="form-control" placeholder="Minimum 6 characters" minlength="6"
-            required>
+          <input type="password" id="password" class="form-control" placeholder="Minimum 8 characters" minlength="8" required>
+          <!-- Real-time Password Strength Indicator -->
+          <div style="margin-top: 8px;">
+            <div style="height: 6px; width: 100%; background: #eee; border-radius: 3px; overflow: hidden; position: relative;">
+              <div id="strength-bar" style="height: 100%; width: 0%; background: #ef4444; transition: all 0.3s ease;"></div>
+            </div>
+            <div id="strength-text" style="font-size: 11px; font-weight: 600; color: #ef4444; margin-top: 4px;">Very Weak</div>
+          </div>
         </div>
         <div class="form-group">
           <label for="confirm-password">Confirm Password</label>
@@ -117,6 +124,8 @@
         <button type="submit" class="btn btn-primary"
           style="width: 100%; margin-top: 10px; border-radius: 8px;">Register</button>
       </form>
+
+
 
       <div style="text-align: center; margin-top: 24px; font-size: 14px;">
         <span style="color: var(--text-muted);">Already have an account?</span>
@@ -175,6 +184,44 @@
 
     let otpSent = false;
 
+    // Real-time Password Strength Meter
+    const passwordInput = document.getElementById('password');
+    const strengthBar = document.getElementById('strength-bar');
+    const strengthText = document.getElementById('strength-text');
+
+    passwordInput.addEventListener('input', () => {
+      const val = passwordInput.value;
+      let score = 0;
+      if (val.length >= 8) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[a-z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(val)) score++;
+
+      let percent = (score / 5) * 100;
+      strengthBar.style.width = percent + '%';
+
+      if (score <= 1) {
+        strengthBar.style.background = '#ef4444';
+        strengthText.textContent = 'Very Weak';
+        strengthText.style.color = '#ef4444';
+      } else if (score <= 3) {
+        strengthBar.style.background = '#f59e0b';
+        strengthText.textContent = 'Medium';
+        strengthText.style.color = '#f59e0b';
+      } else if (score === 4) {
+        strengthBar.style.background = '#3b82f6';
+        strengthText.textContent = 'Strong';
+        strengthText.style.color = '#3b82f6';
+      } else {
+        strengthBar.style.background = '#10b981';
+        strengthText.textContent = 'Enterprise Secure';
+        strengthText.style.color = '#10b981';
+      }
+    });
+
+
+
     document.getElementById('register-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('name').value.trim();
@@ -186,6 +233,12 @@
       const pincode = document.getElementById('pincode').value.trim();
       const city = document.getElementById('city').value.trim();
       const state = document.getElementById('state').value.trim();
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showToast('Please enter a valid email address format.', 'error');
+        return;
+      }
 
       const phoneRegex = /^[0-9]{10}$/;
       if (!phoneRegex.test(phone)) {
@@ -201,6 +254,13 @@
 
       if (password !== confirmPassword) {
         showToast('Passwords do not match!', 'error');
+        return;
+      }
+
+      // Enterprise password strength check
+      const strengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+      if (!strengthRegex.test(password)) {
+        showToast('Password does not meet enterprise security requirements: minimum 8 characters, at least 1 uppercase letter, 1 lowercase letter, 1 numerical digit, and 1 special symbol.', 'error');
         return;
       }
 
@@ -229,7 +289,7 @@
     document.getElementById('verify-otp-btn').addEventListener('click', async () => {
       const otpVal = document.getElementById('otp').value.trim();
       if (otpVal === '1234') {
-        showToast('OTP verified successfully! Creating account...', 'success');
+        showToast('OTP verified successfully! Creating account and sending email...', 'success');
         
         // Fetch values
         const name = document.getElementById('name').value.trim();
@@ -248,5 +308,4 @@
     });
   </script>
 </body>
-
 </html>
