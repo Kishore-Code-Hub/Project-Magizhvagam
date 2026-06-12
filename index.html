@@ -17,7 +17,12 @@
   <link rel="stylesheet" href="/assets/css/main.css">
 
   <style id="mz-theme-vars">
-    /* Theme-loader.js writes dynamic database properties here at first paint */
+    /* Minimal light defaults to avoid dark flash before theme-loader runs */
+    :root {
+      --bg-main: #F7F4EE;
+      --hero-bg-overlay: transparent;
+      --hero-overlay-opacity: 0;
+    }
   </style>
 
   <script src="/assets/js/theme-loader.js"></script>
@@ -35,14 +40,13 @@
 
     <div class="parallax-layer foreground-ui container">
       <div class="hero-content-alignment glass-panel">
-        <span class="hero-badge">பாரம்பரிய ஆடம்பரம்</span>
-        <h1 class="hero-headline">Gift the Feeling.<br>Celebrate in Tamil Style.</h1>
-        <p class="hero-subtext">Curated return gifts, engraved keepsakes, and celebration hampers — built for every
-          occasion, delivered with cultural pride.</p>
+        <span class="hero-badge" style="display:none"></span>
+        <h1 class="hero-headline" style="display:none"></h1>
+        <p class="hero-subtext" style="display:none"></p>
 
-        <div class="hero-cta-action-row">
-          <a href="/products.html" class="btn btn-primary">Order & Inquire</a>
-          <a href="#categories" class="btn btn-secondary">Explore Collections</a>
+        <div class="hero-cta-action-row" style="display:none">
+          <a href="#" class="btn btn-primary"></a>
+          <a href="#" class="btn btn-secondary"></a>
         </div>
       </div>
       
@@ -65,26 +69,7 @@
       </div>
     </div>
   </section>
-
-  <section class="flash-sale-live-wrapper container" data-mz-section="flash_sale" style="display: none;">
-    <div class="flash-sale-header-container glass-panel">
-      <div class="flash-title-block">
-        <span class="urgency-indicator-dot"></span>
-        <h2 id="flash-sale-title-mount">Limited Production Runs</h2>
-      </div>
-      <div class="countdown-timer-container" id="mz-countdown-clock">
-        <div class="cd-digit-block"><span id="cd-days">00</span><label>Days</label></div>
-        <div class="cd-separator">:</div>
-        <div class="cd-digit-block"><span id="cd-hours">00</span><label>Hours</label></div>
-        <div class="cd-separator">:</div>
-        <div class="cd-digit-block"><span id="cd-mins">00</span><label>Mins</label></div>
-        <div class="cd-separator">:</div>
-        <div class="cd-digit-block"><span id="cd-secs">00</span><label>Secs</label></div>
-      </div>
-    </div>
-    <div class="products-grid-matrix" id="flash-sale-products-mount">
-    </div>
-  </section>
+  <!-- Flash sale section removed to respect HomepageSectionsV4 toggles; flash sale will be injected only by JS when enabled -->
 
   <section id="categories" class="categories-showcase-wrapper container" data-mz-section="featured_categories">
     <div class="section-title-center-block">

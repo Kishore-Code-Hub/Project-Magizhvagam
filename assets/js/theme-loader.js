@@ -12,7 +12,24 @@
   'use strict';
 
   // Theme is controlled exclusively by Appearance Studio presets via API
-  document.documentElement.setAttribute('data-theme', 'studio');
+  // Attempt to set `data-theme` from cached theme to avoid paint flash of an old/default theme
+  try {
+    const cachedTheme = localStorage.getItem('mz-theme-cache');
+    if (cachedTheme) {
+      const parsed = JSON.parse(cachedTheme);
+      const name = parsed && parsed.data && parsed.data.theme && parsed.data.theme.name;
+      if (name && typeof name === 'string') {
+        document.documentElement.setAttribute('data-theme', name);
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    } else {
+      // Default to light theme to avoid temporary dark flash
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
 
   // ─── Settings-to-CSS Map (Single Source of Truth) ─────────────────────────
   // Maps MongoDB field paths → CSS variable names

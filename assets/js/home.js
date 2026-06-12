@@ -55,11 +55,25 @@ function applyHeroSectionConfig(config) {
   const subtext = heroSection.querySelector('.hero-subtext');
   const ctas = heroSection.querySelectorAll('.hero-cta-action-row .btn');
 
+  // Hide by default; show only when admin provides content
+  if (badge) badge.style.display = 'none';
+  if (headline) headline.style.display = 'none';
+  if (subtext) subtext.style.display = 'none';
+  const ctaRowDefault = heroSection.querySelector('.hero-cta-action-row');
+  if (ctaRowDefault) ctaRowDefault.style.display = 'none';
+
   if (config.headline && headline) {
     headline.innerHTML = config.headline.replace(/\n/g, '<br>');
+    headline.style.display = '';
   }
-  if (config.subtext && subtext) subtext.textContent = config.subtext;
-  if (config.badge && badge) badge.textContent = config.badge;
+  if (config.subtext && subtext) {
+    subtext.textContent = config.subtext;
+    subtext.style.display = '';
+  }
+  if (config.badge && badge) {
+    badge.textContent = config.badge;
+    badge.style.display = '';
+  }
 
   if (ctas[0] && config.cta1Label) {
     ctas[0].textContent = config.cta1Label;
@@ -69,15 +83,27 @@ function applyHeroSectionConfig(config) {
     ctas[1].textContent = config.cta2Label;
     if (config.cta2Link) ctas[1].href = config.cta2Link;
   }
-
+  // Show CTA row only if at least one CTA has label
+  if (ctas && ctas.length) {
+    const anyLabel = Array.from(ctas).some(el => el && el.textContent && el.textContent.trim());
+    const ctaRow = heroSection.querySelector('.hero-cta-action-row');
+    if (ctaRow) ctaRow.style.display = anyLabel ? '' : 'none';
+  }
+  // Apply banner background to the bg-canvas if provided. If no banner image, keep floating cards visible.
   const banner = (config.banners && config.banners[0]) ? config.banners[0] : null;
-  if (banner) {
-    const bg = heroSection.querySelector('.bg-canvas');
-    if (bg && banner.image) {
+  const bg = heroSection.querySelector('.bg-canvas');
+  if (bg) {
+    if (banner && banner.image) {
       bg.style.backgroundImage = `url('${banner.image}')`;
       bg.style.backgroundSize = 'cover';
       bg.style.backgroundPosition = 'center';
+    } else {
+      bg.style.backgroundImage = '';
     }
+  }
+
+  // If banner contains title/subtitle, prefer banner text over headline/subtext
+  if (banner) {
     if (banner.title && headline) headline.innerHTML = banner.title.replace(/\n/g, '<br>');
     if (banner.subtitle && subtext) subtext.textContent = banner.subtitle;
   }
@@ -229,68 +255,33 @@ function renderHeroBanners(banners) {
   const container = document.getElementById('hero-slider-container');
   if (!container) return;
 
-  // 4 premium hardcoded slides (override from backend if available)
-  const defaultSlides = [
-    {
-      image: '/assets/images/luxury_return_gifts.png',
-      title: 'Luxury Made Memorable',
-      subtitle: 'Bespoke return gifts tailored for your most cherished celebrations',
-      btnText: 'Explore Collections',
-      link: '/products.html'
-    },
-    {
-      image: '/assets/images/premium_return_gifts.png',
-      title: 'Premium Return Gifts',
-      subtitle: 'Handcrafted elegance to express your heartfelt gratitude',
-      btnText: 'Shop Best Sellers',
-      link: '/products.html?sort=bestSelling'
-    },
-    {
-      image: '/assets/images/corporate_gifts.png',
-      title: 'Corporate Gifting Solutions',
-      subtitle: 'Refined, custom-branded gifts designed for executive impressions',
-      btnText: 'View Corporate Gifts',
-      link: '/products.html?category=corporate-gifts'
-    },
-    {
-      image: '/assets/images/celebration_hampers.png',
-      title: 'Customized Celebration Hampers',
-      subtitle: 'Curate your own luxury collection with custom engravings and cards',
-      btnText: 'Design Your Gift',
-      link: '/contact.html'
-    }
-  ];
+  // Do not render any default or demo slides. Only render when explicit banners are provided by admin.
+  if (!banners || !Array.isArray(banners) || banners.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
 
-  // Use backend slides if configured, otherwise use defaults
-  const pickImage = (candidate, fallback) => {
-    if (candidate && typeof candidate === 'string' && candidate.trim() && !candidate.includes('undefined') && !candidate.includes('default-banner.webp')) {
-      return candidate.trim();
-    }
-    return fallback;
-  };
-
-  const slides = (banners && banners.length > 0)
-    ? banners.map((b, i) => ({
-      image: pickImage(b.image, defaultSlides[i % defaultSlides.length].image),
-      title: b.title || defaultSlides[i % defaultSlides.length].title,
-      subtitle: b.subtitle || defaultSlides[i % defaultSlides.length].subtitle,
-      btnText: b.btnText || defaultSlides[i % defaultSlides.length].btnText || 'Explore Collections',
-      link: b.link || '/products.html'
-    }))
-    : defaultSlides;
+  // Render slides strictly from provided banners without falling back to demo images
+  const slides = banners.map((b, i) => ({
+    image: (b.image || '').trim(),
+    title: b.title || '',
+    subtitle: b.subtitle || '',
+    btnText: b.btnText || '',
+    link: b.link || '#'
+  })).filter(s => s.image);
 
   container.innerHTML = slides.map((slide, index) => `
     <div class="hero-slide ${index === 0 ? 'active' : ''}"
          style="background-image: url('${slide.image}'); background-size:cover; background-position:center; display:flex; align-items:center;">
       <div class="container hero-content">
-        <h1 style="font-size:52px; font-family:'Outfit'; font-weight:800; line-height:1.15; margin-bottom:20px; text-shadow:0 2px 12px rgba(0,0,0,0.4);">${slide.title}</h1>
-        <p style="font-size:18px; color:rgba(255,255,255,0.92); margin-bottom:36px; max-width:560px; line-height:1.6; text-shadow:0 1px 6px rgba(0,0,0,0.35);">${slide.subtitle}</p>
-        <a href="${slide.link}" class="btn btn-gold" style="font-size:15px; padding:14px 36px; border-radius:30px;">${slide.btnText}</a>
+        <h1>${slide.title}</h1>
+        <p>${slide.subtitle}</p>
+        ${slide.btnText ? `<a href="${slide.link}" class="btn btn-gold">${slide.btnText}</a>` : ''}
       </div>
     </div>
   `).join('');
 
-  // Auto Slider Interval â€” uses CSS class transitions (900ms image, 600ms text)
+  // Simple slider progression if multiple slides present
   let currentSlide = 0;
   const slideEls = container.querySelectorAll('.hero-slide');
   if (slideEls.length > 1) {
@@ -552,11 +543,13 @@ function renderPromotionalBanners(promos) {
     return;
   }
 
-  container.innerHTML = promos.map(promo => `
-    <div class="glass hover-lift promo-banner animated fadeInUp" style="border-radius:16px; overflow:hidden; position:relative; height:200px; background:linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url('${promo.image || '/assets/images/hero_slide_1.jpg'}') no-repeat center center/cover; display:flex; align-items:flex-end; padding:24px; color:white;">
+  // Only render promotional banners that have an explicit image provided by admin
+  const validPromos = (promos || []).filter(p => p && p.image);
+  container.innerHTML = validPromos.map(promo => `
+    <div class="glass hover-lift promo-banner animated fadeInUp" style="border-radius:16px; overflow:hidden; position:relative; height:200px; background:linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url('${promo.image}') no-repeat center center/cover; display:flex; align-items:flex-end; padding:24px; color:white;">
       <div>
-        <h3 style="font-size:20px; font-family:'Outfit'; margin-bottom:12px; line-height:1.3;">${promo.title}</h3>
-        <a href="${promo.link || '/products.html'}" class="btn btn-gold" style="padding:6px 16px; font-size:12px; border-radius:4px;">Shop Now</a>
+        <h3 style="font-size:20px; font-family:'Outfit'; margin-bottom:12px; line-height:1.3;">${promo.title || ''}</h3>
+        ${promo.link ? `<a href="${promo.link}" class="btn btn-gold" style="padding:6px 16px; font-size:12px; border-radius:4px;">Shop Now</a>` : ''}
       </div>
     </div>
   `).join('');

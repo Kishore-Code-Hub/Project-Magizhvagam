@@ -181,43 +181,15 @@ const seedData = async () => {
     await Setting.create({
       key: 'homepage',
       value: {
-        heroBanners: [
-          {
-            image: '/assets/images/banners/hero_slide_1.jpg',
-            title: 'Welcome to Magizhvagam',
-            subtitle: 'Curated Premium Return Gifts for Every Celebration',
-            link: '/products.html'
-          },
-          {
-            image: '/assets/images/banners/hero_slide_2.jpg',
-            title: 'Luxury Made Memorable',
-            subtitle: 'Explore Handcrafted Traditions & Modern Customs',
-            link: '/products.html?category=wedding-return-gifts'
-          }
-        ],
-        promotionalBanners: [
-          {
-            image: '/assets/images/banners/promo_1.jpg',
-            title: 'Wedding Collection - Get Flat 15% Off on Bulk Orders',
-            link: '/products.html?category=wedding-return-gifts'
-          },
-          {
-            image: '/assets/images/banners/promo_2.jpg',
-            title: 'Eco-Friendly Gifts - Go Green This Festival Season',
-            link: '/products.html?category=eco-friendly-gifts'
-          }
-        ],
+        heroBanners: [],
+        promotionalBanners: [],
         featuredProductIds: featuredIds,
         bestSellerProductIds: bestSellersIds,
         newArrivalProductIds: newArrivalsIds,
         trendingProductIds: featuredIds,
         recommendedProductIds: newArrivalsIds,
         categoryHighlights: categories.slice(0, 4).map(c => c._id),
-        testimonials: [
-          { author: 'Meera Krishnan', rating: 5, comment: 'Magizhvagam made my daughters wedding return gifts so memorable! Intricate quality and bulk delivery was perfectly on time.' },
-          { author: 'Vikram Seth', rating: 5, comment: 'Extremely professional team. The customized keychains for our annual corporate meet were a massive hit.' },
-          { author: 'Pooja Hegde', rating: 4, comment: 'Beautiful jute bags! Very eco-friendly and sturdy. Will definitely buy for all my family functions.' }
-        ],
+        testimonials: [],
         whatsappContact: seededPhone,
         theme_tokens: {
           hdr: {

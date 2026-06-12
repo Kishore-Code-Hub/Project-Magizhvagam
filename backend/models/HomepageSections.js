@@ -15,28 +15,21 @@ const SECTION_IDS = [
 ];
 
 const DEFAULT_SECTIONS = [
-  { id: 'announcement_bar', enabled: true, order: 0, config: { message: '🎁 Free shipping on orders above ₹999!', link: '/products.html', dismissible: true } },
+  { id: 'announcement_bar', enabled: false, order: 0, config: { message: '', link: '', dismissible: false } },
   { id: 'hero', enabled: true, order: 1, config: {
-    headline: 'Gift the Feeling. Celebrate in Tamil Style.',
-    subtext: 'Curated return gifts, engraved keepsakes, and celebration hampers — built for every occasion, delivered with cultural pride.',
-    cta1Label: 'Order & Inquire', cta1Link: '/products.html',
-    cta2Label: 'Explore Collections', cta2Link: '/products.html',
-    bgType: 'gradient',
-    banners: [
-      { image: "", title: 'Welcome to Magizhvagam', subtitle: 'Curated Premium Return Gifts for Every Celebration', link: '/products.html' },
-      { image: "", title: 'Luxury Made Memorable', subtitle: 'Explore Handcrafted Traditions & Modern Customs', link: '/products.html' }
-    ]
+    headline: '',
+    subtext: '',
+    cta1Label: '', cta1Link: '',
+    cta2Label: '', cta2Link: '',
+    bgType: 'image',
+    banners: []
   }},
   { id: 'flash_sale', enabled: false, order: 2, config: { endsAt: null, products: [], urgencyBadge: 'Limited Time!' } },
   { id: 'featured_categories', enabled: true, order: 3, config: { layout: 'image_cards', items: [] } },
   { id: 'collections_spotlight', enabled: true, order: 4, config: { heading: 'Curated Collections', collectionIds: [], rowCount: 1 } },
   { id: 'featured_products', enabled: true, order: 5, config: { count: 8, sort: 'newest', productIds: [] } },
   { id: 'customization_preview', enabled: true, order: 6, config: { heading: 'Make It Uniquely Yours', subtext: 'Add personalized messages, engraving, and event signatures to any gift.', demoImages: [] } },
-  { id: 'testimonials', enabled: true, order: 7, config: { layout: 'grid', items: [
-    { name: 'Meera Krishnan', text: 'Magizhvagam made my daughter\'s wedding return gifts so memorable! Intricate quality and bulk delivery was perfectly on time.', rating: 5, verified: true },
-    { name: 'Vikram Seth', text: 'Extremely professional team. The customized keychains for our annual corporate meet were a massive hit.', rating: 5, verified: true },
-    { name: 'Pooja Hegde', text: 'Beautiful jute bags! Very eco-friendly and sturdy. Will definitely buy for all my family functions.', rating: 4, verified: true }
-  ]}},
+  { id: 'testimonials', enabled: true, order: 7, config: { layout: 'grid', items: [] }},
   { id: 'bulk_orders_cta', enabled: true, order: 8, config: { heading: 'Planning a Big Event?', subtext: 'Get special pricing on bulk orders of 50+ items. We handle everything from customization to venue delivery.', formTriggerLabel: 'Get Bulk Quote', backgroundImage: '' } },
   { id: 'how_it_works', enabled: true, order: 9, config: { stepCount: 4, steps: [
     { icon: 'search', title: 'Browse & Select', description: 'Explore our curated collections of premium return gifts.' },

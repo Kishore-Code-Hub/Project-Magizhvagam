@@ -366,9 +366,10 @@ exports.updateSetting = async (req, res) => {
       await setting.save();
     }
 
-    if (req.params.key === 'homepage') {
-      await syncSettingsToV4(setting.value);
-    }
+    // Legacy homepage -> V4 sync removed to prevent overwriting Appearance Studio / HomepageSectionsV4
+    // if (req.params.key === 'homepage') {
+    //   await syncSettingsToV4(setting.value);
+    // }
 
     res.status(200).json({ success: true, message: 'Settings updated successfully!', setting: setting.value });
   } catch (error) {
@@ -785,43 +786,15 @@ exports.resetSetting = async (req, res) => {
         speed_mode: 'elevated',
         card_hover_style: 'lift'
       },
-      heroBanners: [
-        {
-          image: '/assets/images/assets/hero_slide_1.jpg',
-          title: 'Welcome to Magizhvagam',
-          subtitle: 'Curated Premium Return Gifts for Every Celebration',
-          link: '/products.html'
-        },
-        {
-          image: '',
-          title: 'Luxury Made Memorable',
-          subtitle: 'Explore Handcrafted Traditions & Modern Customs',
-          link: '/products.html?category=wedding-return-gifts'
-        }
-      ],
-      promotionalBanners: [
-        {
-          image: '',
-          title: 'Wedding Collection - Get Flat 15% Off on Bulk Orders',
-          link: '/products.html?category=wedding-return-gifts'
-        },
-        {
-          image: '',
-          title: 'Eco-Friendly Gifts - Go Green This Festival Season',
-          link: '/products.html?category=eco-friendly-gifts'
-        }
-      ],
+      heroBanners: [],
+      promotionalBanners: [],
       featuredProductIds: [],
       bestSellerProductIds: [],
       newArrivalProductIds: [],
       trendingProductIds: [],
       recommendedProductIds: [],
       categoryHighlights: [],
-      testimonials: [
-        { author: 'Meera Krishnan', rating: 5, comment: 'Magizhvagam made my daughters wedding return gifts so memorable! Intricate quality and bulk delivery was perfectly on time.' },
-        { author: 'Vikram Seth', rating: 5, comment: 'Extremely professional team. The customized keychains for our annual corporate meet were a massive hit.' },
-        { author: 'Pooja Hegde', rating: 4, comment: 'Beautiful jute bags! Very eco-friendly and sturdy. Will definitely buy for all my family functions.' }
-      ],
+        testimonials: [],
       whatsappContact: process.env.WHATSAPP_PHONE || '919876543210'
     };
 
@@ -834,7 +807,8 @@ exports.resetSetting = async (req, res) => {
       await setting.save();
     }
 
-    await syncSettingsToV4(setting.value);
+    // Legacy sync disabled: avoid writing legacy flat settings into V4 structures
+    // await syncSettingsToV4(setting.value);
 
     res.status(200).json({ success: true, message: 'Settings reset successfully', setting: setting.value });
   } catch (error) {

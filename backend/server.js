@@ -154,7 +154,8 @@ const serveDefaultFallbackImage = (req, res) => {
   } else if (urlPath.includes('/products/') || urlPath.includes('product')) {
     fallbackFile = 'products/placeholder.webp';
   } else if (urlPath.includes('banner') || urlPath.includes('hero') || urlPath.includes('promo')) {
-    fallbackFile = 'default-banner.webp';
+    // Use a neutral product placeholder for missing banners instead of a branded demo banner
+    fallbackFile = 'products/placeholder.webp';
   } else if (urlPath.includes('avatar') || urlPath.includes('user') || urlPath.includes('profile')) {
     fallbackFile = 'default-avatar.webp';
   }
