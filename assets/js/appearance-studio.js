@@ -325,6 +325,30 @@
     }
   }
 
+  // Load About page admin settings
+  async function loadAboutSettings() {
+    try {
+      const res = await adminFetch('/api/about-page');
+      const json = await res.json();
+      if (!json.success || !json.data) return;
+      const d = json.data;
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+      set('about-story-heading-field', d.storyHeading);
+      set('about-story-intro-field', d.storyIntro);
+      set('about-left-heading-field', d.leftHeading);
+      set('about-left-p1-field', d.leftParagraph1);
+      set('about-left-p2-field', d.leftParagraph2);
+      set('about-image-field', d.image);
+      const preview = document.getElementById('about-image-preview');
+      if (preview) {
+        if (d.image) preview.innerHTML = `<img src="${d.image}" style="width:100%; height:100%; object-fit:cover;">`;
+        else preview.innerHTML = `<span style="color:var(--studio-text-muted);">No image selected</span>`;
+      }
+    } catch (err) {
+      console.warn('Failed to load about settings', err);
+    }
+  }
+
   async function saveV4Homepage() {
     if (!homepageV4) return { success: true };
 
@@ -424,6 +448,25 @@
         return false;
       }
 
+      // Save About page settings if present
+      try {
+        const aboutPayload = {
+          storyHeading: document.getElementById('about-story-heading-field')?.value || '',
+          storyIntro: document.getElementById('about-story-intro-field')?.value || '',
+          leftHeading: document.getElementById('about-left-heading-field')?.value || '',
+          leftParagraph1: document.getElementById('about-left-p1-field')?.value || '',
+          leftParagraph2: document.getElementById('about-left-p2-field')?.value || '',
+          image: document.getElementById('about-image-field')?.value || ''
+        };
+        await adminFetch('/api/about-page', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(aboutPayload)
+        });
+      } catch (err) {
+        console.warn('Failed to save about page', err);
+      }
+
       form.requestSubmit();
       markClean();
       showSaveStatus(true, `Saved successfully at ${new Date().toLocaleTimeString()}`);
@@ -445,6 +488,7 @@
     if (!form) return;
 
     loadV4Homepage();
+    loadAboutSettings();
 
     const saveBtn = document.getElementById('save-settings-submit-btn');
     if (saveBtn) {
@@ -458,6 +502,24 @@
     form.querySelectorAll('input, select, textarea').forEach(el => {
       el.addEventListener('change', markDirty);
       el.addEventListener('input', markDirty);
+    });
+
+    // About page image picker integration
+    const aboutPick = document.getElementById('about-pick-image');
+    const aboutClear = document.getElementById('about-clear-image');
+    if (aboutPick) aboutPick.addEventListener('click', () => {
+      pickImage((asset) => {
+        document.getElementById('about-image-field').value = asset.url || '';
+        const preview = document.getElementById('about-image-preview');
+        if (preview) preview.innerHTML = `<img src="${asset.url}" style="width:100%; height:100%; object-fit:cover;">`;
+        markDirty();
+      });
+    });
+    if (aboutClear) aboutClear.addEventListener('click', () => {
+      document.getElementById('about-image-field').value = '';
+      const preview = document.getElementById('about-image-preview');
+      if (preview) preview.innerHTML = `<span style="color:var(--studio-text-muted);">No image selected</span>`;
+      markDirty();
     });
   }
 

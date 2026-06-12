@@ -499,6 +499,47 @@ header {
   border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
+/* Hero slider styles used by homepage slider implemented in assets/js/home.js */
+.hero-slider-viewport {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 2; /* keep slides behind foreground UI so decorative cards remain visible */
+}
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+  display: flex;
+  align-items: center;
+}
+.hero-slide.active {
+  opacity: 1;
+  z-index: 11;
+}
+.hero-slide .hero-content,
+.hero-slide .hero-content-alignment {
+  max-width: 640px;
+  color: var(--hero-headline-color);
+}
+.hero-slide .hero-slide-title {
+  font-size: 42px;
+  line-height: 1.05;
+  margin-bottom: 12px;
+}
+.hero-slide .hero-slide-subtitle {
+  color: var(--hero-subheadline-color);
+  margin-bottom: 18px;
+}
+
 .badge-new {
   background: rgba(255, 79, 129, 0.15);
   color: hsl(var(--rose-pink));

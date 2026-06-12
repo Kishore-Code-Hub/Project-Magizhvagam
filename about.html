@@ -34,25 +34,18 @@
 
   <main class="container about-layout">
     <div class="about-section glass animated scale-in" style="padding:40px; border-radius:16px; margin-bottom:40px;">
-      <h1 style="font-family:var(--font-display); font-size:36px; margin-bottom:20px; text-align:center; color:var(--color-text-primary);">Our Story</h1>
-      <p style="margin-bottom:20px; font-size:16px; text-align:center; max-width:700px; margin: 0 auto 30px; color:var(--text-muted);">
-        MAGIZHVAGAM was founded on a simple philosophy: return gifts are not just items, but tokens of gratitude that preserve celebratory memories forever.
-      </p>
+      <h1 id="about-story-heading" style="font-family:var(--font-display); font-size:36px; margin-bottom:20px; text-align:center; color:var(--color-text-primary);"></h1>
+      <p id="about-story-intro" style="margin-bottom:20px; font-size:16px; text-align:center; max-width:700px; margin: 0 auto 30px; color:var(--text-muted);"></p>
       
       <div class="grid grid-2" style="gap:40px; align-items:center; margin-top:30px;">
         <div>
-          <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:16px;">Preserving Heritage & Gratitude</h3>
-          <p style="color:var(--text-muted); margin-bottom:14px;">
-            We collaborate with local artisans to source traditional brassware, hand-painted boxes, eco-friendly jute packaging, and customized keepsakes. Every collection represents a harmonious blend of heritage and premium contemporary design.
-          </p>
-          <p style="color:var(--text-muted);">
-            From intimate birthday functions to grand corporate galas, our team curates catalog selections that reflect high luxury, premium builds, and outstanding value.
-          </p>
+          <h3 id="about-left-heading" style="font-family:'Outfit'; font-size:22px; margin-bottom:16px;"></h3>
+          <p id="about-left-p1" style="color:var(--text-muted); margin-bottom:14px;"></p>
+          <p id="about-left-p2" style="color:var(--text-muted);"></p>
         </div>
         <div style="border-radius:12px; overflow:hidden; height:300px; border: 1px solid var(--card-border);">
-          <!-- Placeholder background -->
-          <div style="background: linear-gradient(135deg, hsl(var(--primary-purple)) 0%, hsl(var(--rose-pink)) 100%); width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white;">
-            <i data-lucide="sparkles" style="width:48px; height:48px; stroke-width:1.5;"></i>
+          <div id="about-story-image" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:transparent !important;">
+            <img id="about-story-image-el" alt="" style="width:100%; height:100%; object-fit:cover; display:none;">
           </div>
         </div>
       </div>
@@ -82,6 +75,41 @@
   <footer id="main-footer"></footer>
 
   <!-- Scripts -->
+  <script>
+    // Load About page content dynamically from API
+    (function(){
+      async function loadAbout() {
+        try {
+          // cache-bust to ensure storefront fetches latest saved image after admin updates
+          const res = await fetch('/api/about-page?_=' + Date.now());
+          const json = await res.json();
+          console.log('About API:', json);
+          if (!json.success || !json.data) return;
+          const d = json.data;
+          document.getElementById('about-story-heading').textContent = d.storyHeading || '';
+          document.getElementById('about-story-intro').textContent = d.storyIntro || '';
+          document.getElementById('about-left-heading').textContent = d.leftHeading || '';
+          document.getElementById('about-left-p1').textContent = d.leftParagraph1 || '';
+          document.getElementById('about-left-p2').textContent = d.leftParagraph2 || '';
+          const imgEl = document.getElementById('about-story-image-el');
+          if (d.image) {
+            // append timestamp to avoid cached responses for the image itself
+            const sep = d.image.includes('?') ? '&' : '?';
+            const url = d.image + sep + '_=' + Date.now();
+            imgEl.onload = () => { imgEl.style.display = 'block'; };
+            imgEl.onerror = () => { imgEl.removeAttribute('src'); imgEl.style.display = 'none'; console.warn('About image failed to load:', d.image); };
+            imgEl.src = url;
+          } else {
+            imgEl.removeAttribute('src');
+            imgEl.style.display = 'none';
+          }
+        } catch (err) {
+          console.error('Failed to load about page content', err);
+        }
+      }
+      document.addEventListener('DOMContentLoaded', loadAbout);
+    })();
+  </script>
   <script src="/assets/js/animation-loader.js"></script>
   <script src="/assets/js/nav.js"></script>
   <script src="/assets/js/footer.js"></script>

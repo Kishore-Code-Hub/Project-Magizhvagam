@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHomepageData();
 });
 
+// Configurable hero slide interval (ms)
+const HERO_SLIDE_INTERVAL = 5000;
+
 async function loadHomepageV4Sections() {
   try {
     const res = await fetch('/api/site-settings/homepage');
@@ -107,6 +110,9 @@ function applyHeroSectionConfig(config) {
     if (banner.title && headline) headline.innerHTML = banner.title.replace(/\n/g, '<br>');
     if (banner.subtitle && subtext) subtext.textContent = banner.subtitle;
   }
+
+  // Expose V4 hero banners to global scope for the slider renderer
+  try { window.mzHeroSlides = (config.banners && Array.isArray(config.banners)) ? config.banners : []; } catch (e) { window.mzHeroSlides = []; }
 }
 
 function renderNewsletterSection(config) {
@@ -156,8 +162,9 @@ async function loadHomepageData() {
 
     const toggles = window.featureToggles || await window.fetchFeatureToggles();
 
-    // 1. Load Hero Banners Slider
-    renderHeroBanners(config.heroBanners);
+    // 1. Load Hero Banners Slider (prefer V4 banners exposed by applyHeroSectionConfig)
+    const heroBanners = (window.mzHeroSlides && window.mzHeroSlides.length) ? window.mzHeroSlides : (config.heroBanners || []);
+    renderHeroBanners(heroBanners);
 
     // 2. Load Highlights Categories
     renderCategoryHighlights(config.categoryHighlights);
@@ -261,36 +268,88 @@ function renderHeroBanners(banners) {
     return;
   }
 
-  // Render slides strictly from provided banners without falling back to demo images
-  const slides = banners.map((b, i) => ({
+  // Build slide objects from provided banners (no hardcoded limits)
+  const slides = banners.map((b) => ({
     image: (b.image || '').trim(),
     title: b.title || '',
     subtitle: b.subtitle || '',
-    btnText: b.btnText || '',
-    link: b.link || '#'
+    btnText: b.btnText || b.ctaLabel || '',
+    link: b.link || b.ctaLink || '#'
   })).filter(s => s.image);
 
+  if (slides.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  // Render slide elements (each slide owns the full hero content)
   container.innerHTML = slides.map((slide, index) => `
-    <div class="hero-slide ${index === 0 ? 'active' : ''}"
-         style="background-image: url('${slide.image}'); background-size:cover; background-position:center; display:flex; align-items:center;">
-      <div class="container hero-content">
-        <h1>${slide.title}</h1>
-        <p>${slide.subtitle}</p>
-        ${slide.btnText ? `<a href="${slide.link}" class="btn btn-gold">${slide.btnText}</a>` : ''}
+    <div class="hero-slide ${index === 0 ? 'active' : ''}" data-slide-index="${index}" style="background-image: url('${slide.image}');">
+      <div class="hero-content-alignment glass-panel" style="margin-left:48px;">
+        <h1 class="hero-slide-title">${slide.title || ''}</h1>
+        <p class="hero-slide-subtitle">${slide.subtitle || ''}</p>
+        ${slide.btnText ? `<a href="${slide.link}" class="btn btn-gold hero-slide-cta">${slide.btnText}</a>` : ''}
       </div>
     </div>
   `).join('');
 
-  // Simple slider progression if multiple slides present
+  // Slider state
   let currentSlide = 0;
-  const slideEls = container.querySelectorAll('.hero-slide');
-  if (slideEls.length > 1) {
-    setInterval(() => {
-      slideEls[currentSlide].classList.remove('active');
-      currentSlide = (currentSlide + 1) % slideEls.length;
-      slideEls[currentSlide].classList.add('active');
-    }, 5000);
-  }
+  const slideEls = Array.from(container.querySelectorAll('.hero-slide'));
+  let sliderTimer = null;
+
+  const showSlide = (idx) => {
+    slideEls.forEach((el, i) => {
+      if (i === idx) {
+        el.classList.add('active');
+        el.setAttribute('aria-hidden', 'false');
+      } else {
+        el.classList.remove('active');
+        el.setAttribute('aria-hidden', 'true');
+      }
+    });
+  };
+
+  const startSlider = () => {
+    stopSlider();
+    if (slideEls.length <= 1) return; // No rotation if only one slide
+    sliderTimer = setInterval(() => {
+      const next = (currentSlide + 1) % slideEls.length;
+      showSlide(next);
+      currentSlide = next;
+    }, HERO_SLIDE_INTERVAL);
+  };
+
+  const stopSlider = () => {
+    if (sliderTimer) {
+      clearInterval(sliderTimer);
+      sliderTimer = null;
+    }
+  };
+
+  // Pause when tab inactive and resume on active
+  const handleVisibility = () => {
+    if (document.hidden) {
+      stopSlider();
+    } else {
+      // small delay to allow render
+      setTimeout(() => startSlider(), 250);
+    }
+  };
+
+  document.removeEventListener('visibilitychange', handleVisibility);
+  document.addEventListener('visibilitychange', handleVisibility);
+
+  // Initialize
+  showSlide(0);
+  currentSlide = 0;
+
+  // Keep static foreground UI (text + floating cards) visible above slides.
+  // The slider uses opacity-based crossfade; foreground decorations must remain visible.
+  // Do not hide or remove the `.parallax-layer.foreground-ui` element here.
+  // (Previous behaviour hid floating cards when slides existed which caused them to disappear.)
+
+  if (slideEls.length > 1) startSlider();
 }
 
 

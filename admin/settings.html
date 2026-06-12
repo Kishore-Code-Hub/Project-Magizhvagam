@@ -353,6 +353,42 @@
 
                 <textarea id="hero-banners-json" hidden aria-hidden="true"></textarea>
                 <textarea id="promo-banners-json" hidden aria-hidden="true"></textarea>
+                <h3 style="font-family:'Cormorant Garamond',serif; font-size:16px; margin:24px 0 12px; color:var(--studio-gold);">About Page Settings</h3>
+                <div id="about-page-settings" style="display:flex; flex-direction:column; gap:10px;">
+                  <div class="control-group">
+                    <label>Story Heading</label>
+                    <input type="text" id="about-story-heading-field" class="studio-input">
+                  </div>
+                  <div class="control-group">
+                    <label>Story Intro Text</label>
+                    <textarea id="about-story-intro-field" class="studio-input" rows="3"></textarea>
+                  </div>
+                  <div class="control-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div class="control-group">
+                      <label>Left Section Heading</label>
+                      <input type="text" id="about-left-heading-field" class="studio-input">
+                    </div>
+                    <div class="control-group">
+                      <label>About Image</label>
+                      <input type="hidden" id="about-image-field">
+                      <div id="about-image-preview" style="height:80px; border:1px dashed var(--studio-border); border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:var(--studio-input-bg);">
+                        <span style="color:var(--studio-text-muted);">No image selected</span>
+                      </div>
+                      <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button type="button" class="studio-btn studio-btn-primary" id="about-pick-image">Choose Image</button>
+                        <button type="button" class="studio-btn studio-btn-secondary" id="about-clear-image">Remove</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="control-group">
+                    <label>Left Paragraph 1</label>
+                    <textarea id="about-left-p1-field" class="studio-input" rows="3"></textarea>
+                  </div>
+                  <div class="control-group">
+                    <label>Left Paragraph 2</label>
+                    <textarea id="about-left-p2-field" class="studio-input" rows="3"></textarea>
+                  </div>
+                </div>
               </div>
 
               <!-- TAB 6: Products -->
