@@ -305,18 +305,25 @@ function applyAppearanceSettings(settings) {
   // 8 Brand New Semantic Colors Map
   if (settings.paletteBgMain) {
     document.documentElement.style.setProperty('--bg-main', settings.paletteBgMain);
+    document.documentElement.style.setProperty('--bg', settings.paletteBgMain);
   }
   if (settings.paletteBgSurface) {
     document.documentElement.style.setProperty('--bg-surface', settings.paletteBgSurface);
+    document.documentElement.style.setProperty('--surface', settings.paletteBgSurface);
+    document.documentElement.style.setProperty('--card', settings.paletteBgSurface);
   }
   if (settings.paletteTextMain) {
     document.documentElement.style.setProperty('--text-main', settings.paletteTextMain);
+    document.documentElement.style.setProperty('--text-primary', settings.paletteTextMain);
+    document.documentElement.style.setProperty('--text-secondary', settings.paletteTextMain);
   }
   if (settings.paletteTextMuted) {
     document.documentElement.style.setProperty('--text-muted', settings.paletteTextMuted);
   }
   if (settings.paletteColorPrimary) {
     document.documentElement.style.setProperty('--color-primary', settings.paletteColorPrimary);
+    document.documentElement.style.setProperty('--accent', settings.paletteColorPrimary);
+    document.documentElement.style.setProperty('--border', settings.paletteColorPrimary);
     const pHsl = hexToHslString(settings.paletteColorPrimary);
     if (pHsl) document.documentElement.style.setProperty('--primary-purple', pHsl);
   }

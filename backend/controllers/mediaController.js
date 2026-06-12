@@ -166,3 +166,71 @@ exports.bulkDeleteMedia = async (req, res) => {
     res.status(500).json({ success: false, error: `Bulk delete failed: ${error.message}` });
   }
 };
+
+/**
+ * @route PUT /api/media/:id
+ */
+exports.replaceMedia = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No image file provided' });
+    }
+
+    const asset = await MediaAsset.findById(req.params.id);
+    if (!asset) {
+      return res.status(404).json({ success: false, error: 'Media asset not found' });
+    }
+
+    // Delete old local file if present
+    if (asset.url && asset.url.startsWith('/uploads/')) {
+      const oldPath = path.join(__dirname, '../..', asset.url);
+      if (fs.existsSync(oldPath)) {
+        try {
+          fs.unlinkSync(oldPath);
+        } catch (e) {
+          console.warn('Failed to delete old file:', e.message);
+        }
+      }
+    }
+
+    ensureUploadDir();
+
+    const baseName = path.parse(req.file.originalname).name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '') || 'image';
+    const uniqueName = `${baseName}-${Date.now()}.webp`;
+
+    const optimized = await sharp(req.file.buffer)
+      .rotate()
+      .resize({ width: 1920, height: 1920, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 82 })
+      .toBuffer();
+
+    const meta = await sharp(optimized).metadata();
+    let publicUrl;
+
+    if (isCloudinaryConfigured) {
+      const result = await uploadToCloudinary(optimized, 'magizhvagam/media', uniqueName);
+      publicUrl = result.secure_url || result.url;
+    } else {
+      const filePath = path.join(UPLOAD_DIR, uniqueName);
+      fs.writeFileSync(filePath, optimized);
+      publicUrl = `/uploads/media/${uniqueName}`;
+    }
+
+    // Update fields
+    asset.filename = uniqueName;
+    asset.originalName = req.file.originalname;
+    asset.url = publicUrl;
+    asset.mimeType = 'image/webp';
+    asset.size = optimized.length;
+    asset.width = meta.width || null;
+    asset.height = meta.height || null;
+    await asset.save();
+
+    res.status(200).json({ success: true, message: 'Image replaced successfully', data: asset });
+  } catch (error) {
+    res.status(500).json({ success: false, error: `Replace failed: ${error.message}` });
+  }
+};

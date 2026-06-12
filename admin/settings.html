@@ -216,13 +216,15 @@
                   <div class="studio-accordion-content">
                     <div class="control-group">
                       <label>Main Background Color</label>
+                      <div class="control-desc">Main storefront page background color.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-bg-main" onchange="handleBgMainChange()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-bg-main').value=this.value; handleBgMainChange()">
                       </div>
                     </div>
                     <div class="control-group">
-                      <label>Surface / Card Background</label>
+                      <label>Card Background Color</label>
+                      <div class="control-desc">Background for product grids, category cards, and content blocks.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-bg-surface" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-bg-surface').value=this.value; syncLivePreview()">
@@ -230,6 +232,7 @@
                     </div>
                     <div class="control-group">
                       <label>Main Body Text</label>
+                      <div class="control-desc">Primary text and headings color (WCAG contrast target).</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-text-main" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-text-main').value=this.value; syncLivePreview()">
@@ -237,6 +240,7 @@
                     </div>
                     <div class="control-group">
                       <label>Muted Secondary Text</label>
+                      <div class="control-desc">Color for secondary subheadings, metadata, and labels.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-text-muted" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-text-muted').value=this.value; syncLivePreview()">
@@ -252,7 +256,8 @@
                   </div>
                   <div class="studio-accordion-content">
                     <div class="control-group">
-                      <label>Primary Accent (CTA)</label>
+                      <label>Main Button Color (CTA)</label>
+                      <div class="control-desc">Background color for primary storefront buttons and call-to-actions.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-color-primary" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-color-primary').value=this.value; syncLivePreview()">
@@ -260,6 +265,7 @@
                     </div>
                     <div class="control-group">
                       <label>Secondary Accent (Hover)</label>
+                      <div class="control-desc">Hover background state for main action buttons.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-color-secondary" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-color-secondary').value=this.value; syncLivePreview()">
@@ -267,6 +273,7 @@
                     </div>
                     <div class="control-group">
                       <label>Success Accent (In Stock)</label>
+                      <div class="control-desc">Indicates successful coupon applications or in-stock products.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-color-success" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-color-success').value=this.value; syncLivePreview()">
@@ -274,6 +281,7 @@
                     </div>
                     <div class="control-group">
                       <label>Error Accent (Alerts)</label>
+                      <div class="control-desc">Highlights validation warnings, errors, and out-of-stock badges.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-color-error" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-color-error').value=this.value; syncLivePreview()">
@@ -314,11 +322,14 @@
                 </div>
                 
                 <div class="control-group">
-                  <label>Logo Text / URL</label>
+                  <label>Logo Image</label>
+                  <input type="hidden" id="logo-field">
+                  <div id="logo-preview-box" style="margin-bottom:8px; border:1px dashed var(--studio-border); border-radius:8px; padding:8px; display:flex; justify-content:center; align-items:center; min-height:80px; background:var(--studio-input-bg); overflow:hidden;">
+                    <span style="color:var(--studio-text-muted); font-size:12px;">No Logo Selected</span>
+                  </div>
                   <div style="display:flex; gap:10px;">
-                    <input type="text" id="logo-field" class="studio-input" placeholder="e.g. Logo image path or Text">
-                    <input type="file" id="logo-upload-input" accept="image/*" style="display:none;" onchange="uploadSettingAsset('logo-upload-input', 'logo-field')">
-                    <button type="button" class="studio-btn studio-btn-secondary" onclick="document.getElementById('logo-upload-input').click()" style="padding:10px 14px; font-size:12px; white-space:nowrap;">Upload</button>
+                    <button type="button" class="studio-btn studio-btn-primary" id="logo-select-btn" style="flex:1; font-size:12px; padding:10px;">Choose Logo</button>
+                    <button type="button" class="studio-btn studio-btn-danger" id="logo-remove-btn" style="font-size:12px; padding:10px 14px;">Remove Logo</button>
                   </div>
                 </div>
 
@@ -419,11 +430,14 @@
                         <input type="text" id="cat-name-field" class="studio-input" placeholder="e.g. Eco-Friendly Gifts" required>
                       </div>
                       <div class="control-group">
-                        <label>Category Image URL</label>
+                        <label>Category Image</label>
+                        <input type="hidden" id="cat-image-field" required>
+                        <div id="cat-preview-box" style="margin-bottom:8px; border:1px dashed var(--studio-border); border-radius:8px; padding:8px; display:flex; justify-content:center; align-items:center; min-height:80px; background:var(--studio-input-bg); overflow:hidden;">
+                          <span style="color:var(--studio-text-muted); font-size:11px;">No Image Selected</span>
+                        </div>
                         <div style="display:flex; gap:6px;">
-                          <input type="text" id="cat-image-field" class="studio-input" placeholder="Image URL" required>
-                          <input type="file" id="cat-upload-input" accept="image/*" style="display:none;" onchange="uploadSettingAsset('cat-upload-input', 'cat-image-field')">
-                          <button type="button" class="studio-btn studio-btn-secondary" onclick="document.getElementById('cat-upload-input').click()" style="padding:8px 10px; font-size:11px;">Upload</button>
+                          <button type="button" class="studio-btn studio-btn-primary" id="cat-select-btn" style="flex:1; font-size:11px; padding:8px 10px;">Choose Image</button>
+                          <button type="button" class="studio-btn studio-btn-danger" id="cat-remove-btn" style="font-size:11px; padding:8px 10px;">Remove</button>
                         </div>
                       </div>
                       <button type="submit" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Add Category</button>
@@ -550,6 +564,28 @@
   <script src="/assets/js/appearance-studio.js"></script>
   <script src="/assets/js/admin.js"></script>
   <script>
+    // Update Logo visual thumbnail preview
+    window.updateLogoPreview = function (url) {
+      const previewBox = document.getElementById('logo-preview-box');
+      if (!previewBox) return;
+      if (url) {
+        previewBox.innerHTML = `<img src="${url}" alt="Logo Preview" style="max-height: 64px; object-fit: contain;">`;
+      } else {
+        previewBox.innerHTML = `<span style="color:var(--studio-text-muted); font-size:12px;">No Logo Selected</span>`;
+      }
+    };
+
+    // Update Category visual thumbnail preview
+    window.updateCatPreview = function (url) {
+      const previewBox = document.getElementById('cat-preview-box');
+      if (!previewBox) return;
+      if (url) {
+        previewBox.innerHTML = `<img src="${url}" alt="Category Preview" style="max-height: 64px; object-fit: contain;">`;
+      } else {
+        previewBox.innerHTML = `<span style="color:var(--studio-text-muted); font-size:11px;">No Image Selected</span>`;
+      }
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
       loadCouponsList();
       loadCategoriesList();
@@ -564,6 +600,64 @@
       setTimeout(() => {
         updateContrastLock();
       }, 1200);
+
+      // Logo Select Events
+      const logoSelectBtn = document.getElementById('logo-select-btn');
+      const logoRemoveBtn = document.getElementById('logo-remove-btn');
+      const logoField = document.getElementById('logo-field');
+
+      if (logoSelectBtn) {
+        logoSelectBtn.addEventListener('click', () => {
+          if (window.MZMediaLibrary && window.MZMediaLibrary.openPicker) {
+            window.MZMediaLibrary.openPicker((asset) => {
+              if (logoField) {
+                logoField.value = asset.url;
+                if (window.MZAppearanceStudio) window.MZAppearanceStudio.markDirty();
+                window.updateLogoPreview(asset.url);
+                syncLivePreview();
+              }
+            });
+          }
+        });
+      }
+
+      if (logoRemoveBtn) {
+        logoRemoveBtn.addEventListener('click', () => {
+          if (logoField) {
+            logoField.value = '';
+            if (window.MZAppearanceStudio) window.MZAppearanceStudio.markDirty();
+            window.updateLogoPreview('');
+            syncLivePreview();
+          }
+        });
+      }
+
+      // Category Select Events
+      const catSelectBtn = document.getElementById('cat-select-btn');
+      const catRemoveBtn = document.getElementById('cat-remove-btn');
+      const catImageField = document.getElementById('cat-image-field');
+
+      if (catSelectBtn) {
+        catSelectBtn.addEventListener('click', () => {
+          if (window.MZMediaLibrary && window.MZMediaLibrary.openPicker) {
+            window.MZMediaLibrary.openPicker((asset) => {
+              if (catImageField) {
+                catImageField.value = asset.url;
+                window.updateCatPreview(asset.url);
+              }
+            });
+          }
+        });
+      }
+
+      if (catRemoveBtn) {
+        catRemoveBtn.addEventListener('click', () => {
+          if (catImageField) {
+            catImageField.value = '';
+            window.updateCatPreview('');
+          }
+        });
+      }
     });
 
     // Theme Customizer Switch tab logic
@@ -629,13 +723,13 @@
       scoreEl.textContent = formatted;
       
       if (ratio < 3.0) {
-        indicator.style.backgroundColor = '#fde8e8';
-        indicator.style.color = '#9b1c1c';
-        scoreEl.textContent += ' (FAIL - Low Contrast)';
-        saveBtn.disabled = true;
-        saveBtn.style.opacity = '0.5';
-        saveBtn.style.cursor = 'not-allowed';
-        saveBtn.title = 'Save locked due to low accessibility contrast score';
+        indicator.style.backgroundColor = '#fff3cd';
+        indicator.style.color = '#856404';
+        scoreEl.textContent += ' (Warning - Low Contrast)';
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = '1';
+        saveBtn.style.cursor = 'pointer';
+        saveBtn.title = 'Warning: contrast ratio is below standard. Saving is still allowed.';
       } else {
         indicator.style.backgroundColor = '#def7ec';
         indicator.style.color = '#03543f';
@@ -743,6 +837,9 @@
       
       syncLivePreview();
       updateContrastLock();
+      if (window.MZAppearanceStudio && typeof window.MZAppearanceStudio.markDirty === 'function') {
+        window.MZAppearanceStudio.markDirty();
+      }
       showToast(presetKey.charAt(0).toUpperCase() + presetKey.slice(1) + ' theme preset loaded!', 'info');
     }
 
@@ -997,6 +1094,9 @@
         if (data.success) {
           showToast('Category created successfully!', 'success');
           document.getElementById('add-category-form').reset();
+          if (typeof window.updateCatPreview === 'function') {
+            window.updateCatPreview('');
+          }
           loadCategoriesList();
         } else {
           showToast(data.error || 'Failed to create category', 'error');

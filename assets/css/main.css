@@ -2454,32 +2454,32 @@ body.inner-page {
 
 /* ── 1. Global Contrast & Typography system ── */
 :root {
-  --text-main: #FFFFFF;
-  --text-muted: rgba(255, 255, 255, 0.7);
-  --text-muted-more: rgba(255, 255, 255, 0.55);
+  --text-main: var(--text-primary, #FFFFFF);
+  --text-muted: var(--text-secondary, #B8B0C8);
+  --text-muted-more: var(--text-secondary, #7A6E8A);
 }
 
-/* Ensure no dark-gray text blends invisible in Dark Mode */
+/* Ensure text dynamically matches theme configuration */
 .home-page, .home-page p, .home-page span,
 .products-showcase-wrapper p, .categories-showcase-wrapper p,
 .testimonials-slider-wrapper p, .brand-trust-badges-wrapper p,
 .footer-tagline, .footer-copyright, .footer-contact-item {
-  color: var(--text-muted) !important;
+  color: var(--color-text-secondary) !important;
 }
 
 h1, h2, h3, h4, h5, h6,
 .hero-headline, .logo-title, .section-title-center-block h2,
 .section-header-split-alignment h2, .feature-card-item h3,
 .footer-column-heading, .footer-newsletter-heading, .footer-logo {
-  color: #FFFFFF !important;
+  color: var(--color-text-primary) !important;
 }
 
 .feature-card-item p {
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: var(--color-text-muted) !important;
 }
 
 .product-card h4, .category-card h4 {
-  color: #FFFFFF !important;
+  color: var(--color-text-primary) !important;
 }
 
 .badge-new, .badge-featured, .badge-success, .badge-warning, .badge-danger, .badge-info, .badge-purple {
@@ -3022,31 +3022,7 @@ h1, h2, h3, h4, h5, h6,
   box-shadow: 0 6px 20px rgba(181, 128, 52, 0.45) !important;
 }
 
-/* ── 9. Accessibility Contrast Overrides for Default Dark Theme ── */
-:root:not([data-theme="light"]) {
-  --text-main: #FFFFFF !important;
-  --text-color: #FFFFFF !important;
-  --text-muted: #B0B0B0 !important;
-  --pc-name-color: #FFFFFF !important;
-  --pc-category-color: #B0B0B0 !important;
-  --nav-mega-link: #D8D8D8 !important;
-  --nav-mega-heading: #FFFFFF !important;
-  --hero-headline-color: #FFFFFF !important;
-  --hero-subheadline-color: #D8D8D8 !important;
-}
 
-/* Ensure no raw black/dark-grey text inherits on dark containers */
-:root:not([data-theme="light"]) p,
-:root:not([data-theme="light"]) span,
-:root:not([data-theme="light"]) label,
-:root:not([data-theme="light"]) h1,
-:root:not([data-theme="light"]) h2,
-:root:not([data-theme="light"]) h3,
-:root:not([data-theme="light"]) h4,
-:root:not([data-theme="light"]) h5,
-:root:not([data-theme="light"]) h6 {
-  color: inherit;
-}
 
 /* ── 10. Storefront Header Premium Centering & Alignment Overrides ── */
 .header-row-1 {
@@ -3146,6 +3122,262 @@ h1, h2, h3, h4, h5, h6,
   font-family: 'Outfit', sans-serif !important;
   font-size: 36px !important;
   font-weight: 800 !important;
+}
+
+/* ==========================================================================
+   HOMEPAGE LAYOUT REPAIRS & SPATIAL STABILITY
+   ========================================================================== */
+
+/* Hero Section Alignment Override */
+.parallax-layer.foreground-ui.container {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  max-width: var(--layout-container-max-width, 1200px) !important;
+  margin: 0 auto !important;
+  z-index: 3 !important;
+  inset: auto !important;
+  width: 100% !important;
+}
+
+@media (max-width: 1024px) {
+  .parallax-layer.foreground-ui.container {
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding-top: 100px !important;
+  }
+}
+
+/* Why Choose Us & Trust Badges Section */
+.feature-card-item {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  padding: 32px 24px !important;
+  border-radius: var(--layout-card-radius, 14px) !important;
+  background: var(--color-surface-1, #1A1523) !important;
+  border: 1px solid var(--color-border, #3A2E4A) !important;
+  height: 100% !important; /* Forces equal height in grid */
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.feature-card-item:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.feature-icon-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 60px !important;
+  height: 60px !important;
+  border-radius: 50% !important;
+  background: rgba(201, 145, 61, 0.1) !important;
+  color: var(--color-brand-primary, #C9913D) !important;
+  margin-bottom: 20px !important;
+}
+
+.feature-icon-wrapper svg {
+  width: 28px !important;
+  height: 28px !important;
+  stroke: currentColor !important;
+  stroke-width: 2 !important;
+  fill: none !important;
+}
+
+.feature-card-item h3 {
+  font-family: var(--font-heading), serif !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  margin-bottom: 12px !important;
+}
+
+.feature-card-item p {
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  color: var(--color-text-muted, #7A6E8A) !important;
+}
+
+/* Testimonial Cards Layout */
+.columns-density-3 {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+@media (max-width: 1024px) {
+  .columns-density-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 568px) {
+  .columns-density-3 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.testimonial-card {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  padding: 32px !important;
+  border-radius: var(--layout-card-radius, 14px) !important;
+  background: var(--color-surface-1, #1A1523) !important;
+  border: 1px solid var(--color-border, #3A2E4A) !important;
+  height: 100% !important; /* forces equal height in grid */
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.testimonial-stars {
+  color: var(--color-brand-accent, #C9913D) !important;
+  margin-bottom: 16px !important;
+  font-size: 18px !important;
+}
+
+.testimonial-card blockquote {
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+  font-style: italic !important;
+  color: var(--color-text-secondary, #F5F0E8) !important;
+  margin: 0 0 24px 0 !important;
+  flex-grow: 1 !important; /* expands content to push footer to bottom */
+}
+
+.testimonial-card footer {
+  display: flex !important;
+  flex-direction: column !important;
+  margin-top: auto !important;
+}
+
+.testimonial-card footer strong {
+  font-family: var(--font-heading), serif !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: var(--color-text-primary, #F5F0E8) !important;
+}
+
+.testimonial-card footer span {
+  font-size: 12px !important;
+  color: var(--color-text-muted, #7A6E8A) !important;
+  margin-top: 2px !important;
+}
+
+/* Newsletter Section Alignment */
+.newsletter-capture-wrapper {
+  padding: var(--layout-section-padding-y, 80px) 0;
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+.newsletter-inner {
+  max-width: 680px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+  padding: 48px 32px !important;
+  border-radius: var(--layout-card-radius, 16px) !important;
+  background: var(--color-surface-1, #1A1523) !important;
+  border: 1px solid var(--color-border, #3A2E4A) !important;
+}
+
+.newsletter-inner h2 {
+  font-family: var(--font-display), serif !important;
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  color: var(--color-text-primary, #F5F0E8) !important;
+  margin-bottom: 12px !important;
+}
+
+.newsletter-inner p {
+  font-size: 15px !important;
+  color: var(--color-text-muted, #7A6E8A) !important;
+  margin-bottom: 24px !important;
+}
+
+.newsletter-form {
+  display: flex !important;
+  gap: 12px !important;
+  max-width: 480px !important;
+  margin: 0 auto !important;
+}
+
+@media (max-width: 568px) {
+  .newsletter-form {
+    flex-direction: column !important;
+  }
+}
+
+.newsletter-form input[type="email"] {
+  flex-grow: 1 !important;
+  padding: 12px 16px !important;
+  background: var(--color-surface-3, #2A2035) !important;
+  border: 1px solid var(--color-border, #3A2E4A) !important;
+  border-radius: var(--layout-input-radius, 8px) !important;
+  color: var(--color-text-primary, #F5F0E8) !important;
+  font-size: 14px !important;
+}
+
+.newsletter-form input[type="email"]:focus {
+  border-color: var(--color-brand-primary, #C9913D) !important;
+  outline: none !important;
+}
+
+.newsletter-form .btn {
+  white-space: nowrap !important;
+}
+
+/* Countdown Clock Section Spacing & Typography */
+.countdown-timer-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  background: var(--cd-container-bg, rgba(201, 145, 61, 0.05)) !important;
+  border: 1px solid var(--cd-container-border, rgba(201, 145, 61, 0.15)) !important;
+  padding: 12px 24px !important;
+  border-radius: var(--cd-container-radius, 12px) !important;
+  margin-top: 10px !important;
+}
+
+.cd-digit-block {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--cd-digit-bg, #1A1523) !important;
+  border: 1px solid var(--cd-digit-border, #3A2E4A) !important;
+  border-radius: var(--cd-digit-radius, 8px) !important;
+  padding: 10px 14px !important;
+  min-width: 65px !important;
+}
+
+.cd-digit-block span {
+  font-family: var(--font-family-base), sans-serif !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: var(--cd-digit-text, #F5F0E8) !important;
+  line-height: 1 !important;
+}
+
+.cd-digit-block label {
+  font-size: 10px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--cd-label-color, #7A6E8A) !important;
+  margin-top: 4px !important;
+  font-weight: 600 !important;
+}
+
+.cd-separator {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: var(--cd-separator-color, #C9913D) !important;
+  line-height: 1 !important;
 }
 
 

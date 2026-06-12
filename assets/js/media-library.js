@@ -33,6 +33,88 @@
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
+  let lightboxModal = null;
+
+  function openLightbox(item) {
+    if (lightboxModal) {
+      lightboxModal.remove();
+    }
+    lightboxModal = document.createElement('div');
+    lightboxModal.className = 'media-lightbox-modal';
+    lightboxModal.style.cssText = `
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+    `;
+    
+    const formattedDate = item.createdAt ? new Date(item.createdAt).toLocaleString() : 'N/A';
+    
+    lightboxModal.innerHTML = `
+      <div class="media-lightbox-content" style="
+        position: relative;
+        background: #171027;
+        border: 1px solid #312744;
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 800px;
+        width: 90vw;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        color: #F5F0E8;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      ">
+        <button type="button" class="media-lightbox-close" style="
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          background: transparent;
+          border: none;
+          color: #B8B0C8;
+          font-size: 24px;
+          cursor: pointer;
+        ">&times;</button>
+        
+        <div style="flex: 1; display: flex; justify-content: center; align-items: center; background: #0B0618; border-radius: 8px; overflow: hidden; max-height: 50vh;">
+          <img src="${item.url}" alt="${item.originalName}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <h3 style="margin: 0; font-family: 'Cormorant Garamond', serif; font-size: 20px; color: #C9913D; word-break: break-all;">${item.originalName}</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; color: #B8B0C8; border-top: 1px solid #312744; padding-top: 12px;">
+            <div><strong>Dimensions:</strong> ${item.width || '?'} &times; ${item.height || '?'} px</div>
+            <div><strong>Size:</strong> ${formatSize(item.size)}</div>
+            <div><strong>Uploaded On:</strong> ${formattedDate}</div>
+            <div><strong>Mime Type:</strong> ${item.mimeType || 'image/webp'}</div>
+          </div>
+          <div style="display: flex; gap: 10px; margin-top: 12px;">
+            <button type="button" class="studio-btn studio-btn-primary lightbox-copy-url" data-url="${item.url}" style="flex: 1; font-size: 12px; padding: 8px;">Copy Asset URL</button>
+            <a href="${item.url}" target="_blank" class="studio-btn studio-btn-secondary" style="flex: 1; text-align: center; text-decoration: none; font-size: 12px; padding: 8px;">Open in New Tab</a>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(lightboxModal);
+    
+    lightboxModal.querySelector('.media-lightbox-close').addEventListener('click', () => {
+      lightboxModal.remove();
+      lightboxModal = null;
+    });
+    
+    lightboxModal.querySelector('.lightbox-copy-url').addEventListener('click', () => {
+      navigator.clipboard.writeText(item.url).then(() => {
+        if (typeof showToast === 'function') showToast('URL copied to clipboard!', 'success');
+      });
+    });
+  }
+
   function renderGrid(container, items, options) {
     const opts = options || {};
     if (!items.length) {
@@ -51,6 +133,7 @@
         </div>
         <div class="media-card-actions">
           <button type="button" class="media-copy-url" data-url="${item.url}" title="Copy URL">Copy URL</button>
+          ${!opts.selectMode ? `<button type="button" class="media-replace-btn" data-id="${item._id}">Replace</button>` : ''}
           ${!opts.selectMode ? `<button type="button" class="media-delete-btn" data-id="${item._id}">Delete</button>` : ''}
         </div>
       </div>
@@ -66,6 +149,55 @@
     });
 
     if (!opts.selectMode) {
+      container.querySelectorAll('.media-card-image').forEach(imgWrapper => {
+        imgWrapper.style.cursor = 'pointer';
+        imgWrapper.addEventListener('click', (e) => {
+          const card = imgWrapper.closest('.media-card');
+          const itemId = card.dataset.id;
+          const item = items.find(i => i._id === itemId);
+          if (item) {
+            openLightbox(item);
+          }
+        });
+      });
+
+      container.querySelectorAll('.media-replace-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const assetId = btn.dataset.id;
+          
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.accept = 'image/*';
+          fileInput.addEventListener('change', async (evt) => {
+            const file = evt.target.files[0];
+            if (!file) return;
+            
+            try {
+              if (typeof showToast === 'function') showToast('Replacing image...', 'info');
+              
+              const formData = new FormData();
+              formData.append('image', file);
+              
+              const res = await adminFetch(`/api/media/${assetId}`, {
+                method: 'PUT',
+                body: formData
+              });
+              const data = await res.json();
+              if (data.success) {
+                if (typeof showToast === 'function') showToast('Image replaced successfully', 'success');
+                if (opts.onRefresh) opts.onRefresh();
+              } else {
+                if (typeof showToast === 'function') showToast(data.error || 'Replacement failed', 'error');
+              }
+            } catch (err) {
+              if (typeof showToast === 'function') showToast(err.message, 'error');
+            }
+          });
+          fileInput.click();
+        });
+      });
+
       container.querySelectorAll('.media-delete-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           e.stopPropagation();

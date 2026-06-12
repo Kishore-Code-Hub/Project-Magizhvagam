@@ -1,5 +1,237 @@
 const Setting = require('../models/Setting');
 const Coupon = require('../models/Coupon');
+const SiteSettingsV4 = require('../models/SiteSettings');
+
+// Helper to synchronize flat homepage settings to SiteSettingsV4 document
+async function syncSettingsToV4(homepageSettings) {
+  try {
+    let siteSettings = await SiteSettingsV4.findOne({ _id: 'active' });
+    if (!siteSettings) {
+      siteSettings = new SiteSettingsV4({ _id: 'active' });
+    }
+
+    const v = homepageSettings;
+    if (v) {
+      // Sync meta information
+      siteSettings.meta = siteSettings.meta || {};
+      if (v.brandName) siteSettings.meta.storeName = v.brandName;
+      if (v.contactDetails) siteSettings.meta.contactAddress = v.contactDetails;
+      if (v.whatsappContact) {
+        siteSettings.meta.socialLinks = siteSettings.meta.socialLinks || {};
+        siteSettings.meta.socialLinks.whatsapp = v.whatsappContact;
+      }
+
+      siteSettings.theme = siteSettings.theme || {};
+      const theme = siteSettings.theme;
+
+      // Ensure sections are initialized
+      theme.hdr = theme.hdr || {};
+      theme.nav = theme.nav || {};
+      theme.hero = theme.hero || {};
+      theme.pc = theme.pc || {};
+      theme.pdp = theme.pdp || {};
+      theme.btn = theme.btn || {};
+      theme.cart = theme.cart || {};
+      theme.co = theme.co || {};
+      theme.ft = theme.ft || {};
+      theme.frm = theme.frm || {};
+      theme.mod = theme.mod || {};
+      theme.bdg = theme.bdg || {};
+      theme.cd = theme.cd || {};
+      theme.acc = theme.acc || {};
+      theme.st = theme.st || {};
+      theme.adm = theme.adm || {};
+
+      // Sync backgrounds
+      if (v.paletteBgMain) {
+        theme.hdr.bg = v.paletteBgMain;
+        theme.hdr.sticky_bg = v.paletteBgMain;
+        theme.cart.page_bg = v.paletteBgMain;
+        theme.co.page_bg = v.paletteBgMain;
+        theme.ft.bg = v.paletteBgMain;
+        theme.acc.page_bg = v.paletteBgMain;
+      }
+
+      // Sync surfaces/cards
+      if (v.paletteBgSurface) {
+        theme.nav.dropdown_bg = v.paletteBgSurface;
+        theme.nav.mega_bg = v.paletteBgSurface;
+        theme.nav.mobile_bg = v.paletteBgSurface;
+        theme.pc.bg = v.paletteBgSurface;
+        theme.pc.image_bg = v.paletteBgMain || v.paletteBgSurface;
+        theme.pdp.customization_panel_bg = v.paletteBgSurface;
+        theme.pdp['3d_viewer_bg'] = v.paletteBgMain || v.paletteBgSurface;
+        theme.cart.item_card_bg = v.paletteBgSurface;
+        theme.cart.summary_card_bg = v.paletteBgSurface;
+        theme.co.address_card_bg = v.paletteBgSurface;
+        theme.co.form_input_bg = v.paletteBgSurface;
+        theme.co.payment_option_bg = v.paletteBgSurface;
+        theme.co.order_summary_bg = v.paletteBgSurface;
+        theme.ft.newsletter_input_bg = v.paletteBgSurface;
+        theme.frm.input_bg = v.paletteBgSurface;
+        theme.mod.modal_bg = v.paletteBgSurface;
+        theme.mod.drawer_bg = v.paletteBgSurface;
+        theme.cd.digit_bg = v.paletteBgSurface;
+        theme.acc.order_card_bg = v.paletteBgSurface;
+        theme.acc.address_card_bg = v.paletteBgSurface;
+        theme.st.skeleton_base_color = v.paletteBgSurface;
+        theme.adm.topbar_bg = v.paletteBgSurface;
+        theme.adm.stat_card_bg = v.paletteBgSurface;
+      }
+
+      // Sync text colors
+      if (v.paletteTextMain) {
+        theme.hdr.nav_link_color = v.paletteTextMain;
+        theme.hdr.icon_color = v.paletteTextMain;
+        theme.nav.dropdown_item_color = v.paletteTextMain;
+        theme.nav.mega_heading = v.paletteTextMain;
+        theme.nav.mobile_item = v.paletteTextMain;
+        theme.hero.headline_color = v.paletteTextMain;
+        theme.pc.name_color = v.paletteTextMain;
+        theme.pdp.title_color = v.paletteTextMain;
+        theme.pdp.specs_heading_color = v.paletteTextMain;
+        theme.cart.item_name_color = v.paletteTextMain;
+        theme.cart.total_value_color = v.paletteTextMain;
+        theme.ft.heading_color = v.paletteTextMain;
+        theme.frm.input_text_color = v.paletteTextMain;
+        theme.mod.modal_title_color = v.paletteTextMain;
+        theme.cd.digit_text = v.paletteTextMain;
+        theme.st.empty_heading_color = v.paletteTextMain;
+        theme.st.error_heading_color = v.paletteTextMain;
+        theme.st.success_heading_color = v.paletteTextMain;
+        theme.adm.topbar_title_color = v.paletteTextMain;
+      }
+
+      // Sync muted text
+      if (v.paletteTextMuted) {
+        theme.nav.mega_link = v.paletteTextMuted;
+        theme.hero.subheadline_color = v.paletteTextMuted;
+        theme.pc.category_color = v.paletteTextMuted;
+        theme.pc.original_price_color = v.paletteTextMuted;
+        theme.pdp.compare_price_color = v.paletteTextMuted;
+        theme.pdp.specs_value_color = v.paletteTextMuted;
+        theme.pdp.tab_inactive_color = v.paletteTextMuted;
+        theme.cart.total_label_color = v.paletteTextMuted;
+        theme.co.form_label_color = v.paletteTextMuted;
+        theme.ft.link_color = v.paletteTextMuted;
+        theme.frm.label_color = v.paletteTextMuted;
+        theme.frm.helper_text_color = v.paletteTextMuted;
+        theme.cd.label_color = v.paletteTextMuted;
+        theme.acc.tab_inactive_color = v.paletteTextMuted;
+        theme.st.empty_text_color = v.paletteTextMuted;
+        theme.st.error_text_color = v.paletteTextMuted;
+        theme.st.success_text_color = v.paletteTextMuted;
+        theme.adm.sidebar_link_color = v.paletteTextMuted;
+      }
+
+      // Sync primary accents
+      if (v.paletteColorPrimary) {
+        theme.hdr.logo_text = v.paletteColorPrimary;
+        theme.hdr.nav_link_hover = v.paletteColorPrimary;
+        theme.hdr.nav_link_active = v.paletteColorPrimary;
+        theme.hdr.icon_hover = v.paletteColorPrimary;
+        theme.hdr.announcement_bg = v.paletteColorPrimary;
+        theme.nav.mega_accent = v.paletteColorPrimary;
+        theme.hero.cta_primary_bg = v.paletteColorPrimary;
+        theme.hero.cta_secondary_text = v.paletteColorPrimary;
+        theme.pc.current_price_color = v.paletteColorPrimary;
+        theme.pc.btn_bg = v.paletteColorPrimary;
+        theme.pc.rating_color = v.paletteColorPrimary;
+        theme.pdp.price_color = v.paletteColorPrimary;
+        theme.pdp.tab_active_color = v.paletteColorPrimary;
+        theme.pdp.tab_active_border = v.paletteColorPrimary;
+        theme.pdp['3d_viewer_controls_color'] = v.paletteColorPrimary;
+        theme.btn.primary_bg = v.paletteColorPrimary;
+        theme.btn.secondary_text = v.paletteColorPrimary;
+        theme.btn.secondary_border = v.paletteColorPrimary;
+        theme.cart.item_price_color = v.paletteColorPrimary;
+        theme.cart.coupon_btn_bg = v.paletteColorPrimary;
+        theme.cart.checkout_btn_bg = v.paletteColorPrimary;
+        theme.co.step_indicator_active = v.paletteColorPrimary;
+        theme.co.address_card_selected_border = v.paletteColorPrimary;
+        theme.co.form_input_focus_border = v.paletteColorPrimary;
+        theme.co.place_order_btn_bg = v.paletteColorPrimary;
+        theme.ft.link_hover_color = v.paletteColorPrimary;
+        theme.ft.newsletter_btn_bg = v.paletteColorPrimary;
+        theme.frm.input_focus_border = v.paletteColorPrimary;
+        theme.mod.toast_info_bg = v.paletteColorPrimary;
+        theme.bdg.new_text = v.paletteColorPrimary;
+        theme.bdg.featured_text = v.paletteColorPrimary;
+        theme.cd.separator_color = v.paletteColorPrimary;
+        theme.cd.flash_sale_accent = v.paletteColorPrimary;
+        theme.acc.tab_active_color = v.paletteColorPrimary;
+        theme.acc.tab_active_border = v.paletteColorPrimary;
+        theme.acc.address_card_selected_border = v.paletteColorPrimary;
+        theme.st.empty_cta_bg = v.paletteColorPrimary;
+        theme.st.loading_spinner_color = v.paletteColorPrimary;
+        theme.adm.sidebar_link_active_text = v.paletteColorPrimary;
+        theme.adm.toggle_active_bg = v.paletteColorPrimary;
+        theme.adm.settings_tab_active = v.paletteColorPrimary;
+      }
+
+      // Sync secondary accents
+      if (v.paletteColorSecondary) {
+        theme.hero.cta_primary_hover_bg = v.paletteColorSecondary;
+        theme.pc.btn_hover_bg = v.paletteColorSecondary;
+        theme.btn.primary_hover_bg = v.paletteColorSecondary;
+        theme.cart.checkout_btn_hover_bg = v.paletteColorSecondary;
+      }
+
+      // Sync success accents
+      if (v.paletteColorSuccess) {
+        theme.pc.stock_in_color = v.paletteColorSuccess;
+        theme.cart.coupon_success_color = v.paletteColorSuccess;
+        theme.co.step_indicator_complete = v.paletteColorSuccess;
+        theme.bdg.trending_text = v.paletteColorSuccess;
+        theme.acc.status_delivered = v.paletteColorSuccess;
+        theme.st.success_icon_color = v.paletteColorSuccess;
+      }
+
+      // Sync error accents
+      if (v.paletteColorError) {
+        theme.pc.stock_out_color = v.paletteColorError;
+        theme.pc.wishlist_icon_active = v.paletteColorError;
+        theme.btn.danger_bg = v.paletteColorError;
+        theme.cart.coupon_error_color = v.paletteColorError;
+        theme.cart.warning_banner_text = v.paletteColorError;
+        theme.co.form_input_error_border = v.paletteColorError;
+        theme.bdg.sale_text = v.paletteColorError;
+        theme.acc.status_cancelled = v.paletteColorError;
+        theme.st.error_icon_color = v.paletteColorError;
+      }
+
+      // Font Family
+      if (v.fontFamily) {
+        siteSettings.typography = siteSettings.typography || {};
+        siteSettings.typography.body = siteSettings.typography.body || {};
+        siteSettings.typography.body.family = v.fontFamily;
+        siteSettings.typography.heading = siteSettings.typography.heading || {};
+        siteSettings.typography.heading.family = v.fontFamily;
+      }
+
+      // Button Style
+      if (v.buttonStyle) {
+        siteSettings.layout = siteSettings.layout || {};
+        let r = 10;
+        if (v.buttonStyle === 'sharp') r = 0;
+        if (v.buttonStyle === 'pill') r = 30;
+        siteSettings.layout.btnRadius = r;
+        theme.btn.primary_radius = String(r);
+      }
+
+      siteSettings.theme = theme;
+      siteSettings.version = (siteSettings.version || 0) + 1;
+      siteSettings.updatedAt = new Date();
+      siteSettings.markModified('theme');
+      siteSettings.markModified('typography');
+      siteSettings.markModified('layout');
+      siteSettings.markModified('meta');
+      await siteSettings.save();
+    }
+  } catch (err) {
+    console.error('[syncSettingsToV4] Error synchronizing settings:', err.message);
+  }
+}
 
 // Default feature toggle values
 const DEFAULT_FEATURE_TOGGLES = {
@@ -132,6 +364,10 @@ exports.updateSetting = async (req, res) => {
       setting.value = value;
       setting.markModified('value');
       await setting.save();
+    }
+
+    if (req.params.key === 'homepage') {
+      await syncSettingsToV4(setting.value);
     }
 
     res.status(200).json({ success: true, message: 'Settings updated successfully!', setting: setting.value });
@@ -597,6 +833,8 @@ exports.resetSetting = async (req, res) => {
       setting.markModified('value');
       await setting.save();
     }
+
+    await syncSettingsToV4(setting.value);
 
     res.status(200).json({ success: true, message: 'Settings reset successfully', setting: setting.value });
   } catch (error) {

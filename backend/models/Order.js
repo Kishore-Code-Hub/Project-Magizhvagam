@@ -56,7 +56,6 @@ OrderSchema.pre('save', function (next) {
 });
 
 OrderSchema.index({ userId: 1 });
-OrderSchema.index({ orderId: 1 });
 OrderSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('Order', OrderSchema);

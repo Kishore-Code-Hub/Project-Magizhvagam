@@ -55,8 +55,7 @@
     if (window.MZMediaLibrary && window.MZMediaLibrary.openPicker) {
       window.MZMediaLibrary.openPicker(callback);
     } else {
-      const url = prompt('Enter image URL (use Media Library when available):');
-      if (url) callback({ url });
+      alert('Media Library is currently loading, please wait.');
     }
   }
 
@@ -77,8 +76,20 @@
             </div>
           </div>
           <div class="visual-editor-preview">
-            ${item.image ? `<img src="${item.image}" alt="Preview">` : '<div class="visual-editor-no-image">No image</div>'}
-            <button type="button" class="studio-btn studio-btn-primary ve-pick-image" data-i="${index}">Upload / Select Image</button>
+            ${item.image ? `
+              <div class="image-preview-wrapper" style="position:relative; margin-bottom:8px;">
+                <img src="${item.image}" alt="Preview" style="width:100%; max-height:120px; object-fit:cover; border-radius:8px;">
+                <div style="display:flex; gap:6px; margin-top:6px;">
+                  <button type="button" class="studio-btn studio-btn-primary ve-pick-image" data-i="${index}" style="flex:1; padding:6px 10px; font-size:11px;">Replace Image</button>
+                  <button type="button" class="studio-btn studio-btn-danger ve-remove-image" data-i="${index}" style="padding:6px 10px; font-size:11px;">Remove Image</button>
+                </div>
+              </div>
+            ` : `
+              <div class="visual-editor-no-image" style="background:var(--studio-input-bg); border:1px dashed var(--studio-border); border-radius:8px; padding:24px; color:var(--studio-text-muted); font-size:12px; margin-bottom:8px;">
+                No image selected
+              </div>
+              <button type="button" class="studio-btn studio-btn-primary ve-pick-image" data-i="${index}" style="width:100%; padding:6px 10px; font-size:11px;">Upload / Select Image</button>
+            `}
           </div>
           ${fields.map(f => `
             <div class="control-group">
@@ -137,6 +148,17 @@
             onChange(items);
             if (typeof syncLivePreview === 'function') syncLivePreview();
           });
+        });
+      });
+
+      container.querySelectorAll('.ve-remove-image').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const i = parseInt(btn.dataset.i, 10);
+          items[i].image = '';
+          markDirty();
+          render();
+          onChange(items);
+          if (typeof syncLivePreview === 'function') syncLivePreview();
         });
       });
 
@@ -382,9 +404,9 @@
       if (bgHex && textHex) {
         const ratio = window.getContrastRatio(bgHex, textHex);
         if (ratio < 4.5) {
-          showSaveStatus(false, `Save blocked: contrast ratio ${ratio.toFixed(1)}:1 is too low (minimum 4.5:1)`);
-          if (typeof showToast === 'function') showToast('Save blocked: insufficient contrast', 'error');
-          return false;
+          if (typeof showToast === 'function') {
+            showToast(`Warning: low contrast ratio (${ratio.toFixed(1)}:1). Saving anyway.`, 'warning');
+          }
         }
       }
     }

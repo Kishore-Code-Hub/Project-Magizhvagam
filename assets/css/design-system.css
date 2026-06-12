@@ -5,10 +5,20 @@
  */
 
 :root {
+  /* Core 8 Dynamic Theme Tokens */
+  --bg: var(--bg-main, #0D0A14);
+  --surface: var(--bg-surface, #1A1523);
+  --card: var(--pc-bg, var(--bg-surface, #1A1523));
+  --text-primary: var(--text-main, #F5F0E8);
+  --text-secondary: var(--text-main, #F5F0E8);
+  --text-muted: var(--text-muted, #B8B0C8);
+  --border: var(--color-border, #3A2E4A);
+  --accent: var(--color-brand-primary, #C9913D);
+
   /* Brand */
-  --color-brand-primary: var(--color-primary, #C9913D);
-  --color-brand-secondary: var(--color-secondary, #1A1523);
-  --color-brand-accent: var(--primary-gold, #C9913D);
+  --color-brand-primary: var(--accent);
+  --color-brand-secondary: var(--surface);
+  --color-brand-accent: var(--accent);
 
   /* Semantic */
   --color-success: var(--color-success, #27AE60);
@@ -17,19 +27,19 @@
   --color-info: #3498DB;
 
   /* Surface hierarchy */
-  --color-background: var(--bg-main, #0D0A14);
-  --color-surface-1: var(--bg-surface, #1A1523);
-  --color-surface-2: var(--card-bg, #1A1523);
+  --color-background: var(--bg);
+  --color-surface-1: var(--surface);
+  --color-surface-2: var(--card);
   --color-surface-3: #2A2035;
-  --color-border: var(--card-border, #3A2E4A);
+  --color-border: var(--border);
   --color-border-strong: #4A3E5A;
 
   /* Text hierarchy */
-  --color-text-primary: var(--text-main, #F5F0E8);
-  --color-text-secondary: var(--text-color, #F5F0E8);
-  --color-text-muted: var(--text-muted, #B8B0C8);
-  --color-text-inverse: #0D0A14;
-  --color-text-accent: var(--color-brand-primary);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--bg);
+  --color-text-accent: var(--accent);
 
   /* Interactive */
   --color-interactive-default: var(--color-brand-primary);

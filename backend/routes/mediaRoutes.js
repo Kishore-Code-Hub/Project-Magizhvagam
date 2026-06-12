@@ -23,6 +23,7 @@ const upload = multer({
 router.get('/', protect, adminOnly, ctrl.listMedia);
 router.get('/:id', protect, adminOnly, ctrl.getMedia);
 router.post('/upload', protect, adminOnly, upload.single('image'), ctrl.uploadMedia);
+router.put('/:id', protect, adminOnly, upload.single('image'), ctrl.replaceMedia);
 router.delete('/bulk', protect, adminOnly, ctrl.bulkDeleteMedia);
 router.delete('/:id', protect, adminOnly, ctrl.deleteMedia);
 

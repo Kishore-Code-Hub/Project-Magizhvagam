@@ -789,6 +789,9 @@ async function loadHomepageBuilderSettings() {
 
       document.getElementById('brand-name-field').value = setting.brandName || '';
       document.getElementById('logo-field').value = setting.logo || '';
+      if (typeof window.updateLogoPreview === 'function') {
+        window.updateLogoPreview(setting.logo || '');
+      }
       document.getElementById('primary-color-field').value = setting.primaryColor || '#6A0DAD';
       document.getElementById('secondary-color-field').value = setting.secondaryColor || '#FF4F81';
       document.getElementById('accent-color-field').value = setting.accentColor || '#FFD700';
@@ -844,8 +847,7 @@ async function loadHomepageBuilderSettings() {
       const textHex = document.getElementById('palette-text-main').value;
       const ratio = window.getContrastRatio(bgHex, textHex);
       if (ratio < 3.0) {
-        showToast('Save blocked: Contrast ratio is too low (< 3.0:1)!', 'error');
-        return;
+        showToast(`Warning: Contrast ratio is low (${ratio.toFixed(1)}:1). Saving anyway.`, 'warning');
       }
     }
 
