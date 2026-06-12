@@ -793,7 +793,7 @@ exports.resetSetting = async (req, res) => {
           link: '/products.html'
         },
         {
-          image: '/assets/images/default-banner.webp',
+          image: '',
           title: 'Luxury Made Memorable',
           subtitle: 'Explore Handcrafted Traditions & Modern Customs',
           link: '/products.html?category=wedding-return-gifts'
@@ -801,12 +801,12 @@ exports.resetSetting = async (req, res) => {
       ],
       promotionalBanners: [
         {
-          image: '/assets/images/default-banner.webp',
+          image: '',
           title: 'Wedding Collection - Get Flat 15% Off on Bulk Orders',
           link: '/products.html?category=wedding-return-gifts'
         },
         {
-          image: '/assets/images/default-banner.webp',
+          image: '',
           title: 'Eco-Friendly Gifts - Go Green This Festival Season',
           link: '/products.html?category=eco-friendly-gifts'
         }

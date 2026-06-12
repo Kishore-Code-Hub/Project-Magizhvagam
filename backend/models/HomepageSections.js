@@ -23,8 +23,8 @@ const DEFAULT_SECTIONS = [
     cta2Label: 'Explore Collections', cta2Link: '/products.html',
     bgType: 'gradient',
     banners: [
-      { image: '/assets/images/default-banner.webp', title: 'Welcome to Magizhvagam', subtitle: 'Curated Premium Return Gifts for Every Celebration', link: '/products.html' },
-      { image: '/assets/images/default-banner.webp', title: 'Luxury Made Memorable', subtitle: 'Explore Handcrafted Traditions & Modern Customs', link: '/products.html' }
+      { image: "", title: 'Welcome to Magizhvagam', subtitle: 'Curated Premium Return Gifts for Every Celebration', link: '/products.html' },
+      { image: "", title: 'Luxury Made Memorable', subtitle: 'Explore Handcrafted Traditions & Modern Customs', link: '/products.html' }
     ]
   }},
   { id: 'flash_sale', enabled: false, order: 2, config: { endsAt: null, products: [], urgencyBadge: 'Limited Time!' } },

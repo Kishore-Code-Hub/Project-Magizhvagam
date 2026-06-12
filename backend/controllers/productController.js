@@ -547,6 +547,32 @@ exports.deleteCategory = async (req, res) => {
   }
 };
 
+// @desc    Update a category
+// @route   PUT /api/products/categories/:id
+// @access  Private (Admin Only)
+exports.updateCategory = async (req, res) => {
+  try {
+    const { name, image } = req.body;
+    let category = await Category.findById(req.params.id);
+    if (!category) {
+      return res.status(404).json({ success: false, error: 'Category not found' });
+    }
+
+    if (name !== undefined) {
+      category.name = name;
+      category.slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+    if (image !== undefined) {
+      category.image = image;
+    }
+
+    await category.save();
+    res.status(200).json({ success: true, category });
+  } catch (error) {
+    res.status(500).json({ success: false, error: `Category update error: ${error.message}` });
+  }
+};
+
 // @desc    Duplicate a product
 // @route   POST /api/products/duplicate/:id
 // @access  Private (Admin Only)

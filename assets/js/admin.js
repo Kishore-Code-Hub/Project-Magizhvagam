@@ -784,9 +784,6 @@ async function loadHomepageBuilderSettings() {
       document.getElementById('whatsapp-contact-field').value = setting.whatsappContact || '';
 
       // Load Branding & Appearance fields
-      const bannerField = document.getElementById('announcement-banner-field');
-      if (bannerField) bannerField.value = setting.announcementBanner || '';
-
       document.getElementById('brand-name-field').value = setting.brandName || '';
       document.getElementById('logo-field').value = setting.logo || '';
       if (typeof window.updateLogoPreview === 'function') {
@@ -858,7 +855,6 @@ async function loadHomepageBuilderSettings() {
     try {
       const updatedValue = {
         whatsappContact: document.getElementById('whatsapp-contact-field').value.trim(),
-        announcementBanner: document.getElementById('announcement-banner-field')?.value.trim() || '',
         brandName: document.getElementById('brand-name-field').value.trim(),
         logo: document.getElementById('logo-field').value.trim(),
         primaryColor: document.getElementById('primary-color-field').value,

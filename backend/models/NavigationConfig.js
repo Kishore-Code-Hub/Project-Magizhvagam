@@ -46,42 +46,40 @@ const MobileNavItemSchema = new mongoose.Schema({
 }, { _id: false });
 
 const DEFAULT_DESKTOP_NAV = [
-  { id: 'nav-home', label: 'Home', url: '/', icon: 'home', order: 0, featured: false, panel: { type: 'none' } },
-  { id: 'nav-shop', label: 'Shop', url: '/products.html', icon: 'shopping-bag', order: 1, featured: true, panel: {
-    type: 'mega',
+  { id: 'nav-home', label: 'Home', url: '/index.html', icon: 'home', order: 0, featured: false, panel: { type: 'none' } },
+  { id: 'nav-categories', label: 'Categories', url: '#', icon: 'grid', order: 1, featured: true, panel: {
+    type: 'dropdown',
     columns: [
-      { heading: 'By Occasion', links: [
-        { label: 'Wedding Return Gifts', url: '/products.html?category=wedding-return-gifts', featured: true },
-        { label: 'Birthday Gifts', url: '/products.html?category=birthday-gifts', featured: false },
-        { label: 'Baby Shower', url: '/products.html?category=baby-shower', featured: false },
-        { label: 'Corporate Events', url: '/products.html?category=corporate-events', featured: false }
-      ]},
-      { heading: 'By Type', links: [
-        { label: 'Eco-Friendly', url: '/products.html?category=eco-friendly-gifts', featured: false },
-        { label: 'Engraved Items', url: '/products.html?category=engraved-items', featured: false },
-        { label: 'Gift Hampers', url: '/products.html?category=gift-hampers', featured: true },
-        { label: 'Custom Boxes', url: '/products.html?category=custom-boxes', featured: false }
-      ]},
-      { heading: 'Collections', links: [
-        { label: 'New Arrivals', url: '/products.html?sort=newest', featured: true },
-        { label: 'Best Sellers', url: '/products.html?sort=bestSelling', featured: false },
-        { label: 'Flash Deals', url: '/products.html?tag=flash', featured: false }
+      { heading: '', links: [
+        { label: 'Wedding Return Gifts', url: '/products.html?category=wedding-return-gifts' },
+        { label: 'Birthday Gifts', url: '/products.html?category=birthday-gifts' },
+        { label: 'Baby Shower Gifts', url: '/products.html?category=baby-shower-gifts' },
+        { label: 'Corporate Gifts', url: '/products.html?category=corporate-gifts' },
+        { label: 'Eco Friendly', url: '/products.html?category=eco-friendly-gifts' },
+        { label: 'Gift Hampers', url: '/products.html?category=gift-hampers' },
+        { label: 'Engraved Items', url: '/products.html?category=engraved-items' },
+        { label: 'Festival Gifts', url: '/products.html?category=festival-gifts' }
       ]}
-    ],
-    promo: { imageUrl: '/assets/images/default-banner.webp', headline: 'New Collection Available', ctaLabel: 'Shop Now', ctaUrl: '/products.html?sort=newest' }
+    ]
   }},
-  { id: 'nav-about', label: 'About', url: '/about.html', icon: 'info', order: 2, featured: false, panel: { type: 'none' } },
-  { id: 'nav-contact', label: 'Contact', url: '/contact.html', icon: 'phone', order: 3, featured: false, panel: { type: 'none' } }
+  { id: 'nav-products', label: 'Products', url: '/products.html', icon: 'shopping-bag', order: 2, featured: false, panel: { type: 'none' } },
+  { id: 'nav-about', label: 'About', url: '/about.html', icon: 'info', order: 3, featured: false, panel: { type: 'none' } },
+  { id: 'nav-contact', label: 'Contact', url: '/contact.html', icon: 'phone', order: 4, featured: false, panel: { type: 'none' } }
 ];
 
 const DEFAULT_MOBILE_NAV = [
-  { label: 'Home', url: '/', children: [] },
-  { label: 'Shop All', url: '/products.html', children: [
+  { label: 'Home', url: '/index.html', children: [] },
+  { label: 'Categories', url: '#', children: [
     { label: 'Wedding Return Gifts', url: '/products.html?category=wedding-return-gifts', children: [] },
     { label: 'Birthday Gifts', url: '/products.html?category=birthday-gifts', children: [] },
-    { label: 'Eco-Friendly', url: '/products.html?category=eco-friendly-gifts', children: [] },
-    { label: 'Gift Hampers', url: '/products.html?category=gift-hampers', children: [] }
+    { label: 'Baby Shower Gifts', url: '/products.html?category=baby-shower-gifts', children: [] },
+    { label: 'Corporate Gifts', url: '/products.html?category=corporate-gifts', children: [] },
+    { label: 'Eco Friendly', url: '/products.html?category=eco-friendly-gifts', children: [] },
+    { label: 'Gift Hampers', url: '/products.html?category=gift-hampers', children: [] },
+    { label: 'Engraved Items', url: '/products.html?category=engraved-items', children: [] },
+    { label: 'Festival Gifts', url: '/products.html?category=festival-gifts', children: [] }
   ]},
+  { label: 'Products', url: '/products.html', children: [] },
   { label: 'About', url: '/about.html', children: [] },
   { label: 'Contact', url: '/contact.html', children: [] }
 ];

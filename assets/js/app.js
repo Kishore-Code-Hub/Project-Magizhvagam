@@ -170,6 +170,9 @@ async function fetchSettings() {
       }
       if (data.success && data.setting) {
         globalSettings = data.setting;
+        try {
+          localStorage.setItem('mz-homepage-settings', JSON.stringify(globalSettings));
+        } catch (e) {}
         return globalSettings;
       }
     } catch (err) {
@@ -476,6 +479,18 @@ async function fetchFeatureToggles() {
 window.fetchFeatureToggles = fetchFeatureToggles;
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Load cached settings synchronously to prevent flash of unstyled content
+  try {
+    const cached = localStorage.getItem('mz-homepage-settings');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed) {
+        globalSettings = parsed;
+        applyAppearanceSettings(globalSettings);
+      }
+    }
+  } catch (e) {}
+
   if (isStandaloneAdminLoginPage()) {
     initIcons();
     return;
@@ -1055,16 +1070,9 @@ function injectComponents(settings, user = null) {
 
   // ── INJECT HEADER HTML ──────────────────────────────────────────────────
   if (headerEl) {
-    const announcementText = (settings && settings.announcementBanner) || '';
-    const bannerHtml = announcementText.trim() ? `
-      <div id="site-announcement-banner" class="announcement-banner">
-        <span>${announcementText}</span>
-      </div>
-    ` : '';
-
     if (window.__mzNav) {
       // Build container shell for dynamic nav rendering
-      headerEl.innerHTML = bannerHtml + `
+      headerEl.innerHTML = `
         <div class="header-container-wrapper">
           <div class="container">
             <!-- ROW 1: Contact info | Centered Logo | Utility Icons -->
@@ -1139,7 +1147,7 @@ function injectComponents(settings, user = null) {
       `;
       window.__mzNav.render(headerEl).catch(err => console.error('[app.js] Dynamic navigation render failed:', err));
     } else {
-      headerEl.innerHTML = bannerHtml + `
+      headerEl.innerHTML = `
         <div class="header-container-wrapper">
           <div class="container">
 

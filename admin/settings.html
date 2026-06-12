@@ -334,11 +334,6 @@
                 </div>
 
                 <div class="control-group">
-                  <label>Sticky Announcement Banner</label>
-                  <input type="text" id="announcement-banner-field" class="studio-input" placeholder="Banner announcement (empty to hide)">
-                </div>
-
-                <div class="control-group">
                   <label>WhatsApp Checkout Mobile</label>
                   <input type="text" id="whatsapp-contact-field" class="studio-input" placeholder="Phone Number (e.g. 919876543210)" required>
                 </div>
@@ -443,7 +438,7 @@
                       <button type="submit" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Add Category</button>
                     </form>
                     <h4 style="font-size:12px; margin-bottom:8px; font-weight:700;">Existing Categories</h4>
-                    <div id="categories-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:160px; overflow-y:auto;"></div>
+                    <div id="categories-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto;"></div>
                   </div>
                 </div>
 
@@ -890,6 +885,16 @@
       doc.documentElement.style.setProperty('--color-secondary', document.getElementById('palette-color-secondary').value);
       doc.documentElement.style.setProperty('--color-success', document.getElementById('palette-color-success').value);
       doc.documentElement.style.setProperty('--color-error', document.getElementById('palette-color-error').value);
+
+      // 8 core semantic variables sync
+      doc.documentElement.style.setProperty('--bg', document.getElementById('palette-bg-main').value);
+      doc.documentElement.style.setProperty('--surface', document.getElementById('palette-bg-surface').value);
+      doc.documentElement.style.setProperty('--card', document.getElementById('palette-bg-surface').value);
+      doc.documentElement.style.setProperty('--text-primary', document.getElementById('palette-text-main').value);
+      doc.documentElement.style.setProperty('--text-secondary', document.getElementById('palette-text-main').value);
+      doc.documentElement.style.setProperty('--text-muted', document.getElementById('palette-text-muted').value);
+      doc.documentElement.style.setProperty('--border', document.getElementById('palette-color-primary').value);
+      doc.documentElement.style.setProperty('--accent', document.getElementById('palette-color-primary').value);
       
       doc.documentElement.style.setProperty('--font-family-base', `'${document.getElementById('font-family-field').value}', 'Inter', sans-serif`);
       
@@ -1062,20 +1067,77 @@
         }
 
         container.innerHTML = data.categories.map(c => `
-          <div class="glass-panel" style="padding:8px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; font-size:11px; border:1px solid var(--studio-border);">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <img src="${c.image || '/assets/images/default-category.webp'}" style="width:24px; height:24px; object-fit:cover; border-radius:4px;" onerror="this.src='/assets/images/default-category.webp'">
-              <div>
-                <strong>${c.name}</strong>
+          <div class="glass-panel" style="padding:8px; border-radius:6px; display:flex; flex-direction:column; gap:6px; font-size:11px; border:1px solid var(--studio-border); margin-bottom:4px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <img src="${c.image || '/assets/images/default-category.webp'}" style="width:28px; height:28px; object-fit:cover; border-radius:4px;" onerror="this.src='/assets/images/default-category.webp'">
+                <div>
+                  <strong style="font-size:12px;">${c.name}</strong>
+                </div>
               </div>
+              <button onclick="deleteCategoryById('${c._id}')" style="background:transparent; cursor:pointer; border:none; padding:4px;" title="Delete Category">
+                <svg style="width:14px; height:14px; fill:#ef4444;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
+              </button>
             </div>
-            <button onclick="deleteCategoryById('${c._id}')" style="background:transparent; cursor:pointer; border:none;" title="Delete Category">
-              <svg style="width:14px; height:14px; fill:#ef4444;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
-            </button>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="studio-btn studio-btn-secondary" style="font-size:10px; padding:4px 8px; flex:1;" onclick="replaceCategoryImage('${c._id}', '${c.name.replace(/'/g, "\\'")}')">Replace Image</button>
+              <button type="button" class="studio-btn studio-btn-danger" style="font-size:10px; padding:4px 8px;" onclick="removeCategoryImage('${c._id}', '${c.name.replace(/'/g, "\\'")}')">Remove Image</button>
+            </div>
           </div>
         `).join('');
       } catch (err) {
         container.innerHTML = '<p style="color:#ef4444; font-size:11px;">Error loading categories.</p>';
+      }
+    }
+
+    async function replaceCategoryImage(id, name) {
+      if (window.MZMediaLibrary && window.MZMediaLibrary.openPicker) {
+        window.MZMediaLibrary.openPicker(async (asset) => {
+          try {
+            showToast('Updating category image...', 'info');
+            const res = await adminFetch(`/api/products/categories/${id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, image: asset.url })
+            });
+            const data = await res.json();
+            if (data.success) {
+              showToast('Category image updated successfully!', 'success');
+              loadCategoriesList();
+              // Refresh preview iframe
+              const iframe = document.getElementById('viewport-iframe');
+              if (iframe) iframe.contentWindow.location.reload();
+            } else {
+              showToast(data.error || 'Failed to update category image', 'error');
+            }
+          } catch (err) {
+            showToast('Error updating category image', 'error');
+          }
+        });
+      }
+    }
+
+    async function removeCategoryImage(id, name) {
+      if (!confirm('Are you sure you want to remove this category image?')) return;
+      try {
+        showToast('Removing category image...', 'info');
+        const res = await adminFetch(`/api/products/categories/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, image: '' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Category image removed successfully!', 'success');
+          loadCategoriesList();
+          // Refresh preview iframe
+          const iframe = document.getElementById('viewport-iframe');
+          if (iframe) iframe.contentWindow.location.reload();
+        } else {
+          showToast(data.error || 'Failed to remove category image', 'error');
+        }
+      } catch (err) {
+        showToast('Error removing category image', 'error');
       }
     }
 

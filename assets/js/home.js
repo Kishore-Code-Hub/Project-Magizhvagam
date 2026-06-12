@@ -28,14 +28,6 @@ async function loadHomepageV4Sections() {
       applyHeroSectionConfig(heroSec.config);
     }
 
-    const annSec = sections.find(s => s.id === 'announcement_bar');
-    if (annSec?.enabled && annSec.config?.message) {
-      const mount = document.getElementById('mz-announcement-bar-mount');
-      if (mount) {
-        mount.innerHTML = `<div class="announcement-banner"><span>${annSec.config.message}</span></div>`;
-        mount.style.display = '';
-      }
-    }
 
     const testSec = sections.find(s => s.id === 'testimonials');
     if (testSec?.enabled && testSec.config?.items?.length) {
@@ -160,57 +152,56 @@ async function loadHomepageData() {
 
     const flashSaleActive = (toggles && toggles.flashSaleActive === true);
     let flashEl = document.getElementById('flash-sale-timer-section');
-
+ 
     if (flashSaleActive && toggles.flashSaleTargetDate) {
       const targetDate = new Date(toggles.flashSaleTargetDate);
       const flashSaleText = toggles.flashSaleText || "Flash Sale Ending Soon!";
-
+ 
       if (!flashEl) {
         flashEl = document.createElement('div');
         flashEl.id = 'flash-sale-timer-section';
-        flashEl.className = 'container glass animated scale-in';
-        flashEl.style.cssText = 'padding: 20px 30px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, rgba(106, 13, 173, 0.1), rgba(255, 79, 129, 0.1)); border: 1px solid var(--card-border); border-radius: 16px; flex-wrap: wrap; gap: 15px;';
-
+        flashEl.className = 'container flash-sale-timer-section glass animated scale-in';
+ 
         const categoriesSec = document.getElementById('categories');
         if (categoriesSec) {
           categoriesSec.parentNode.insertBefore(flashEl, categoriesSec);
         }
       }
-
+ 
       flashEl.style.display = 'flex'; // Ensure visible
-
+ 
       const updateCountdown = () => {
         const now = new Date().getTime();
         const distance = targetDate.getTime() - now;
         if (distance < 0) {
-          flashEl.style.cssText = 'display: none !important;';
+          flashEl.style.display = 'none';
           return;
         }
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
+ 
         flashEl.innerHTML = `
-          <div style="display:flex; align-items:center; gap:12px;">
-            <span style="font-size:24px;">⚡</span>
-            <div>
-              <h4 style="font-family:'Outfit'; font-size:16px; font-weight:700; color:var(--text-color); margin:0;">${flashSaleText}</h4>
-              <p style="font-size:12px; color:var(--text-muted); margin:0;">Get flat 15% off on all eco-friendly return gifts.</p>
+          <div class="countdown-info-block">
+            <span class="countdown-icon">⚡</span>
+            <div class="countdown-text">
+              <h4 class="countdown-heading">${flashSaleText}</h4>
+              <p class="countdown-subtext">Get flat 15% off on all eco-friendly return gifts.</p>
             </div>
           </div>
-          <div style="display:flex; gap:10px; font-family:'Outfit'; font-weight:800; font-size:18px;">
-            <div style="background:var(--card-bg); padding:6px 12px; border-radius:8px; border:1px solid var(--card-border); min-width:45px; text-align:center;">${String(hours).padStart(2, '0')}h</div>
-            <div style="background:var(--card-bg); padding:6px 12px; border-radius:8px; border:1px solid var(--card-border); min-width:45px; text-align:center;">${String(minutes).padStart(2, '0')}m</div>
-            <div style="background:var(--card-bg); padding:6px 12px; border-radius:8px; border:1px solid var(--card-border); min-width:45px; text-align:center;">${String(seconds).padStart(2, '0')}s</div>
+          <div class="countdown-digits-container">
+            <div class="cd-digit-block">${String(hours).padStart(2, '0')}h</div>
+            <div class="cd-digit-block">${String(minutes).padStart(2, '0')}m</div>
+            <div class="cd-digit-block">${String(seconds).padStart(2, '0')}s</div>
           </div>
         `;
       };
-
+ 
       updateCountdown();
       const intervalId = setInterval(() => {
         const now = new Date().getTime();
         if (targetDate.getTime() - now < 0) {
-          flashEl.style.cssText = 'display: none !important;';
+          flashEl.style.display = 'none';
           clearInterval(intervalId);
         } else {
           updateCountdown();
@@ -218,7 +209,7 @@ async function loadHomepageData() {
       }, 1000);
     } else {
       if (flashEl) {
-        flashEl.style.cssText = 'display: none !important;';
+        flashEl.style.display = 'none';
       }
     }
 
@@ -272,7 +263,7 @@ function renderHeroBanners(banners) {
 
   // Use backend slides if configured, otherwise use defaults
   const pickImage = (candidate, fallback) => {
-    if (candidate && typeof candidate === 'string' && candidate.trim() && !candidate.includes('undefined')) {
+    if (candidate && typeof candidate === 'string' && candidate.trim() && !candidate.includes('undefined') && !candidate.includes('default-banner.webp')) {
       return candidate.trim();
     }
     return fallback;

@@ -151,23 +151,20 @@
       // Force navigation config lock client-side to keep layout stable and ignore legacy database overrides
       const DEFAULT_DESKTOP = [
         { id: 'nav-home', label: 'Home', url: '/index.html', icon: 'home', order: 0, featured: false, panel: { type: 'none' } },
-        { id: 'nav-categories', label: 'Categories', url: '/products.html', icon: 'grid', order: 1, featured: true, panel: {
-          type: 'mega',
+        { id: 'nav-categories', label: 'Categories', url: '#', icon: 'grid', order: 1, featured: true, panel: {
+          type: 'dropdown',
           columns: [
-            { heading: 'By Occasion', links: [
-              { label: 'Wedding Return Gifts', url: '/products.html?category=wedding-return-gifts', featured: true },
-              { label: 'Birthday Gifts', url: '/products.html?category=birthday-gifts', featured: false },
-              { label: 'Baby Shower Gifts', url: '/products.html?category=baby-shower-gifts', featured: false },
-              { label: 'Corporate Gifts', url: '/products.html?category=corporate-gifts', featured: false }
-            ]},
-            { heading: 'Collections', links: [
-              { label: 'Eco Friendly', url: '/products.html?category=eco-friendly-gifts', featured: false },
-              { label: 'Gift Hampers', url: '/products.html?category=gift-hampers', featured: true },
-              { label: 'Engraved Items', url: '/products.html?category=engraved-items', featured: false },
-              { label: 'Festival Gifts', url: '/products.html?category=festival-gifts', featured: false }
+            { links: [
+              { label: 'Wedding Return Gifts', url: '/products.html?category=wedding-return-gifts' },
+              { label: 'Birthday Gifts', url: '/products.html?category=birthday-gifts' },
+              { label: 'Baby Shower Gifts', url: '/products.html?category=baby-shower-gifts' },
+              { label: 'Corporate Gifts', url: '/products.html?category=corporate-gifts' },
+              { label: 'Eco Friendly', url: '/products.html?category=eco-friendly-gifts' },
+              { label: 'Gift Hampers', url: '/products.html?category=gift-hampers' },
+              { label: 'Engraved Items', url: '/products.html?category=engraved-items' },
+              { label: 'Festival Gifts', url: '/products.html?category=festival-gifts' }
             ]}
-          ],
-          promo: { imageUrl: '/assets/images/default-banner.webp', headline: 'Curated Milestone Gifts', ctaLabel: 'Explore All', ctaUrl: '/products.html' }
+          ]
         }},
         { id: 'nav-products', label: 'Products', url: '/products.html', icon: 'shopping-bag', order: 2, featured: false, panel: { type: 'none' } },
         { id: 'nav-about', label: 'About', url: '/about.html', icon: 'info', order: 3, featured: false, panel: { type: 'none' } },
@@ -176,7 +173,7 @@
 
       const DEFAULT_MOBILE = [
         { label: 'Home', url: '/index.html', children: [] },
-        { label: 'Categories', url: '/products.html', children: [
+        { label: 'Categories', url: '#', children: [
           { label: 'Wedding Return Gifts', url: '/products.html?category=wedding-return-gifts', children: [] },
           { label: 'Birthday Gifts', url: '/products.html?category=birthday-gifts', children: [] },
           { label: 'Baby Shower Gifts', url: '/products.html?category=baby-shower-gifts', children: [] },

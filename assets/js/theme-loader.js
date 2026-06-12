@@ -507,20 +507,30 @@
     }
   }
 
+  // Synchronously load from localStorage cache and apply to avoid paint flash
+  try {
+    const cached = localStorage.getItem('mz-theme-cache');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && parsed.data) {
+        applyTheme(parsed.data);
+      }
+    }
+  } catch (e) {}
+
   /**
    * Main execution flow
    */
   async function loadTheme() {
     try {
-      // 1. Check sessionStorage cache
+      // 1. Check localStorage cache
       const cacheKey = 'mz-theme-cache';
-      const cached = sessionStorage.getItem(cacheKey);
+      const cached = localStorage.getItem(cacheKey);
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
           if (parsed && parsed.data) {
-            applyTheme(parsed.data);
-            // Still fetch in background to check for updates
+            // Already applied synchronously above, just check for updates in background
             fetchAndUpdate(parsed.version);
             return;
           }
@@ -551,13 +561,13 @@
 
       applyTheme(data);
 
-      // Cache in sessionStorage
+      // Cache in localStorage
       try {
-        sessionStorage.setItem('mz-theme-cache', JSON.stringify({
+        localStorage.setItem('mz-theme-cache', JSON.stringify({
           version: currentVersion,
           data: data
         }));
-      } catch (e) { /* sessionStorage full, ignore */ }
+      } catch (e) { /* localStorage full, ignore */ }
     } catch (err) {
       if (cachedVersion === null) {
         console.warn('[theme-loader] API unavailable, using CSS defaults');
@@ -567,7 +577,8 @@
 
   // ─── Listen for live theme updates from Appearance Studio ─────────────────
   window.addEventListener('mz:theme-updated', function () {
-    sessionStorage.removeItem('mz-theme-cache');
+    localStorage.removeItem('mz-theme-cache');
+    localStorage.removeItem('mz-homepage-settings');
     fetchAndUpdate(null);
   });
 
@@ -577,7 +588,8 @@
   // Expose for external use
   window.__mzThemeLoader = {
     reload: function () {
-      sessionStorage.removeItem('mz-theme-cache');
+      localStorage.removeItem('mz-theme-cache');
+      localStorage.removeItem('mz-homepage-settings');
       return fetchAndUpdate(null);
     },
     getMap: function () { return SETTINGS_TO_CSS_MAP; }
