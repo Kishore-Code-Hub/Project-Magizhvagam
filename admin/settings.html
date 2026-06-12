@@ -607,6 +607,7 @@
       const l2 = getLuminance(hex2);
       return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
     }
+    window.getContrastRatio = getContrastRatio;
 
     function updateContrastLock() {
       const bgHex = document.getElementById('palette-bg-main').value;

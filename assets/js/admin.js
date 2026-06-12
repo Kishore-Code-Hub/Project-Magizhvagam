@@ -836,6 +836,18 @@ async function loadHomepageBuilderSettings() {
   // Register settings save form submit
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    // Safety Lock: validate contrast ratio before saving to prevent broken color configs
+    if (typeof window.getContrastRatio === 'function') {
+      const bgHex = document.getElementById('palette-bg-main').value;
+      const textHex = document.getElementById('palette-text-main').value;
+      const ratio = window.getContrastRatio(bgHex, textHex);
+      if (ratio < 3.0) {
+        showToast('Save blocked: Contrast ratio is too low (< 3.0:1)!', 'error');
+        return;
+      }
+    }
+
     const saveBtn = form.querySelector('button[type="submit"]');
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving Settings...';
