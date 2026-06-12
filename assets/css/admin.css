@@ -1,5 +1,14 @@
-/* Admin Panel Theme & Styling System */
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MAGIZHVAGAM V4 — Admin Panel Theme & Styling System
+   
+   ISOLATION STRATEGY:
+   Admin pages import main.css (storefront) for shared utilities like .glass,
+   .btn, .grid, etc. The storefront theme-loader.js injects :root CSS variables
+   that can break admin readability. This file overrides ALL storefront variables
+   inside .admin-layout so admin UI is NEVER affected by storefront theme changes.
+   ═══════════════════════════════════════════════════════════════════════════════ */
 
+/* ─── Admin Design Tokens ─── */
 :root {
   --adm-bg: #0F172A;
   --adm-surface: #1E293B;
@@ -11,10 +20,44 @@
   --adm-accent-hover: #0284C7;
   --adm-danger: #EF4444;
   --adm-success: #10B981;
+  --adm-warning: #F59E0B;
+  --adm-info: #3B82F6;
 }
 
-/* Base styles for admin pages */
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CRITICAL: Storefront Variable Isolation Layer
+   
+   Override every storefront variable used in admin HTML inline styles (e.g.
+   color:var(--text-color)) so they resolve to admin-safe values regardless
+   of what the theme-loader injects into :root.
+   ═══════════════════════════════════════════════════════════════════════════════ */
 .admin-layout {
+  /* Lock ALL storefront semantic variables to admin-safe values */
+  --bg-main: var(--adm-bg);
+  --bg-color: var(--adm-bg);
+  --bg-surface: var(--adm-surface);
+  --text-main: var(--adm-text);
+  --text-color: var(--adm-text);
+  --text-muted: var(--adm-text-muted);
+  --color-primary: var(--adm-accent);
+  --color-secondary: var(--adm-accent-hover);
+  --color-success: var(--adm-success);
+  --color-error: var(--adm-danger);
+  --primary-color: var(--adm-accent);
+  --primary-accent: var(--adm-accent);
+  --primary-purple: 207, 90%, 60%;
+  --primary-gold: 207, 90%, 60%;
+  --rose-pink: 207, 90%, 60%;
+  --card-bg: var(--adm-surface);
+  --card-border: var(--adm-border);
+  --gold-accent: var(--adm-accent);
+  --header-bg: var(--adm-surface);
+  --footer-bg: var(--adm-surface);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+  /* Base layout */
   display: flex;
   min-height: 100vh;
   background-color: var(--adm-bg) !important;
@@ -22,6 +65,13 @@
   font-family: 'Outfit', 'Inter', sans-serif;
 }
 
+/* Force admin body isolation when admin-layout is present */
+body:has(.admin-layout) {
+  background-color: var(--adm-bg) !important;
+  color: var(--adm-text) !important;
+}
+
+/* ─── Admin Sidebar ─── */
 .admin-sidebar {
   width: 260px;
   background-color: #0B0F19 !important;
@@ -84,6 +134,7 @@
   padding-left: 12px;
 }
 
+/* ─── Admin Main Content Area ─── */
 .admin-main {
   flex-grow: 1;
   margin-left: 260px;
@@ -102,7 +153,15 @@
   color: var(--adm-text) !important;
 }
 
-/* Dashboard Metric Cards */
+/* All paragraphs and spans inherit admin text */
+.admin-main p,
+.admin-main span,
+.admin-main label,
+.admin-main div {
+  color: inherit;
+}
+
+/* ─── Dashboard Metric Cards ─── */
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -142,7 +201,7 @@
   color: #38BDF8 !important;
 }
 
-/* Data Tables readability */
+/* ─── Data Tables readability ─── */
 .admin-table {
   width: 100%;
   border-collapse: collapse;
@@ -150,7 +209,7 @@
 }
 
 .admin-table th {
-  background-color: rgba(56, 189, 248, 0.05) !important;
+  background-color: rgba(56, 189, 248, 0.08) !important;
   padding: 14px 16px;
   font-weight: 700;
   text-align: left;
@@ -166,11 +225,26 @@
   color: var(--adm-text) !important;
 }
 
-.admin-table tr:hover {
-  background-color: rgba(255, 255, 255, 0.02) !important;
+.admin-table td a {
+  color: var(--adm-accent) !important;
+  text-decoration: none;
 }
 
-/* Modal overlays */
+.admin-table td a:hover {
+  color: var(--adm-accent-hover) !important;
+  text-decoration: underline;
+}
+
+.admin-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* ─── Admin status badges (inline rendered by JS) ─── */
+.admin-layout [style*="background"][style*="border-radius"] {
+  color: inherit;
+}
+
+/* ─── Modal overlays ─── */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -197,7 +271,7 @@
   color: var(--adm-text) !important;
 }
 
-/* Forms inside admin settings & CRUD */
+/* ─── Forms inside admin settings & CRUD ─── */
 .admin-form-group {
   margin-bottom: 16px;
 }
@@ -229,7 +303,24 @@
   box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
 }
 
-/* Feature Control Panel classes */
+/* Admin override for generic .form-control class used in dashboard inline HTML */
+.admin-layout .form-control {
+  background-color: var(--adm-bg) !important;
+  color: var(--adm-text) !important;
+  border-color: var(--adm-border) !important;
+}
+
+.admin-layout .form-control:focus {
+  border-color: var(--adm-accent) !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+}
+
+/* Admin override for generic .form-group label */
+.admin-layout .form-group label {
+  color: var(--adm-text-muted) !important;
+}
+
+/* ─── Feature Control Panel ─── */
 .feature-control-panel {
   background-color: var(--adm-surface) !important;
   border: 1px solid var(--adm-border) !important;
@@ -278,7 +369,7 @@
   color: var(--adm-success) !important;
 }
 
-/* Badge styles */
+/* ─── Badge styles ─── */
 .badge {
   padding: 4px 8px;
   font-size: 11px;
@@ -286,32 +377,156 @@
   border-radius: 4px;
 }
 .badge-success {
-  background-color: rgba(16, 185, 129, 0.1);
+  background-color: rgba(16, 185, 129, 0.15);
   color: var(--adm-success) !important;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 .badge-danger {
-  background-color: rgba(239, 68, 68, 0.1);
+  background-color: rgba(239, 68, 68, 0.15);
   color: var(--adm-danger) !important;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 .badge-warning {
-  background-color: rgba(245, 158, 11, 0.1);
-  color: #F59E0B !important;
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--adm-warning) !important;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.badge-info {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--adm-info) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
-/* Glass panel elements overrides for admin */
-.admin-main .glass {
+/* ─── Glass panel overrides for admin ─── */
+.admin-main .glass,
+.admin-layout .glass {
   background-color: var(--adm-surface) !important;
   border: 1px solid var(--adm-border) !important;
   box-shadow: none !important;
+  color: var(--adm-text) !important;
 }
 
-/* Fix chart color and visibility */
+/* ─── Generic button overrides inside admin ─── */
+.admin-layout .btn {
+  color: inherit;
+}
+
+.admin-layout .btn-secondary {
+  background-color: var(--adm-surface) !important;
+  color: var(--adm-text) !important;
+  border: 1px solid var(--adm-border) !important;
+}
+
+.admin-layout .btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ─── Toggle Switch (consistent in admin) ─── */
+.admin-layout .toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.admin-layout .toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.admin-layout .toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--adm-border);
+  border-radius: 24px;
+  transition: 0.2s;
+}
+
+.admin-layout .toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+
+.admin-layout .toggle-switch input:checked + .toggle-slider {
+  background-color: var(--adm-accent);
+}
+
+.admin-layout .toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+}
+
+/* ─── Admin page links ─── */
+.admin-layout a {
+  color: var(--adm-accent);
+}
+
+.admin-layout a:hover {
+  color: var(--adm-accent-hover);
+}
+
+/* ─── Chart visibility ─── */
 #dashboard-chart-box svg text {
   fill: var(--adm-text) !important;
 }
 #dashboard-chart-box svg line {
   stroke: var(--adm-border) !important;
+}
+
+/* ─── Admin Table Responsive Wrapper ─── */
+.admin-layout .table-responsive {
+  overflow-x: auto;
+}
+
+/* ─── Admin Grid utilities ─── */
+.admin-layout .grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+@media (max-width: 900px) {
+  .admin-layout .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Select dropdowns inside admin ─── */
+.admin-layout select {
+  background-color: var(--adm-bg) !important;
+  color: var(--adm-text) !important;
+  border: 1px solid var(--adm-border) !important;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+/* ─── Textarea inside admin ─── */
+.admin-layout textarea {
+  background-color: var(--adm-bg) !important;
+  color: var(--adm-text) !important;
+  border: 1px solid var(--adm-border) !important;
+  border-radius: 8px;
+}
+
+/* ─── Input fields inside admin (global) ─── */
+.admin-layout input[type="text"],
+.admin-layout input[type="email"],
+.admin-layout input[type="number"],
+.admin-layout input[type="password"],
+.admin-layout input[type="search"],
+.admin-layout input[type="url"],
+.admin-layout input[type="tel"],
+.admin-layout input[type="datetime-local"] {
+  background-color: var(--adm-bg) !important;
+  color: var(--adm-text) !important;
+  border: 1px solid var(--adm-border) !important;
 }
