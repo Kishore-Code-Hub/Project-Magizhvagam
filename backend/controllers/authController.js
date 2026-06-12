@@ -778,46 +778,9 @@ exports.handleLocalRegister = async (req, res) => {
     // Send Verification Email
     await sendVerificationEmail(emailStr, verificationToken);
 
-    // Automatically log user in: generate tokens & set cookies
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    user.refreshToken = refreshToken;
-    await user.save();
-
-    res.cookie('admin_accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000 // 15 minutes
-    });
-
-    res.cookie('admin_refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
-
-    await logActivity(req, 'login_success', `Logged in on registration as: ${user.role}`);
-
     res.status(201).json({
       success: true,
-      message: 'Registration successful! Verification email has been sent. You have been logged in.',
-      accessToken,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        emailVerified: user.emailVerified,
-        addresses: user.addresses,
-        address1: user.address1,
-        city: user.city,
-        state: user.state,
-        pincode: user.pincode
-      }
+      message: 'Registration successful! A verification email has been sent to your email address. Please verify your email before logging in.'
     });
   } catch (error) {
     res.status(500).json({ success: false, error: `Registration error: ${error.message}` });
@@ -872,6 +835,15 @@ exports.handleLocalLogin = async (req, res) => {
       return res.status(403).json({
         success: false,
         error: 'Administrator accounts must sign in at /admin/login'
+      });
+    }
+
+    // Enforce email verification check for customers
+    if (user.role === 'customer' && !user.emailVerified) {
+      return res.status(403).json({
+        success: false,
+        emailVerified: false,
+        error: 'Please verify your email address to proceed. Check your inbox for the verification link.'
       });
     }
 

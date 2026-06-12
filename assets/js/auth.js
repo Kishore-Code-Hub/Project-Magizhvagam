@@ -72,27 +72,38 @@ async function handleRegister(name, email, phone, password, address1, pincode, c
     const data = await res.json();
     if (!data.success) {
       showToast(data.error || 'Registration failed', 'error');
+      // Unlock inputs
+      ['name', 'email', 'phone', 'password', 'confirm-password', 'address1', 'pincode', 'city', 'state'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = false;
+      });
+      const submitBtn = document.querySelector('#register-form button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+      }
       return false;
     }
 
-    if (typeof window.setSessionUser === 'function') {
-      window.setSessionUser(data.user);
-    }
-
-    if (data.user && data.user.role === 'customer' && typeof window.mergeCartAndWishlistAfterLogin === 'function') {
-      await window.mergeCartAndWishlistAfterLogin();
-    }
-
-    showToast('Account created and logged in successfully!', 'success');
+    showToast('Registration successful! Please check your email to verify your account.', 'success');
     setTimeout(() => {
-      if (typeof window.setSessionUser === 'function') {
-        window.setSessionUser(data.user);
-      }
-      window.location.replace('/profile.html');
-    }, 1000);
+      window.location.replace('/login.html?registered=true');
+    }, 2000);
     return true;
   } catch (error) {
     showToast('Connection error during registration', 'error');
+    // Unlock inputs
+    ['name', 'email', 'phone', 'password', 'confirm-password', 'address1', 'pincode', 'city', 'state'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = false;
+    });
+    const submitBtn = document.querySelector('#register-form button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.style.opacity = '1';
+      submitBtn.style.cursor = 'pointer';
+    }
     return false;
   }
 }

@@ -231,16 +231,24 @@ async function loadHomepageData() {
       };
  
       updateCountdown();
-      const intervalId = setInterval(() => {
+      if (window.mzHomepageCountdownInterval) {
+        clearInterval(window.mzHomepageCountdownInterval);
+      }
+      window.mzHomepageCountdownInterval = setInterval(() => {
         const now = new Date().getTime();
         if (targetDate.getTime() - now < 0) {
           flashEl.style.display = 'none';
-          clearInterval(intervalId);
+          clearInterval(window.mzHomepageCountdownInterval);
+          window.mzHomepageCountdownInterval = null;
         } else {
           updateCountdown();
         }
       }, 1000);
     } else {
+      if (window.mzHomepageCountdownInterval) {
+        clearInterval(window.mzHomepageCountdownInterval);
+        window.mzHomepageCountdownInterval = null;
+      }
       if (flashEl) {
         flashEl.style.display = 'none';
       }
@@ -306,7 +314,6 @@ function renderHeroBanners(banners) {
   // Slider state
   let currentSlide = 0;
   const slideEls = Array.from(container.querySelectorAll('.hero-slide'));
-  let sliderTimer = null;
 
   const showSlide = (idx) => {
     slideEls.forEach((el, i) => {
@@ -323,7 +330,7 @@ function renderHeroBanners(banners) {
   const startSlider = () => {
     stopSlider();
     if (slideEls.length <= 1) return; // No rotation if only one slide
-    sliderTimer = setInterval(() => {
+    window.mzHeroSliderTimer = setInterval(() => {
       const next = (currentSlide + 1) % slideEls.length;
       showSlide(next);
       currentSlide = next;
@@ -331,9 +338,9 @@ function renderHeroBanners(banners) {
   };
 
   const stopSlider = () => {
-    if (sliderTimer) {
-      clearInterval(sliderTimer);
-      sliderTimer = null;
+    if (window.mzHeroSliderTimer) {
+      clearInterval(window.mzHeroSliderTimer);
+      window.mzHeroSliderTimer = null;
     }
   };
 

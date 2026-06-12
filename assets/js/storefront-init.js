@@ -17,6 +17,7 @@
       ticking = true;
       requestAnimationFrame(() => {
         const y = window.scrollY || 0;
+        header.classList.toggle('scrolled', y > 30);
         header.classList.toggle('header-scrolled', y > 80);
         header.classList.toggle('header-compact', y > 200);
         ticking = false;

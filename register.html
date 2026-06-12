@@ -114,17 +114,7 @@
           <input type="text" id="state" class="form-control" placeholder="State" required>
         </div>
 
-        <div id="otp-group" class="otp-verification-card">
-          <div class="otp-card-header">
-            <div class="otp-shield-icon">🔐</div>
-            <div>
-              <div class="otp-card-title">Phone Verification</div>
-              <div class="otp-card-subtitle">Enter the 4-digit code sent to your phone</div>
-            </div>
-          </div>
-          <input type="text" id="otp" class="otp-input-field" placeholder="• • • •" maxlength="4" inputmode="numeric" autocomplete="one-time-code">
-          <button type="button" id="verify-otp-btn" class="otp-verify-btn">Verify OTP & Create Account</button>
-        </div>
+
 
         <button type="submit" class="btn btn-primary"
           style="width: 100%; margin-top: 10px; border-radius: 8px;">Register</button>
@@ -273,47 +263,22 @@
         return;
       }
 
-      if (!otpSent) {
-        // Lock form inputs
-        ['name', 'email', 'phone', 'password', 'confirm-password', 'address1', 'pincode', 'city', 'state'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.disabled = true;
-        });
-        
-        // Disable main Register submit button
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.style.opacity = '0.6';
-          submitBtn.style.cursor = 'not-allowed';
-        }
-
-        // Show OTP entry group with animation
-        document.getElementById('otp-group').classList.add('visible');
-        showToast('Simulated OTP sent to your phone! Use 1234 to verify.', 'success');
-        otpSent = true;
+      // Lock form inputs
+      ['name', 'email', 'phone', 'password', 'confirm-password', 'address1', 'pincode', 'city', 'state'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = true;
+      });
+      
+      // Disable main Register submit button
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+        submitBtn.style.cursor = 'not-allowed';
       }
-    });
 
-    document.getElementById('verify-otp-btn').addEventListener('click', async () => {
-      const otpVal = document.getElementById('otp').value.trim();
-      if (otpVal === '1234') {
-        showToast('OTP verified successfully! Creating account and sending email...', 'success');
-        
-        // Fetch values
-        const name = document.getElementById('name').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-        const password = document.getElementById('password').value;
-        const address1 = document.getElementById('address1').value.trim();
-        const pincode = document.getElementById('pincode').value.trim();
-        const city = document.getElementById('city').value.trim();
-        const state = document.getElementById('state').value.trim();
-
-        await handleRegister(name, email, phone, password, address1, pincode, city, state);
-      } else {
-        showToast('Invalid OTP code. Please try again.', 'error');
-      }
+      showToast('Creating account and sending verification email...', 'info');
+      await handleRegister(name, email, phone, password, address1, pincode, city, state);
     });
   </script>
 </body>

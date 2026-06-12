@@ -1228,13 +1228,7 @@ function injectComponents(settings, user = null) {
     }
 
     // Admin storefront: no cart/wishlist controls; no warning banner
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 30) {
-        headerEl.classList.add('scrolled');
-      } else {
-        headerEl.classList.remove('scrolled');
-      }
-    }, { passive: true });
+    // Consolidated scroll listener moved to storefront-init.js to improve performance
 
     // â”€â”€ DESKTOP SEARCH EXPAND â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const searchToggleBtn = document.getElementById('search-toggle-btn');

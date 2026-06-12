@@ -58,3 +58,134 @@
     padding: 0 16px;
   }
 }
+
+/* ==========================================================================
+   MAGIZHVAGAM MOBILE RESPONSIVENESS AND HERO SECTION OVERRIDES
+   ========================================================================== */
+
+/* 1. Global Overflow Prevention */
+html, body {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* 2. Heading Scale Overrides to Prevent Text Overflow */
+@media (max-width: 768px) {
+  h1, .hero-headline, .hero-slide-title {
+    font-size: 2.2rem !important;
+    line-height: 1.2 !important;
+  }
+  h2, .section-title-center-block h2, .section-header-split-alignment h2 {
+    font-size: 1.8rem !important;
+  }
+  h3 {
+    font-size: 1.4rem !important;
+  }
+  h4 {
+    font-size: 1.2rem !important;
+  }
+  .section-title-center-block {
+    margin-bottom: 20px !important;
+  }
+}
+
+@media (max-width: 425px) {
+  h1, .hero-headline, .hero-slide-title {
+    font-size: 1.8rem !important;
+  }
+  h2, .section-title-center-block h2, .section-header-split-alignment h2 {
+    font-size: 1.45rem !important;
+  }
+  h3 {
+    font-size: 1.25rem !important;
+  }
+  h4 {
+    font-size: 1.05rem !important;
+  }
+  .hero-subtext, .hero-slide-subtitle {
+    font-size: 14px !important;
+  }
+}
+
+/* 3. Grid Adjustments for All Screen Sizes */
+@media (max-width: 1024px) {
+  .layout-grid-structure, 
+  .products-grid-matrix, 
+  #catalog-matrix, 
+  #catalog-grid, 
+  .grid-4, 
+  .grid-3, 
+  .columns-density-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+}
+
+@media (max-width: 568px) {
+  .layout-grid-structure, 
+  .products-grid-matrix, 
+  #catalog-matrix, 
+  #catalog-grid, 
+  .grid-4, 
+  .grid-3, 
+  .columns-density-3,
+  .trust-cards-density-4 {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  
+  /* Feature icons centering */
+  .feature-card-item {
+    padding: 20px !important;
+    text-align: center !important;
+  }
+}
+
+/* 4. Cart and Checkout Layout Responsiveness */
+@media (max-width: 768px) {
+  .cart-container, 
+  .checkout-layout, 
+  .profile-ready, 
+  .admin-layout {
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+  
+  .cart-summary, 
+  .filter-sidebar, 
+  .admin-sidebar, 
+  .checkout-summary-column {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .cart-items-table {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+  }
+  
+  /* Input fields padding and scaling */
+  .form-control, .footer-newsletter-input {
+    font-size: 14px !important;
+    padding: 10px 12px !important;
+  }
+}
+
+/* 5. Navigation & Footer Responsiveness */
+@media (max-width: 425px) {
+  .footer-payment-badges {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+  }
+  .header-utilities {
+    gap: 8px !important;
+  }
+  .guest-btn {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+  }
+}

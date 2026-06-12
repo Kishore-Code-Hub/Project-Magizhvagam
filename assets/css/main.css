@@ -2702,7 +2702,7 @@ h1, h2, h3, h4, h5, h6,
 .hero-content-alignment {
   max-width: 580px !important;
   flex: 1 !important;
-  z-index: 5 !important;
+  z-index: 10 !important;
 }
 
 /* Hero visual showcase container */
@@ -2710,11 +2710,12 @@ h1, h2, h3, h4, h5, h6,
   flex: 1 !important;
   display: flex !important;
   justify-content: center !important;
-  align-items: center !important;
+  align-items: flex-end !important;
   position: relative !important;
   height: 100% !important;
   width: 100% !important;
-  z-index: 4 !important;
+  z-index: 2 !important;
+  padding-bottom: 40px !important;
 }
 
 .floating-cards-wrapper {
@@ -2799,16 +2800,35 @@ h1, h2, h3, h4, h5, h6,
 
 /* Mobile responsive layout for Hero section */
 @media (max-width: 1024px) {
+  .hero-parallax-viewport {
+    height: auto !important;
+    min-height: 900px !important;
+  }
   .parallax-layer.foreground-ui.container {
     flex-direction: column !important;
-    justify-content: center !important;
-    padding-top: 100px !important;
+    justify-content: flex-start !important;
+    padding-top: var(--header-height, 100px) !important;
+    gap: 40px !important;
+    height: auto !important;
   }
   .hero-visual-showcase {
-    display: none !important; /* Hide floating showcase on tablet/mobile to avoid overlapping text */
+    display: flex !important; /* show floating cards below content */
+    align-items: center !important;
+    height: 380px !important;
+    width: 100% !important;
+    margin-top: 20px !important;
+    padding-bottom: 40px !important;
+  }
+  .floating-cards-wrapper {
+    transform: scale(0.8) !important;
+    transform-origin: center center !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
   }
   .hero-content-alignment {
     max-width: 100% !important;
+    width: 100% !important;
+    text-align: center !important;
   }
 }
 

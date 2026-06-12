@@ -103,6 +103,8 @@
   }
 
   function initMobileToggle() {
+    if (window.__mzNavToggleInitialized) return;
+    window.__mzNavToggleInitialized = true;
     document.addEventListener('click', function(e) {
       const toggle = e.target.closest('.mobile-nav-toggle');
       if (!toggle) return;
@@ -120,28 +122,7 @@
   }
 
   function initMobileDrawer() {
-    const hamburger = document.getElementById('mobile-menu-btn') || document.getElementById('hamburger-btn');
-    const drawer = document.getElementById('mobile-nav-drawer') || document.getElementById('mobile-sidebar');
-    const overlay = document.getElementById('mobile-nav-overlay') || document.getElementById('sidebar-backdrop');
-    const closeBtn = document.getElementById('mobile-nav-close') || document.getElementById('sidebar-close-btn');
-
-    if (!hamburger || !drawer) return;
-
-    function openDrawer() {
-      drawer.classList.add('open');
-      if (overlay) overlay.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeDrawer() {
-      drawer.classList.remove('open');
-      if (overlay) overlay.classList.remove('open');
-      document.body.style.overflow = '';
-    }
-
-    hamburger.addEventListener('click', openDrawer);
-    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
-    if (overlay) overlay.addEventListener('click', closeDrawer);
+    // Mobile sidebar/drawer toggle event bindings are fully managed by app.js
   }
 
   // ─── Public render function ───────────────────────────────────────────────

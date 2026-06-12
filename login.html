@@ -168,6 +168,9 @@
     if (getQueryParam('verified') === 'true') {
       showToast('Email verified successfully! You can now log in.', 'success');
     }
+    if (getQueryParam('registered') === 'true') {
+      showToast('Registration successful! Please check your email to verify your account.', 'info');
+    }
 
     // 1. Submit standard login
     document.getElementById('login-form').addEventListener('submit', async (e) => {
