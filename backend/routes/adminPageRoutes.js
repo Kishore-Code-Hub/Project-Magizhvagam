@@ -11,6 +11,7 @@ const ALLOWED_ADMIN_PAGES = new Set([
   'orders.html',
   'customers.html',
   'settings.html',
+  'media.html',
   'reports.html',
   'invoices.html'
 ]);

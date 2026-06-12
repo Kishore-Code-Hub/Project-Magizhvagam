@@ -85,7 +85,8 @@ function injectAdminSidebar() {
       <li class="${activeCls('invoices.html')}"><a href="/admin/invoices.html"><i data-lucide="file-text"></i> Invoices</a></li>
       <li class="${activeCls('customers.html')}"><a href="/admin/customers.html"><i data-lucide="users"></i> Customers</a></li>
       <li class="${activeCls('reports.html')}"><a href="/admin/reports.html"><i data-lucide="bar-chart-2"></i> Reports</a></li>
-      <li class="${activeCls('settings.html')}"><a href="/admin/settings.html"><i data-lucide="settings"></i> Site Settings</a></li>
+      <li class="${activeCls('settings.html')}"><a href="/admin/settings.html"><i data-lucide="palette"></i> Appearance Studio</a></li>
+      <li class="${activeCls('media.html')}"><a href="/admin/media.html"><i data-lucide="image"></i> Media Library</a></li>
       <li style="margin-top:40px; border-top:1px solid rgba(255,255,255,0.08); padding-top:20px;">
         <a href="#" onclick="window.handleLogout(); return false;" style="color:#ef4444;"><i data-lucide="log-out"></i> Sign Out</a>
       </li>
@@ -901,6 +902,7 @@ async function loadHomepageBuilderSettings() {
       const saveData = await saveRes.json();
       if (saveData.success) {
         showToast('Homepage settings saved and updated!', 'success');
+        if (window.MZAppearanceStudio) window.MZAppearanceStudio.markClean();
       } else {
         showToast(saveData.error || 'Failed to save', 'error');
       }

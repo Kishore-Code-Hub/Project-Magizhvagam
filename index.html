@@ -12,13 +12,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link rel="stylesheet" href="/assets/css/theme.defaults.css">
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/typography.css">
   <link rel="stylesheet" href="/assets/css/main.css">
 
   <style id="mz-theme-vars">
     /* Theme-loader.js writes dynamic database properties here at first paint */
   </style>
 
-  <!-- <script src="/assets/js/theme-loader.js"></script> -->
+  <script src="/assets/js/theme-loader.js"></script>
 </head>
 
 <body class="home-page">
@@ -26,16 +28,7 @@
   <div id="mz-announcement-bar-mount" data-mz-section="announcement_bar">
   </div>
 
-  <header id="main-header" class="glass-panel">
-    <nav class="container">
-      <a href="/">Home</a>
-      <a href="#categories">Categories</a>
-      <a href="/products.html">Products</a>
-      <a href="/wishlist.html">Wishlist</a>
-      <a href="/cart.html">Cart</a>
-      <a href="/profile.html">Account</a>
-    </nav>
-  </header>
+  <header id="main-header" class="glass-panel mz-storefront-header"></header>
 
   <section class="hero-parallax-viewport" data-mz-section="hero">
     <div class="parallax-layer bg-canvas"></div>
@@ -206,6 +199,7 @@
   <script src="/assets/js/animation-loader.js"></script>
   <script src="/assets/js/nav.js"></script>
   <script src="/assets/js/footer.js"></script>
+  <script src="/assets/js/storefront-init.js"></script>
   <script src="/assets/js/home.js"></script>
   <script src="/assets/js/app.js"></script>
 </body>

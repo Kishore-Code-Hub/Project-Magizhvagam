@@ -228,3 +228,50 @@ html[data-mz-anim="none"] * {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Scroll reveal */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity var(--duration-slow) var(--ease-luxury), transform var(--duration-slow) var(--ease-luxury);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Sticky header states */
+#main-header {
+  transition: height var(--duration-slow) var(--ease-luxury), box-shadow var(--duration-normal) var(--ease-default), backdrop-filter var(--duration-normal) var(--ease-default);
+}
+#main-header.header-scrolled {
+  backdrop-filter: blur(12px);
+}
+#main-header.header-compact {
+  box-shadow: var(--shadow-md);
+}
+
+/* Product card premium hover */
+.product-card.is-hovered,
+.pc-card.is-hovered {
+  transform: translateY(calc(-1 * var(--pc-hover-translate-y, 6px)));
+  box-shadow: var(--pc-hover-shadow, var(--shadow-md));
+}
+.product-card .product-image-wrap img,
+.pc-card img {
+  transition: transform var(--duration-slow) var(--ease-luxury);
+}
+.product-card.is-hovered .product-image-wrap img,
+.pc-card.is-hovered img {
+  transform: scale(1.06);
+}
+
+/* Testimonial cards */
+.testimonial-card blockquote {
+  font-style: italic;
+  color: var(--color-text-muted);
+  margin: 12px 0;
+  line-height: var(--leading-relaxed);
+}
+.testimonial-stars { color: var(--color-brand-primary); margin-bottom: 8px; }

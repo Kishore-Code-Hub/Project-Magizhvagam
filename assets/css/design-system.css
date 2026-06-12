@@ -1,0 +1,140 @@
+/**
+ * MAGIZHVAGAM — Design System Tokens
+ * Primitive tokens referenced by all storefront and admin surfaces.
+ * No hardcoded values in component CSS — reference these variables only.
+ */
+
+:root {
+  /* Brand */
+  --color-brand-primary: var(--color-primary, #C9913D);
+  --color-brand-secondary: var(--color-secondary, #1A1523);
+  --color-brand-accent: var(--primary-gold, #C9913D);
+
+  /* Semantic */
+  --color-success: var(--color-success, #27AE60);
+  --color-warning: #F39C12;
+  --color-danger: var(--color-error, #C0392B);
+  --color-info: #3498DB;
+
+  /* Surface hierarchy */
+  --color-background: var(--bg-main, #0D0A14);
+  --color-surface-1: var(--bg-surface, #1A1523);
+  --color-surface-2: var(--card-bg, #1A1523);
+  --color-surface-3: #2A2035;
+  --color-border: var(--card-border, #3A2E4A);
+  --color-border-strong: #4A3E5A;
+
+  /* Text hierarchy */
+  --color-text-primary: var(--text-main, #F5F0E8);
+  --color-text-secondary: var(--text-color, #F5F0E8);
+  --color-text-muted: var(--text-muted, #B8B0C8);
+  --color-text-inverse: #0D0A14;
+  --color-text-accent: var(--color-brand-primary);
+
+  /* Interactive */
+  --color-interactive-default: var(--color-brand-primary);
+  --color-interactive-hover: var(--btn-primary-hover-bg, #E0A84A);
+  --color-interactive-active: #B07A2E;
+  --color-interactive-disabled: #5A4E6A;
+  --color-interactive-focus-ring: rgba(201, 145, 61, 0.45);
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* Radius */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.18);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.22);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.28);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.35);
+  --shadow-glow: 0 0 24px rgba(201, 145, 61, 0.25);
+  --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.12);
+
+  /* Motion */
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+  --duration-slowest: 800ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-luxury: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* Z-index */
+  --z-below: -1;
+  --z-base: 0;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+
+  /* Component tokens */
+  --header-bg: var(--hdr-bg, rgba(13, 10, 20, 0.85));
+  --header-text: var(--hdr-nav-link-color, var(--color-text-primary));
+  --header-height: var(--hdr-height, 80px);
+  --header-height-scrolled: var(--hdr-sticky-height, 64px);
+  --nav-link-color: var(--hdr-nav-link-color, var(--color-text-primary));
+  --nav-link-hover-color: var(--hdr-nav-link-hover, var(--color-brand-primary));
+  --nav-mega-menu-bg: var(--nav-mega-bg, var(--color-surface-1));
+  --card-bg: var(--pc-bg, var(--color-surface-1));
+  --card-border: var(--pc-border, var(--color-border));
+  --card-shadow: var(--pc-shadow, var(--shadow-sm));
+  --card-hover-shadow: var(--pc-hover-shadow, var(--shadow-md));
+  --card-radius: var(--pc-border-radius, var(--radius-lg));
+  --btn-primary-bg: var(--btn-primary-bg, var(--color-brand-primary));
+  --btn-primary-text: var(--btn-primary-text, var(--color-text-inverse));
+  --btn-primary-hover-bg: var(--btn-primary-hover-bg, var(--color-interactive-hover));
+  --btn-primary-radius: var(--btn-primary-radius, var(--radius-md));
+  --btn-secondary-bg: var(--btn-secondary-bg, transparent);
+  --btn-secondary-text: var(--btn-secondary-text, var(--color-brand-primary));
+  --btn-secondary-border: var(--btn-secondary-border, var(--color-brand-primary));
+  --input-bg: var(--frm-input-bg, var(--color-surface-1));
+  --input-border: var(--frm-input-border, var(--color-border));
+  --input-focus-border: var(--frm-input-focus-border, var(--color-brand-primary));
+  --input-radius: var(--frm-input-border-radius, var(--radius-md));
+  --badge-sale-bg: var(--bdg-sale-bg, var(--color-danger));
+  --badge-new-bg: var(--bdg-new-bg, var(--color-brand-primary));
+  --badge-eco-bg: var(--bdg-trending-bg, var(--color-success));
+}
+
+/* Global readability — theme from Appearance Studio only */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

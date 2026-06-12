@@ -213,4 +213,506 @@ Completely remove all Google Authentication scripts, layouts, callbacks, and end
 npm test — 21/21 PASS, 0 FAIL
 node scripts/verify-admin-api.mjs — OK admin login, Reports Dashboard and Cookie authentication verified.
 ```
+
+# CRITICAL REVIEW FEEDBACK – APPEARANCE STUDIO, THEME SYSTEM & CONTENT MANAGEMENT REWORK
+
+The current implementation is partially successful but several major usability problems still exist.
+
+Do NOT continue with new features until the following issues are fixed.
+
+---
+
+# ISSUE 1 – THEME TOGGLE SYSTEM IS WRONG
+
+Current behavior:
+
+* Theme toggle exists in header.
+* Every page requires manually clicking toggle again.
+* Theme state is inconsistent while navigating.
+* Users can accidentally create unreadable pages.
+* White text becomes invisible on light pages.
+* Some pages use black text.
+* Some pages use white text.
+* Some pages use grey text.
+
+Result:
+
+The website becomes visually broken.
+
+---
+
+## REQUIRED FIX
+
+Remove the frontend theme toggle completely.
+
+The storefront should ONLY use the active theme selected inside Admin Appearance Studio.
+
+Single source of truth:
+
+Admin Settings
+→ Selected Theme
+→ Applied globally to all pages
+
+No visitor theme toggle.
+
+No dark/light switch in storefront header.
+
+No moon icon.
+
+No sun icon.
+
+No theme switching on frontend.
+
+---
+
+# ISSUE 2 – GLOBAL TEXT VISIBILITY ENGINE
+
+Current screenshots show:
+
+About page:
+
+* White text on white backgrounds
+* Headings invisible
+
+Products page:
+
+* Some labels invisible
+* Filters difficult to read
+
+Contact page:
+
+* Some text visible
+* Some text too light
+
+Required:
+
+Create a Global Visibility Engine.
+
+When a theme is saved:
+
+Automatically calculate:
+
+* Primary Text
+* Secondary Text
+* Muted Text
+* Border Color
+
+based on background luminance.
+
+Never allow:
+
+* White text on white background
+* Black text on black background
+* Grey text on grey background
+
+This must be automatic.
+
+Admin should never manually choose text colors.
+
+---
+
+# ISSUE 3 – APPEARANCE STUDIO IS TOO TECHNICAL
+
+Current issue:
+
+Appearance Studio is not beginner friendly.
+
+A normal store owner cannot customize it easily.
+
+Current UI feels like a developer panel.
+
+---
+
+## REQUIRED FIX
+
+Convert Appearance Studio into:
+
+### SIMPLE MODE
+
+Theme Presets
+
+* Deep Velvet Night
+* Royal Gold
+* Luxury Ivory
+* Emerald Premium
+* Modern Corporate
+
+User clicks preset.
+
+Entire site updates instantly.
+
+No coding required.
+
+---
+
+### ADVANCED MODE
+
+Hidden under:
+
+"Advanced Customization"
+
+Only then show:
+
+* Color controls
+* Typography controls
+* Layout controls
+
+---
+
+# ISSUE 4 – SAVE BUTTON NOT WORKING RELIABLY
+
+Current behavior:
+
+Changes appear in preview.
+
+But saving is unreliable.
+
+Users are unsure whether settings are saved.
+
+---
+
+## REQUIRED FIX
+
+After Save:
+
+Show:
+
+"Settings Saved Successfully"
+
+with timestamp.
+
+Example:
+
+Saved at:
+12:43 PM
+
+Also:
+
+Auto refresh preview after save.
+
+---
+
+# ISSUE 5 – REMOVE JSON EDITING FOR BANNERS
+
+Current system:
+
+Hero Banner JSON
+
+Promo Cards JSON
+
+This is unacceptable for non-technical users.
+
+Store owners should never edit JSON.
+
+---
+
+## REQUIRED FIX
+
+Replace ALL JSON textareas with visual managers.
+
+---
+
+### Hero Banner Manager
+
+Show:
+
+Current Banner Image
+
+Upload Button
+
+Banner Title
+
+Banner Subtitle
+
+Button Text
+
+Button Link
+
+Save
+
+Add Banner
+
+Delete Banner
+
+Drag to Reorder
+
+---
+
+### Promo Card Manager
+
+Show cards visually.
+
+Each card contains:
+
+Image Upload
+
+Title
+
+Description
+
+Target Category
+
+Save
+
+Delete
+
+Add New Card
+
+No JSON editing.
+
+---
+
+# ISSUE 6 – IMAGE UPLOAD SYSTEM
+
+Current issue:
+
+Need to manually paste image paths.
+
+Example:
+
+/assets/images/banner.jpg
+
+This is not user friendly.
+
+---
+
+## REQUIRED FIX
+
+Upload directly from admin panel.
+
+Process:
+
+Choose Image
+
+Upload
+
+Store inside backend uploads directory
+
+Generate URL automatically
+
+Assign URL automatically
+
+Preview instantly
+
+Save automatically
+
+No manual path entry.
+
+---
+
+# ISSUE 7 – CATEGORY MANAGEMENT IMPROVEMENT
+
+Current categories should be manageable visually.
+
+Allow:
+
+Add Category
+
+Edit Category
+
+Delete Category
+
+Upload Category Image
+
+Category Description
+
+Category Slug
+
+Display Order
+
+Enable / Disable
+
+No manual JSON.
+
+---
+
+# ISSUE 8 – APPEARANCE STUDIO LIVE PREVIEW IMPROVEMENT
+
+Current iframe preview is too small.
+
+Difficult to judge design.
+
+Required:
+
+Desktop Preview
+
+Tablet Preview
+
+Mobile Preview
+
+Fullscreen Preview
+
+Open Preview in New Tab
+
+Refresh Preview
+
+Reset Preview
+
+---
+
+# ISSUE 9 – HOME PAGE CONTENT MANAGEMENT
+
+Current homepage elements are difficult to manage.
+
+Create visual sections:
+
+Hero Section
+
+Promo Cards
+
+Categories
+
+Featured Products
+
+Testimonials
+
+Footer
+
+Each section should have:
+
+Edit
+
+Hide
+
+Show
+
+Reorder
+
+Preview
+
+without touching JSON.
+
+---
+
+# ISSUE 10 – THEME SYSTEM RESTRUCTURE
+
+Separate themes completely.
+
+Storefront Theme
+
+Admin Theme
+
+Changing storefront theme must NEVER affect:
+
+Admin Dashboard
+
+Products Table
+
+Orders Table
+
+Reports
+
+Customers
+
+Settings
+
+Admin must always remain readable.
+
+---
+
+# ISSUE 11 – FINAL UX GOAL
+
+The Appearance Studio should feel closer to:
+
+Shopify Theme Editor
+
+WordPress Customizer
+
+Wix Editor
+
+and NOT like a developer configuration panel.
+
+A non-technical business owner should be able to:
+
+* Change theme
+* Upload banners
+* Upload category images
+* Manage homepage sections
+* Save changes
+
+without seeing JSON, CSS variables, image paths, or code.
+
+---
+
+# IMPLEMENTATION ORDER
+
+Phase 1
+
+* Remove storefront theme toggle
+* Fix global text visibility engine
+
+Phase 2
+
+* Fix save functionality
+
+Phase 3
+
+* Separate storefront theme from admin theme
+
+Phase 4
+
+* Replace JSON editors with visual managers
+
+Phase 5
+
+* Implement direct image upload system
+
+Phase 6
+
+* Improve category manager
+
+Phase 7
+
+* Improve homepage section editor
+
+Phase 8
+
+* Improve live preview experience
+
+Only after all above are completed should any additional design enhancements be implemented.
+
 All automated tests and admin login validations pass successfully.
+
+---
+
+## Update: Enterprise Redesign Phase Execution (2026-06-12)
+
+### Scope
+Full redesign per `redesign plan.txt`: design system, media library, Appearance Studio visual editors, storefront theme unification, V4 homepage wiring, animations, and site-wide theme-loader activation.
+
+### Files Created
+
+| File | Purpose |
+|------|---------|
+| `assets/css/design-system.css` | Primitive design tokens (color, spacing, motion, z-index, components) |
+| `assets/css/typography.css` | Cormorant Garamond + DM Sans + JetBrains Mono typography scale |
+| `assets/js/contrast-engine.js` | WCAG contrast validation and auto text pairing |
+| `assets/js/media-library.js` | Media picker modal + admin library UI |
+| `assets/js/appearance-studio.js` | Visual hero/promo/testimonial editors, section manager, V4 save sync |
+| `assets/js/storefront-init.js` | Header scroll, scroll reveal, card hover micro-interactions |
+| `backend/models/MediaAsset.js` | Media metadata collection |
+| `backend/controllers/mediaController.js` | Upload, list, search, delete media |
+| `backend/routes/mediaRoutes.js` | `/api/media/*` admin-protected routes |
+| `admin/media.html` | Media Library admin page |
+
+### Files Modified
+
+| File | Change Summary |
+|------|---------------|
+| `backend/server.js` | Mounted `/api/media` routes |
+| `backend/routes/adminPageRoutes.js` | Whitelisted `media.html` |
+| `assets/js/app.js` | Removed storefront dark/light theme toggle |
+| `assets/js/theme-loader.js` | Theme from Appearance Studio only (removed localStorage toggle) |
+| `assets/js/home.js` | V4 homepage section renderer (hero, testimonials, newsletter, section visibility) |
+| `assets/js/admin.js` | Sidebar: Appearance Studio + Media Library links; save clean state |
+| `admin/settings.html` | JSON editors replaced with visual managers; appearance-studio scripts |
+| `assets/css/appearance-studio.css` | Visual editor + media library styles |
+| `assets/css/animations.css` | Scroll reveal, header scroll states, card hover |
+| All storefront HTML pages | theme-loader, design-system, typography, nav/footer/storefront-init scripts |
+| `index.html` | Dynamic header mount, theme-loader enabled |
+| `about.html` | Fixed heading contrast (removed invalid hsl var) |
+
+### Verification Results
+```
+npm test — 21/21 PASS, 0 FAIL
+```

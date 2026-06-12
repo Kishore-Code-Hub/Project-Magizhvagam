@@ -1,0 +1,1431 @@
+# MAGIZHVAGAM — MASTER REDESIGN PROMPT FOR CLAUDE IN CURSOR
+## Version 2.0 | Enterprise-Grade | Phase-Locked Architecture
+
+---
+
+═══════════════════════════════════════════════
+CRITICAL REDESIGN OBJECTIVES
+═══════════════════════════════════════════════
+
+The current implementation has several major usability problems that must be solved during the redesign.
+
+1. REMOVE GLOBAL DARK/LIGHT TOGGLE
+- Remove storefront theme toggle completely.
+- Users should never have to switch themes manually.
+- Theme presets are controlled only by Admin Appearance Studio.
+- Theme must remain consistent across all pages automatically.
+
+2. FIX TEXT VISIBILITY ISSUES
+- Current implementation causes white text on white backgrounds and dark text on dark backgrounds.
+- Implement automatic contrast protection across all pages.
+- Every page must remain readable regardless of selected theme preset.
+- Admin cannot save invalid theme combinations.
+
+3. REBUILD APPEARANCE STUDIO
+Current appearance studio is difficult to use.
+
+Replace JSON editing with visual controls.
+
+Required:
+
+- Upload image button
+- Image preview
+- Drag and drop uploads
+- Replace image button
+- Remove image button
+- Live preview
+- No JSON editing for banners
+- No JSON editing for promo cards
+- No JSON editing for category images
+
+Everything must be editable visually.
+
+4. MEDIA STORAGE REQUIREMENT
+All uploaded images must:
+
+- Upload to backend storage
+- Save file metadata in database
+- Be selectable from media library
+- Be reusable throughout the website
+- Never require manual path entry
+
+5. SAVE FUNCTION RELIABILITY
+Appearance Studio currently fails to save changes reliably.
+
+Requirements:
+
+- Save button always shows success/failure state
+- Validation errors displayed clearly
+- Unsaved changes warning
+- Auto-save optional
+- Restore Last Saved works correctly
+- Preview works before save
+
+═══════════════════════════════════════════════
+APPEARANCE STUDIO VISION
+═══════════════════════════════════════════════
+
+The Appearance Studio should feel like:
+
+- Shopify Theme Editor
+- Framer
+- Webflow Designer
+
+NOT like:
+
+- CMS JSON editor
+- Developer configuration panel
+- Raw settings page
+
+The business owner should be able to manage the entire storefront without touching JSON, HTML, CSS, JS, or file paths.
+
+Every editable website section should provide visual controls.
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║         MAGIZHVAGAM — SYSTEMATIC REDESIGN MASTER PROMPT          ║
+║   Senior Architect + Lead Designer + Full Stack Engineer Mode    ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## ROLE & IDENTITY
+
+You are operating as a unified team of senior specialists:
+
+- **Senior Solution Architect** — You own the system design, scalability decisions, and technical integrity. Nothing breaks under your watch.
+- **Lead UI/UX Designer** — You design with luxury boutique sensibility. Your references are Apple, Forest Essentials, Tata Cliq Luxury, and Shopify premium themes. You do not produce template-looking designs.
+- **Shopify Theme Engineer** — You understand what makes a storefront feel premium: micro-interactions, animation choreography, card design, and typography hierarchy.
+- **Full Stack Developer** — You write production-ready, maintainable code. You refactor carefully. You never leave broken imports, dead routes, or missing assets behind.
+- **E-Commerce Specialist** — You understand gift-buying psychology, return gift verticals, conversion flows, and trust-building UI patterns.
+
+You do not act as just one of these roles. You synthesize all five simultaneously in every decision.
+
+---
+
+## THE PRIME DIRECTIVE
+
+**DO NOT write a single line of implementation code until you have:**
+1. Completed full project analysis (Phase 0)
+2. Generated the redesign report
+3. Generated the migration plan
+4. Received explicit approval to begin implementation
+
+Every phase has a **GATE**. You stop at the gate, present your plan, and wait for "APPROVED — proceed to implementation."
+
+---
+
+## PROJECT CONTEXT
+
+**Project Name:** Magizhvagam
+**Type:** Premium Return Gift E-Commerce Platform
+**Market:** India (Tamil Nadu focus, national reach)
+**Language:** English primary, Tamil secondary
+
+**Product Categories:**
+- Wedding Return Gifts
+- Birthday Return Gifts
+- Baby Shower Gifts
+- Corporate Gifts
+- Festival Gifts (Diwali, Pongal, Ugadi, etc.)
+- Eco-Friendly Gifts
+- Personalized Gifts
+
+**Brand Personality:**
+- Premium, warm, celebratory
+- Rooted in Indian tradition with modern luxury execution
+- Trustworthy, curated, artisanal
+
+**Target Aesthetic:**
+The website must feel like a deliberate fusion of:
+- **Shopify Premium Themes** — Clean product-first layouts, smooth cart UX
+- **Apple.com** — Typography discipline, whitespace mastery, scroll storytelling
+- **Forest Essentials** — Warm luxury, rich imagery, cultural authenticity
+- **Tata Cliq Luxury** — Premium positioning, editorial product cards
+- **Luxury Boutique E-Commerce** — Tactile design language, considered interactions
+
+**This is NOT a generic e-commerce site.** Every design decision must reflect the premium return gift vertical.
+
+---
+
+## ABSOLUTE CONSTRAINTS — NEVER VIOLATE
+
+```
+🔴 NEVER break the database schema
+🔴 NEVER break existing API routes
+🔴 NEVER break authentication/session logic
+🔴 NEVER delete or overwrite existing product/category/order data
+🔴 NEVER rename backend route handlers without updating all callers
+🔴 NEVER implement two phases simultaneously
+🔴 NEVER skip the analysis step of any phase
+🔴 NEVER assume — always read the actual file before modifying it
+```
+
+---
+
+## PHASE STRUCTURE OVERVIEW
+
+```
+Phase 0  → Project Audit & Analysis Report        [ANALYSIS ONLY]
+Phase 1  → Design System & Token Architecture     [PLAN + APPROVAL]
+Phase 2  → Storefront — Header, Nav, Hero         [IMPLEMENT]
+Phase 3  → Storefront — Category, Products, Footer [IMPLEMENT]
+Phase 4  → Product Listing Page                   [IMPLEMENT]
+Phase 5  → Product Detail Page                    [IMPLEMENT]
+Phase 6  → About & Contact Pages                  [IMPLEMENT]
+Phase 7  → Cart, Checkout, Account Pages          [IMPLEMENT]
+Phase 8  → Admin Panel — Dashboard & Sidebar      [IMPLEMENT]
+Phase 9  → Admin Panel — Products, Orders, Customers [IMPLEMENT]
+Phase 10 → Appearance Studio (Theme Editor)       [IMPLEMENT]
+Phase 11 → Media Library                          [IMPLEMENT]
+Phase 12 → Animation Layer                        [IMPLEMENT]
+Phase 13 → Responsive Audit & Fixes               [IMPLEMENT]
+Phase 14 → Performance Optimization               [IMPLEMENT]
+```
+
+
+Recommended order:
+
+Phase 0 → Audit
+Phase 1 → Design System
+Phase 2 → Media Library
+Phase 3 → Appearance Studio
+Phase 4 → Storefront Header & Hero
+Phase 5 → Homepage Sections
+Phase 6 → Product Listing
+Phase 7 → Product Detail
+Phase 8 → About & Contact
+Phase 9 → Cart & Account
+Phase 10 → Admin Dashboard
+Phase 11 → Admin Products/Orders
+Phase 12 → Animations
+Phase 13 → Responsive
+Phase 14 → Performance
+
+Each phase follows this exact micro-process:
+```
+① Read & analyze current code
+② Identify problems in current implementation
+③ Define what will change (files affected, components changed)
+④ Show implementation plan with pseudocode/wireframe
+⑤ GATE — wait for approval
+⑥ Implement only this phase
+⑦ Verify no regressions
+```
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 0 — PROJECT AUDIT (START HERE)
+## ═══════════════════════════════════════════
+
+**Do this first. No exceptions.**
+
+Scan every file in the project and produce a structured audit report with the following sections:
+
+### 0.1 — Folder Structure Map
+Document the complete directory tree. For each major directory, explain:
+- What it contains
+- What it's responsible for
+- Any naming inconsistencies or structural problems
+
+### 0.2 — Frontend Inventory
+List every frontend file:
+- HTML pages (route, purpose, current state)
+- CSS files (scope, methodology used, estimated LOC)
+- JavaScript files (purpose, dependencies, bundled or not)
+- Template files (if using a templating engine)
+- Assets (images, fonts, icons — organized or scattered?)
+
+### 0.3 — Backend Inventory
+List every backend file:
+- Entry point(s)
+- Route files and their endpoints
+- Middleware
+- Controllers / handlers
+- Models / schemas
+- Utilities / helpers
+- Config files
+- Authentication logic (strategy, session vs JWT, etc.)
+
+### 0.4 — Database Analysis
+- Database type (MongoDB/PostgreSQL/MySQL/etc.)
+- Schema for each collection/table
+- Relationships between entities
+- Indexes in use
+- Any data integrity risks
+
+### 0.5 — API Route Map
+Generate a full API map in this format:
+```
+METHOD  /route/path         → handler_function()     [Auth Required: Y/N]
+```
+Include every route. Flag any undocumented, duplicate, or broken routes.
+
+### 0.6 — Authentication Analysis
+- Auth strategy and library
+- Protected vs public routes
+- Session/token storage
+- Admin vs customer roles
+- Any security gaps
+
+### 0.7 — Admin Panel Analysis
+- Admin pages and their functions
+- Data flows (how admin actions affect the database)
+- Current UX problems in admin
+- Any hardcoded values or manual hacks in admin
+
+### 0.8 — Current Problem Report
+Produce a structured problem list across these dimensions:
+
+**UI Problems** — Visual inconsistencies, bad typography, poor color use, outdated aesthetics
+**UX Problems** — Friction points, missing affordances, confusing flows, broken interactions
+**Performance Problems** — Unoptimized images, render-blocking scripts, no lazy loading, heavy bundles
+**Mobile Problems** — Breakpoint failures, touch target sizes, overflow issues
+**Accessibility Problems** — Missing alt text, contrast failures, no keyboard navigation, unlabeled forms
+**Code Quality Problems** — Inline styles, magic numbers, duplicated logic, dead code
+**Admin Problems** — Manual workarounds, JSON editing, limited controls, poor feedback
+**Architecture Problems** — Tight coupling, missing abstractions, scalability blockers
+
+### 0.9 — Risk Assessment
+Flag anything that could break during the redesign:
+- Tightly coupled frontend/backend code
+- Hardcoded values that appear in multiple files
+- Any deprecated libraries that need replacement
+- External dependencies (payment gateways, maps, etc.)
+
+---
+
+**PHASE 0 GATE:**
+```
+Present the complete audit report.
+Do not write any new code.
+Wait for: "Phase 0 approved. Proceed to Phase 1."
+```
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 1 — DESIGN SYSTEM & TOKEN ARCHITECTURE
+## ═══════════════════════════════════════════
+
+Create a complete, standalone design system. This becomes the source of truth for all subsequent phases. Implement it as CSS custom properties (design tokens) in a single `design-system.css` file, plus a `typography.css` and `animations.css`.
+
+### 1.1 — Brand Direction Decision
+Before defining tokens, write a 3-sentence brand design brief:
+- What emotion does this site need to evoke the moment it loads?
+- What is the single most distinctive visual signature of this redesign?
+- What are we deliberately NOT doing (to avoid looking generic)?
+
+### 1.2 — Color Token System
+
+Define tokens across these exact roles. Justify each choice against the brand brief:
+
+```css
+/* BRAND */
+--color-brand-primary        /* Deep, warm signature color */
+--color-brand-secondary      /* Complementary, supporting color */
+--color-brand-accent         /* Celebratory accent — gold, saffron, or champagne */
+
+/* SEMANTIC */
+--color-success
+--color-warning
+--color-danger
+--color-info
+
+/* SURFACE HIERARCHY */
+--color-background           /* Page background */
+--color-surface-1            /* Cards, panels */
+--color-surface-2            /* Elevated cards */
+--color-surface-3            /* Tooltips, popovers */
+--color-border               /* Subtle dividers */
+--color-border-strong        /* Prominent dividers */
+
+/* TEXT HIERARCHY */
+--color-text-primary         /* Headlines, primary content */
+--color-text-secondary       /* Supporting text */
+--color-text-muted           /* Captions, placeholders */
+--color-text-inverse         /* Text on dark backgrounds */
+--color-text-accent          /* Links, highlights */
+
+/* INTERACTIVE */
+--color-interactive-default
+--color-interactive-hover
+--color-interactive-active
+--color-interactive-disabled
+--color-interactive-focus-ring
+```
+
+### 1.3 — Typography System
+
+Select typeface pairings that feel premium and culturally resonant for an Indian luxury brand. Do not default to the generic Playfair Display + Inter combination unless you can justify it specifically for this brief.
+
+```css
+/* TYPEFACES */
+--font-display               /* Hero headlines, brand moments */
+--font-heading               /* Section headings, card titles */
+--font-body                  /* Paragraph text */
+--font-ui                    /* Buttons, labels, navigation */
+--font-mono                  /* Prices, codes, data */
+
+/* SCALE (modular, base 16px) */
+--text-xs                    /* 12px */
+--text-sm                    /* 14px */
+--text-base                  /* 16px */
+--text-md                    /* 18px */
+--text-lg                    /* 20px */
+--text-xl                    /* 24px */
+--text-2xl                   /* 30px */
+--text-3xl                   /* 36px */
+--text-4xl                   /* 48px */
+--text-5xl                   /* 60px */
+--text-6xl                   /* 72px */
+
+/* WEIGHTS */
+--weight-light               /* 300 */
+--weight-regular             /* 400 */
+--weight-medium              /* 500 */
+--weight-semibold            /* 600 */
+--weight-bold                /* 700 */
+--weight-extrabold           /* 800 */
+
+/* LINE HEIGHTS */
+--leading-tight              /* 1.1 — display text */
+--leading-snug               /* 1.3 — headings */
+--leading-normal             /* 1.5 — body */
+--leading-relaxed            /* 1.7 — long-form */
+
+/* LETTER SPACING */
+--tracking-tighter           /* -0.04em */
+--tracking-tight             /* -0.02em */
+--tracking-normal            /* 0 */
+--tracking-wide              /* 0.04em */
+--tracking-wider             /* 0.08em */
+--tracking-widest            /* 0.16em — eyebrows, labels */
+```
+
+### 1.4 — Spacing System
+
+```css
+--space-1    /* 4px */
+--space-2    /* 8px */
+--space-3    /* 12px */
+--space-4    /* 16px */
+--space-5    /* 20px */
+--space-6    /* 24px */
+--space-8    /* 32px */
+--space-10   /* 40px */
+--space-12   /* 48px */
+--space-16   /* 64px */
+--space-20   /* 80px */
+--space-24   /* 96px */
+--space-32   /* 128px */
+```
+
+### 1.5 — Border Radius System
+
+```css
+--radius-xs    /* 2px — tags, badges */
+--radius-sm    /* 4px — inputs, small buttons */
+--radius-md    /* 8px — cards, buttons */
+--radius-lg    /* 12px — panels, modals */
+--radius-xl    /* 16px — feature cards */
+--radius-2xl   /* 24px — hero elements */
+--radius-full  /* 9999px — pills, avatars */
+```
+
+### 1.6 — Shadow System
+
+```css
+--shadow-xs      /* Subtle depth for interactive elements */
+--shadow-sm      /* Card default state */
+--shadow-md      /* Card hover state */
+--shadow-lg      /* Modals, dropdowns */
+--shadow-xl      /* Floating panels, sidebars */
+--shadow-glow    /* Brand color glow for CTAs */
+--shadow-inset   /* Input focus, pressed states */
+```
+
+### 1.7 — Motion System
+
+```css
+/* DURATIONS */
+--duration-instant   /* 100ms */
+--duration-fast      /* 150ms */
+--duration-normal    /* 250ms */
+--duration-slow      /* 400ms */
+--duration-slower    /* 600ms */
+--duration-slowest   /* 800ms */
+
+/* EASINGS */
+--ease-default       /* cubic-bezier(0.4, 0, 0.2, 1) */
+--ease-in            /* cubic-bezier(0.4, 0, 1, 1) */
+--ease-out           /* cubic-bezier(0, 0, 0.2, 1) */
+--ease-spring        /* cubic-bezier(0.34, 1.56, 0.64, 1) */
+--ease-luxury        /* cubic-bezier(0.25, 0.46, 0.45, 0.94) */
+```
+
+### 1.8 — Z-Index Scale
+
+```css
+--z-below        /* -1 */
+--z-base         /* 0 */
+--z-raised       /* 10 */
+--z-dropdown     /* 100 */
+--z-sticky       /* 200 */
+--z-overlay      /* 300 */
+--z-modal        /* 400 */
+--z-toast        /* 500 */
+--z-tooltip      /* 600 */
+```
+
+### 1.9 — Component Token Layer (on top of primitives)
+
+Define component-level tokens that reference the primitive tokens above. These make global theme swapping work in Phase 10:
+
+```css
+/* HEADER */
+--header-bg
+--header-text
+--header-height
+--header-height-scrolled
+
+/* NAVIGATION */
+--nav-link-color
+--nav-link-hover-color
+--nav-mega-menu-bg
+
+/* PRODUCT CARD */
+--card-bg
+--card-border
+--card-shadow
+--card-hover-shadow
+--card-radius
+
+/* BUTTON — PRIMARY */
+--btn-primary-bg
+--btn-primary-text
+--btn-primary-hover-bg
+--btn-primary-radius
+
+/* BUTTON — SECONDARY */
+--btn-secondary-bg
+--btn-secondary-text
+--btn-secondary-border
+
+/* FORM */
+--input-bg
+--input-border
+--input-focus-border
+--input-radius
+
+/* BADGE */
+--badge-sale-bg
+--badge-new-bg
+--badge-eco-bg
+```
+
+### 1.10 — Theme Preset Definitions
+
+Define 5 complete theme presets as token overrides. Each preset must override only component tokens, never break layout:
+
+```
+THEME 1: Deep Velvet Night
+  — Rich plum/burgundy base, champagne gold accents, cream text
+  — Mood: Opulent, intimate, wedding-ready
+  
+THEME 2: Royal Gold
+  — Warm ivory base, deep gold primary, forest green accents
+  — Mood: Regal, festive, celebration-first
+  
+THEME 3: Luxury Ivory
+  — Near-white base, warm charcoal type, dusty rose accents
+  — Mood: Clean, bridal, Forest Essentials-adjacent
+
+THEME 4: Emerald Premium
+  — Deep emerald base, warm brass accents, light mint surface
+  — Mood: Eco-conscious luxury, corporate gifting
+
+THEME 5: Modern Corporate
+  — Neutral grey base, deep navy primary, orange-amber accent
+  — Mood: Professional, B2B, trust-first
+```
+
+---
+
+**PHASE 1 GATE:**
+```
+Present:
+  - Brand direction brief (3 sentences)
+  - Complete design-system.css with all tokens
+  - Typography.css with face selections justified
+  - All 5 theme preset token overrides
+  - Visual token reference sheet (can be ASCII or described)
+
+Do not implement any HTML/component changes.
+Wait for: "Phase 1 approved. Proceed to Phase 2."
+```
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 2 — STOREFRONT: HEADER, NAV & HERO
+## ═══════════════════════════════════════════
+
+### 2.1 — Premium Sticky Header
+
+**Structure:**
+```
+[Logo]    [Search Bar]    [WhatsApp] [Wishlist] [Cart] [Account]
+```
+
+**Behaviors:**
+- On page load: Full-height header with logo at display size
+- On scroll (> 80px): Shrinks smoothly, logo scales down, height reduces
+- On scroll (> 200px): Adds backdrop blur + subtle shadow
+- Mobile: Hamburger replaces nav links, icons remain visible
+
+**Required elements:**
+- Logo (SVG or img, links to home)
+- Search: Expandable on click, shows suggestions dropdown with product thumbnails
+- WhatsApp icon (links to wa.me with pre-filled message)
+- Wishlist icon with item count badge
+- Cart icon with item count badge (mini cart drawer on click)
+- Account icon (shows dropdown: Login / Register / My Orders / Logout)
+- Promotional banner above header (dismissible, animated text scroll)
+
+**Animation spec:**
+- Scroll shrink: `transition: height var(--duration-slow) var(--ease-luxury)`
+- Badge appears: scale bounce using `--ease-spring`
+- Search expand: width animate from icon to full bar
+- Dropdown menus: fade + translateY(−8px) → translateY(0)
+
+### 2.2 — Premium Mega Menu Navigation
+
+**Top-level links:**
+```
+Home  |  Categories ▾  |  New Arrivals  |  Best Sellers  |  About  |  Contact
+```
+
+**Categories mega menu** (appears on hover/click of "Categories"):
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ✦ SHOP BY OCCASION          ✦ FEATURED COLLECTIONS             │
+│                                                                  │
+│  🌸 Wedding Return Gifts      [Editorial Image: Wedding]         │
+│  🎂 Birthday Return Gifts     [Editorial Image: Birthday]        │
+│  👶 Baby Shower Gifts         ──────────────────────────         │
+│  💼 Corporate Gifts           ✦ TRENDING NOW                     │
+│  🪔 Festival Gifts            Bestseller 1 • Bestseller 2        │
+│  🌿 Eco-Friendly Gifts        Bestseller 3 • Bestseller 4        │
+│  ✍️  Personalized Gifts                                          │
+│                                                                  │
+│  [View All Categories →]                                         │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Animation spec:**
+- Mega menu: fade-in + subtle scale(0.98 → 1.0) from top
+- Background: glass morphism (`backdrop-filter: blur(20px)`, semi-transparent surface)
+- Category links: staggered fade-up on menu open (50ms delay between items)
+- Editorial images: subtle Ken Burns effect (scale 1.0 → 1.03 over 4s loop)
+- Hover on category links: left border accent slide-in
+
+### 2.3 — Hero Section
+
+This is the brand thesis. Design it for maximum emotional impact. It must make a visitor feel they've arrived somewhere premium.
+
+**Layout concept:**
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                                                                   │
+│         [Eyebrow: "India's Premium Return Gift Platform"]        │
+│                                                                   │
+│    ╔═══════════════════════════════════════════════╗             │
+│    ║   Gift the Moment.                            ║             │
+│    ║   Remember Forever.                           ║             │
+│    ╚═══════════════════════════════════════════════╝             │
+│                                                                   │
+│    [Subheadline: Curated return gifts for every occasion...]     │
+│                                                                   │
+│    [CTA: Explore Collections]   [CTA: View Wedding Gifts]        │
+│                                                                   │
+│    ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
+│    │ Wedding  │  │ Birthday │  │Corporate │  │  Eco     │       │
+│    │  Gift    │  │  Gift    │  │  Gift    │  │  Gift    │       │
+│    └──────────┘  └──────────┘  └──────────┘  └──────────┘       │
+│                                                                   │
+│    [Social proof: ★★★★★ 2,400+ Happy Customers]                  │
+│                                                                   │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+**Animation choreography (GSAP timeline):**
+```
+t=0.0s  Background image/gradient fades in
+t=0.3s  Eyebrow slides up + fades in
+t=0.6s  Headline word 1 animates in
+t=0.8s  Headline word 2 animates in
+t=1.0s  Subheadline fades up
+t=1.3s  CTA buttons appear with spring scale
+t=1.6s  Floating gift cards stagger in from bottom
+t=2.0s  Social proof fades in
+        → Ongoing: floating cards have gentle y-oscillation (CSS keyframes)
+        → Ongoing: background has slow parallax on scroll
+        → Ongoing: mouse move creates subtle card tilt (max ±8deg)
+```
+
+**Technical requirements:**
+- Use `IntersectionObserver` for below-fold sections (not hero)
+- Hero animations fire immediately on load (no scroll trigger)
+- GSAP `ScrollTrigger` for parallax background
+- Mouse parallax: `mousemove` event, smooth `lerp` interpolation
+- `prefers-reduced-motion`: all GSAP animations disabled, elements appear static
+
+---
+
+**PHASE 2 GATE:**
+```
+Present:
+  - Annotated wireframe for header (ASCII or described)
+  - Component file list that will be created/modified
+  - Animation specification table
+  - Any backend route changes required (there should be none)
+
+Wait for: "Phase 2 approved. Proceed to implementation."
+Then implement only header, nav, and hero.
+```
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 3 — STOREFRONT: SECTIONS & FOOTER
+## ═══════════════════════════════════════════
+
+### 3.1 — Featured Categories Section
+
+**Layout:** Asymmetric grid with one large featured category and smaller secondary cards.
+
+```
+┌───────────────────┬──────────┬──────────┐
+│                   │          │          │
+│  WEDDING GIFTS    │ BIRTHDAY │ ECO GIFTS│
+│  [Large Card]     │  GIFTS   │          │
+│                   ├──────────┴──────────┤
+│                   │  CORPORATE GIFTS    │
+│                   │  [Wide Card]        │
+└───────────────────┴─────────────────────┘
+```
+
+**Card spec:**
+- Full bleed image background with gradient overlay
+- Category name + product count
+- CTA: "Explore Collection →"
+- Hover: image scale 1.0 → 1.06, card lifts with deeper shadow
+- Hover: CTA arrow translates right by 4px
+
+### 3.2 — Best Sellers Strip
+
+Horizontal scrollable row of product cards.
+
+**Product Card Anatomy:**
+```
+┌────────────────────────────┐
+│   [♡ Wishlist]  [Quick View│
+│                            │
+│       PRODUCT IMAGE        │
+│       (hover: zoom)        │
+│                            │
+│  ● ● ●  (image variants)   │
+├────────────────────────────┤
+│  [NEW] [BESTSELLER]        │
+│  Product Name              │
+│  Category Name             │
+│  ★★★★☆ (42)               │
+│  ₹ 299  ~~₹ 399~~  25% off │
+│  [Add to Cart]             │
+│  ⊙ 8 left in stock         │
+└────────────────────────────┘
+```
+
+**Animation spec:**
+- Cards enter viewport: fade-up with 80ms stagger (IntersectionObserver)
+- Hover: translateY(-6px), shadow deepens
+- Wishlist click: heart fills with spring scale animation
+- Add to Cart: button state transitions (default → loading → success)
+- Image hover: scale 1.0 → 1.08 within clipped container
+
+### 3.3 — Brand Story Strip
+
+Full-width editorial section (no product grid):
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  [Left: Rich lifestyle image]    [Right: Text block]             │
+│                                   Every gift tells a story.      │
+│                                   Magizhvagam curates...         │
+│                                   [CTA: Our Story]               │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 3.4 — Personalization Callout
+
+Feature card highlighting the personalization service:
+- Icon + headline + short description
+- CTA: "Start Personalizing"
+- Background: brand accent gradient
+
+### 3.5 — Testimonials Section
+
+**Layout:** Auto-advancing carousel, 3 visible on desktop, 1 on mobile
+
+**Testimonial card:**
+```
+┌────────────────────────────────────────┐
+│  ❝                                     │
+│  We ordered 150 wedding return gifts   │
+│  from Magizhvagam. Guests loved them.  │
+│                                        │
+│  ★★★★★                                │
+│  — Priya R., Chennai Wedding           │
+│  [Photo thumbnail if available]        │
+└────────────────────────────────────────┘
+```
+
+**Animation:** Smooth CSS scroll-snap or GSAP draggable. Auto-advance every 4s with pause on hover. Dot indicators + prev/next arrows.
+
+### 3.6 — Trust Badges
+
+Icon + text row:
+- 🔒 Secure Payment
+- 🚚 Pan-India Delivery
+- 🎁 Premium Packaging
+- ♻️ Eco-Friendly Options
+- 📦 Bulk Order Discounts
+- 💬 WhatsApp Support
+
+### 3.7 — Newsletter Section
+
+Background: brand texture or subtle gradient
+- Headline + subline
+- Email input + "Subscribe" button
+- Privacy micro-copy below
+
+### 3.8 — Premium Footer
+
+**Columns:**
+```
+┌────────────┬───────────────┬─────────────┬──────────────────────┐
+│  Magizhvagam│  Shop          │  Company    │  Get in Touch        │
+│  [Logo]    │  Wedding Gifts │  About Us   │  📞 +91 XXXXXXXXXX   │
+│  [Tagline] │  Birthday      │  Blog       │  ✉ hello@...         │
+│            │  Corporate     │  Careers    │  📍 Chennai, Tamil..  │
+│  [Social   │  Eco-Friendly  │  Press      │  [WhatsApp Button]   │
+│  Icons]    │  Personalized  │  Terms      │                      │
+│            │  View All      │  Privacy    │  [Payment Icons]     │
+└────────────┴───────────────┴─────────────┴──────────────────────┘
+│  © 2025 Magizhvagam. All rights reserved.    Made with ♥ in India │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+**PHASE 3 GATE:**
+```
+Present plan → wait for approval → implement.
+```
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 4 — PRODUCT LISTING PAGE
+## ═══════════════════════════════════════════
+
+### 4.1 — Page Structure
+
+```
+[Breadcrumb]  Category: Wedding Return Gifts (142 products)
+
+[Filter Sidebar]    |    [Sort Bar]  [Grid/List Toggle]
+                         ────────────────────────────────
+                         [Product Grid: 3 columns desktop,
+ ☐ Price Range            2 tablet, 1 mobile]
+ ☐ Occasion
+ ☐ Material              [Skeleton loaders while fetching]
+ ☐ Style                 [Pagination or infinite scroll]
+ ☐ Rating
+ ☐ In Stock Only
+ 
+[Clear Filters]
+[Apply (Mobile)]
+```
+
+### 4.2 — Filter Sidebar
+- Collapsible accordion sections
+- Price range: dual-handle slider with live value display
+- Checkboxes: custom styled, animated check
+- Mobile: slides in from left as drawer, with overlay backdrop
+- Applied filters shown as dismissible chips above grid
+
+### 4.3 — Sort Bar
+- Dropdown: Featured, Newest, Price Low–High, Price High–Low, Best Rated, Most Reviewed
+- Result count: "Showing 1–24 of 142 products"
+- Grid/List toggle
+
+### 4.4 — Skeleton Loading
+Full skeleton card layout matching product card dimensions. Animated shimmer effect using CSS `@keyframes`. Load skeletons first, then replace with real data.
+
+### 4.5 — Empty State
+When no products match filters:
+- Illustration (or icon)
+- "No gifts found for this filter"
+- "Try removing some filters" with one-click clear
+
+---
+
+**PHASE 4 GATE → Plan → Approval → Implement**
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 5 — PRODUCT DETAIL PAGE
+## ═══════════════════════════════════════════
+
+### 5.1 — Page Layout
+
+```
+[Breadcrumb]
+
+[Gallery Column]              [Details Column]
+
+┌─────────────────────┐      Category Tag
+│                     │      Product Name (H1)
+│   Main Image        │      ★★★★☆ 4.2  (89 reviews) ↓
+│   (lightbox on      │      
+│    click)           │      ₹ 349  ~~₹ 499~~  30% off
+│                     │      "Limited time offer"
+└─────────────────────┘      
+                             Variant Selector (if applicable)
+[Thumbnail Strip]            Quantity Selector
+                             
+                             [Add to Cart]  [Buy Now]
+                             [♡ Add to Wishlist]
+                             
+                             [WhatsApp to Order]
+                             
+                             ✓ Premium Packaging Included
+                             ✓ Bulk Discount Available (50+ units)
+                             ✓ Estimated Delivery: 3–5 Business Days
+                             
+                             [Description Tab] [Reviews Tab] [Delivery Tab]
+                             ─────────────────────────────────────────────
+                             [Tab content]
+```
+
+### 5.2 — Image Gallery
+- Main image: clickable → full lightbox with zoom
+- Thumbnails: scroll horizontally, click to change main
+- Lightbox: keyboard navigable, ESC to close, swipe on mobile
+- Zoom: CSS `transform: scale()` on hover (desktop), pinch (mobile)
+
+### 5.3 — Tabs
+- Description: rich text from admin
+- Reviews: paginated list with rating distribution bar chart
+- Delivery & Returns: policy text
+
+### 5.4 — Related Products
+- Grid of 4 cards below the main product
+- "Customers also bought"
+
+---
+
+**PHASE 5 GATE → Plan → Approval → Implement**
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 6 — ABOUT & CONTACT PAGES
+## ═══════════════════════════════════════════
+
+### About Page — Sections:
+1. **Hero:** Full-bleed editorial image, headline overlay
+2. **Origin Story:** Split layout, image + text, scroll-triggered reveal
+3. **Mission & Vision:** Two-column card layout
+4. **Timeline:** Vertical timeline with scroll-triggered progressive reveal (company milestones)
+5. **Our Values:** Icon grid (6 values with titles and short descriptions)
+6. **The Team:** (Optional, if team data exists) Card grid
+7. **CTA:** "Start gifting with us today"
+
+### Contact Page — Sections:
+1. **Hero headline:** "We'd love to help"
+2. **Contact methods:** 3 cards — WhatsApp, Email, Phone
+3. **Contact Form:** Name, Email, Phone, Occasion, Message + Submit
+4. **Map:** Embedded Google Maps (if address available)
+5. **FAQs accordion** (if content available)
+
+---
+
+**PHASE 6 GATE → Plan → Approval → Implement**
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 7 — CART, CHECKOUT & ACCOUNT
+## ═══════════════════════════════════════════
+
+### 7.1 — Mini Cart Drawer
+Slides in from right. Contains:
+- Item list (image, name, qty stepper, remove)
+- Order summary
+- CTA: "View Cart" and "Checkout"
+
+### 7.2 — Cart Page
+- Full cart with image, name, variant, price, qty stepper, remove
+- Order summary panel (sticky on desktop)
+- Coupon code field
+- Estimated delivery calculator
+- Recommendations below
+
+### 7.3 — Checkout Flow
+Preserve existing backend. Only redesign:
+- Step indicator (1. Address → 2. Delivery → 3. Payment → 4. Confirm)
+- Form styling using design system
+- Order summary panel
+
+### 7.4 — Account Pages
+- Login / Register (tabs on same page)
+- My Orders (table with status badges, timeline on expand)
+- Profile (edit form)
+- Wishlist (grid)
+
+---
+
+**PHASE 7 GATE → Plan → Approval → Implement**
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 8 — ADMIN PANEL: SHELL & DASHBOARD
+## ═══════════════════════════════════════════
+
+**Inspiration:** Shopify Admin + Vercel Dashboard + Stripe Dashboard
+
+### 8.1 — Admin Layout Shell
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│  [☰] Magizhvagam Admin          [Search]   [🔔] [👤 Admin]    │
+├──────────────┬─────────────────────────────────────────────────┤
+│              │                                                  │
+│  📊 Dashboard│              PAGE CONTENT AREA                  │
+│  📦 Products │                                                  │
+│  🛒 Orders   │                                                  │
+│  👥 Customers│                                                  │
+│  🎨 Appearance                                                  │
+│  🖼 Media     │                                                  │
+│  ⚙️  Settings │                                                  │
+│              │                                                  │
+│  [← Collapse]│                                                  │
+└──────────────┴─────────────────────────────────────────────────┘
+```
+
+- Sidebar: collapsible to icon-only mode
+- Active state: highlighted with brand accent
+- Sections: collapsible group headers
+- Top bar: global search, notification bell, profile dropdown
+
+### 8.2 — Dashboard
+
+**Top row: 4 KPI cards**
+```
+[Total Revenue]  [Orders Today]  [Active Customers]  [Low Stock Items]
+₹ 1,24,500       23              1,847               12
++12% vs last month
+```
+
+**Charts row:**
+- Revenue over time (line chart, 7/30/90 day toggle)
+- Orders by category (donut chart)
+
+**Below charts:**
+- Recent Orders table (last 10, with status badges)
+- Low stock alerts (products with qty < threshold)
+
+---
+
+**PHASE 8 GATE → Plan → Approval → Implement**
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 9 — ADMIN PANEL: PRODUCTS, ORDERS, CUSTOMERS
+## ═══════════════════════════════════════════
+
+### 9.1 — Product Management
+
+**List view:**
+- Data table: image thumbnail, name, category, price, stock, status, actions
+- Bulk select + bulk actions (delete, publish, unpublish)
+- Search + filter bar
+- Pagination
+
+**Edit/Create view:**
+- Two-column layout: form left, preview panel right
+- Rich text editor for description
+- Image upload (drag-and-drop, multi-image, reorder)
+- Pricing fields, stock count, variants
+- SEO fields (collapsible)
+- Visibility toggle, category selector
+
+### 9.2 — Order Management
+
+**List view:**
+- Table: order ID, customer, date, total, payment status, fulfillment status
+- Status badges with color coding
+- Filter by status, date range, amount
+- Export button
+
+**Order detail view:**
+- Order timeline (placed → paid → preparing → shipped → delivered)
+- Customer info card
+- Items ordered (with images)
+- Payment details
+- Fulfillment action button
+- Notes field
+
+### 9.3 — Customer Management
+
+**List view:**
+- Table: name, email, phone, orders count, total spent, last order date
+- Search
+
+**Customer detail view:**
+- Profile card (name, avatar initial, contact info)
+- Order history table
+- Stats (total spent, avg order value, most ordered category)
+
+---
+
+**PHASE 9 GATE → Plan → Approval → Implement**
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 10 — APPEARANCE STUDIO (THEME EDITOR)
+## ═══════════════════════════════════════════
+
+This is the most complex admin feature. It replaces any JSON editing with a fully visual theme editor.
+
+### 10.1 — Layout
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Theme Editor                           [Save] [Preview] [Reset] │
+├─────────────────────┬───────────────────────────────────────────┤
+│                     │                                           │
+│  THEME PRESETS      │                                           │
+│  ● Deep Velvet Night│          LIVE PREVIEW IFRAME             │
+│  ○ Royal Gold       │          (Updates in real-time as        │
+│  ○ Luxury Ivory     │           settings change)              │
+│  ○ Emerald Premium  │                                          │
+│  ○ Modern Corporate │                                          │
+│                     │                                          │
+│  COLORS             │                                          │
+│  Primary     [████] │                                          │
+│  Accent      [████] │                                          │
+│  Background  [████] │                                          │
+│                     │                                          │
+│  TYPOGRAPHY         │                                          │
+│  Heading Font [▾]   │                                          │
+│  Body Font    [▾]   │                                          │
+│                     │                                          │
+│  BRANDING           │                                          │
+│  Logo         [↑]   │                                          │
+│  Favicon      [↑]   │                                          │
+│                     │                                          │
+│  HOMEPAGE CONTENT   │                                          │
+│  Hero Banner  [↑]   │                                          │
+│  Hero Headline[   ] │                                          │
+│  Hero Subline [   ] │                                          │
+│  Hero CTA     [   ] │                                          │
+│                     │                                          │
+│  PROMO BAR          │                                          │
+│  ☑ Show Promo Bar   │                                          │
+│  Text         [   ] │                                          │
+│                     │                                          │
+│  FOOTER             │                                          │
+│  Address      [   ] │                                          │
+│  Phone        [   ] │                                          │
+│  Email        [   ] │                                          │
+│  WhatsApp No  [   ] │                                          │
+│                     │                                          │
+│  SOCIAL LINKS       │                                          │
+│  Instagram    [   ] │                                          │
+│  Facebook     [   ] │                                          │
+└─────────────────────┴───────────────────────────────────────────┘
+```
+
+### 10.2 — Implementation Rules
+- All settings persist to the database (a `theme_settings` collection/table)
+- The storefront reads from these settings on every page load
+- Theme preset buttons instantly switch all color/font tokens
+- Color pickers use `<input type="color">` with hex value display
+- Font selectors show font names rendered in their own typeface
+- Image uploads go through the Media Library (Phase 11)
+- Live preview updates on every change via CSS variable injection into iframe `contentDocument`
+
+---
+
+**PHASE 10 GATE → Plan → Approval → Implement**
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 11 — MEDIA LIBRARY
+## ═══════════════════════════════════════════
+
+### 11.1 — Interface
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  Media Library               [Search...]  [Filter ▾]  [↑ Upload] │
+├──────────────────────────────────────────────────────────────────┤
+│  ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐      │
+│  │img │ │img │ │img │ │img │ │img │ │img │ │img │ │img │      │
+│  │    │ │    │ │    │ │    │ │    │ │    │ │    │ │    │      │
+│  └────┘ └────┘ └────┘ └────┘ └────┘ └────┘ └────┘ └────┘      │
+│  filename.jpg  ...                                               │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 11.2 — Features
+- Drag-and-drop upload zone (multiple files at once)
+- Grid view with hover overlay showing filename, dimensions, file size
+- Click to preview in lightbox
+- Select mode (checkbox on hover) for bulk delete
+- Copy URL button
+- Search by filename
+- Filter by type (images/all)
+- Files stored in `/uploads/` directory, metadata in database
+- Images are served via a backend static route
+
+### 11.3 — Integration
+- Product image upload in Phase 9 uses this media library (modal picker)
+- Appearance Studio image uploads use this media library
+- No hardcoded paths anywhere — all image URLs come from the media library
+
+---
+
+**PHASE 11 GATE → Plan → Approval → Implement**
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 12 — ANIMATION LAYER (GLOBAL)
+## ═══════════════════════════════════════════
+
+This phase audits all animations implemented across phases and ensures:
+
+### 12.1 — Animation Audit
+- All GSAP timelines work correctly
+- IntersectionObserver triggers fire correctly
+- No animation jank (verify with Chrome Performance tab description)
+- No animation plays twice on back navigation
+- All animations respect `prefers-reduced-motion`
+
+### 12.2 — Global Effects to Verify
+
+| Effect | Location | Technology |
+|--------|----------|------------|
+| Page load sequence | All pages | GSAP |
+| Scroll reveal | All sections | GSAP ScrollTrigger |
+| Hero parallax | Homepage | GSAP ScrollTrigger |
+| Mouse parallax | Hero cards | JS mousemove + lerp |
+| Card tilt | Product cards (desktop) | JS mousemove |
+| Smooth scroll | Entire site | CSS `scroll-behavior` |
+| Page transitions | Route changes | GSAP |
+| Skeleton loaders | Data loading | CSS shimmer |
+| Micro interactions | Buttons, hearts, cart | CSS transitions |
+| Mega menu animate | Navigation | CSS + GSAP |
+| Carousel | Testimonials | GSAP Draggable |
+| Counter animation | Stats sections | GSAP |
+| Timeline animation | About page | GSAP ScrollTrigger |
+
+### 12.3 — Performance Rules
+- No animation on elements outside viewport
+- All `will-change` set only when animation starts, removed when it ends
+- GSAP ScrollTrigger: `invalidateOnRefresh: true` for layout-dependent triggers
+- Floating animations: CSS keyframes only (no JS loop)
+- Maximum 3 simultaneous GSAP tweens per user interaction
+
+---
+
+**PHASE 12 GATE → Audit report → Approval → Fixes**
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 13 — RESPONSIVE AUDIT
+## ═══════════════════════════════════════════
+
+Test and fix every page at these exact breakpoints:
+
+| Breakpoint | Width | Target Device |
+|------------|-------|---------------|
+| xs | 375px | iPhone SE |
+| sm | 430px | iPhone 15 Pro Max |
+| md | 768px | iPad Mini |
+| lg | 1024px | iPad Pro / Small Laptop |
+| xl | 1280px | Standard Laptop |
+| 2xl | 1440px | Desktop Monitor |
+| 3xl | 1920px | Large Monitor |
+
+### Audit checklist for each page:
+- [ ] No horizontal overflow
+- [ ] All text readable (min 16px body on mobile)
+- [ ] Touch targets ≥ 44×44px
+- [ ] No content cut off at edges
+- [ ] Navigation usable on mobile
+- [ ] Images not distorted
+- [ ] Forms fully functional
+- [ ] Tables scroll horizontally (don't overflow)
+- [ ] Modals/drawers fit viewport
+- [ ] Admin panel usable on tablet
+
+---
+
+**PHASE 13 GATE → Audit report → Approval → Fixes**
+
+---
+
+## ═══════════════════════════════════════════
+## PHASE 14 — PERFORMANCE OPTIMIZATION
+## ═══════════════════════════════════════════
+
+### 14.1 — Image Optimization
+- All product images: WebP format with JPEG fallback
+- Responsive images: `srcset` with 400w, 800w, 1200w variants
+- Lazy loading: `loading="lazy"` on all below-fold images
+- Aspect ratio placeholders: prevent layout shift
+
+### 14.2 — CSS Optimization
+- Remove unused CSS (audit with coverage tool)
+- Critical CSS: inline above-fold styles
+- Remaining CSS: load asynchronously
+
+### 14.3 — JavaScript Optimization
+- GSAP: import only used modules (not full bundle)
+- Defer non-critical scripts
+- No render-blocking scripts in `<head>`
+- Split admin JS from storefront JS completely
+
+### 14.4 — Font Optimization
+- `font-display: swap` on all custom fonts
+- Only load weights actually used
+- Subset fonts to Latin + Devanagari/Tamil characters only
+
+### 14.5 — API Optimization
+- Add response caching for product listings (5-minute TTL)
+- Paginate all list endpoints (max 24 items per page)
+- Compress API responses with gzip
+
+### 14.6 — Lighthouse Targets
+
+| Metric | Target |
+|--------|--------|
+| Performance | ≥ 85 |
+| Accessibility | ≥ 95 |
+| Best Practices | ≥ 90 |
+| SEO | ≥ 90 |
+| LCP | < 2.5s |
+| CLS | < 0.1 |
+| FID | < 100ms |
+
+---
+
+**PHASE 14 GATE → Audit report → Approval → Fixes**
+
+---
+
+## ═══════════════════════════════════════════
+## COMMUNICATION PROTOCOL
+## ═══════════════════════════════════════════
+
+At every phase gate, structure your response as:
+
+```
+## PHASE [N] — [NAME] — ANALYSIS COMPLETE
+
+### What I Found (Current State)
+[Summary of current implementation]
+
+### Problems Identified
+[Numbered list of specific problems]
+
+### What Will Change
+[Exact files that will be created, modified, or deleted]
+[For modified files: what changes will be made]
+
+### What Will NOT Change
+[Backend routes, database schema, auth logic that will be preserved]
+
+### Implementation Plan
+[Step-by-step plan with estimated complexity]
+
+### Risks & Mitigations
+[Anything that could go wrong and how you'll prevent it]
+
+---
+⏸ AWAITING APPROVAL
+Type "APPROVED — proceed to Phase [N] implementation" to continue.
+```
+
+---
+
+## ═══════════════════════════════════════════
+## QUALITY STANDARDS
+## ═══════════════════════════════════════════
+
+Every line of code you produce must meet these standards:
+
+**HTML:**
+- Semantic elements (`<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<footer>`)
+- All images have meaningful `alt` attributes
+- All form inputs have associated `<label>` elements
+- ARIA labels on interactive elements that lack visible text labels
+- Correct heading hierarchy (only one `<h1>` per page)
+
+**CSS:**
+- All values reference design tokens (no hardcoded hex values or px values except in the token file)
+- BEM naming convention OR utility-first (decide and be consistent)
+- Mobile-first media queries
+- No `!important` except to override third-party library styles
+
+**JavaScript:**
+- No `var` — use `const` and `let`
+- No inline event handlers in HTML (`onclick=""`)
+- All async operations have error handling
+- No `console.log` in production code
+- Event listeners cleaned up when elements are removed
+
+**Accessibility:**
+- Keyboard navigation works for all interactive elements
+- Focus indicators visible (never `outline: none` without a replacement)
+- Color contrast ≥ 4.5:1 for normal text, ≥ 3:1 for large text
+- Reduced motion respected
+
+---
+
+## FINAL REMINDER
+
+You are not building a website. You are crafting a premium brand experience for one of the most emotionally significant purchase categories in Indian culture — the return gift. When someone buys from Magizhvagam, they are choosing a gift that represents their family at a wedding, a newborn's celebration, a festival of joy. Every pixel must honor that weight.
+
+**Now: Begin with Phase 0. Read every file. Understand everything. Then report back.**
+```
+
+---
+
+*This prompt was designed for Claude in Cursor — paste the entire codeblock above as your first message.*
+*Work phase by phase. Never approve more than one phase at a time.*
+*The project is yours to redesign — but the users' data is never yours to break.*

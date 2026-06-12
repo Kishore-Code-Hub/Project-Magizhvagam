@@ -25,6 +25,7 @@ const cartRoutes = require('./routes/cartRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const adminPageRoutes = require('./routes/adminPageRoutes');
 const siteSettingsRoutes = require('./routes/siteSettingsRoutes');
+const mediaRoutes = require('./routes/mediaRoutes');
 
 const app = express();
 
@@ -132,6 +133,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/site-settings', siteSettingsRoutes);
+app.use('/api/media', mediaRoutes);
 
 
 // 4. Mount Admin Protected Pages Route Router (MUST BE BEFORE ROOT STATIC ROUTE)

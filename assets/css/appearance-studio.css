@@ -516,3 +516,186 @@
   padding-left: 12px;
   margin-top: 8px;
 }
+
+/* ─── Visual Editors & Media Library ─── */
+.visual-editor-card {
+  background: var(--studio-card-bg);
+  border: 1px solid var(--studio-border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.visual-editor-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.visual-editor-preview {
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.visual-editor-preview img {
+  width: 100%;
+  max-height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.visual-editor-no-image {
+  background: var(--studio-input-bg);
+  border: 1px dashed var(--studio-border);
+  border-radius: 8px;
+  padding: 24px;
+  color: var(--studio-text-muted);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.section-manager-list { display: flex; flex-direction: column; gap: 8px; }
+.section-manager-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--studio-card-bg);
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.section-order-btns { display: flex; gap: 4px; }
+
+.studio-save-status {
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-right: 8px;
+}
+.studio-save-status.success { background: rgba(46, 204, 113, 0.15); color: var(--studio-success); }
+.studio-save-status.error { background: rgba(231, 76, 60, 0.15); color: var(--studio-danger); }
+
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+.media-grid-page { margin-top: 20px; }
+.media-card {
+  background: var(--studio-card-bg, #1D182C);
+  border: 1px solid var(--studio-border, #312744);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.media-card-image { position: relative; aspect-ratio: 1; }
+.media-card-image img { width: 100%; height: 100%; object-fit: cover; }
+.media-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 40%, rgba(0,0,0,0.85));
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 8px;
+  font-size: 10px;
+  color: #fff;
+}
+.media-card:hover .media-card-overlay { opacity: 1; }
+.media-card-actions {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  font-size: 11px;
+}
+.media-card-actions button {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid var(--studio-border);
+  background: transparent;
+  color: var(--studio-text);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.media-drop-zone {
+  border: 2px dashed var(--studio-border);
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  color: var(--studio-text-muted);
+  margin: 16px 0;
+  transition: border-color 0.2s, background 0.2s;
+}
+.media-drop-zone.drag-over {
+  border-color: var(--studio-gold);
+  background: rgba(201, 145, 61, 0.06);
+}
+.media-library-toolbar { margin-bottom: 12px; }
+.admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.media-picker-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+.media-picker-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+}
+.media-picker-panel {
+  position: relative;
+  background: var(--studio-sidebar-bg);
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  width: min(900px, 92vw);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+.media-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.media-picker-close {
+  background: none;
+  border: none;
+  color: var(--studio-text);
+  font-size: 24px;
+  cursor: pointer;
+}
+.media-picker-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+#media-picker-grid {
+  overflow-y: auto;
+  max-height: 50vh;
+}
+.media-card.selectable { cursor: pointer; }
+.media-select-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.media-card.selectable:hover .media-select-btn { opacity: 1; }

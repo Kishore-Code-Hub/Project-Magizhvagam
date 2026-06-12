@@ -7,14 +7,132 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHomepageData();
 });
 
+async function loadHomepageV4Sections() {
+  try {
+    const res = await fetch('/api/site-settings/homepage');
+    const json = await res.json();
+    if (!json.success || !json.data?.sections) return false;
+
+    const sections = [...json.data.sections].sort((a, b) => a.order - b.order);
+
+    sections.forEach(sec => {
+      const el = document.querySelector(`[data-mz-section="${sec.id}"]`);
+      if (el) {
+        el.style.display = sec.enabled ? '' : 'none';
+        el.hidden = !sec.enabled;
+      }
+    });
+
+    const heroSec = sections.find(s => s.id === 'hero');
+    if (heroSec?.enabled && heroSec.config) {
+      applyHeroSectionConfig(heroSec.config);
+    }
+
+    const annSec = sections.find(s => s.id === 'announcement_bar');
+    if (annSec?.enabled && annSec.config?.message) {
+      const mount = document.getElementById('mz-announcement-bar-mount');
+      if (mount) {
+        mount.innerHTML = `<div class="announcement-banner"><span>${annSec.config.message}</span></div>`;
+        mount.style.display = '';
+      }
+    }
+
+    const testSec = sections.find(s => s.id === 'testimonials');
+    if (testSec?.enabled && testSec.config?.items?.length) {
+      renderTestimonialsV4(testSec.config.items);
+    }
+
+    const newsletterSec = sections.find(s => s.id === 'newsletter');
+    if (newsletterSec?.enabled && newsletterSec.config) {
+      renderNewsletterSection(newsletterSec.config);
+    }
+
+    return true;
+  } catch (err) {
+    console.warn('[home.js] V4 homepage sections unavailable, using legacy API');
+    return false;
+  }
+}
+
+function applyHeroSectionConfig(config) {
+  const heroSection = document.querySelector('[data-mz-section="hero"]');
+  if (!heroSection) return;
+
+  const badge = heroSection.querySelector('.hero-badge');
+  const headline = heroSection.querySelector('.hero-headline');
+  const subtext = heroSection.querySelector('.hero-subtext');
+  const ctas = heroSection.querySelectorAll('.hero-cta-action-row .btn');
+
+  if (config.headline && headline) {
+    headline.innerHTML = config.headline.replace(/\n/g, '<br>');
+  }
+  if (config.subtext && subtext) subtext.textContent = config.subtext;
+  if (config.badge && badge) badge.textContent = config.badge;
+
+  if (ctas[0] && config.cta1Label) {
+    ctas[0].textContent = config.cta1Label;
+    if (config.cta1Link) ctas[0].href = config.cta1Link;
+  }
+  if (ctas[1] && config.cta2Label) {
+    ctas[1].textContent = config.cta2Label;
+    if (config.cta2Link) ctas[1].href = config.cta2Link;
+  }
+
+  const banner = (config.banners && config.banners[0]) ? config.banners[0] : null;
+  if (banner) {
+    const bg = heroSection.querySelector('.bg-canvas');
+    if (bg && banner.image) {
+      bg.style.backgroundImage = `url('${banner.image}')`;
+      bg.style.backgroundSize = 'cover';
+      bg.style.backgroundPosition = 'center';
+    }
+    if (banner.title && headline) headline.innerHTML = banner.title.replace(/\n/g, '<br>');
+    if (banner.subtitle && subtext) subtext.textContent = banner.subtitle;
+  }
+}
+
+function renderNewsletterSection(config) {
+  const section = document.querySelector('[data-mz-section="newsletter"]');
+  if (!section) return;
+  section.innerHTML = `
+    <div class="newsletter-inner glass-panel" data-reveal>
+      <h2>${config.heading || 'Stay in the Loop'}</h2>
+      <p>${config.incentive || 'Subscribe for exclusive offers and gift inspiration.'}</p>
+      <form class="newsletter-form" onsubmit="event.preventDefault(); if(window.showToast) showToast('Thank you for subscribing!', 'success');">
+        <input type="email" required placeholder="${config.placeholder || 'Enter your email'}" aria-label="Email address">
+        <button type="submit" class="btn btn-primary">${config.ctaLabel || 'Subscribe'}</button>
+      </form>
+    </div>
+  `;
+  section.style.display = '';
+}
+
+function renderTestimonialsV4(items) {
+  const container = document.getElementById('testimonials-mount');
+  if (!container || !items?.length) return;
+
+  container.innerHTML = items.map(t => `
+    <article class="testimonial-card glass-panel scroll-reveal" data-reveal>
+      <div class="testimonial-stars">${'★'.repeat(Math.min(5, t.rating || 5))}</div>
+      <blockquote>"${t.text || t.comment || ''}"</blockquote>
+      <footer>
+        <strong>${t.name || t.author || 'Customer'}</strong>
+        ${t.location || t.occasion ? `<span>${t.location || t.occasion}</span>` : ''}
+      </footer>
+    </article>
+  `).join('');
+}
+
 
 
 async function loadHomepageData() {
   try {
+    const usedV4 = await loadHomepageV4Sections();
     const config = await window.fetchSettings();
 
     if (!config) {
       console.error('Failed to load homepage settings');
+      if (usedV4) return;
       return;
     }
 

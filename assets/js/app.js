@@ -972,28 +972,7 @@ function injectComponents(settings, user = null) {
       </form>
     </div>`;
 
-  const themeToggleHtml = `
-    <button class="header-icon-btn" id="theme-toggle-btn" aria-label="Toggle Theme" style="margin-right:8px;">
-      <!-- Moon Icon (shows in Light mode to switch to Dark) -->
-      <svg class="theme-icon-dark" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-      </svg>
-      <!-- Sun Icon (shows in Dark mode to switch to Light) -->
-      <svg class="theme-icon-light" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
-        <circle cx="12" cy="12" r="5"></circle>
-        <line x1="12" y1="1" x2="12" y2="3"></line>
-        <line x1="12" y1="21" x2="12" y2="23"></line>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-        <line x1="1" y1="12" x2="3" y2="12"></line>
-        <line x1="21" y1="12" x2="23" y2="12"></line>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-      </svg>
-    </button>
-  `;
-
-  // â”€â”€ AUTH-AWARE SECTION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Theme is controlled exclusively via Appearance Studio — no storefront toggle
   let authUtilHtml = '';
   if (!user) {
     // GUEST: Login + Register buttons
@@ -1096,7 +1075,6 @@ function injectComponents(settings, user = null) {
 
               <!-- Right: Utility icons + auth -->
               <div class="header-utilities" id="header-utilities-right">
-                ${themeToggleHtml}
                 ${searchHtml}
                 ${wishlistIconHtml}
                 ${cartIconHtml}
@@ -1174,7 +1152,6 @@ function injectComponents(settings, user = null) {
 
               <!-- Right: Utility icons + auth -->
               <div class="header-utilities" id="header-utilities-right">
-                ${themeToggleHtml}
                 ${searchHtml}
                 ${wishlistIconHtml}
                 ${cartIconHtml}
@@ -1439,10 +1416,6 @@ function injectComponents(settings, user = null) {
       });
     }
 
-    // Initialize theme toggler event listeners
-    if (window.initThemeToggler) {
-      window.initThemeToggler();
-    }
   }
 
   // â”€â”€ INJECT FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1899,37 +1872,3 @@ window.showWhatsAppConfirmationModal = (summary, onConfirm) => {
   });
 };
 
-// Implement window.initThemeToggler to handle luxury Dark/Light theme switching
-window.initThemeToggler = function() {
-  const toggleBtn = document.getElementById('theme-toggle-btn');
-  if (!toggleBtn) return;
-
-  function updateIcons(theme) {
-    const darkIcon = toggleBtn.querySelector('.theme-icon-dark');
-    const lightIcon = toggleBtn.querySelector('.theme-icon-light');
-    if (theme === 'light') {
-      if (darkIcon) darkIcon.style.display = 'block';
-      if (lightIcon) lightIcon.style.display = 'none';
-    } else {
-      if (darkIcon) darkIcon.style.display = 'none';
-      if (lightIcon) lightIcon.style.display = 'block';
-    }
-  }
-
-  // Get current theme from document element (set by theme-loader.js)
-  let currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-  updateIcons(currentTheme);
-
-  toggleBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('magizhvagam_theme', newTheme);
-    updateIcons(newTheme);
-    
-    // Dispatch custom event for dynamic components to update
-    window.dispatchEvent(new CustomEvent('mz:theme-changed', { detail: { theme: newTheme } }));
-  });
-};

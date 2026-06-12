@@ -11,11 +11,8 @@
 (function () {
   'use strict';
 
-  // Apply theme class synchronously to prevent flash of unstyled page
-  try {
-    const savedTheme = localStorage.getItem('magizhvagam_theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  } catch (e) { }
+  // Theme is controlled exclusively by Appearance Studio presets via API
+  document.documentElement.setAttribute('data-theme', 'studio');
 
   // ─── Settings-to-CSS Map (Single Source of Truth) ─────────────────────────
   // Maps MongoDB field paths → CSS variable names

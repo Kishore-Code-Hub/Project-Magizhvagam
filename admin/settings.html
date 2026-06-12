@@ -335,17 +335,18 @@
 
               <!-- TAB 5: Homepage -->
               <div class="studio-tab-panel" id="tab-homepage">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Homepage Banners</h3>
-                
-                <div class="control-group">
-                  <label>Hero Slide Banners (JSON Array)</label>
-                  <textarea id="hero-banners-json" class="studio-input" rows="7" style="font-family:monospace; font-size:12px; resize:vertical;" required></textarea>
-                </div>
+                <h3 style="font-family:'Cormorant Garamond',serif; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Homepage Sections</h3>
+                <p style="font-size:12px; color:var(--studio-text-muted); margin-bottom:16px;">Show, hide, and reorder homepage sections without editing JSON.</p>
+                <div id="homepage-sections-manager" class="section-manager-list"></div>
 
-                <div class="control-group" style="margin-top:20px;">
-                  <label>Promo Cards Banners (JSON Array)</label>
-                  <textarea id="promo-banners-json" class="studio-input" rows="6" style="font-family:monospace; font-size:12px; resize:vertical;" required></textarea>
-                </div>
+                <h3 style="font-family:'Cormorant Garamond',serif; font-size:16px; margin:24px 0 12px; color:var(--studio-gold);">Hero Slide Banners</h3>
+                <div id="hero-banners-visual"></div>
+
+                <h3 style="font-family:'Cormorant Garamond',serif; font-size:16px; margin:24px 0 12px; color:var(--studio-gold);">Promo Cards</h3>
+                <div id="promo-banners-visual"></div>
+
+                <textarea id="hero-banners-json" hidden aria-hidden="true"></textarea>
+                <textarea id="promo-banners-json" hidden aria-hidden="true"></textarea>
               </div>
 
               <!-- TAB 6: Products -->
@@ -473,13 +474,14 @@
                 </div>
 
                 <!-- Testimonials -->
-                <div class="studio-accordion">
+                <div class="studio-accordion open">
                   <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Testimonials (JSON Array)</h3>
+                    <h3>Testimonials</h3>
                     <span class="studio-accordion-icon">▼</span>
                   </div>
                   <div class="studio-accordion-content">
-                    <textarea id="testimonials-json" class="studio-input" rows="6" style="font-family:monospace; font-size:11px;" required></textarea>
+                    <div id="testimonials-visual"></div>
+                    <textarea id="testimonials-json" hidden aria-hidden="true"></textarea>
                   </div>
                 </div>
 
@@ -499,6 +501,8 @@
 
             <!-- Editor Action Bar -->
             <div class="studio-actions">
+              <span id="studio-unsaved-indicator" style="display:none; font-size:11px; color:var(--studio-gold); margin-right:auto;">Unsaved changes</span>
+              <div id="studio-save-status" class="studio-save-status" style="display:none;"></div>
               <button type="button" class="studio-btn studio-btn-secondary" onclick="restoreLastSavedTheme()" style="padding: 10px 14px; font-size: 11px;">Restore Last Saved</button>
               <button type="button" class="studio-btn studio-btn-danger" onclick="resetToDefaultTheme()" style="padding: 10px 14px; font-size: 11px;">Reset Defaults</button>
               <button type="submit" id="save-settings-submit-btn" class="studio-btn studio-btn-primary" style="padding: 10px 18px; font-size: 12px; font-weight: 700;">Save All Settings</button>
@@ -538,9 +542,12 @@
 
   <!-- Scripts -->
   <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/contrast-engine.js"></script>
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/js/media-library.js"></script>
+  <script src="/assets/js/appearance-studio.js"></script>
   <script src="/assets/js/admin.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {

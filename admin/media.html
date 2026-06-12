@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Media Library | MAGIZHVAGAM Admin</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/appearance-studio.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+  <div class="admin-layout">
+    <aside id="admin-sidebar-container"></aside>
+    <main class="admin-main">
+      <div class="admin-page-header">
+        <div>
+          <h1>Media Library</h1>
+          <p>Upload, preview, search, and reuse images across your storefront.</p>
+        </div>
+        <label class="studio-btn studio-btn-primary">
+          Upload Images
+          <input type="file" id="media-library-upload" accept="image/*" multiple hidden>
+        </label>
+      </div>
+
+      <div class="media-library-toolbar">
+        <input type="search" id="media-library-search" class="studio-input" placeholder="Search by filename or tag...">
+      </div>
+
+      <div id="media-drop-zone" class="media-drop-zone">
+        <p>Drag and drop images here, or use the Upload button above.</p>
+      </div>
+
+      <div id="media-library-grid" class="media-grid media-grid-page"></div>
+    </main>
+  </div>
+
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/js/admin.js"></script>
+  <script src="/assets/js/media-library.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.MZMediaLibrary) window.MZMediaLibrary.initMediaLibraryPage();
+    });
+  </script>
+</body>
+</html>
