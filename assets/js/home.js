@@ -262,9 +262,13 @@ function renderHeroBanners(banners) {
   const container = document.getElementById('hero-slider-container');
   if (!container) return;
 
+  const heroSection = document.querySelector('[data-mz-section="hero"]');
+  const staticCard = heroSection ? heroSection.querySelector('.foreground-ui .hero-content-alignment') : null;
+
   // Do not render any default or demo slides. Only render when explicit banners are provided by admin.
   if (!banners || !Array.isArray(banners) || banners.length === 0) {
     container.innerHTML = '';
+    if (staticCard) staticCard.style.display = '';
     return;
   }
 
@@ -279,7 +283,13 @@ function renderHeroBanners(banners) {
 
   if (slides.length === 0) {
     container.innerHTML = '';
+    if (staticCard) staticCard.style.display = '';
     return;
+  }
+
+  // Hide the static content card so only the active slide's content card is shown
+  if (staticCard) {
+    staticCard.style.display = 'none';
   }
 
   // Render slide elements (each slide owns the full hero content)

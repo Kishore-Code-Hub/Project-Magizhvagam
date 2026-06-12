@@ -517,12 +517,14 @@ header {
   background-size: cover;
   background-position: center;
   opacity: 0;
-  transition: opacity 0.8s ease-in-out;
+  visibility: hidden;
+  transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
   display: flex;
   align-items: center;
 }
 .hero-slide.active {
   opacity: 1;
+  visibility: visible;
   z-index: 11;
 }
 .hero-slide .hero-content,
@@ -2002,6 +2004,10 @@ body.inner-page {
   display: flex;
   align-items: center;
   height: 100%;
+  pointer-events: none;
+}
+.parallax-layer.foreground-ui * {
+  pointer-events: auto;
 }
 
 .hero-content-alignment {
