@@ -5,6 +5,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -16,6 +17,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -23,17 +25,24 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes whatsappPulse {
   0% {
     box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
   }
+
   70% {
     box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
   }
@@ -41,18 +50,18 @@
 
 /* Common Animation Class Utilities */
 .animated {
-  animation-duration: 0.8s;
+  animation-duration: calc(0.8s * var(--layout-animation-speed, 1));
   animation-fill-mode: both;
 }
 
 .fade-in-up {
   animation-name: fadeInUp;
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-timing-function: var(--motion-curve, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .scale-in {
   animation-name: scaleIn;
-  animation-duration: 0.5s;
+  animation-duration: calc(0.5s * var(--layout-animation-speed, 1));
   animation-timing-function: ease-out;
 }
 
@@ -60,15 +69,15 @@
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(106, 13, 173, 0.1);
-  border-left-color: hsl(var(--primary-purple));
+  border: 4px solid rgba(201, 145, 61, 0.1);
+  border-left-color: var(--st-loading-spinner-color, #C9913D);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 /* Hover effects */
 .hover-lift {
-  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s ease;
+  transition: transform calc(0.3s * var(--layout-animation-speed, 1)) var(--motion-curve, cubic-bezier(0.25, 0.46, 0.45, 0.94)), box-shadow 0.3s ease;
 }
 
 .hover-lift:hover {
@@ -82,7 +91,7 @@
 }
 
 .image-zoom-container img {
-  transition: transform 0.5s ease;
+  transition: transform calc(0.5s * var(--layout-animation-speed, 1)) ease;
 }
 
 .image-zoom-container:hover img {
@@ -98,7 +107,6 @@
    HERO SLIDER PREMIUM TRANSITIONS
    ========================================================================== */
 
-/* Stack slides and manage 900ms opacity transition */
 .hero-slide {
   position: absolute;
   top: 0;
@@ -107,7 +115,7 @@
   height: 100%;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 900ms ease-in-out, visibility 900ms ease-in-out;
+  transition: opacity calc(900ms * var(--layout-animation-speed, 1)) ease-in-out, visibility calc(900ms * var(--layout-animation-speed, 1)) ease-in-out;
 }
 
 .hero-slide.active {
@@ -116,7 +124,6 @@
   z-index: 5;
 }
 
-/* Dark overlay for slider readability */
 .hero-slide::before {
   content: '';
   position: absolute;
@@ -124,16 +131,15 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.35); /* 35% opacity dark overlay as requested */
+  background: var(--hero-bg-overlay, rgba(13, 10, 20, 0.6));
   z-index: 1;
 }
 
-/* Left-aligned content container */
 .hero-content {
   position: relative;
   z-index: 10;
   max-width: 800px;
-  color: #FFFFFF;
+  color: var(--hero-headline-color, #FFFFFF);
   margin-left: 8%;
   display: flex;
   flex-direction: column;
@@ -141,13 +147,12 @@
   text-align: left;
 }
 
-/* 600ms text slide-up & fade-in entrance animation */
 .hero-slide .hero-content h1,
 .hero-slide .hero-content p,
 .hero-slide .hero-content .btn {
   opacity: 0;
   transform: translateY(24px);
-  transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity calc(600ms * var(--layout-animation-speed, 1)) var(--motion-curve, cubic-bezier(0.16, 1, 0.3, 1)), transform calc(600ms * var(--layout-animation-speed, 1)) var(--motion-curve, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .hero-slide.active .hero-content h1 {
@@ -168,3 +173,58 @@
   transition-delay: 500ms;
 }
 
+/* ==========================================================================
+   MAGIZHVAGAM V2 DYNAMIC TRANSITIONS & HOVER EFFECTS SPECIFICATION
+   ========================================================================== */
+
+html[data-mz-anim="subtle"] {
+  --layout-animation-speed: 0.5;
+  --motion-curve: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html[data-mz-anim="elevated"] {
+  --layout-animation-speed: 1.0;
+  --motion-curve: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+html[data-mz-anim="expressive"] {
+  --layout-animation-speed: 1.5;
+  --motion-curve: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html[data-mz-anim="none"] * {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+}
+
+/* Structural Interaction Definitions */
+[data-mz-card-hover="lift"] .product-card {
+  transition: transform calc(0.3s * var(--layout-animation-speed, 1)) var(--motion-curve, ease) !important;
+}
+
+[data-mz-card-hover="lift"] .product-card:hover {
+  transform: translateY(calc(-1px * var(--pc-hover-translate-y, 6))) !important;
+}
+
+[data-mz-card-hover="glow"] .product-card {
+  transition: box-shadow calc(0.3s * var(--layout-animation-speed, 1)) var(--motion-curve, ease) !important;
+}
+
+[data-mz-card-hover="glow"] .product-card:hover {
+  box-shadow: 0 0 calc(2px * var(--pc-hover-translate-y, 6)) var(--pc-current-price-color, #C9913D) !important;
+}
+
+/* Accessibility Enforcement Policy (Reduced Motion) */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    --layout-animation-speed: 0 !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

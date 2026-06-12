@@ -1,3 +1,8 @@
+console.log("APP LOADED");
+window.addEventListener("error",(e)=>{
+console.log("ERROR:",e.message);
+});
+
 /**
  * MAGIZHVAGAM E-Commerce Platform - Global Script
  * Manages shared components, styling, session checking, cart states, and alerts
@@ -350,7 +355,6 @@ function applyAppearanceSettings(settings) {
       }
     `;
   }
-
   // 4. Override Button Style
   if (settings.buttonStyle) {
     let r = '8px';
@@ -367,6 +371,42 @@ function applyAppearanceSettings(settings) {
       .btn { border-radius: ${r} !important; }
       .product-card { border-radius: ${settings.buttonStyle === 'sharp' ? '0px' : '16px'} !important; }
     `;
+  }
+
+  // Magizhvagam V2 dynamic styles variables injection
+  if (settings.theme_tokens && typeof settings.theme_tokens === 'object') {
+    Object.keys(settings.theme_tokens).forEach(category => {
+      const tokens = settings.theme_tokens[category];
+      if (tokens && typeof tokens === 'object') {
+        Object.keys(tokens).forEach(tokenKey => {
+          let val = tokens[tokenKey];
+          if (val) {
+            const cssVarName = `--${category}-${tokenKey.replace(/_/g, '-')}`;
+            document.documentElement.style.setProperty(cssVarName, val);
+          }
+        });
+      }
+    });
+  }
+
+  if (settings.layout_config && typeof settings.layout_config === 'object') {
+    Object.keys(settings.layout_config).forEach(configKey => {
+      let val = settings.layout_config[configKey];
+      if (val) {
+        const dashKey = configKey.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+        document.documentElement.style.setProperty(`--layout-${dashKey}`, val);
+      }
+    });
+  }
+
+  if (settings.animation_config && typeof settings.animation_config === 'object') {
+    const speedMode = settings.animation_config.speed_mode || 'elevated';
+    const hoverStyle = settings.animation_config.card_hover_style || 'lift';
+    document.documentElement.setAttribute('data-mz-anim', speedMode);
+    document.documentElement.setAttribute('data-mz-card-hover', hoverStyle);
+  } else {
+    document.documentElement.setAttribute('data-mz-anim', 'elevated');
+    document.documentElement.setAttribute('data-mz-card-hover', 'lift');
   }
 }
 
@@ -932,6 +972,27 @@ function injectComponents(settings, user = null) {
       </form>
     </div>`;
 
+  const themeToggleHtml = `
+    <button class="header-icon-btn" id="theme-toggle-btn" aria-label="Toggle Theme" style="margin-right:8px;">
+      <!-- Moon Icon (shows in Light mode to switch to Dark) -->
+      <svg class="theme-icon-dark" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+      <!-- Sun Icon (shows in Dark mode to switch to Light) -->
+      <svg class="theme-icon-light" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+    </button>
+  `;
+
   // â”€â”€ AUTH-AWARE SECTION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let authUtilHtml = '';
   if (!user) {
@@ -1015,84 +1076,164 @@ function injectComponents(settings, user = null) {
       </div>
     ` : '';
 
-    headerEl.innerHTML = bannerHtml + `
-      <div class="header-container-wrapper">
-        <div class="container">
+    if (window.__mzNav) {
+      // Build container shell for dynamic nav rendering
+      headerEl.innerHTML = bannerHtml + `
+        <div class="header-container-wrapper">
+          <div class="container">
+            <!-- ROW 1: Contact info | Centered Logo | Utility Icons -->
+            <div class="header-row-1">
+              <!-- Left: Contact info -->
+              <div class="header-contact-info" id="header-contact-left">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.93 6.93l1.51-1.51a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                <a href="/contact.html">Get in Touch</a>
+              </div>
 
-          <!-- ROW 1: Contact info | Centered Logo | Utility Icons -->
-          <div class="header-row-1">
+              <!-- Center: Logo -->
+              <a href="/index.html" class="logo-wrapper" id="header-logo" aria-label="${brandName} Home">
+                ${logoInnerHtml}
+              </a>
 
-            <!-- Left: Contact info -->
-            <div class="header-contact-info" id="header-contact-left">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.93 6.93l1.51-1.51a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-              <a href="/contact.html">Get in Touch</a>
+              <!-- Right: Utility icons + auth -->
+              <div class="header-utilities" id="header-utilities-right">
+                ${themeToggleHtml}
+                ${searchHtml}
+                ${wishlistIconHtml}
+                ${cartIconHtml}
+                ${authUtilHtml}
+
+                <!-- Hamburger (mobile only) -->
+                <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </button>
+              </div>
             </div>
 
-            <!-- Center: Logo -->
-            <a href="/index.html" class="logo-wrapper" id="header-logo" aria-label="${brandName} Home">
-              ${logoInnerHtml}
+            <!-- ROW 2: Navigation links (desktop only) -->
+            <div class="header-row-2" id="header-nav-row">
+              <nav class="nav-menu" id="desktop-nav" aria-label="Main navigation">
+                <ul class="desktop-nav-list" style="display:flex; gap:36px; list-style:none; margin:0; padding:0;"></ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile slide-in sidebar -->
+        <div class="mobile-sidebar" id="mobile-sidebar" aria-hidden="true">
+          <div class="sidebar-header">
+            <a href="/index.html" class="logo-wrapper" style="flex-direction:row; gap:8px;">
+              <span class="logo-title" style="font-size:20px;">${brandName}</span>
             </a>
+            <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close menu">&times;</button>
+          </div>
+          <ul class="sidebar-menu mobile-nav-list">
+            ${mobileSidebarAuthLinks}
+          </ul>
+        </div>
 
-            <!-- Right: Utility icons + auth -->
-            <div class="header-utilities" id="header-utilities-right">
-              ${searchHtml}
-              ${wishlistIconHtml}
-              ${cartIconHtml}
-              ${authUtilHtml}
+        <!-- Backdrop overlay -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
-              <!-- Hamburger (mobile only) -->
-              <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
-                <div></div>
-                <div></div>
-                <div></div>
-              </button>
+        <!-- Mobile search overlay -->
+        <div class="mobile-search-overlay" id="mobile-search-overlay">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+            <button id="mobile-search-close" style="background:none; border:none; font-size:24px; font-weight:700; cursor:pointer; color:var(--text-color);">&times;</button>
+            <span style="font-family:'Outfit'; font-size:18px; font-weight:700;">Search Gifts</span>
+          </div>
+          <form action="/products.html" method="GET" style="position:relative;">
+            <input type="text" name="search" id="mobile-search-input" placeholder="Search for gifts..." autocomplete="off"
+              style="width:100%; padding:14px 20px; border-radius:12px; border:2px solid hsl(var(--primary-purple)); font-size:16px; font-family:'Outfit'; background:#fff; color:var(--text-color); outline:none;">
+            <button type="submit" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:hsl(var(--primary-purple));">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+          </form>
+          <div id="mobile-autocomplete-results" style="margin-top:16px; display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+      `;
+      window.__mzNav.render(headerEl).catch(err => console.error('[app.js] Dynamic navigation render failed:', err));
+    } else {
+      headerEl.innerHTML = bannerHtml + `
+        <div class="header-container-wrapper">
+          <div class="container">
+
+            <!-- ROW 1: Contact info | Centered Logo | Utility Icons -->
+            <div class="header-row-1">
+
+              <!-- Left: Contact info -->
+              <div class="header-contact-info" id="header-contact-left">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.93 6.93l1.51-1.51a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                <a href="/contact.html">Get in Touch</a>
+              </div>
+
+              <!-- Center: Logo -->
+              <a href="/index.html" class="logo-wrapper" id="header-logo" aria-label="${brandName} Home">
+                ${logoInnerHtml}
+              </a>
+
+              <!-- Right: Utility icons + auth -->
+              <div class="header-utilities" id="header-utilities-right">
+                ${themeToggleHtml}
+                ${searchHtml}
+                ${wishlistIconHtml}
+                ${cartIconHtml}
+                ${authUtilHtml}
+
+                <!-- Hamburger (mobile only) -->
+                <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </button>
+              </div>
+            </div>
+
+            <!-- ROW 2: Navigation links (desktop only) -->
+            <div class="header-row-2" id="header-nav-row">
+              ${navLinksHtml}
             </div>
           </div>
+        </div>
 
-          <!-- ROW 2: Navigation links (desktop only) -->
-          <div class="header-row-2" id="header-nav-row">
-            ${navLinksHtml}
+        <!-- Mobile slide-in sidebar -->
+        <div class="mobile-sidebar" id="mobile-sidebar" aria-hidden="true">
+          <div class="sidebar-header">
+            <a href="/index.html" class="logo-wrapper" style="flex-direction:row; gap:8px;">
+              <span class="logo-title" style="font-size:20px;">${brandName}</span>
+            </a>
+            <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close menu">&times;</button>
           </div>
+          <ul class="sidebar-menu">
+            <li><a href="/index.html" class="sidebar-link">Home</a></li>
+            <li><a href="/products.html" class="sidebar-link">Products</a></li>
+            <li><a href="/index.html#categories" class="sidebar-link">Categories</a></li>
+            <li><a href="/about.html" class="sidebar-link">About Us</a></li>
+            <li><a href="/contact.html" class="sidebar-link">Contact</a></li>
+            ${mobileSidebarAuthLinks}
+          </ul>
         </div>
-      </div>
 
-      <!-- Mobile slide-in sidebar -->
-      <div class="mobile-sidebar" id="mobile-sidebar" aria-hidden="true">
-        <div class="sidebar-header">
-          <a href="/index.html" class="logo-wrapper" style="flex-direction:row; gap:8px;">
-            <span class="logo-title" style="font-size:20px;">${brandName}</span>
-          </a>
-          <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close menu">&times;</button>
+        <!-- Backdrop overlay -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+        <!-- Mobile search overlay -->
+        <div class="mobile-search-overlay" id="mobile-search-overlay">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+            <button id="mobile-search-close" style="background:none; border:none; font-size:24px; font-weight:700; cursor:pointer; color:var(--text-color);">&times;</button>
+            <span style="font-family:'Outfit'; font-size:18px; font-weight:700;">Search Gifts</span>
+          </div>
+          <form action="/products.html" method="GET" style="position:relative;">
+            <input type="text" name="search" id="mobile-search-input" placeholder="Search for gifts..." autocomplete="off"
+              style="width:100%; padding:14px 20px; border-radius:12px; border:2px solid hsl(var(--primary-purple)); font-size:16px; font-family:'Outfit'; background:#fff; color:var(--text-color); outline:none;">
+            <button type="submit" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:hsl(var(--primary-purple));">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+          </form>
+          <div id="mobile-autocomplete-results" style="margin-top:16px; display:flex; flex-direction:column; gap:8px;"></div>
         </div>
-        <ul class="sidebar-menu">
-          <li><a href="/index.html" class="sidebar-link">Home</a></li>
-          <li><a href="/products.html" class="sidebar-link">Products</a></li>
-          <li><a href="/index.html#categories" class="sidebar-link">Categories</a></li>
-          <li><a href="/about.html" class="sidebar-link">About Us</a></li>
-          <li><a href="/contact.html" class="sidebar-link">Contact</a></li>
-          ${mobileSidebarAuthLinks}
-        </ul>
-      </div>
-
-      <!-- Backdrop overlay -->
-      <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
-
-      <!-- Mobile search overlay -->
-      <div class="mobile-search-overlay" id="mobile-search-overlay">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
-          <button id="mobile-search-close" style="background:none; border:none; font-size:24px; font-weight:700; cursor:pointer; color:var(--text-color);">&times;</button>
-          <span style="font-family:'Outfit'; font-size:18px; font-weight:700;">Search Gifts</span>
-        </div>
-        <form action="/products.html" method="GET" style="position:relative;">
-          <input type="text" name="search" id="mobile-search-input" placeholder="Search for gifts..." autocomplete="off"
-            style="width:100%; padding:14px 20px; border-radius:12px; border:2px solid hsl(var(--primary-purple)); font-size:16px; font-family:'Outfit'; background:#fff; color:var(--text-color); outline:none;">
-          <button type="submit" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:hsl(var(--primary-purple));">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </button>
-        </form>
-        <div id="mobile-autocomplete-results" style="margin-top:16px; display:flex; flex-direction:column; gap:8px;"></div>
-      </div>
-    `;
+      `;
+    }
 
     // Admin storefront: no cart/wishlist controls; no warning banner
     window.addEventListener('scroll', () => {
@@ -1297,56 +1438,66 @@ function injectComponents(settings, user = null) {
         }
       });
     }
+
+    // Initialize theme toggler event listeners
+    if (window.initThemeToggler) {
+      window.initThemeToggler();
+    }
   }
 
   // â”€â”€ INJECT FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── INJECT FOOTER ──────────────────────────────────────────────────────
   if (footerEl) {
-    footerEl.style.backgroundColor = 'var(--footer-bg)';
-    footerEl.style.color = '#FFFFFF';
-    footerEl.style.padding = '60px 0 30px';
-    footerEl.style.marginTop = '60px';
+    if (window.__mzFooter) {
+      window.__mzFooter.render(footerEl).catch(err => console.error('[app.js] Dynamic footer render failed:', err));
+    } else {
+      footerEl.style.backgroundColor = 'var(--footer-bg)';
+      footerEl.style.color = '#FFFFFF';
+      footerEl.style.padding = '60px 0 30px';
+      footerEl.style.marginTop = '60px';
 
-    footerEl.innerHTML = `
-      <div class="container grid grid-4" style="margin-bottom:40px;">
-        <div>
-          <h3 style="color:white; font-size:20px; margin-bottom:16px;">${brandName}</h3>
-          <p style="color:#A59AB0; font-size:14px; margin-bottom:20px;">Making Every Celebration Memorable. Premium Return Gifts and Customized Gifts for weddings, baby showers, birthdays, and corporate events.</p>
-          <div style="display:flex; gap:12px;">
-            <a href="#" style="background:#2C1C3E; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px;">FB</a>
-            <a href="#" style="background:#2C1C3E; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px;">IG</a>
-            <a href="#" style="background:#2C1C3E; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px;">WA</a>
+      footerEl.innerHTML = `
+        <div class="container grid grid-4" style="margin-bottom:40px;">
+          <div>
+            <h3>${brandName}</h3>
+            <p style="color:#A59AB0; font-size:14px; margin-bottom:20px;">Making Every Celebration Memorable. Premium Return Gifts and Customized Gifts for weddings, baby showers, birthdays, and corporate events.</p>
+            <div style="display:flex; gap:12px;">
+              <a href="#" style="background:#2C1C3E; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px;">FB</a>
+              <a href="#" style="background:#2C1C3E; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px;">IG</a>
+              <a href="#" style="background:#2C1C3E; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px;">WA</a>
+            </div>
+          </div>
+          <div>
+            <h4 style="color:white; font-size:16px; margin-bottom:16px;">Gift Categories</h4>
+            <ul style="list-style:none; display:flex; flex-direction:column; gap:10px; font-size:14px; color:#A59AB0;">
+              <li><a href="/products.html?category=wedding-return-gifts" style="color:#A59AB0;">Wedding Return Gifts</a></li>
+              <li><a href="/products.html?category=birthday-return-gifts" style="color:#A59AB0;">Birthday Return Gifts</a></li>
+              <li><a href="/products.html?category=baby-shower-gifts" style="color:#A59AB0;">Baby Shower Return Gifts</a></li>
+              <li><a href="/products.html?category=eco-friendly-gifts" style="color:#A59AB0;">Eco-Friendly Gifts</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 style="color:white; font-size:16px; margin-bottom:16px;">Quick Links</h4>
+            <ul style="list-style:none; display:flex; flex-direction:column; gap:10px; font-size:14px; color:#A59AB0;">
+              <li><a href="/about.html" style="color:#A59AB0;">Our Story</a></li>
+              <li><a href="/contact.html" style="color:#A59AB0;">Contact Us</a></li>
+              <li><a href="/profile.html" style="color:#A59AB0;">My Account</a></li>
+              <li><a href="/sitemap.xml" style="color:#A59AB0;">Sitemap</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 style="color:white; font-size:16px; margin-bottom:16px;">Contact Support</h4>
+            <p style="color:#A59AB0; font-size:14px; margin-bottom:10px;">12 Luxury Palace St, Chennai, Tamil Nadu - 600001</p>
+            <p style="color:#A59AB0; font-size:14px; margin-bottom:10px;">Email: support@magizhvagam.com</p>
+            <p class="contact-phone-val" style="color:#A59AB0; font-size:14px;">WhatsApp: +91 98765 43210</p>
           </div>
         </div>
-        <div>
-          <h4 style="color:white; font-size:16px; margin-bottom:16px;">Gift Categories</h4>
-          <ul style="list-style:none; display:flex; flex-direction:column; gap:10px; font-size:14px; color:#A59AB0;">
-            <li><a href="/products.html?category=wedding-return-gifts" style="color:#A59AB0;">Wedding Return Gifts</a></li>
-            <li><a href="/products.html?category=birthday-return-gifts" style="color:#A59AB0;">Birthday Return Gifts</a></li>
-            <li><a href="/products.html?category=baby-shower-gifts" style="color:#A59AB0;">Baby Shower Return Gifts</a></li>
-            <li><a href="/products.html?category=eco-friendly-gifts" style="color:#A59AB0;">Eco-Friendly Gifts</a></li>
-          </ul>
+        <div class="container" style="border-top:1px solid #2C1C3E; padding-top:20px; text-align:center; color:#A59AB0; font-size:13px;">
+          <p>&copy; ${new Date().getFullYear()} ${brandName}. All Rights Reserved. Crafted for premium experiences.</p>
         </div>
-        <div>
-          <h4 style="color:white; font-size:16px; margin-bottom:16px;">Quick Links</h4>
-          <ul style="list-style:none; display:flex; flex-direction:column; gap:10px; font-size:14px; color:#A59AB0;">
-            <li><a href="/about.html" style="color:#A59AB0;">Our Story</a></li>
-            <li><a href="/contact.html" style="color:#A59AB0;">Contact Us</a></li>
-            <li><a href="/profile.html" style="color:#A59AB0;">My Account</a></li>
-            <li><a href="/sitemap.xml" style="color:#A59AB0;">Sitemap</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 style="color:white; font-size:16px; margin-bottom:16px;">Contact Support</h4>
-          <p style="color:#A59AB0; font-size:14px; margin-bottom:10px;">12 Luxury Palace St, Chennai, Tamil Nadu - 600001</p>
-          <p style="color:#A59AB0; font-size:14px; margin-bottom:10px;">Email: support@magizhvagam.com</p>
-          <p class="contact-phone-val" style="color:#A59AB0; font-size:14px;">WhatsApp: +91 98765 43210</p>
-        </div>
-      </div>
-      <div class="container" style="border-top:1px solid #2C1C3E; padding-top:20px; text-align:center; color:#A59AB0; font-size:13px;">
-        <p>&copy; ${new Date().getFullYear()} ${brandName}. All Rights Reserved. Crafted for premium experiences.</p>
-      </div>
-    `;
-    window.renderIcons && window.renderIcons();
+      `;
+      window.renderIcons && window.renderIcons();
+    }
   }
 }
 
@@ -1745,5 +1896,40 @@ window.showWhatsAppConfirmationModal = (summary, onConfirm) => {
   modal.querySelector('#confirm-whatsapp-btn').addEventListener('click', () => {
     closeModal();
     onConfirm();
+  });
+};
+
+// Implement window.initThemeToggler to handle luxury Dark/Light theme switching
+window.initThemeToggler = function() {
+  const toggleBtn = document.getElementById('theme-toggle-btn');
+  if (!toggleBtn) return;
+
+  function updateIcons(theme) {
+    const darkIcon = toggleBtn.querySelector('.theme-icon-dark');
+    const lightIcon = toggleBtn.querySelector('.theme-icon-light');
+    if (theme === 'light') {
+      if (darkIcon) darkIcon.style.display = 'block';
+      if (lightIcon) lightIcon.style.display = 'none';
+    } else {
+      if (darkIcon) darkIcon.style.display = 'none';
+      if (lightIcon) lightIcon.style.display = 'block';
+    }
+  }
+
+  // Get current theme from document element (set by theme-loader.js)
+  let currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  updateIcons(currentTheme);
+
+  toggleBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('magizhvagam_theme', newTheme);
+    updateIcons(newTheme);
+    
+    // Dispatch custom event for dynamic components to update
+    window.dispatchEvent(new CustomEvent('mz:theme-changed', { detail: { theme: newTheme } }));
   });
 };

@@ -244,23 +244,37 @@ exports.login = async (req, res) => {
 exports.adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('[DEBUG AUTH] Incoming admin login email:', email);
 
     if (typeof email !== 'string' || typeof password !== 'string') {
+      console.log('[DEBUG AUTH] Rejection: Invalid input format');
       return res.status(400).json({ success: false, error: 'Invalid input format' });
     }
 
     if (!email || !password) {
+      console.log('[DEBUG AUTH] Rejection: Missing email or password');
       return res.status(400).json({ success: false, error: 'Please provide email and password' });
     }
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
+      console.log('[DEBUG AUTH] Rejection: User not found in database');
       await logActivity(req, 'login_failure', `Invalid email attempt for: ${email}`);
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
+    console.log('[DEBUG AUTH] User found:', {
+      email: user.email,
+      role: user.role,
+      hasPassword: !!user.password,
+      hasPasswordHash: !!user.passwordHash,
+      passwordVal: user.password ? user.password.substring(0, 10) + '...' : 'none',
+      passwordHashVal: user.passwordHash ? user.passwordHash.substring(0, 10) + '...' : 'none'
+    });
+
     // Check role strictly before checking password (or after, but strictly enforce role = 'admin')
     if (user.role !== 'admin') {
+      console.log('[DEBUG AUTH] Rejection: User role is not admin. Role is:', user.role);
       await logActivity(req, 'admin_login_failure', `Unauthorized admin login attempt for: ${email}`);
       return res.status(403).json({ success: false, error: 'Access denied. Administrator account required.' });
     }
@@ -268,13 +282,17 @@ exports.adminLogin = async (req, res) => {
     // Check account lockout status
     if (user.lockUntil && user.lockUntil > Date.now()) {
       const remainingMins = Math.ceil((user.lockUntil - Date.now()) / (60 * 1000));
+      console.log('[DEBUG AUTH] Rejection: Account locked out until:', user.lockUntil);
       await logActivity(req, 'login_lockedout', `Blocked attempt for locked account: ${email}`);
       return res.status(403).json({ success: false, error: `Account is temporarily locked. Try again in ${remainingMins} minutes.` });
     }
 
     const targetHash = user.password || user.passwordHash || '';
     const isMatch = await bcrypt.compare(password, targetHash);
+    console.log('[DEBUG AUTH] Bcrypt comparison isMatch:', isMatch);
+    
     if (!isMatch) {
+      console.log('[DEBUG AUTH] Rejection: Password bcrypt comparison failed');
       user.loginAttempts = (user.loginAttempts || 0) + 1;
       let msg = 'Invalid credentials';
 
@@ -289,6 +307,8 @@ exports.adminLogin = async (req, res) => {
       await user.save();
       return res.status(401).json({ success: false, error: msg });
     }
+
+    console.log('[DEBUG AUTH] Success: Password matched. Proceeding with tokens.');
 
     // Reset attempts on successful login
     user.loginAttempts = 0;

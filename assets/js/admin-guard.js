@@ -8,4 +8,8 @@
       '<body style="font-family:sans-serif;padding:40px;"><h1>Admin access denied</h1><p>Open the site with <code>npm start</code> and visit <a href="http://localhost:5000/admin/login">/admin/login</a>.</p></body>';
     throw new Error('Admin pages cannot run from file://');
   }
+
+  if (localStorage.getItem("adminAuth") !== "true") {
+    window.location.href = "/admin/login.html";
+  }
 })();

@@ -1,175 +1,213 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-mz-anim="elevated" data-mz-card-hover="lift" data-mz-entrance="fade">
 
 <head>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
-    content="MAGIZHVAGAM - Premium Return Gifts & Customized Gifts for Weddings, Birthdays, Baby Showers, Corporate events, and Festivals. Handcrafted luxury Return Gifts.">
-  <title>MAGIZHVAGAM | Premium Return Gifts & Customized Gift Store</title>
+    content="மகிழ்வகம் (Magizhvagam) — Ultra-premium Tamil cultural gifting platform. Handcrafted luxury return gifts, custom celebration boxes, and corporate event hampers.">
+  <title>Magizhvagam | Place of Happiness — Premium Tamil Cultural Gifts</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link rel="stylesheet" href="/assets/css/theme.defaults.css">
   <link rel="stylesheet" href="/assets/css/main.css">
-  <link rel="stylesheet" href="/assets/css/animations.css">
-  <link rel="stylesheet" href="/assets/css/responsive.css">
 
-  <style>
-    /* Why Choose Us style */
-    .feature-card {
-      padding: 30px;
-      border-radius: 16px;
-      text-align: center;
-    }
-
-    .feature-icon {
-      font-size: 36px;
-      margin-bottom: 16px;
-      color: hsl(var(--primary-purple));
-      display: flex;
-      justify-content: center;
-    }
-
-    .feature-icon svg {
-      width: 36px;
-      height: 36px;
-      stroke-width: 1.8;
-    }
+  <style id="mz-theme-vars">
+    /* Theme-loader.js writes dynamic database properties here at first paint */
   </style>
+
+  <!-- <script src="/assets/js/theme-loader.js"></script> -->
 </head>
 
 <body class="home-page">
 
-  <!-- Shared Header -->
-  <header id="main-header"></header>
+  <div id="mz-announcement-bar-mount" data-mz-section="announcement_bar">
+  </div>
 
-  <!-- Hero Section -->
-  <section class="hero-slider" id="hero-slider-container">
-    <!-- Dynamic banners will load here -->
-    <div style="display:flex; justify-content:center; align-items:center; height:100%;">
-      <div class="spinner"></div>
-    </div>
-  </section>
+  <header id="main-header" class="glass-panel">
+    <nav class="container">
+      <a href="/">Home</a>
+      <a href="#categories">Categories</a>
+      <a href="/products.html">Products</a>
+      <a href="/wishlist.html">Wishlist</a>
+      <a href="/cart.html">Cart</a>
+      <a href="/profile.html">Account</a>
+    </nav>
+  </header>
 
-  <!-- Highlights Categories -->
-  <section id="categories" class="container" style="margin-bottom: 80px;">
-    <h2 style="font-size:32px; font-family:'Outfit'; text-align:center; margin-bottom:12px; color:var(--text-color);">
-      Shop By Category</h2>
-    <p style="text-align:center; color:var(--text-muted); margin-bottom:40px; font-size:16px;">Handpicked gift hampers
-      tailored for your celebratory milestones</p>
-    <div class="grid grid-4" id="category-highlights-container">
-      <!-- Loaded dynamically -->
-    </div>
-  </section>
+  <section class="hero-parallax-viewport" data-mz-section="hero">
+    <div class="parallax-layer bg-canvas"></div>
 
-  <!-- Featured Products -->
-  <section class="container" style="margin-bottom: 80px;">
-    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:40px;">
-      <div>
-        <h2 style="font-size:30px; font-family:'Outfit'; color:var(--text-color);">Featured Collections</h2>
-        <p style="color:var(--text-muted); font-size:15px; margin-top:4px;">Trending returns gifts of the season</p>
+    <div class="parallax-layer midground-3d" id="hero-3d-canvas-container"></div>
+
+    <div class="parallax-layer foreground-ui container">
+      <div class="hero-content-alignment glass-panel">
+        <span class="hero-badge">பாரம்பரிய ஆடம்பரம்</span>
+        <h1 class="hero-headline">Gift the Feeling.<br>Celebrate in Tamil Style.</h1>
+        <p class="hero-subtext">Curated return gifts, engraved keepsakes, and celebration hampers — built for every
+          occasion, delivered with cultural pride.</p>
+
+        <div class="hero-cta-action-row">
+          <a href="/products.html" class="btn btn-primary">Order & Inquire</a>
+          <a href="#categories" class="btn btn-secondary">Explore Collections</a>
+        </div>
       </div>
-      <a href="/products.html" class="btn btn-secondary"
-        style="padding:8px 20px; font-size:14px; border-radius:8px;">View All</a>
-    </div>
-    <div class="grid grid-4" id="featured-products-grid">
-      <!-- Loaded dynamically -->
-    </div>
-  </section>
-
-  <!-- Promotional Banners -->
-  <section class="container grid grid-2" id="promotional-banners-container" style="margin-bottom: 80px;">
-    <!-- Loaded dynamically -->
-  </section>
-
-  <!-- Best Sellers -->
-  <section class="container" style="margin-bottom: 80px;">
-    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:40px;">
-      <div>
-        <h2 style="font-size:30px; font-family:'Outfit'; color:var(--text-color);">Best Sellers</h2>
-        <p style="color:var(--text-muted); font-size:15px; margin-top:4px;">Loved and ordered by thousands of event
-          planners</p>
+      
+      <!-- Right: Premium floating collection cards showcase -->
+      <div class="hero-visual-showcase">
+        <div class="floating-cards-wrapper">
+          <div class="floating-card card-left glass-panel">
+            <img src="/assets/images/celebration_hampers.png" alt="Celebration Hampers">
+            <span class="floating-card-label">Celebration Hampers</span>
+          </div>
+          <div class="floating-card card-center glass-panel">
+            <img src="/assets/images/luxury_return_gifts.png" alt="Luxury Return Gifts">
+            <span class="floating-card-label">Luxury Returns</span>
+          </div>
+          <div class="floating-card card-right glass-panel">
+            <img src="/assets/images/corporate_gifts.png" alt="Corporate Gifts">
+            <span class="floating-card-label">Corporate Gifts</span>
+          </div>
+        </div>
       </div>
-      <a href="/products.html?sort=bestSelling" class="btn btn-secondary"
-        style="padding:8px 20px; font-size:14px; border-radius:8px;">View All</a>
-    </div>
-    <div class="grid grid-4" id="bestseller-products-grid">
-      <!-- Loaded dynamically -->
     </div>
   </section>
 
-  <!-- Trust Badges: Why Choose Us -->
-  <section style="background: rgba(106, 13, 173, 0.03); padding: 80px 0; margin-bottom: 80px;">
+  <section class="flash-sale-live-wrapper container" data-mz-section="flash_sale" style="display: none;">
+    <div class="flash-sale-header-container glass-panel">
+      <div class="flash-title-block">
+        <span class="urgency-indicator-dot"></span>
+        <h2 id="flash-sale-title-mount">Limited Production Runs</h2>
+      </div>
+      <div class="countdown-timer-container" id="mz-countdown-clock">
+        <div class="cd-digit-block"><span id="cd-days">00</span><label>Days</label></div>
+        <div class="cd-separator">:</div>
+        <div class="cd-digit-block"><span id="cd-hours">00</span><label>Hours</label></div>
+        <div class="cd-separator">:</div>
+        <div class="cd-digit-block"><span id="cd-mins">00</span><label>Mins</label></div>
+        <div class="cd-separator">:</div>
+        <div class="cd-digit-block"><span id="cd-secs">00</span><label>Secs</label></div>
+      </div>
+    </div>
+    <div class="products-grid-matrix" id="flash-sale-products-mount">
+    </div>
+  </section>
+
+  <section id="categories" class="categories-showcase-wrapper container" data-mz-section="featured_categories">
+    <div class="section-title-center-block">
+      <h2>Shop By Category</h2>
+      <p>Handpicked gift hampers tailored for your celebratory milestones</p>
+    </div>
+    <div class="layout-grid-structure" id="category-highlights-mount">
+    </div>
+  </section>
+
+  <section class="collections-spotlight-wrapper container" data-mz-section="collections_spotlight">
+  </section>
+
+  <section class="products-showcase-wrapper container" data-mz-section="featured_products">
+    <div class="section-header-split-alignment">
+      <div class="title-sub-group">
+        <h2>Featured Collections</h2>
+        <p>Trending returns gifts of the season</p>
+      </div>
+      <a href="/products.html" class="btn btn-ghost">View All Collections</a>
+    </div>
+    <div class="layout-grid-structure" id="featured-products-mount">
+    </div>
+  </section>
+
+  <section class="customizer-teaser-wrapper container" data-mz-section="customization_preview">
+  </section>
+
+  <section class="brand-trust-badges-wrapper" data-mz-section="how_it_works">
     <div class="container">
-      <h2 style="font-size:32px; font-family:'Outfit'; text-align:center; margin-bottom:12px; color:var(--text-color);">
-        Why Choose Magizhvagam?</h2>
-      <p style="text-align:center; color:var(--text-muted); margin-bottom:50px;">We craft premium, high-quality
-        experiences that make events unforgettable</p>
+      <div class="section-title-center-block">
+        <h2>Why Choose Magizhvagam?</h2>
+        <p>We craft premium, high-quality experiences that make events unforgettable</p>
+      </div>
 
-      <div class="grid grid-4">
-        <div class="feature-card glass hover-lift">
-          <div class="feature-icon"><i data-lucide="sparkles"></i></div>
-          <h4 style="font-size:18px; margin-bottom:12px; font-family:'Outfit';">Artisanal Quality</h4>
-          <p style="color:var(--text-muted); font-size:14px; line-height:1.6;">Every gift is hand-carved, inspected, and
-            wrapped to meet luxury guidelines.</p>
+      <div class="layout-grid-structure trust-cards-density-4">
+        <div class="feature-card-item glass-panel">
+          <div class="feature-icon-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              class="mz-icon">
+              <path
+                d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z" />
+            </svg>
+          </div>
+          <h3>Artisanal Quality</h3>
+          <p>Every gift is hand-carved, inspected, and wrapped to meet luxury guidelines.</p>
         </div>
 
-        <div class="feature-card glass hover-lift">
-          <div class="feature-icon"><i data-lucide="gift"></i></div>
-          <h4 style="font-size:18px; margin-bottom:12px; font-family:'Outfit';">Tailored Customization</h4>
-          <p style="color:var(--text-muted); font-size:14px; line-height:1.6;">Add personalized messages, card layouts,
-            engraving, and event signatures.</p>
+        <div class="feature-card-item glass-panel">
+          <div class="feature-icon-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              class="mz-icon">
+              <path d="M20 12v10H4V12" />
+              <path d="M2 7h20v5H2z" />
+              <path d="M12 22V7" />
+              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+            </svg>
+          </div>
+          <h3>Tailored Customization</h3>
+          <p>Add personalized messages, card layouts, engraving, and event signatures.</p>
         </div>
 
-        <div class="feature-card glass hover-lift">
-          <div class="feature-icon"><i data-lucide="truck"></i></div>
-          <h4 style="font-size:18px; margin-bottom:12px; font-family:'Outfit';">Express Bulk Delivery</h4>
-          <p style="color:var(--text-muted); font-size:14px; line-height:1.6;">Direct priority shipping to event venues,
-            fully secured package tracking.</p>
+        <div class="feature-card-item glass-panel">
+          <div class="feature-icon-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              class="mz-icon">
+              <rect x="1" y="3" width="15" height="13" rx="2" ry="2" />
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+              <circle cx="5.5" cy="18.5" r="2.5" />
+              <circle cx="18.5" cy="18.5" r="2.5" />
+            </svg>
+          </div>
+          <h3>Express Bulk Delivery</h3>
+          <p>Direct priority shipping to event venues, fully secured package tracking.</p>
         </div>
 
-        <div class="feature-card glass hover-lift">
-          <div class="feature-icon"><i data-lucide="handshake"></i></div>
-          <h4 style="font-size:18px; margin-bottom:12px; font-family:'Outfit';">Trustworthy Support</h4>
-          <p style="color:var(--text-muted); font-size:14px; line-height:1.6;">Dedicated WhatsApp hotlines and 1-on-1
-            assistance for bulk organizers.</p>
+        <div class="feature-card-item glass-panel">
+          <div class="feature-icon-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              class="mz-icon">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <h3>Trustworthy Support</h3>
+          <p>Dedicated WhatsApp hotlines and 1-on-1 assistance for bulk organizers.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- New Arrivals -->
-  <section class="container" style="margin-bottom: 80px;">
-    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:40px;">
-      <div>
-        <h2 style="font-size:30px; font-family:'Outfit'; color:var(--text-color);">New Arrivals</h2>
-        <p style="color:var(--text-muted); font-size:15px; margin-top:4px;">Fresh additions to celebrate your special
-          moments</p>
-      </div>
-      <a href="/products.html?sort=newest" class="btn btn-secondary"
-        style="padding:8px 20px; font-size:14px; border-radius:8px;">View All</a>
+  <section class="testimonials-slider-wrapper container" data-mz-section="testimonials">
+    <div class="section-title-center-block">
+      <h2>What Our Clients Say</h2>
+      <p>Real reviews from verified hosts & bulk buyers</p>
     </div>
-    <div class="grid grid-4" id="newarrival-products-grid">
-      <!-- Loaded dynamically -->
+    <div class="layout-grid-structure columns-density-3" id="testimonials-mount">
     </div>
   </section>
 
-  <!-- Testimonials -->
-  <section class="container" style="margin-bottom: 80px;">
-    <h2 style="font-size:32px; font-family:'Outfit'; text-align:center; margin-bottom:12px; color:var(--text-color);">
-      What Our Clients Say</h2>
-    <p style="text-align:center; color:var(--text-muted); margin-bottom:45px;">Real reviews from verified hosts & bulk
-      buyers</p>
-    <div class="grid grid-3" id="testimonials-container">
-      <!-- Loaded dynamically -->
-    </div>
+  <section class="newsletter-capture-wrapper container" data-mz-section="newsletter">
   </section>
 
-  <!-- Shared Footer -->
-  <footer id="main-footer"></footer>
+  <footer id="main-footer" class="ft-layout-wrapper">
+  </footer>
 
-  <!-- Scripts -->
-  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/animation-loader.js"></script>
+  <script src="/assets/js/nav.js"></script>
+  <script src="/assets/js/footer.js"></script>
   <script src="/assets/js/home.js"></script>
+  <script src="/assets/js/app.js"></script>
 </body>
 
 </html>

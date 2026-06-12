@@ -2,22 +2,62 @@
 <html lang="en">
 
 <head>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Store Configuration & Builder | MAGIZHVAGAM</title>
+  <title>Appearance Studio | MAGIZHVAGAM</title>
 
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/appearance-studio.css">
   <link rel="stylesheet" href="/assets/css/animations.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
 
   <style>
-    .settings-grid {
+    /* Full Screen Workspace Layout Override */
+    .admin-main {
+      padding: 0 !important;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--studio-bg) !important;
+    }
+    
+    /* Preset Card Hover Styling */
+    .preset-option-card {
+      transition: all 0.2s ease;
+      border: 1px solid var(--studio-border);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .preset-option-card:hover {
+      border-color: var(--studio-gold);
+      background: rgba(255, 255, 255, 0.04);
+      transform: translateY(-2px);
+    }
+    .preset-option-card.active {
+      border-color: var(--studio-gold);
+      background: rgba(201, 145, 61, 0.08);
+      box-shadow: 0 0 10px rgba(201, 145, 61, 0.2);
+    }
+    
+    /* Scrollable panels */
+    .scroll-panel {
+      overflow-y: auto;
+      max-height: calc(100vh - 200px);
+      padding-right: 6px;
+    }
+    .scroll-panel::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scroll-panel::-webkit-scrollbar-thumb {
+      background: var(--studio-border);
+      border-radius: 3px;
+    }
+    
+    /* Form groups spacing */
+    .form-row {
       display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 30px;
-      align-items: start;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
     }
   </style>
 </head>
@@ -29,319 +69,465 @@
     <!-- Sidebar navigation placeholder -->
     <aside id="admin-sidebar-container"></aside>
 
-    <!-- Main Settings Panel -->
+    <!-- Main Appearance Studio Container -->
     <main class="admin-main">
-      <h1 style="font-family:'Outfit'; font-size:32px; margin-bottom:30px; color:var(--text-color);">Store
-        Customizations</h1>
+      <div class="studio-container">
+        
+        <!-- Left: Shopify-style Theme Editor Panel -->
+        <div class="studio-sidebar">
+          <div class="studio-header">
+            <h1>Appearance Studio</h1>
+            <p>Design your store look, feel, and colors live.</p>
+          </div>
 
-      <div class="settings-grid">
+          <!-- Horizontal Tabs Navigation -->
+          <div class="studio-tabs">
+            <button type="button" class="studio-tab-btn active" onclick="switchStudioTab(event, 'tab-presets')">Presets</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-colors')">Colors</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-typography')">Fonts</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-header')">Header</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-homepage')">Home</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-products')">Products</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-footer')">Footer</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-contact')">Contact</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-advanced')">Advanced</button>
+          </div>
 
-        <!-- Left: Homepage Builder -->
-        <div class="glass" style="padding:30px; border-radius:12px;">
-          <h3
-            style="font-family:'Outfit'; font-size:20px; margin-bottom:20px; color:hsl(var(--primary-purple)); border-bottom:1px solid var(--card-border); padding-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-            <span>Homepage Customizer</span>
-            <div style="display:flex; gap:8px;">
-              <button type="button" onclick="exportSettingsBackup()" class="btn btn-secondary"
-                style="padding:6px 12px; font-size:12px; border-radius:6px; border-width:1px;">Export JSON</button>
-              <button type="button" onclick="importSettingsBackup()" class="btn btn-secondary"
-                style="padding:6px 12px; font-size:12px; border-radius:6px; border-width:1px;">Import JSON</button>
-              <button type="button" onclick="resetSettingsToDefault()" class="btn btn-secondary"
-                style="padding:6px 12px; font-size:12px; border-radius:6px; border-width:1px; background:#ef4444; color:white; border:none;">Reset
-                Default</button>
-            </div>
-          </h3>
+          <!-- Main Configuration Form -->
+          <form id="homepage-builder-form" style="display:flex; flex-direction:column; flex-grow:1; overflow:hidden;">
+            <div class="studio-content scroll-panel">
 
-          <form id="homepage-builder-form">
-            <div class="admin-form-group">
-              <label for="whatsapp-contact-field">WhatsApp Checkout Phone Number (with Country Code, no
-                spaces/plus)</label>
-              <input type="text" id="whatsapp-contact-field" class="admin-form-control" placeholder="e.g. 919876543210"
-                required>
-            </div>
+              <!-- TAB 1: Theme Presets -->
+              <div class="studio-tab-panel active" id="tab-presets">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Theme Presets</h3>
+                <p style="font-size:12px; color:var(--studio-text-muted); margin-bottom:20px;">Instantly swap your color theme with one of our curated premium presets.</p>
+                
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                  <!-- Preset Velvet -->
+                  <div class="preset-option-card active" id="preset-velvet" onclick="applyThemePreset('velvet')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:14px;">Deep Velvet Night</strong>
+                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Premium purple and gold theme</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                      <span style="width:14px; height:14px; border-radius:50%; background:#0B0618; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#171027; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#D4A03A; border:1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                  </div>
+                  
+                  <!-- Preset Gold -->
+                  <div class="preset-option-card" id="preset-royal" onclick="applyThemePreset('royal')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:14px;">Royal Gold</strong>
+                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Elegant dark grey gold theme</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                      <span style="width:14px; height:14px; border-radius:50%; background:#121212; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#1E1E1E; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#D4A03A; border:1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                  </div>
 
-            <div class="admin-form-group">
-              <label for="announcement-banner-field">Announcement Banner Text (Site-wide sticky banner; leave empty to
-                hide)</label>
-              <input type="text" id="announcement-banner-field" class="admin-form-control"
-                placeholder="e.g. Special Offer: Use code WELCOME10 for 10% off your first order!">
-            </div>
+                  <!-- Preset Ivory -->
+                  <div class="preset-option-card" id="preset-ivory" onclick="applyThemePreset('ivory')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:14px;">Luxury Ivory</strong>
+                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Sophisticated warm cream light theme</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                      <span style="width:14px; height:14px; border-radius:50%; background:#F7F4EE; border:1px solid rgba(0,0,0,0.1);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#FFFFFF; border:1px solid rgba(0,0,0,0.1);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#C9972E; border:1px solid rgba(0,0,0,0.1);"></span>
+                    </div>
+                  </div>
 
-            <div class="admin-form-group"
-              style="border-top:1px dashed var(--card-border); padding-top:14px; margin-top:20px;">
-              <h4 style="font-family:'Outfit'; font-size:15px; margin-bottom:12px; color:hsl(var(--primary-purple));">
-                Branding & Appearance</h4>
-              <div class="grid grid-2" style="gap:15px; margin-bottom:15px;">
-                <div>
-                  <label>Brand Name *</label>
-                  <input type="text" id="brand-name-field" class="admin-form-control" placeholder="e.g. MAGIZHVAGAM"
-                    required>
+                  <!-- Preset Emerald -->
+                  <div class="preset-option-card" id="preset-emerald" onclick="applyThemePreset('emerald')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:14px;">Emerald Premium</strong>
+                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Rich cultural forest green theme</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                      <span style="width:14px; height:14px; border-radius:50%; background:#081C15; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#102820; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#2ECC71; border:1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                  </div>
+
+                  <!-- Preset Corporate -->
+                  <div class="preset-option-card" id="preset-corporate" onclick="applyThemePreset('corporate')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:14px;">Modern Corporate</strong>
+                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Professional slate blue accent theme</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                      <span style="width:14px; height:14px; border-radius:50%; background:#0F172A; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#1E293B; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#38BDF8; border:1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label>Logo (Text or Image URL) *</label>
+              </div>
+
+              <!-- TAB 2: Colors & Safety Lock -->
+              <div class="studio-tab-panel" id="tab-colors">
+                <!-- WCAG Safety Lock score header -->
+                <div id="contrast-lock-indicator" style="padding:14px 20px; border-radius:10px; font-size:13px; font-weight:700; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; transition:all 0.3s ease;">
+                  <span>Contrast Compliance Check:</span>
+                  <strong id="contrast-score-val">0.0:1</strong>
+                </div>
+
+                <div class="studio-accordion open">
+                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                    <h3>Global Branding Colors</h3>
+                    <span class="studio-accordion-icon">▼</span>
+                  </div>
+                  <div class="studio-accordion-content">
+                    <div class="control-group">
+                      <label>Primary Brand Color</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="primary-color-field" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('primary-color-field').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Secondary Brand Color</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="secondary-color-field" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('secondary-color-field').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Accent Highlights Color</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="accent-color-field" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('accent-color-field').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="studio-accordion open">
+                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                    <h3>Identity Canvas Palette</h3>
+                    <span class="studio-accordion-icon">▼</span>
+                  </div>
+                  <div class="studio-accordion-content">
+                    <div class="control-group">
+                      <label>Main Background Color</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-bg-main" onchange="handleBgMainChange()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-bg-main').value=this.value; handleBgMainChange()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Surface / Card Background</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-bg-surface" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-bg-surface').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Main Body Text</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-text-main" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-text-main').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Muted Secondary Text</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-text-muted" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-text-muted').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="studio-accordion">
+                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                    <h3>State & Action Accents</h3>
+                    <span class="studio-accordion-icon">▼</span>
+                  </div>
+                  <div class="studio-accordion-content">
+                    <div class="control-group">
+                      <label>Primary Accent (CTA)</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-color-primary" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-color-primary').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Secondary Accent (Hover)</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-color-secondary" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-color-secondary').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Success Accent (In Stock)</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-color-success" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-color-success').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Error Accent (Alerts)</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-color-error" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-color-error').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 3: Typography -->
+              <div class="studio-tab-panel" id="tab-typography">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Global Font & Button Styles</h3>
+                <div class="control-group">
+                  <label>Font Family</label>
+                  <select id="font-family-field" class="studio-input" onchange="syncLivePreview()">
+                    <option value="Outfit">Outfit (Luxury, Modern)</option>
+                    <option value="Inter">Inter (Sleek Clean)</option>
+                    <option value="Plus Jakarta Sans">Plus Jakarta Sans (Corporate)</option>
+                    <option value="Playfair Display">Playfair Display (Serif Traditional)</option>
+                  </select>
+                </div>
+                <div class="control-group" style="margin-top:20px;">
+                  <label>Button Border Radius</label>
+                  <select id="button-style-field" class="studio-input" onchange="syncLivePreview()">
+                    <option value="rounded">Rounded Corners (8px)</option>
+                    <option value="pill">Pill Shape (30px)</option>
+                    <option value="sharp">Sharp (0px)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- TAB 4: Header -->
+              <div class="studio-tab-panel" id="tab-header">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Storefront Header Configuration</h3>
+                <div class="control-group">
+                  <label>Brand Name</label>
+                  <input type="text" id="brand-name-field" class="studio-input" placeholder="e.g. MAGIZHVAGAM" required>
+                </div>
+                
+                <div class="control-group">
+                  <label>Logo Text / URL</label>
                   <div style="display:flex; gap:10px;">
-                    <input type="text" id="logo-field" class="admin-form-control" placeholder="e.g. MAGIZHVAGAM"
-                      required>
-                    <input type="file" id="logo-upload-input" accept="image/*" style="display:none;"
-                      onchange="uploadSettingAsset('logo-upload-input', 'logo-field')">
-                    <button type="button" class="btn btn-secondary"
-                      onclick="document.getElementById('logo-upload-input').click()"
-                      style="padding:10px 14px; font-size:12px; white-space:nowrap; border-radius:8px; border:1px solid var(--card-border); cursor:pointer;">Upload</button>
+                    <input type="text" id="logo-field" class="studio-input" placeholder="e.g. Logo image path or Text">
+                    <input type="file" id="logo-upload-input" accept="image/*" style="display:none;" onchange="uploadSettingAsset('logo-upload-input', 'logo-field')">
+                    <button type="button" class="studio-btn studio-btn-secondary" onclick="document.getElementById('logo-upload-input').click()" style="padding:10px 14px; font-size:12px; white-space:nowrap;">Upload</button>
                   </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Sticky Announcement Banner</label>
+                  <input type="text" id="announcement-banner-field" class="studio-input" placeholder="Banner announcement (empty to hide)">
+                </div>
+
+                <div class="control-group">
+                  <label>WhatsApp Checkout Mobile</label>
+                  <input type="text" id="whatsapp-contact-field" class="studio-input" placeholder="Phone Number (e.g. 919876543210)" required>
                 </div>
               </div>
-              <div class="grid grid-3" style="gap:15px; margin-bottom:15px;">
-                <div>
-                  <label>Primary Color *</label>
-                  <input type="color" id="primary-color-field" class="admin-form-control"
-                    style="padding:4px; height:45px;" required>
+
+              <!-- TAB 5: Homepage -->
+              <div class="studio-tab-panel" id="tab-homepage">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Homepage Banners</h3>
+                
+                <div class="control-group">
+                  <label>Hero Slide Banners (JSON Array)</label>
+                  <textarea id="hero-banners-json" class="studio-input" rows="7" style="font-family:monospace; font-size:12px; resize:vertical;" required></textarea>
                 </div>
-                <div>
-                  <label>Secondary Color *</label>
-                  <input type="color" id="secondary-color-field" class="admin-form-control"
-                    style="padding:4px; height:45px;" required>
-                </div>
-                <div>
-                  <label>Accent Color *</label>
-                  <input type="color" id="accent-color-field" class="admin-form-control"
-                    style="padding:4px; height:45px;" required>
+
+                <div class="control-group" style="margin-top:20px;">
+                  <label>Promo Cards Banners (JSON Array)</label>
+                  <textarea id="promo-banners-json" class="studio-input" rows="6" style="font-family:monospace; font-size:12px; resize:vertical;" required></textarea>
                 </div>
               </div>
-              <div
-                style="border-top:1px dashed var(--card-border); padding-top:14px; margin-top:20px; margin-bottom:20px;">
-                <h4 style="font-family:'Outfit'; font-size:14px; margin-bottom:12px; color:hsl(var(--primary-purple));">
-                  Store Identity Color Palette</h4>
-                <div class="grid grid-4" style="gap:15px; margin-bottom:15px;">
-                  <div>
-                    <label>Main Background *</label>
-                    <input type="color" id="palette-bg-main" class="admin-form-control"
-                      style="padding:4px; height:45px;" required>
-                  </div>
-                  <div>
-                    <label>Surface/Card Background *</label>
-                    <input type="color" id="palette-bg-surface" class="admin-form-control"
-                      style="padding:4px; height:45px;" required>
-                  </div>
-                  <div>
-                    <label>Main Text *</label>
-                    <input type="color" id="palette-text-main" class="admin-form-control"
-                      style="padding:4px; height:45px;" required>
-                  </div>
-                  <div>
-                    <label>Muted Text *</label>
-                    <input type="color" id="palette-text-muted" class="admin-form-control"
-                      style="padding:4px; height:45px;" required>
-                  </div>
+
+              <!-- TAB 6: Products -->
+              <div class="studio-tab-panel" id="tab-products">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Product Highlights (Curation IDs)</h3>
+                <div class="control-group">
+                  <label>Featured Products IDs (Comma Separated)</label>
+                  <input type="text" id="featured-product-ids" class="studio-input" placeholder="ID1, ID2, ID3">
                 </div>
-                <div class="grid grid-4" style="gap:15px; margin-bottom:15px;">
-                  <div>
-                    <label>Primary Accent *</label>
-                    <input type="color" id="palette-color-primary" class="admin-form-control"
-                      style="padding:4px; height:45px;" required>
-                  </div>
-                  <div>
-                    <label>Secondary Accent *</label>
-                    <input type="color" id="palette-color-secondary" class="admin-form-control"
-                      style="padding:4px; height:45px;" required>
-                  </div>
-                  <div>
-                    <label>Success Accent *</label>
-                    <input type="color" id="palette-color-success" class="admin-form-control"
-                      style="padding:4px; height:45px;" required>
-                  </div>
-                  <div>
-                    <label>Error Accent *</label>
-                    <input type="color" id="palette-color-error" class="admin-form-control"
-                      style="padding:4px; height:45px;" required>
-                  </div>
+                <div class="control-group">
+                  <label>Best Sellers IDs (Comma Separated)</label>
+                  <input type="text" id="bestseller-product-ids" class="studio-input" placeholder="ID1, ID2, ID3">
+                </div>
+                <div class="control-group">
+                  <label>New Arrivals IDs (Comma Separated)</label>
+                  <input type="text" id="newarrival-product-ids" class="studio-input" placeholder="ID1, ID2, ID3">
                 </div>
               </div>
-              <div class="grid grid-2" style="gap:15px; margin-bottom:15px;">
-                <div>
-                  <label>Global Font Style Selector *</label>
-                  <select id="font-family-field" class="admin-form-control" required>
-                    <option value="Outfit">Outfit</option>
-                    <option value="Inter">Inter</option>
-                    <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
-                    <option value="Playfair Display">Playfair Display</option>
-                  </select>
-                </div>
-                <div>
-                  <label>Button Corner Style *</label>
-                  <select id="button-style-field" class="admin-form-control" required>
-                    <option value="rounded">Rounded</option>
-                    <option value="pill">Pill</option>
-                    <option value="sharp">Sharp</option>
-                  </select>
+
+              <!-- TAB 7: Footer -->
+              <div class="studio-tab-panel" id="tab-footer">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Storefront Footer</h3>
+                <div class="control-group">
+                  <label>Footer Description Content</label>
+                  <textarea id="footer-content-field" class="studio-input" rows="4" placeholder="Brief store tagline and details" required></textarea>
                 </div>
               </div>
-              <div class="admin-form-group" style="margin-bottom:15px;">
-                <label>Footer Text Content *</label>
-                <textarea id="footer-content-field" class="admin-form-control" rows="3" required></textarea>
+
+              <!-- TAB 8: Contact -->
+              <div class="studio-tab-panel" id="tab-contact">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Contact Details</h3>
+                <div class="control-group">
+                  <label>Store Address & Support Info</label>
+                  <textarea id="contact-details-field" class="studio-input" rows="4" placeholder="Physical Address / Phone / Email Support" required></textarea>
+                </div>
               </div>
-              <div class="admin-form-group" style="margin-bottom:15px;">
-                <label>Contact Address / Details *</label>
-                <textarea id="contact-details-field" class="admin-form-control" rows="2" required></textarea>
+
+              <!-- TAB 9: Advanced -->
+              <div class="studio-tab-panel" id="tab-advanced">
+                <!-- Asset Upload -->
+                <div class="studio-accordion">
+                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                    <h3>Asset Upload Tool</h3>
+                    <span class="studio-accordion-icon">▼</span>
+                  </div>
+                  <div class="studio-accordion-content">
+                    <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:8px;">Upload images and copy URLs to paste in banner configurations.</p>
+                    <input type="file" id="general-asset-upload-file" accept="image/*" style="display:none;" onchange="uploadGeneralAsset()">
+                    <button type="button" class="studio-btn studio-btn-secondary" onclick="document.getElementById('general-asset-upload-file').click()" style="width:100%;">Select & Upload Image</button>
+                    <div id="general-upload-progress" style="display:none; font-size:11px; color:var(--studio-gold); margin-top:8px;">Uploading image...</div>
+                    <div id="general-upload-result" style="display:none; margin-top:8px;">
+                      <div style="display:flex; gap:6px;">
+                        <input type="text" id="uploaded-asset-url" readonly class="studio-input" style="font-size:11px; padding:6px;">
+                        <button type="button" onclick="copyUploadedAssetUrl()" class="studio-btn studio-btn-primary" style="padding:6px 12px; font-size:11px;">Copy</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Category Manager -->
+                <div class="studio-accordion">
+                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                    <h3>Category Manager</h3>
+                    <span class="studio-accordion-icon">▼</span>
+                  </div>
+                  <div class="studio-accordion-content">
+                    <form id="add-category-form" onsubmit="createNewCategory(event)" style="margin-bottom:15px; border-bottom:1px dashed var(--studio-border); padding-bottom:12px;">
+                      <div class="control-group">
+                        <label>Category Name</label>
+                        <input type="text" id="cat-name-field" class="studio-input" placeholder="e.g. Eco-Friendly Gifts" required>
+                      </div>
+                      <div class="control-group">
+                        <label>Category Image URL</label>
+                        <div style="display:flex; gap:6px;">
+                          <input type="text" id="cat-image-field" class="studio-input" placeholder="Image URL" required>
+                          <input type="file" id="cat-upload-input" accept="image/*" style="display:none;" onchange="uploadSettingAsset('cat-upload-input', 'cat-image-field')">
+                          <button type="button" class="studio-btn studio-btn-secondary" onclick="document.getElementById('cat-upload-input').click()" style="padding:8px 10px; font-size:11px;">Upload</button>
+                        </div>
+                      </div>
+                      <button type="submit" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Add Category</button>
+                    </form>
+                    <h4 style="font-size:12px; margin-bottom:8px; font-weight:700;">Existing Categories</h4>
+                    <div id="categories-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:160px; overflow-y:auto;"></div>
+                  </div>
+                </div>
+
+                <!-- Coupon Manager -->
+                <div class="studio-accordion">
+                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                    <h3>Coupon Manager</h3>
+                    <span class="studio-accordion-icon">▼</span>
+                  </div>
+                  <div class="studio-accordion-content">
+                    <form id="add-coupon-form" onsubmit="createNewCoupon(event)" style="margin-bottom:15px; border-bottom:1px dashed var(--studio-border); padding-bottom:12px;">
+                      <div class="control-group">
+                        <label>Code (Uppercase)</label>
+                        <input type="text" id="cp-code" class="studio-input" placeholder="WELCOME10" required style="text-transform:uppercase;">
+                      </div>
+                      <div class="control-group">
+                        <label>Discount Type</label>
+                        <select id="cp-type" class="studio-input" required>
+                          <option value="Percentage">Percentage (%)</option>
+                          <option value="FixedAmount">Fixed Amount (₹)</option>
+                        </select>
+                      </div>
+                      <div class="control-row">
+                        <div class="control-group">
+                          <label>Discount Value</label>
+                          <input type="number" id="cp-value" class="studio-input" required min="1">
+                        </div>
+                        <div class="control-group">
+                          <label>Min Order (₹)</label>
+                          <input type="number" id="cp-min-value" class="studio-input" value="0" min="0">
+                        </div>
+                      </div>
+                      <div class="control-group" style="margin-top:8px;">
+                        <label>Expiry Date</label>
+                        <input type="date" id="cp-expiry" class="studio-input" required>
+                      </div>
+                      <button type="submit" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px; margin-top:8px;">Create Coupon</button>
+                    </form>
+                    <h4 style="font-size:12px; margin-bottom:8px; font-weight:700;">Active Coupons</h4>
+                    <div id="coupons-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:160px; overflow-y:auto;"></div>
+                  </div>
+                </div>
+
+                <!-- Testimonials -->
+                <div class="studio-accordion">
+                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                    <h3>Testimonials (JSON Array)</h3>
+                    <span class="studio-accordion-icon">▼</span>
+                  </div>
+                  <div class="studio-accordion-content">
+                    <textarea id="testimonials-json" class="studio-input" rows="6" style="font-family:monospace; font-size:11px;" required></textarea>
+                  </div>
+                </div>
+
+                <!-- Backups -->
+                <div class="studio-accordion">
+                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                    <h3>Backups & Exports</h3>
+                    <span class="studio-accordion-icon">▼</span>
+                  </div>
+                  <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:8px;">
+                    <button type="button" class="studio-btn studio-btn-secondary" onclick="exportSettingsBackup()" style="width:100%;">Export Settings JSON</button>
+                    <button type="button" class="studio-btn studio-btn-secondary" onclick="importSettingsBackup()" style="width:100%;">Import Settings JSON</button>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="admin-form-group">
-              <label>Hero Slider Banners Array (JSON Format)</label>
-              <textarea id="hero-banners-json" class="admin-form-control" rows="5"
-                style="font-family:monospace; font-size:12px; resize:vertical;" required></textarea>
+            <!-- Editor Action Bar -->
+            <div class="studio-actions">
+              <button type="button" class="studio-btn studio-btn-secondary" onclick="restoreLastSavedTheme()" style="padding: 10px 14px; font-size: 11px;">Restore Last Saved</button>
+              <button type="button" class="studio-btn studio-btn-danger" onclick="resetToDefaultTheme()" style="padding: 10px 14px; font-size: 11px;">Reset Defaults</button>
+              <button type="submit" id="save-settings-submit-btn" class="studio-btn studio-btn-primary" style="padding: 10px 18px; font-size: 12px; font-weight: 700;">Save All Settings</button>
             </div>
-
-            <div class="admin-form-group">
-              <label>Promo Card Banners Array (JSON Format)</label>
-              <textarea id="promo-banners-json" class="admin-form-control" rows="4"
-                style="font-family:monospace; font-size:12px; resize:vertical;" required></textarea>
-            </div>
-
-            <div class="admin-form-group"
-              style="border-top:1px dashed var(--card-border); padding-top:14px; margin-top:20px;">
-              <h4 style="font-family:'Outfit'; font-size:14px; margin-bottom:10px;">Curated Homepage Product IDs (Comma
-                separated list)</h4>
-              <div style="display:flex; flex-direction:column; gap:12px;">
-                <div>
-                  <label>Featured Products IDs</label>
-                  <input type="text" id="featured-product-ids" class="admin-form-control"
-                    placeholder="e.g. ID1, ID2, ID3">
-                </div>
-                <div>
-                  <label>Best Sellers IDs</label>
-                  <input type="text" id="bestseller-product-ids" class="admin-form-control"
-                    placeholder="e.g. ID1, ID2, ID3">
-                </div>
-                <div>
-                  <label>New Arrivals IDs</label>
-                  <input type="text" id="newarrival-product-ids" class="admin-form-control"
-                    placeholder="e.g. ID1, ID2, ID3">
-                </div>
-              </div>
-            </div>
-
-            <div class="admin-form-group"
-              style="border-top:1px dashed var(--card-border); padding-top:14px; margin-top:20px;">
-              <label>Customer Testimonials Array (JSON Format)</label>
-              <textarea id="testimonials-json" class="admin-form-control" rows="4"
-                style="font-family:monospace; font-size:12px; resize:vertical;" required></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-primary"
-              style="width:100%; border-radius:8px; margin-top:20px; padding:12px;">Save Homepage Layout</button>
           </form>
         </div>
 
-        <!-- Right: Coupons & Settings Helpers Panel -->
-        <div style="display:flex; flex-direction:column; gap:30px;">
-          <!-- Image Asset Upload Tool -->
-          <div class="glass" style="padding:24px; border-radius:12px;">
-            <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px;">Asset Upload Helper</h3>
-            <p style="color:var(--text-muted); font-size:12px; margin-bottom:12px;">Upload images for Hero Slider or
-              Promotional Banners, copy their URLs to paste in the JSON text areas.</p>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-              <input type="file" id="general-asset-upload-file" accept="image/*" style="display:none;"
-                onchange="uploadGeneralAsset()">
-              <button type="button" class="btn btn-secondary"
-                onclick="document.getElementById('general-asset-upload-file').click()"
-                style="padding:10px; font-size:13px; border-radius:6px; border:1px solid var(--card-border); width:100%; cursor:pointer;">Select
-                & Upload Image</button>
-              <div id="general-upload-progress"
-                style="display:none; font-size:12px; color:hsl(var(--primary-purple)); font-weight:700;">Uploading...
-              </div>
-              <div id="general-upload-result" style="display:none; margin-top:10px;">
-                <label style="font-size:11px; font-weight:700;">Uploaded Image URL:</label>
-                <div style="display:flex; gap:6px; margin-top:4px;">
-                  <input type="text" id="uploaded-asset-url" readonly
-                    style="padding:6px; font-size:11px; flex-grow:1; border-radius:4px; border:1px solid var(--card-border); background:rgba(255,255,255,0.05); color:var(--text-color);">
-                  <button type="button" onclick="copyUploadedAssetUrl()" class="btn btn-primary"
-                    style="padding:6px 12px; font-size:11px; border-radius:4px;">Copy</button>
-                </div>
-              </div>
+        <!-- Right: Viewport Live Preview Iframe -->
+        <div class="studio-viewport-panel">
+          <div class="viewport-toolbar">
+            <div class="viewport-device-toggles">
+              <button type="button" class="device-btn active" id="btn-device-desktop" onclick="setViewportDevice('desktop')">🖥️ Desktop</button>
+              <button type="button" class="device-btn" id="btn-device-tablet" onclick="setViewportDevice('tablet')">📟 Tablet</button>
+              <button type="button" class="device-btn" id="btn-device-mobile" onclick="setViewportDevice('mobile')">📱 Mobile</button>
+            </div>
+            
+            <div class="viewport-route-selector">
+              <label>Preview Page:</label>
+              <select class="viewport-route-select" onchange="changeViewportRoute(this.value)">
+                <option value="/index.html">Homepage</option>
+                <option value="/products.html">Catalog</option>
+                <option value="/about.html">About Us</option>
+                <option value="/contact.html">Contact Us</option>
+              </select>
             </div>
           </div>
-
-          <!-- Add Coupon -->
-          <div class="glass" style="padding:24px; border-radius:12px;">
-            <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:16px;">Add Promo Coupon</h3>
-            <form id="add-coupon-form" onsubmit="createNewCoupon(event)">
-              <div class="admin-form-group">
-                <label>Code (Uppercase only)</label>
-                <input type="text" id="cp-code" class="admin-form-control" placeholder="WELCOME10" required
-                  style="text-transform:uppercase;">
-              </div>
-              <div class="admin-form-group">
-                <label>Type</label>
-                <select id="cp-type" class="admin-form-control" required>
-                  <option value="Percentage">Percentage (%)</option>
-                  <option value="FixedAmount">Fixed Amount (₹)</option>
-                </select>
-              </div>
-              <div class="admin-form-group">
-                <label>Discount Value</label>
-                <input type="number" id="cp-value" class="admin-form-control" required min="1">
-              </div>
-              <div class="admin-form-group">
-                <label>Min Order Value Required (₹)</label>
-                <input type="number" id="cp-min-value" class="admin-form-control" value="0" min="0">
-              </div>
-              <div class="admin-form-group">
-                <label>Expiry Date</label>
-                <input type="date" id="cp-expiry" class="admin-form-control" required>
-              </div>
-              <button type="submit" class="btn btn-primary"
-                style="width:100%; border-radius:6px; font-size:13px; padding:10px;">Create Coupon</button>
-            </form>
-          </div>
-
-          <!-- Coupon List -->
-          <div class="glass" style="padding:24px; border-radius:12px;">
-            <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:16px;">Active Coupons</h3>
-            <div id="coupons-list-container"
-              style="display:flex; flex-direction:column; gap:12px; max-height:280px; overflow-y:auto;">
-              <div style="text-align:center;">
-                <div class="spinner" style="margin:auto; width:20px; height:20px;"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Category Manager -->
-          <div class="glass" style="padding:24px; border-radius:12px;">
-            <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:16px;">Category Manager</h3>
-
-            <!-- Category Add Form -->
-            <form id="add-category-form" onsubmit="createNewCategory(event)"
-              style="margin-bottom:20px; border-bottom:1px dashed var(--card-border); padding-bottom:15px;">
-              <div class="admin-form-group" style="margin-bottom:10px;">
-                <label style="font-size:12px;">Category Name</label>
-                <input type="text" id="cat-name-field" class="admin-form-control" placeholder="e.g. Eco-Friendly Gifts"
-                  required style="padding:8px; font-size:13px;">
-              </div>
-              <div class="admin-form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px;">Category Image</label>
-                <div style="display:flex; gap:6px;">
-                  <input type="text" id="cat-image-field" class="admin-form-control" placeholder="Image URL or upload"
-                    required style="padding:8px; font-size:13px;">
-                  <input type="file" id="cat-upload-input" accept="image/*" style="display:none;"
-                    onchange="uploadSettingAsset('cat-upload-input', 'cat-image-field')">
-                  <button type="button" class="btn btn-secondary"
-                    onclick="document.getElementById('cat-upload-input').click()"
-                    style="padding:8px 10px; font-size:11px; border-radius:4px; border:1px solid var(--card-border); cursor:pointer;">Upload</button>
-                </div>
-              </div>
-              <button type="submit" class="btn btn-primary"
-                style="width:100%; border-radius:6px; font-size:12px; padding:8px;">Add Category</button>
-            </form>
-
-            <!-- Category List -->
-            <h4 style="font-size:13px; font-family:'Outfit'; margin-bottom:10px; color:var(--text-color);">Existing
-              Categories</h4>
-            <div id="categories-list-container"
-              style="display:flex; flex-direction:column; gap:10px; max-height:220px; overflow-y:auto;">
-              <div style="text-align:center;">
-                <div class="spinner" style="margin:auto; width:20px; height:20px;"></div>
-              </div>
-            </div>
+          
+          <div class="viewport-frame-container">
+            <iframe id="viewport-iframe" class="viewport-iframe desktop" src="/index.html"></iframe>
           </div>
         </div>
 
@@ -360,8 +546,259 @@
     document.addEventListener('DOMContentLoaded', () => {
       loadCouponsList();
       loadCategoriesList();
+      
+      // Inject preview variable sync on iframe load
+      const iframe = document.getElementById('viewport-iframe');
+      if (iframe) {
+        iframe.addEventListener('load', syncLivePreview);
+      }
+      
+      // Initial color inputs check
+      setTimeout(() => {
+        updateContrastLock();
+      }, 1200);
     });
 
+    // Theme Customizer Switch tab logic
+    function switchStudioTab(event, tabId) {
+      document.querySelectorAll('.studio-tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.studio-tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Viewport resizing toggle logic
+    function setViewportDevice(device) {
+      const iframe = document.getElementById('viewport-iframe');
+      if (!iframe) return;
+      
+      iframe.className = 'viewport-iframe ' + device;
+      
+      document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-device-' + device).classList.add('active');
+    }
+
+    // Viewport preview page selection logic
+    function changeViewportRoute(route) {
+      const iframe = document.getElementById('viewport-iframe');
+      if (iframe) {
+        iframe.src = route;
+      }
+    }
+
+    // WCAG contrast score checker logic
+    function getLuminance(hex) {
+      hex = hex.replace(/^#/, '');
+      if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+      }
+      let r = parseInt(hex.substr(0, 2), 16) / 255;
+      let g = parseInt(hex.substr(2, 2), 16) / 255;
+      let b = parseInt(hex.substr(4, 2), 16) / 255;
+      
+      const a = [r, g, b].map(v => {
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    }
+
+    function getContrastRatio(hex1, hex2) {
+      const l1 = getLuminance(hex1);
+      const l2 = getLuminance(hex2);
+      return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    }
+
+    function updateContrastLock() {
+      const bgHex = document.getElementById('palette-bg-main').value;
+      const textHex = document.getElementById('palette-text-main').value;
+      
+      const ratio = getContrastRatio(bgHex, textHex);
+      const scoreEl = document.getElementById('contrast-score-val');
+      const indicator = document.getElementById('contrast-lock-indicator');
+      const saveBtn = document.getElementById('save-settings-submit-btn');
+      
+      const formatted = ratio.toFixed(1) + ':1';
+      scoreEl.textContent = formatted;
+      
+      if (ratio < 3.0) {
+        indicator.style.backgroundColor = '#fde8e8';
+        indicator.style.color = '#9b1c1c';
+        scoreEl.textContent += ' (FAIL - Low Contrast)';
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = '0.5';
+        saveBtn.style.cursor = 'not-allowed';
+        saveBtn.title = 'Save locked due to low accessibility contrast score';
+      } else {
+        indicator.style.backgroundColor = '#def7ec';
+        indicator.style.color = '#03543f';
+        scoreEl.textContent += ' (PASS - WCAG Compliant)';
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = '1';
+        saveBtn.style.cursor = 'pointer';
+        saveBtn.title = 'Contrast compliant! Save allowed';
+      }
+    }
+
+    // Auto Contrast Engine
+    function handleBgMainChange() {
+      const bgHex = document.getElementById('palette-bg-main').value;
+      const textInput = document.getElementById('palette-text-main');
+      const textMutedInput = document.getElementById('palette-text-muted');
+      
+      const luminance = getLuminance(bgHex);
+      
+      if (luminance < 0.5) {
+        // Dark background -> auto change text to white/grey
+        textInput.value = '#FFFFFF';
+        textMutedInput.value = '#B0B0B0';
+      } else {
+        // Light background -> auto change text to dark
+        textInput.value = '#111111';
+        textMutedInput.value = '#5A506A';
+      }
+      
+      // Update color preview boxes
+      textInput.parentElement.querySelector('input[type="color"]').value = textInput.value;
+      textMutedInput.parentElement.querySelector('input[type="color"]').value = textMutedInput.value;
+      
+      syncLivePreview();
+      updateContrastLock();
+    }
+
+    // Theme presets applying logic
+    const THEME_PRESETS = {
+      velvet: {
+        primaryColor: '#D4A03A', secondaryColor: '#E0A84A', accentColor: '#D4A03A',
+        paletteBgMain: '#0B0618', paletteBgSurface: '#171027',
+        paletteTextMain: '#FFFFFF', paletteTextMuted: '#D8D8D8',
+        paletteColorPrimary: '#D4A03A', paletteColorSecondary: '#211638',
+        paletteColorSuccess: '#2ECC71', paletteColorError: '#E74C3C'
+      },
+      royal: {
+        primaryColor: '#D4A03A', secondaryColor: '#E0A84A', accentColor: '#D4A03A',
+        paletteBgMain: '#121212', paletteBgSurface: '#1E1E1E',
+        paletteTextMain: '#FFFFFF', paletteTextMuted: '#D8D8D8',
+        paletteColorPrimary: '#D4A03A', paletteColorSecondary: '#2B2B2B',
+        paletteColorSuccess: '#2ECC71', paletteColorError: '#E74C3C'
+      },
+      ivory: {
+        primaryColor: '#C9972E', secondaryColor: '#D4A03A', accentColor: '#C9972E',
+        paletteBgMain: '#F7F4EE', paletteBgSurface: '#FFFFFF',
+        paletteTextMain: '#111111', paletteTextMuted: '#444444',
+        paletteColorPrimary: '#C9972E', paletteColorSecondary: '#FFFFFF',
+        paletteColorSuccess: '#2ECC71', paletteColorError: '#E74C3C'
+      },
+      emerald: {
+        primaryColor: '#2ECC71', secondaryColor: '#27AE60', accentColor: '#2ECC71',
+        paletteBgMain: '#081C15', paletteBgSurface: '#102820',
+        paletteTextMain: '#FFFFFF', paletteTextMuted: '#D8D8D8',
+        paletteColorPrimary: '#2ECC71', paletteColorSecondary: '#16352C',
+        paletteColorSuccess: '#2ECC71', paletteColorError: '#E74C3C'
+      },
+      corporate: {
+        primaryColor: '#38BDF8', secondaryColor: '#0284C7', accentColor: '#38BDF8',
+        paletteBgMain: '#0F172A', paletteBgSurface: '#1E293B',
+        paletteTextMain: '#FFFFFF', paletteTextMuted: '#D8D8D8',
+        paletteColorPrimary: '#38BDF8', paletteColorSecondary: '#334155',
+        paletteColorSuccess: '#2ECC71', paletteColorError: '#E74C3C'
+      }
+    };
+
+    function applyThemePreset(presetKey) {
+      const preset = THEME_PRESETS[presetKey];
+      if (!preset) return;
+      
+      // Update form fields
+      document.getElementById('primary-color-field').value = preset.primaryColor;
+      document.getElementById('secondary-color-field').value = preset.secondaryColor;
+      document.getElementById('accent-color-field').value = preset.accentColor;
+      
+      document.getElementById('palette-bg-main').value = preset.paletteBgMain;
+      document.getElementById('palette-bg-surface').value = preset.paletteBgSurface;
+      document.getElementById('palette-text-main').value = preset.paletteTextMain;
+      document.getElementById('palette-text-muted').value = preset.paletteTextMuted;
+      document.getElementById('palette-color-primary').value = preset.paletteColorPrimary;
+      document.getElementById('palette-color-secondary').value = preset.paletteColorSecondary;
+      document.getElementById('palette-color-success').value = preset.paletteColorSuccess;
+      document.getElementById('palette-color-error').value = preset.paletteColorError;
+      
+      // Sync hex text inputs under pickers
+      document.querySelectorAll('.color-picker-wrapper').forEach(wrapper => {
+        const picker = wrapper.querySelector('input[type="color"]');
+        const textInput = wrapper.querySelector('input[type="text"]');
+        if (picker && textInput) textInput.value = picker.value.toUpperCase();
+      });
+      
+      // Set preset card active
+      document.querySelectorAll('.preset-option-card').forEach(card => card.classList.remove('active'));
+      document.getElementById('preset-' + presetKey).classList.add('active');
+      
+      syncLivePreview();
+      updateContrastLock();
+      showToast(presetKey.charAt(0).toUpperCase() + presetKey.slice(1) + ' theme preset loaded!', 'info');
+    }
+
+    // Safety lock: restore last saved theme from database
+    function restoreLastSavedTheme() {
+      if (confirm('Revert all unsaved changes and restore the theme settings saved in database?')) {
+        loadHomepageBuilderSettings();
+        showToast('Restored last saved database settings!', 'success');
+      }
+    }
+
+    // Reset default styling
+    function resetToDefaultTheme() {
+      if (confirm('Reset custom layouts and restore defaults?')) {
+        window.resetSettingsToDefault();
+      }
+    }
+
+    // Variable sync inside Iframe
+    function syncLivePreview() {
+      const iframe = document.getElementById('viewport-iframe');
+      if (!iframe || !iframe.contentWindow) return;
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      if (!doc || !doc.documentElement) return;
+      
+      // Core styling overrides
+      doc.documentElement.style.setProperty('--bg-main', document.getElementById('palette-bg-main').value);
+      doc.documentElement.style.setProperty('--bg-color', document.getElementById('palette-bg-main').value);
+      
+      doc.documentElement.style.setProperty('--bg-surface', document.getElementById('palette-bg-surface').value);
+      doc.documentElement.style.setProperty('--card-bg', document.getElementById('palette-bg-surface').value);
+      
+      doc.documentElement.style.setProperty('--text-main', document.getElementById('palette-text-main').value);
+      doc.documentElement.style.setProperty('--text-color', document.getElementById('palette-text-main').value);
+      
+      doc.documentElement.style.setProperty('--text-muted', document.getElementById('palette-text-muted').value);
+      
+      doc.documentElement.style.setProperty('--primary-color', document.getElementById('primary-color-field').value);
+      doc.documentElement.style.setProperty('--primary-purple', document.getElementById('primary-color-field').value);
+      
+      doc.documentElement.style.setProperty('--secondary-color', document.getElementById('secondary-color-field').value);
+      doc.documentElement.style.setProperty('--rose-pink', document.getElementById('secondary-color-field').value);
+      
+      doc.documentElement.style.setProperty('--accent-color', document.getElementById('accent-color-field').value);
+      doc.documentElement.style.setProperty('--primary-gold', document.getElementById('accent-color-field').value);
+      
+      doc.documentElement.style.setProperty('--color-primary', document.getElementById('palette-color-primary').value);
+      doc.documentElement.style.setProperty('--color-secondary', document.getElementById('palette-color-secondary').value);
+      doc.documentElement.style.setProperty('--color-success', document.getElementById('palette-color-success').value);
+      doc.documentElement.style.setProperty('--color-error', document.getElementById('palette-color-error').value);
+      
+      doc.documentElement.style.setProperty('--font-family-base', `'${document.getElementById('font-family-field').value}', 'Inter', sans-serif`);
+      
+      const btnStyle = document.getElementById('button-style-field').value;
+      let btnRadius = '8px';
+      if (btnStyle === 'sharp') btnRadius = '0px';
+      if (btnStyle === 'pill') btnRadius = '30px';
+      doc.documentElement.style.setProperty('--layout-btn-radius', btnRadius);
+      
+      // Re-trigger contrast check on controls page
+      updateContrastLock();
+    }
+
+    // Category lists and coupon helper endpoints
     async function loadCouponsList() {
       const container = document.getElementById('coupons-list-container');
       if (!container) return;
@@ -371,24 +808,24 @@
         const data = await res.json();
 
         if (!data.success || data.coupons.length === 0) {
-          container.innerHTML = '<p style="color:var(--text-muted); font-size:12px; font-style:italic;">No coupons active.</p>';
+          container.innerHTML = '<p style="color:var(--studio-text-muted); font-size:11px; font-style:italic;">No coupons active.</p>';
           return;
         }
 
         container.innerHTML = data.coupons.map(c => `
-          <div class="glass" style="padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+          <div class="glass-panel" style="padding:10px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; font-size:11px; border:1px solid var(--studio-border);">
             <div>
               <strong>${c.code}</strong> (${c.discountType === 'Percentage' ? `${c.discountValue}%` : `₹${c.discountValue}`})<br>
-              <span style="color:var(--text-muted); font-size:11px;">Min Order: ₹${c.minOrderValue} | Exp: ${new Date(c.expiresAt).toLocaleDateString('en-IN')}</span>
+              <span style="color:var(--studio-text-muted); font-size:9px;">Min: ₹${c.minOrderValue} | Exp: ${new Date(c.expiresAt).toLocaleDateString('en-IN')}</span>
             </div>
             <button onclick="deleteCouponById('${c._id}')" style="background:transparent; cursor:pointer; border:none;" title="Delete Coupon">
-              <svg style="width:16px; height:16px; fill:#ef4444;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
+              <svg style="width:14px; height:14px; fill:#ef4444;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
             </button>
           </div>
         `).join('');
 
       } catch (err) {
-        container.innerHTML = '<p style="color:red; font-size:11px;">Error loading coupons.</p>';
+        container.innerHTML = '<p style="color:#ef4444; font-size:11px;">Error loading coupons.</p>';
       }
     }
 
@@ -435,7 +872,6 @@
       }
     }
 
-    // Settings Image Upload Helper
     async function uploadSettingAsset(fileInputId, textFieldId) {
       const input = document.getElementById(fileInputId);
       const file = input.files[0];
@@ -454,6 +890,7 @@
         if (data.success) {
           document.getElementById(textFieldId).value = data.url;
           showToast('Asset uploaded successfully!', 'success');
+          syncLivePreview();
         } else {
           showToast(data.error || 'Upload failed', 'error');
         }
@@ -464,7 +901,6 @@
       }
     }
 
-    // General Asset Upload Helper
     async function uploadGeneralAsset() {
       const input = document.getElementById('general-asset-upload-file');
       const file = input.files[0];
@@ -508,7 +944,6 @@
       showToast('URL copied to clipboard!', 'success');
     }
 
-    // Category Management scripts
     async function loadCategoriesList() {
       const container = document.getElementById('categories-list-container');
       if (!container) return;
@@ -517,26 +952,25 @@
         const res = await adminFetch('/api/products/categories');
         const data = await res.json();
         if (!data.success || data.categories.length === 0) {
-          container.innerHTML = '<p style="color:var(--text-muted); font-size:12px; font-style:italic;">No categories created.</p>';
+          container.innerHTML = '<p style="color:var(--studio-text-muted); font-size:11px; font-style:italic;">No categories created.</p>';
           return;
         }
 
         container.innerHTML = data.categories.map(c => `
-          <div class="glass" style="padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <img src="${c.image || '/assets/images/default-category.webp'}" style="width:30px; height:30px; object-fit:cover; border-radius:4px;" onerror="this.src='/assets/images/default-category.webp'">
+          <div class="glass-panel" style="padding:8px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; font-size:11px; border:1px solid var(--studio-border);">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <img src="${c.image || '/assets/images/default-category.webp'}" style="width:24px; height:24px; object-fit:cover; border-radius:4px;" onerror="this.src='/assets/images/default-category.webp'">
               <div>
-                <strong>${c.name}</strong><br>
-                <span style="color:var(--text-muted); font-size:10px;">slug: ${c.slug}</span>
+                <strong>${c.name}</strong>
               </div>
             </div>
             <button onclick="deleteCategoryById('${c._id}')" style="background:transparent; cursor:pointer; border:none;" title="Delete Category">
-              <svg style="width:16px; height:16px; fill:#ef4444;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
+              <svg style="width:14px; height:14px; fill:#ef4444;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
             </button>
           </div>
         `).join('');
       } catch (err) {
-        container.innerHTML = '<p style="color:red; font-size:11px;">Error loading categories.</p>';
+        container.innerHTML = '<p style="color:#ef4444; font-size:11px;">Error loading categories.</p>';
       }
     }
 
@@ -556,9 +990,6 @@
           showToast('Category created successfully!', 'success');
           document.getElementById('add-category-form').reset();
           loadCategoriesList();
-          if (typeof loadHomepageBuilderSettings === 'function') {
-            loadHomepageBuilderSettings();
-          }
         } else {
           showToast(data.error || 'Failed to create category', 'error');
         }
@@ -577,9 +1008,6 @@
         if (data.success) {
           showToast('Category deleted successfully', 'success');
           loadCategoriesList();
-          if (typeof loadHomepageBuilderSettings === 'function') {
-            loadHomepageBuilderSettings();
-          }
         } else {
           showToast(data.error || 'Failed to delete category', 'error');
         }

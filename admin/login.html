@@ -197,13 +197,13 @@
         }
 
         if (data.success && data.user && data.user.role === 'admin') {
+          localStorage.setItem("adminAuth", "true");
           if (typeof window.setSessionUser === 'function') {
             window.setSessionUser(data.user);
           }
           showToast('Verification successful! Access granted.', 'success');
           
           setTimeout(() => {
-            // Read optional redirect query parameter
             const urlParams = new URLSearchParams(window.location.search);
             const redirect = urlParams.get('redirect') || 'admin/dashboard.html';
             window.location.replace('/' + redirect);

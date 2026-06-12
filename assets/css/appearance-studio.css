@@ -1,0 +1,518 @@
+/**
+ * MAGIZHVAGAM V4 — Appearance Studio Admin Stylesheet
+ * 
+ * Provides structural layout and design tokens for the 9-tab customizer interface.
+ * Implements a split-screen design: Left sidebar for controls, right viewport for the live preview iframe.
+ * Uses Deep Velvet Night aesthetic to match the admin dashboard.
+ */
+
+:root {
+  --studio-bg: #0D0A14;
+  --studio-sidebar-bg: #151120;
+  --studio-card-bg: #1D182C;
+  --studio-border: #312744;
+  --studio-text: #F5F0E8;
+  --studio-text-muted: #8F84A5;
+  --studio-gold: #C9913D;
+  --studio-gold-hover: #E0A84A;
+  --studio-danger: #E74C3C;
+  --studio-success: #2ECC71;
+  --studio-input-bg: #0D0A14;
+  --studio-font: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.studio-container {
+  display: flex;
+  height: calc(100vh - var(--hdr-sticky-height, 64px));
+  background-color: var(--studio-bg);
+  color: var(--studio-text);
+  font-family: var(--studio-font);
+  overflow: hidden;
+}
+
+/* --- Sidebar Panels --- */
+.studio-sidebar {
+  width: 480px;
+  min-width: 400px;
+  border-right: 1px solid var(--studio-border);
+  background-color: var(--studio-sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.studio-header {
+  padding: 24px;
+  border-bottom: 1px solid var(--studio-border);
+}
+
+.studio-header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--studio-gold);
+  margin-bottom: 6px;
+}
+
+.studio-header p {
+  font-size: 13px;
+  color: var(--studio-text-muted);
+}
+
+/* Tabs */
+.studio-tabs {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--studio-border);
+  scrollbar-width: none;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.studio-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.studio-tab-btn {
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  color: var(--studio-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.studio-tab-btn:hover {
+  color: var(--studio-text);
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.studio-tab-btn.active {
+  color: var(--studio-gold);
+  border-bottom-color: var(--studio-gold);
+  background-color: rgba(201, 145, 61, 0.05);
+}
+
+.studio-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.studio-tab-panel {
+  display: none;
+}
+
+.studio-tab-panel.active {
+  display: block;
+}
+
+/* Accordion cards for 16-group Theme variables */
+.studio-accordion {
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background-color: var(--studio-card-bg);
+  overflow: hidden;
+}
+
+.studio-accordion-header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.studio-accordion-header:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.studio-accordion-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--studio-text);
+  margin: 0;
+}
+
+.studio-accordion-icon {
+  transition: transform 0.2s ease;
+  color: var(--studio-gold);
+}
+
+.studio-accordion.open .studio-accordion-icon {
+  transform: rotate(180deg);
+}
+
+.studio-accordion-content {
+  display: none;
+  padding: 20px;
+  border-top: 1px solid var(--studio-border);
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.studio-accordion.open .studio-accordion-content {
+  display: block;
+}
+
+/* Form Controls */
+.control-group {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.control-group:last-child {
+  margin-bottom: 0;
+}
+
+.control-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--studio-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.control-group .control-desc {
+  font-size: 11px;
+  color: var(--studio-text-muted);
+  opacity: 0.8;
+  margin-top: -2px;
+  margin-bottom: 4px;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Inputs */
+.studio-input {
+  width: 100%;
+  padding: 10px 14px;
+  background-color: var(--studio-input-bg);
+  border: 1px solid var(--studio-border);
+  border-radius: 6px;
+  color: var(--studio-text);
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.studio-input:focus {
+  border-color: var(--studio-gold);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(201, 145, 61, 0.15);
+}
+
+/* Color Pickers */
+.color-picker-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.color-input-preview {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  border: 1px solid var(--studio-border);
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.color-input-preview input[type="color"] {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 60px;
+  height: 60px;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* Sliders */
+.range-slider-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.range-slider {
+  flex-grow: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--studio-border);
+  border-radius: 2px;
+  outline: none;
+}
+
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--studio-gold);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.range-value {
+  width: 50px;
+  text-align: right;
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--studio-text);
+  flex-shrink: 0;
+}
+
+/* Footer Action Bar */
+.studio-actions {
+  padding: 20px 24px;
+  border-top: 1px solid var(--studio-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background-color: var(--studio-sidebar-bg);
+}
+
+.studio-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.studio-btn-primary {
+  background-color: var(--studio-gold);
+  color: #0D0A14;
+}
+
+.studio-btn-primary:hover {
+  background-color: var(--studio-gold-hover);
+}
+
+.studio-btn-secondary {
+  background-color: transparent;
+  border-color: var(--studio-border);
+  color: var(--studio-text);
+}
+
+.studio-btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.studio-btn-danger {
+  background-color: var(--studio-danger);
+  color: white;
+}
+
+.studio-btn-danger:hover {
+  opacity: 0.9;
+}
+
+/* --- Live Preview Viewport (Right Side) --- */
+.studio-viewport-panel {
+  flex-grow: 1;
+  background-color: #08060d;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.viewport-toolbar {
+  height: 56px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--studio-border);
+  background-color: var(--studio-sidebar-bg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.viewport-device-toggles {
+  display: flex;
+  gap: 4px;
+  background-color: var(--studio-bg);
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid var(--studio-border);
+}
+
+.device-btn {
+  padding: 6px 12px;
+  background: none;
+  border: none;
+  color: var(--studio-text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.device-btn:hover {
+  color: var(--studio-text);
+}
+
+.device-btn.active {
+  background-color: var(--studio-card-bg);
+  color: var(--studio-gold);
+}
+
+.viewport-route-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.viewport-route-select {
+  padding: 6px 12px;
+  background-color: var(--studio-bg);
+  border: 1px solid var(--studio-border);
+  border-radius: 6px;
+  color: var(--studio-text);
+  font-size: 12px;
+  outline: none;
+}
+
+.viewport-frame-container {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: hidden;
+}
+
+.viewport-iframe {
+  background: white;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--studio-border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 4px;
+  height: 100%;
+}
+
+/* Device sizes for iframe */
+.viewport-iframe.desktop {
+  width: 100%;
+}
+
+.viewport-iframe.tablet {
+  width: 768px;
+  border-radius: 16px;
+  border-width: 8px;
+}
+
+.viewport-iframe.mobile {
+  width: 375px;
+  border-radius: 30px;
+  border-width: 12px;
+}
+
+/* --- Sortable Builder Lists (Homepage/Nav/Footer Builders) --- */
+.builder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.builder-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--studio-card-bg);
+  border: 1px solid var(--studio-border);
+  border-radius: 6px;
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.builder-item.sortable-ghost {
+  opacity: 0.4;
+  background-color: rgba(201, 145, 61, 0.1);
+  border-style: dashed;
+}
+
+.builder-item-handle {
+  color: var(--studio-text-muted);
+  margin-right: 12px;
+  cursor: grab;
+  font-size: 18px;
+}
+
+.builder-item-content {
+  flex-grow: 1;
+}
+
+.builder-item-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.builder-item-desc {
+  font-size: 11px;
+  color: var(--studio-text-muted);
+}
+
+.builder-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.builder-action-btn {
+  background: none;
+  border: none;
+  color: var(--studio-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.builder-action-btn:hover {
+  color: var(--studio-text);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.builder-action-btn.btn-delete:hover {
+  color: var(--studio-danger);
+}
+
+/* Tree layouts for nav configuration */
+.tree-node {
+  margin-left: 20px;
+  border-left: 1px dashed var(--studio-border);
+  padding-left: 12px;
+  margin-top: 8px;
+}

@@ -817,6 +817,17 @@ async function loadHomepageBuilderSettings() {
 
       // Load Testimonials JSON
       document.getElementById('testimonials-json').value = JSON.stringify(setting.testimonials, null, 2);
+
+      // Sync hex text inputs adjacent to color pickers
+      document.querySelectorAll('.color-picker-wrapper').forEach(wrapper => {
+        const picker = wrapper.querySelector('input[type="color"]');
+        const textInput = wrapper.querySelector('input[type="text"]');
+        if (picker && textInput) textInput.value = picker.value.toUpperCase();
+      });
+
+      // Update safety contrast lock and live preview dynamically
+      if (typeof updateContrastLock === 'function') updateContrastLock();
+      if (typeof syncLivePreview === 'function') syncLivePreview();
     }
   } catch (err) {
     showToast('Failed to load homepage builder config', 'error');

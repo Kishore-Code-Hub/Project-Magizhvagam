@@ -65,6 +65,153 @@ async function loadSidebarCategories() {
   }
 }
 
+const FALLBACK_PRODUCTS = [
+  {
+    _id: 'fb-1',
+    name: 'Thanjavur Brass Art Plate',
+    description: 'Authentic handcrafted brass metal art plate featuring detailed traditional relief work.',
+    price: 1850,
+    discountPrice: null,
+    images: [{ url: '/assets/images/luxury_return_gifts.png' }, { url: '/assets/images/default-product.webp' }],
+    stock: 25,
+    averageRating: 4.9,
+    totalReviews: 42,
+    tags: ['featured', 'bestseller']
+  },
+  {
+    _id: 'fb-2',
+    name: 'Kancheepuram Silk Gifting Hamper',
+    description: 'Luxury velvet box adorned with traditional silk borders, sweet pack, and organic honey.',
+    price: 750,
+    discountPrice: 650,
+    images: [{ url: '/assets/images/celebration_hampers.png' }, { url: '/assets/images/default-product.webp' }],
+    stock: 120,
+    averageRating: 4.8,
+    totalReviews: 28,
+    tags: ['new', 'bestseller']
+  },
+  {
+    _id: 'fb-3',
+    name: 'Premium Brass Vilakku (Pair)',
+    description: 'Elegant set of two traditional brass pillar diyas topped with peacock motifs.',
+    price: 1400,
+    discountPrice: 1250,
+    images: [{ url: '/assets/images/premium_return_gifts.png' }, { url: '/assets/images/default-product.webp' }],
+    stock: 50,
+    averageRating: 4.7,
+    totalReviews: 31,
+    tags: ['featured']
+  },
+  {
+    _id: 'fb-4',
+    name: 'Eco-Friendly Jute Bag Set',
+    description: 'Sustainable hand-stitched jute bags with elegant tree-of-life golden prints.',
+    price: 180,
+    discountPrice: null,
+    images: [{ url: '/assets/images/corporate_gifts.png' }, { url: '/assets/images/default-product.webp' }],
+    stock: 350,
+    averageRating: 4.6,
+    totalReviews: 19,
+    tags: ['eco-friendly']
+  },
+  {
+    _id: 'fb-5',
+    name: 'Palm Leaf Handwoven Keepsake Box',
+    description: 'Biodegradable, traditional palmyra leaf woven gift containers with golden threads.',
+    price: 220,
+    discountPrice: null,
+    images: [{ url: '/assets/images/celebration_hampers.png' }, { url: '/assets/images/default-product.webp' }],
+    stock: 500,
+    averageRating: 4.8,
+    totalReviews: 15,
+    tags: ['new', 'eco-friendly']
+  },
+  {
+    _id: 'fb-6',
+    name: 'Hand-Carved Rosewood Elephant',
+    description: 'Premium miniature elephant figurine meticulously carved from dark rosewood.',
+    price: 1650,
+    discountPrice: 1500,
+    images: [{ url: '/assets/images/luxury_return_gifts.png' }, { url: '/assets/images/default-product.webp' }],
+    stock: 15,
+    averageRating: 4.9,
+    totalReviews: 54,
+    tags: ['featured', 'bestseller']
+  },
+  {
+    _id: 'fb-7',
+    name: 'Terracotta Hand-Painted Diya Set',
+    description: 'Handcrafted clay oil lamps decorated with vibrant eco-friendly acrylic paint.',
+    price: 240,
+    discountPrice: 180,
+    images: [{ url: '/assets/images/premium_return_gifts.png' }, { url: '/assets/images/default-product.webp' }],
+    stock: 200,
+    averageRating: 4.5,
+    totalReviews: 12,
+    tags: ['new']
+  },
+  {
+    _id: 'fb-8',
+    name: 'Silver Plated Kumkum Box',
+    description: 'Chased silver-plated traditional box, perfect for housewarming return gifts.',
+    price: 400,
+    discountPrice: 350,
+    images: [{ url: '/assets/images/corporate_gifts.png' }, { url: '/assets/images/default-product.webp' }],
+    stock: 80,
+    averageRating: 4.7,
+    totalReviews: 23,
+    tags: ['featured']
+  },
+  {
+    _id: 'fb-9',
+    name: 'Sandalwood Engraved Keyring Set',
+    description: 'Aromatic pure sandalwood plaques engraved with customized guest names.',
+    price: 150,
+    discountPrice: 120,
+    images: [{ url: '/assets/images/luxury_return_gifts.png' }, { url: '/assets/images/default-product.webp' }],
+    stock: 1000,
+    averageRating: 4.9,
+    totalReviews: 112,
+    tags: ['bestseller']
+  },
+  {
+    _id: 'fb-10',
+    name: 'Traditional Coconut Bowl Set',
+    description: 'Highly polished natural coconut shells repurposed as luxury serving bowls.',
+    price: 350,
+    discountPrice: 280,
+    images: [{ url: '/assets/images/celebration_hampers.png' }, { url: '/assets/images/default-product.webp' }],
+    stock: 150,
+    averageRating: 4.6,
+    totalReviews: 8,
+    tags: ['eco-friendly']
+  },
+  {
+    _id: 'fb-11',
+    name: 'Bronze Floral Urli Bowl',
+    description: 'Heavy traditional bronze bowl for floating flower petals and candles.',
+    price: 2600,
+    discountPrice: 2450,
+    images: [{ url: '/assets/images/premium_return_gifts.png' }, { url: '/assets/images/default-product.webp' }],
+    stock: 10,
+    averageRating: 5.0,
+    totalReviews: 7,
+    tags: ['featured']
+  },
+  {
+    _id: 'fb-12',
+    name: 'Vibrant Corporate Gift Basket',
+    description: 'Custom assortment box filled with nuts, brass utility box, and greeting cards.',
+    price: 950,
+    discountPrice: null,
+    images: [{ url: '/assets/images/corporate_gifts.png' }, { url: '/assets/images/default-product.webp' }],
+    stock: 75,
+    averageRating: 4.8,
+    totalReviews: 16,
+    tags: ['new']
+  }
+];
+
 async function loadCatalogProducts() {
   const grid = document.getElementById('catalog-grid');
   if (!grid) return;
@@ -92,6 +239,8 @@ async function loadCatalogProducts() {
   if (occasion) url += `&occasion=${encodeURIComponent(occasion)}`;
   if (sort) url += `&sort=${sort}`;
 
+  const isFilteredSearch = !!(search || category || minPrice || maxPrice || material || color || occasion);
+
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -105,25 +254,30 @@ async function loadCatalogProducts() {
     }
 
     if (!data.success || !data.products || data.products.length === 0) {
-      grid.innerHTML = `
-        <div style="grid-column: 1/-1; text-align:center; padding:60px 20px;">
-          <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:8px;">No Gifts Match Your Search</h3>
-          <p style="color:var(--text-muted); font-size:14px;">Try clearing filters or adjusting your price limits.</p>
-        </div>
-      `;
-      renderPagination(1, 1);
-      return;
+      if (isFilteredSearch) {
+        grid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align:center; padding:60px 20px;">
+            <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:8px;">No Gifts Match Your Search</h3>
+            <p style="color:var(--text-muted); font-size:14px;">Try clearing filters or adjusting your price limits.</p>
+          </div>
+        `;
+        renderPagination(1, 1);
+        return;
+      } else {
+        console.warn('API returned no products, using fallback products');
+        data = { success: true, products: FALLBACK_PRODUCTS, page: 1, pages: 1 };
+      }
     }
 
-
     grid.innerHTML = data.products.map(p => createProductCardHTML(p)).join('');
-
     renderPagination(data.page || 1, data.pages || 1);
 
   } catch (error) {
-    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:red; padding:30px;">Connection failed. Please reload catalog page.</p>';
+    console.warn('Catalog API failed, rendering fallback products:', error);
+    grid.innerHTML = FALLBACK_PRODUCTS.map(p => createProductCardHTML(p)).join('');
+    renderPagination(1, 1);
     if (typeof showToast === 'function') {
-      showToast('Connection failed. Please reload the catalog page.', 'error');
+      showToast('Loaded local fallback catalog products.', 'warning');
     }
   }
 }

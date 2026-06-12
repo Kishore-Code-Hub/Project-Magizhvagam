@@ -1,0 +1,351 @@
+/**
+ * MAGIZHVAGAM V4 — Theme Defaults CSS
+ * Static fallback CSS custom properties used by theme-loader.js
+ * when the API is unavailable or during initial paint.
+ * 
+ * DEEP VELVET NIGHT PALETTE — Kancheepuram Gold Accents
+ * This file is NEVER modified by admin. Admin values override via <style id="mz-theme-vars">
+ */
+
+:root {
+  /* ═══ GROUP 01 — HEADER ═══ */
+  --hdr-bg: rgba(13,10,20,0.8);
+  --hdr-border: #3A2E4A;
+  --hdr-logo-text: #C9913D;
+  --hdr-logo-size: 24px;
+  --hdr-nav-link-color: #F5F0E8;
+  --hdr-nav-link-hover: #C9913D;
+  --hdr-nav-link-active: #C9913D;
+  --hdr-nav-link-weight: 500;
+  --hdr-icon-color: #F5F0E8;
+  --hdr-icon-hover: #C9913D;
+  --hdr-sticky-bg: rgba(13,10,20,0.96);
+  --hdr-sticky-shadow: 0 4px 32px rgba(0,0,0,0.4);
+  --hdr-sticky-height: 64px;
+  --hdr-height: 80px;
+  --hdr-announcement-bg: #C9913D;
+  --hdr-announcement-text: #0D0A14;
+
+  /* ═══ GROUP 02 — NAVIGATION & MEGA MENU ═══ */
+  --nav-dropdown-bg: #1A1523;
+  --nav-dropdown-border: #3A2E4A;
+  --nav-dropdown-shadow: 0 16px 48px rgba(0,0,0,0.5);
+  --nav-dropdown-item-color: #F5F0E8;
+  --nav-dropdown-item-hover-bg: rgba(201,145,61,0.1);
+  --nav-dropdown-item-hover-color: #C9913D;
+  --nav-mega-bg: #1A1523;
+  --nav-mega-accent: #C9913D;
+  --nav-mega-heading: #F5F0E8;
+  --nav-mega-link: #B8B0C8;
+  --nav-mega-promo-bg: rgba(201,145,61,0.08);
+  --nav-mobile-bg: #0D0A14;
+  --nav-mobile-item: #F5F0E8;
+
+  /* ═══ GROUP 03 — HERO SECTION ═══ */
+  --hero-bg-overlay: rgba(13,10,20,0.6);
+  --hero-overlay-opacity: 0.6;
+  --hero-headline-color: #F5F0E8;
+  --hero-subheadline-color: #B8B0C8;
+  --hero-cta-primary-bg: #C9913D;
+  --hero-cta-primary-text: #0D0A14;
+  --hero-cta-primary-hover-bg: #E0A84A;
+  --hero-cta-secondary-border: rgba(201,145,61,0.5);
+  --hero-cta-secondary-text: #C9913D;
+  --hero-badge-bg: rgba(201,145,61,0.15);
+  --hero-badge-text: #C9913D;
+
+  /* ═══ GROUP 04 — PRODUCT CARDS ═══ */
+  --pc-bg: #1A1523;
+  --pc-border: #3A2E4A;
+  --pc-border-radius: 14px;
+  --pc-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  --pc-hover-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  --pc-hover-translate-y: 6;
+  --pc-image-bg: #0D0A14;
+  --pc-image-radius: 10px;
+  --pc-name-color: #F5F0E8;
+  --pc-name-weight: 600;
+  --pc-category-color: #7A6E8A;
+  --pc-current-price-color: #C9913D;
+  --pc-original-price-color: #5A4E6A;
+  --pc-discount-badge-bg: #C0392B;
+  --pc-discount-badge-text: #F5F0E8;
+  --pc-flash-badge-bg: #C9913D;
+  --pc-flash-badge-text: #0D0A14;
+  --pc-rating-color: #C9913D;
+  --pc-rating-empty-color: #3A2E4A;
+  --pc-btn-bg: #C9913D;
+  --pc-btn-text: #0D0A14;
+  --pc-btn-hover-bg: #E0A84A;
+  --pc-wishlist-icon-color: #5A4E6A;
+  --pc-wishlist-icon-active: #C0392B;
+  --pc-stock-in-color: #27AE60;
+  --pc-stock-out-color: #C0392B;
+  --pc-stock-low-color: #F39C12;
+
+  /* ═══ GROUP 05 — PRODUCT DETAIL PAGE ═══ */
+  --pdp-gallery-border: #3A2E4A;
+  --pdp-gallery-active-border: #C9913D;
+  --pdp-gallery-thumb-radius: 8px;
+  --pdp-title-color: #F5F0E8;
+  --pdp-title-size: 32px;
+  --pdp-price-color: #C9913D;
+  --pdp-compare-price-color: #5A4E6A;
+  --pdp-specs-heading-color: #F5F0E8;
+  --pdp-specs-value-color: #B8B0C8;
+  --pdp-tab-active-color: #C9913D;
+  --pdp-tab-active-border: #C9913D;
+  --pdp-tab-inactive-color: #7A6E8A;
+  --pdp-review-star-color: #C9913D;
+  --pdp-customization-panel-bg: #1A1523;
+  --pdp-customization-panel-border: #3A2E4A;
+  --pdp-3d-viewer-bg: #0D0A14;
+  --pdp-3d-viewer-controls-color: #C9913D;
+
+  /* ═══ GROUP 06 — BUTTONS (GLOBAL) ═══ */
+  --btn-primary-bg: #C9913D;
+  --btn-primary-text: #0D0A14;
+  --btn-primary-hover-bg: #E0A84A;
+  --btn-primary-radius: 10px;
+  --btn-primary-shadow: 0 4px 16px rgba(201,145,61,0.3);
+  --btn-secondary-bg: transparent;
+  --btn-secondary-text: #C9913D;
+  --btn-secondary-border: #C9913D;
+  --btn-secondary-hover-bg: rgba(201,145,61,0.08);
+  --btn-ghost-bg: transparent;
+  --btn-ghost-border: rgba(245,240,232,0.2);
+  --btn-ghost-text: #F5F0E8;
+  --btn-danger-bg: #C0392B;
+  --btn-danger-text: #F5F0E8;
+  --btn-disabled-bg: #2A2035;
+  --btn-disabled-text: #5A4E6A;
+  --btn-font-weight: 600;
+  --btn-letter-spacing: 0.02em;
+  --btn-transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+
+  /* ═══ GROUP 07 — CART ═══ */
+  --cart-page-bg: #0D0A14;
+  --cart-item-card-bg: #1A1523;
+  --cart-item-card-border: #3A2E4A;
+  --cart-item-name-color: #F5F0E8;
+  --cart-item-price-color: #C9913D;
+  --cart-quantity-btn-bg: #2A2035;
+  --cart-quantity-btn-border: #3A2E4A;
+  --cart-quantity-input-bg: #1A1523;
+  --cart-coupon-input-bg: #1A1523;
+  --cart-coupon-input-border: #3A2E4A;
+  --cart-coupon-btn-bg: #C9913D;
+  --cart-coupon-success-color: #27AE60;
+  --cart-coupon-error-color: #C0392B;
+  --cart-warning-banner-bg: rgba(192,57,43,0.1);
+  --cart-warning-banner-text: #E74C3C;
+  --cart-warning-banner-border: rgba(192,57,43,0.3);
+  --cart-summary-card-bg: #1A1523;
+  --cart-summary-card-border: #3A2E4A;
+  --cart-total-label-color: #B8B0C8;
+  --cart-total-value-color: #F5F0E8;
+  --cart-whatsapp-btn-bg: #1A6B3C;
+  --cart-whatsapp-btn-text: #F5F0E8;
+  --cart-whatsapp-btn-hover-bg: #217A46;
+  --cart-checkout-btn-bg: #C9913D;
+  --cart-checkout-btn-text: #0D0A14;
+
+  /* ═══ GROUP 08 — CHECKOUT ═══ */
+  --co-page-bg: #0D0A14;
+  --co-step-indicator-active: #C9913D;
+  --co-step-indicator-complete: #27AE60;
+  --co-step-indicator-pending: #3A2E4A;
+  --co-step-line-color: #3A2E4A;
+  --co-address-card-bg: #1A1523;
+  --co-address-card-border: #3A2E4A;
+  --co-address-card-selected-border: #C9913D;
+  --co-address-card-selected-shadow: 0 0 0 2px rgba(201,145,61,0.3);
+  --co-form-label-color: #B8B0C8;
+  --co-form-input-bg: #1A1523;
+  --co-form-input-border: #3A2E4A;
+  --co-form-input-focus-border: #C9913D;
+  --co-form-input-error-border: #C0392B;
+  --co-payment-option-bg: #1A1523;
+  --co-payment-option-border: #3A2E4A;
+  --co-payment-active-bg: rgba(201,145,61,0.08);
+  --co-order-summary-bg: #1A1523;
+  --co-place-order-btn-bg: #C9913D;
+  --co-place-order-btn-text: #0D0A14;
+
+  /* ═══ GROUP 09 — FOOTER ═══ */
+  --ft-bg: #0A0810;
+  --ft-border-top: #3A2E4A;
+  --ft-logo-text: #C9913D;
+  --ft-heading-color: #F5F0E8;
+  --ft-link-color: #7A6E8A;
+  --ft-link-hover-color: #C9913D;
+  --ft-divider-color: #2A2035;
+  --ft-copyright-bg: #070509;
+  --ft-copyright-text: #5A4E6A;
+  --ft-newsletter-input-bg: #1A1523;
+  --ft-newsletter-input-border: #3A2E4A;
+  --ft-newsletter-btn-bg: #C9913D;
+  --ft-newsletter-btn-text: #0D0A14;
+  --ft-social-icon-color: #7A6E8A;
+  --ft-social-icon-hover-color: #C9913D;
+  --ft-social-icon-bg: rgba(201,145,61,0.08);
+  --ft-social-icon-hover-bg: rgba(201,145,61,0.15);
+
+  /* ═══ GROUP 10 — FORMS (GLOBAL) ═══ */
+  --frm-input-bg: #1A1523;
+  --frm-input-border: #3A2E4A;
+  --frm-input-border-radius: 8px;
+  --frm-input-focus-border: #C9913D;
+  --frm-input-focus-shadow: 0 0 0 3px rgba(201,145,61,0.2);
+  --frm-input-placeholder-color: #4A3E5A;
+  --frm-input-text-color: #F5F0E8;
+  --frm-input-error-border: #C0392B;
+  --frm-input-error-text: #E74C3C;
+  --frm-input-success-border: #27AE60;
+  --frm-input-success-text: #2ECC71;
+  --frm-label-color: #B8B0C8;
+  --frm-label-weight: 500;
+  --frm-helper-text-color: #7A6E8A;
+  --frm-strength-weak: #C0392B;
+  --frm-strength-fair: #F39C12;
+  --frm-strength-strong: #27AE60;
+  --frm-strength-perfect: #C9913D;
+
+  /* ═══ GROUP 11 — MODALS & OVERLAYS ═══ */
+  --mod-backdrop-color: rgba(7,5,9,0.85);
+  --mod-backdrop-blur: 8px;
+  --mod-modal-bg: #1A1523;
+  --mod-modal-border: #3A2E4A;
+  --mod-modal-radius: 20px;
+  --mod-modal-shadow: 0 32px 80px rgba(0,0,0,0.7);
+  --mod-modal-header-bg: rgba(201,145,61,0.05);
+  --mod-modal-header-border: #3A2E4A;
+  --mod-modal-title-color: #F5F0E8;
+  --mod-modal-close-color: #7A6E8A;
+  --mod-modal-close-hover-color: #F5F0E8;
+  --mod-drawer-bg: #1A1523;
+  --mod-drawer-shadow: -8px 0 40px rgba(0,0,0,0.5);
+  --mod-toast-success-bg: rgba(39,174,96,0.15);
+  --mod-toast-error-bg: rgba(192,57,43,0.15);
+  --mod-toast-warning-bg: rgba(243,156,18,0.15);
+  --mod-toast-info-bg: rgba(201,145,61,0.15);
+  --mod-toast-text-color: #F5F0E8;
+
+  /* ═══ GROUP 12 — BADGES & LABELS ═══ */
+  --bdg-new-bg: rgba(201,145,61,0.15);
+  --bdg-new-text: #C9913D;
+  --bdg-sale-bg: rgba(192,57,43,0.15);
+  --bdg-sale-text: #E74C3C;
+  --bdg-flash-bg: #C9913D;
+  --bdg-flash-text: #0D0A14;
+  --bdg-trending-bg: rgba(39,174,96,0.15);
+  --bdg-trending-text: #2ECC71;
+  --bdg-out-of-stock-bg: rgba(90,78,106,0.3);
+  --bdg-out-of-stock-text: #7A6E8A;
+  --bdg-limited-bg: rgba(243,156,18,0.15);
+  --bdg-limited-text: #F39C12;
+  --bdg-featured-bg: rgba(201,145,61,0.2);
+  --bdg-featured-text: #C9913D;
+  --bdg-radius: 6px;
+  --bdg-font-weight: 700;
+  --bdg-padding: 4px 10px;
+
+  /* ═══ GROUP 13 — COUNTDOWN TIMERS ═══ */
+  --cd-container-bg: rgba(201,145,61,0.05);
+  --cd-container-border: rgba(201,145,61,0.15);
+  --cd-container-radius: 12px;
+  --cd-digit-bg: #1A1523;
+  --cd-digit-text: #F5F0E8;
+  --cd-digit-border: #3A2E4A;
+  --cd-digit-radius: 8px;
+  --cd-separator-color: #C9913D;
+  --cd-label-color: #7A6E8A;
+  --cd-expired-bg: rgba(192,57,43,0.1);
+  --cd-expired-text: #E74C3C;
+  --cd-flash-sale-accent: #C9913D;
+
+  /* ═══ GROUP 14 — PROFILE & ACCOUNT ═══ */
+  --acc-page-bg: #0D0A14;
+  --acc-tab-active-color: #C9913D;
+  --acc-tab-active-border: #C9913D;
+  --acc-tab-inactive-color: #7A6E8A;
+  --acc-order-card-bg: #1A1523;
+  --acc-order-card-border: #3A2E4A;
+  --acc-order-status-pending: #F39C12;
+  --acc-order-status-confirmed: #3498DB;
+  --acc-order-status-shipped: #9B59B6;
+  --acc-order-status-delivered: #27AE60;
+  --acc-order-status-cancelled: #C0392B;
+  --acc-address-card-bg: #1A1523;
+  --acc-address-card-border: #3A2E4A;
+  --acc-address-cap-warning-bg: rgba(243,156,18,0.1);
+  --acc-address-cap-warning-text: #F39C12;
+
+  /* ═══ GROUP 15 — EMPTY, ERROR & SUCCESS STATES ═══ */
+  --st-empty-icon-color: #3A2E4A;
+  --st-empty-heading-color: #F5F0E8;
+  --st-empty-text-color: #7A6E8A;
+  --st-empty-cta-bg: #C9913D;
+  --st-error-icon-color: #C0392B;
+  --st-error-heading-color: #F5F0E8;
+  --st-error-text-color: #B8B0C8;
+  --st-success-icon-color: #27AE60;
+  --st-success-heading-color: #F5F0E8;
+  --st-success-text-color: #B8B0C8;
+  --st-loading-spinner-color: #C9913D;
+  --st-skeleton-base-color: #1A1523;
+  --st-skeleton-shimmer-color: #2A2035;
+
+  /* ═══ GROUP 16 — ADMIN PANEL ═══ */
+  --adm-sidebar-bg: #0A0810;
+  --adm-sidebar-border: #2A2035;
+  --adm-sidebar-link-color: #7A6E8A;
+  --adm-sidebar-link-hover-bg: rgba(201,145,61,0.08);
+  --adm-sidebar-link-active-bg: rgba(201,145,61,0.12);
+  --adm-sidebar-link-active-text: #C9913D;
+  --adm-topbar-bg: #1A1523;
+  --adm-topbar-border: #2A2035;
+  --adm-topbar-title-color: #F5F0E8;
+  --adm-stat-card-bg: #1A1523;
+  --adm-stat-card-border: #2A2035;
+  --adm-table-header-bg: rgba(201,145,61,0.05);
+  --adm-table-row-hover: rgba(201,145,61,0.04);
+  --adm-table-border: #2A2035;
+  --adm-action-btn-edit-color: #3498DB;
+  --adm-action-btn-delete-color: #C0392B;
+  --adm-toggle-active-bg: #C9913D;
+  --adm-toggle-inactive-bg: #3A2E4A;
+  --adm-settings-tab-active: #C9913D;
+
+  /* ═══ LAYOUT ENGINE TOKENS ═══ */
+  --layout-container-max-width: 1280px;
+  --layout-section-padding-y: 80px;
+  --layout-section-padding-x: 24px;
+  --layout-grid-gap: 24px;
+  --layout-card-radius: 14px;
+  --layout-btn-radius: 10px;
+  --layout-input-radius: 8px;
+  --layout-border-width: 1px;
+  --layout-shadow-strength: 1;
+  --layout-glass-opacity: 0.06;
+  --layout-glass-blur: 12px;
+  --layout-animation-speed: 1;
+
+  /* ═══ SEMANTIC PALETTE (V4 Deep Velvet) ═══ */
+  --bg-main: #0D0A14;
+  --bg-surface: #1A1523;
+  --text-main: #F5F0E8;
+  --text-muted: #7A6E8A;
+  --color-primary: #C9913D;
+  --color-secondary: #E0A84A;
+  --color-success: #27AE60;
+  --color-error: #C0392B;
+
+  /* ═══ TYPOGRAPHY ═══ */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-heading: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-price: 'JetBrains Mono', monospace;
+  --font-button: 'DM Sans', system-ui, sans-serif;
+  --font-badge: 'DM Sans', system-ui, sans-serif;
+}
