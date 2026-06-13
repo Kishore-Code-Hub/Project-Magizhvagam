@@ -196,77 +196,78 @@ html, body {
 /* Tablet (769px to 1024px) Header Stabilization */
 @media (min-width: 769px) and (max-width: 1024px) {
   #main-header {
-    position: relative !important;
     height: auto !important;
-    padding: 10px 24px !important;
+    padding: 0 24px !important;
     box-sizing: border-box !important;
   }
-  
+
+  /* 3-column flex: [hamburger] [logo] [icons] — no absolute positioning */
   .header-row-1 {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    position: relative !important;
-    min-height: 50px !important;
+    min-height: 56px !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    padding: 8px 0 !important;
+    gap: 0 !important;
   }
 
+  /* Left slot — hamburger lives here, fixed width so logo can center */
   .header-left-slot {
     display: flex !important;
     align-items: center !important;
+    flex: 0 0 48px !important;
+    width: 48px !important;
     justify-content: flex-start !important;
-    flex: 1 !important;
   }
 
-    .hamburger {
-      display: flex !important;
-      margin: 0 !important;
-      z-index: 30 !important;
-      background: none !important;
-      border: none !important;
-      padding: 8px !important;
-      cursor: pointer !important;
-      position: absolute !important;
-      left: 16px !important;
-      top: 50% !important;
-      transform: translateY(-50%) !important;
-  }
-
-  .logo-wrapper {
-    position: absolute !important;
-    left: 50% !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) !important;
+  /* Hamburger — stays in flow, no absolute */
+  .hamburger {
+    display: flex !important;
+    position: static !important;
+    transform: none !important;
     margin: 0 !important;
-    z-index: 10 !important;
+    padding: 8px !important;
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    z-index: auto !important;
+  }
+
+  /* Logo — centered by flex margin trick, no absolute */
+  .logo-wrapper {
+    position: static !important;
+    transform: none !important;
+    left: auto !important;
+    top: auto !important;
+    flex: 1 1 auto !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
+    z-index: auto !important;
   }
 
   .logo-title {
     font-size: 22px !important;
   }
 
-  .guest-btn {
-    display: inline-flex !important;
-    padding: 6px 12px !important;
-    font-size: 12px !important;
-    border-radius: 6px !important;
-  }
-
-  .mobile-profile-icon {
-    display: none !important;
-  }
-
+  /* Utilities — right side, fixed width mirrors left slot */
   .header-utilities {
     display: flex !important;
     align-items: center !important;
     justify-content: flex-end !important;
+    flex: 0 0 auto !important;
     gap: 12px !important;
-    flex: 1 !important;
-    z-index: 10 !important;
+    position: static !important;
+    transform: none !important;
+    z-index: auto !important;
+  }
+
+  .guest-btn {
+    display: none !important;
   }
 
   #header-contact-left {
@@ -274,54 +275,64 @@ html, body {
   }
 }
 
+
 /* Mobile (<= 768px) Header Stabilization */
 @media (max-width: 768px) {
   #main-header {
-    position: relative !important;
     height: auto !important;
-    padding: 8px 16px !important;
+    padding: 0 16px !important;
     box-sizing: border-box !important;
   }
-  
+
+  /* 3-column flex: [hamburger] [logo] [icons] — no absolute positioning */
   .header-row-1 {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    position: relative !important;
-    min-height: 50px !important;
+    min-height: 52px !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    padding: 6px 0 !important;
+    gap: 0 !important;
   }
 
+  /* Left slot — holds the hamburger button only, fixed width */
   .header-left-slot {
     display: flex !important;
     align-items: center !important;
+    flex: 0 0 40px !important;
+    width: 40px !important;
     justify-content: flex-start !important;
-    flex: 1 !important;
   }
 
+  /* Hamburger — stays in flow (no absolute), sits in the left slot */
   .hamburger {
     display: flex !important;
+    position: static !important;
+    transform: none !important;
     margin: 0 !important;
-    z-index: 20 !important;
+    padding: 6px !important;
     background: none !important;
     border: none !important;
-    padding: 8px !important;
     cursor: pointer !important;
+    z-index: auto !important;
   }
 
+  /* Logo — flex-centered naturally via margin: 0 auto, no absolute */
   .logo-wrapper {
-    position: absolute !important;
-    left: 50% !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    margin: 0 !important;
-    z-index: 10 !important;
+    position: static !important;
+    transform: none !important;
+    left: auto !important;
+    top: auto !important;
+    flex: 1 1 auto !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    text-align: center !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
+    z-index: auto !important;
     white-space: nowrap !important;
+    text-align: center !important;
   }
 
   .logo-title {
@@ -334,24 +345,24 @@ html, body {
     display: none !important;
   }
 
+  /* Utilities — right side, static in flow */
   .header-utilities {
     display: flex !important;
     align-items: center !important;
     justify-content: flex-end !important;
+    flex: 0 0 auto !important;
     gap: 8px !important;
-    flex: 1 !important;
-    z-index: 15 !important;
-      position: absolute !important;
-      right: 16px !important;
-      top: 50% !important;
-      transform: translateY(-50%) !important;
+    position: static !important;
+    transform: none !important;
+    z-index: auto !important;
   }
 
   .header-utilities .guest-btn {
-    display: none !important; /* Hide Login/Register text buttons */
+    display: none !important;
   }
 
-  .header-icon-link, .header-icon-btn {
+  .header-icon-link,
+  .header-icon-btn {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -362,19 +373,17 @@ html, body {
     position: relative !important;
   }
 
-  .header-icon-link svg, .header-icon-btn svg {
+  .header-icon-link svg,
+  .header-icon-btn svg {
     width: 20px !important;
     height: 20px !important;
-  }
-
-  .mobile-profile-icon {
-    display: inline-flex !important;
   }
 
   #header-contact-left {
     display: none !important;
   }
 }
+
 
 /* ==========================================================================
    HOMEPAGE HERO SECTION MOBILE LAYOUT (Task 1.2)

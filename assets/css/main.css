@@ -723,11 +723,12 @@ img.lazy-loaded {
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0.08em;
-  /* Premium gold gradient for brand mark */
-  background: linear-gradient(90deg,#B8860B 0%,#D4AF37 25%,#F7E27D 50%,#D4AF37 75%,#B8860B 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  /* Solid premium gold — single unified color, no gradient */
+  color: #C89B3C;
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+  background-clip: initial;
   transition: font-size 0.3s ease;
 }
 .logo-subtitle {
@@ -747,10 +748,12 @@ img.lazy-loaded {
   font-size: 22px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  background: linear-gradient(90deg,#B8860B 0%,#D4AF37 25%,#F7E27D 50%,#D4AF37 75%,#B8860B 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  /* Solid premium gold — matches header logo */
+  color: #C89B3C;
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+  background-clip: initial;
 }
 
 /* Right: utility icons */
