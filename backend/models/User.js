@@ -40,8 +40,8 @@ const UserSchema = new mongoose.Schema({
   // Account active flags (used by auth flows)
   accountActive: { type: Boolean, default: false },
   isActive: { type: Boolean, default: false },
-  verificationToken: { type: String, default: null },
-  verificationTokenExpires: { type: Date, default: null },
+  verificationOtp: { type: String, default: null },
+  verificationOtpExpires: { type: Date, default: null },
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
   

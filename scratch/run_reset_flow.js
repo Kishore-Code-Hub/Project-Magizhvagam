@@ -26,8 +26,9 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
     }
 
     // 1) Request forgot-password
+    const baseUrl = process.env.TEST_SERVER || 'http://localhost:5004';
     console.log('\n1) Requesting forgot-password OTP');
-    let res = await fetch('http://localhost:5001/api/auth/forgot-password', {
+    let res = await fetch(`${baseUrl}/api/auth/forgot-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
@@ -47,7 +48,7 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 
     // 2) Verify reset OTP
     console.log('\n2) Verifying reset OTP');
-    res = await fetch('http://localhost:5001/api/auth/verify-reset-otp', {
+    res = await fetch(`${baseUrl}/api/auth/verify-reset-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, otp })
@@ -58,7 +59,7 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
     // 3) Reset password
     console.log('\n3) Resetting password');
     const newPassword = 'NewP@ssw0rd!';
-    res = await fetch('http://localhost:5001/api/auth/reset-password', {
+    res = await fetch(`${baseUrl}/api/auth/reset-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, otp, password: newPassword })
@@ -70,7 +71,7 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 
     // 4) Attempt login
     console.log('\n4) Attempting login');
-    res = await fetch('http://localhost:5001/api/auth/login', {
+    res = await fetch(`${baseUrl}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password: newPassword })

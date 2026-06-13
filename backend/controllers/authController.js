@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const https = require('https');
 const User = require('../models/User');
-const UnverifiedStage = require('../models/UnverifiedStage');
 const Order = require('../models/Order');
 const { generateAccessToken, generateRefreshToken } = require('../middleware/authMiddleware');
 const { JWT_REFRESH_SECRET } = require('../config/jwt');
@@ -72,48 +71,52 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(passwordStr, salt);
 
     // Generate Verification OTP (5-minute expiry)
-    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
-    const verificationTokenExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    const verificationOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationOtpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    // Write parameters into the temporary staging area collection
-    await UnverifiedStage.findOneAndUpdate(
-      { email: emailStr },
-      {
-        name: nameStr,
-        email: emailStr,
-        phone: phoneStr,
-        password: hashedPassword,
-        passwordHash: hashedPassword,
-        address1: '',
-        city: '',
-        state: '',
-        pincode: '',
-        verificationToken,
-        verificationTokenExpires
-      },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
-    );
+    // Create user record immediately (emailVerified remains false)
+    const newUser = await User.create({
+      name: nameStr,
+      email: emailStr,
+      phone: phoneStr,
+      password: hashedPassword,
+      passwordHash: hashedPassword,
+      address1: '',
+      city: '',
+      state: '',
+      pincode: '',
+      emailVerified: false,
+      accountActive: false,
+      isActive: false,
+      verificationOtp,
+      verificationOtpExpires
+    });
 
-    // Send Verification Email
-    console.log('OTP GENERATED (registration)');
+    // Diagnostic: confirm OTP stored on new user record
+    console.log('Saved OTP (registration):', newUser.verificationOtp);
+
+    // Send Verification OTP email
+    console.log('OTP GENERATED (registration)', verificationOtp);
+    console.log('OTP EMAIL RECIPIENT:', newUser.email);
     try {
       const diag = await emailService.testConnection();
       console.log('SMTP status:', { transporterPresent: diag.transporterPresent, verified: diag.verified });
       if (!diag.transporterPresent || !diag.verified || !diag.verified.success) {
-        console.log('OTP (SMTP not verified):', verificationToken);
+        console.log('OTP (SMTP not verified):', verificationOtp);
       }
     } catch (e) {
       console.log('SMTP diag error:', e && e.message ? e.message : e);
     }
     console.log('CALLING SMTP SERVICE');
-    const smtpResult = await emailService.sendVerificationEmail(emailStr, verificationToken);
+    const smtpResult = await emailService.sendVerificationEmail(newUser.email, verificationOtp);
     console.log('SMTP RESPONSE:', smtpResult);
     if (smtpResult && smtpResult.success) console.log('EMAIL SENT SUCCESSFULLY');
     else console.log('EMAIL SEND FAILED:', smtpResult && smtpResult.error);
 
     res.status(201).json({
       success: true,
-      message: 'Registration successful! A verification email has been sent to your email address. Please verify your email before logging in.'
+      message: 'Registration successful! A verification OTP has been sent to your email address. Please verify using the OTP.',
+      redirect: '/verify-email.html'
     });
   } catch (error) {
     res.status(500).json({ success: false, error: `Registration error: ${error.message}` });
@@ -689,7 +692,7 @@ exports.handleLocalRegister = async (req, res) => {
     const { name, email, phone, password } = req.body;
 
     const nameStr = String(name || '').trim();
-    const emailStr = String(email || '').toLowerCase().trim();
+    const emailStr = normalizeEmail(String(email || ''));
     const phoneStr = String(phone || '').trim();
     const passwordStr = String(password || '');
 
@@ -724,45 +727,47 @@ exports.handleLocalRegister = async (req, res) => {
     const hashedPassword = await bcrypt.hash(passwordStr, salt);
 
     // Generate Verification OTP (5-minute expiry)
-    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
-    const verificationTokenExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    const verificationOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationOtpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    // Write parameters into the temporary staging area collection and log saved token
-    const stageRecord = await UnverifiedStage.findOneAndUpdate(
-      { email: emailStr },
-      {
-        name: nameStr,
-        email: emailStr,
-        phone: phoneStr,
-        password: hashedPassword,
-        passwordHash: hashedPassword,
-        verificationToken,
-        verificationTokenExpires
-      },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
-    );
-    console.log('TOKEN SAVED TO DB:', { email: stageRecord.email, verificationToken: stageRecord.verificationToken });
+    // Create user record immediately
+    const newUser = await User.create({
+      name: nameStr,
+      email: emailStr,
+      phone: phoneStr,
+      password: hashedPassword,
+      passwordHash: hashedPassword,
+      emailVerified: false,
+      accountActive: false,
+      isActive: false,
+      verificationOtp,
+      verificationOtpExpires
+    });
 
-    // Send Verification Email
-    console.log('OTP GENERATED (registration - secondary)', verificationToken);
+    // Diagnostic: confirm OTP stored on new user record
+    console.log('Saved OTP (registration - secondary):', newUser.verificationOtp);
+
+    console.log('OTP GENERATED (registration - secondary)', verificationOtp);
+    console.log('OTP EMAIL RECIPIENT:', newUser.email);
     try {
       const diag = await emailService.testConnection();
       console.log('SMTP status:', { transporterPresent: diag.transporterPresent, verified: diag.verified });
       if (!diag.transporterPresent || !diag.verified || !diag.verified.success) {
-        console.log('OTP (SMTP not verified):', verificationToken);
+        console.log('OTP (SMTP not verified):', verificationOtp);
       }
     } catch (e) {
       console.log('SMTP diag error:', e && e.message ? e.message : e);
     }
     console.log('CALLING SMTP SERVICE');
-    const smtpResult2 = await emailService.sendVerificationEmail(emailStr, verificationToken);
+    const smtpResult2 = await emailService.sendVerificationEmail(newUser.email, verificationOtp);
     console.log('SMTP RESPONSE:', smtpResult2);
     if (smtpResult2 && smtpResult2.success) console.log('EMAIL SENT SUCCESSFULLY');
     else console.log('EMAIL SEND FAILED:', smtpResult2 && smtpResult2.error);
 
     res.status(201).json({
       success: true,
-      message: 'Registration successful! A verification OTP has been sent to your email address. Please verify using the OTP.'
+      message: 'Registration successful! A verification OTP has been sent to your email address. Please verify using the OTP.',
+      redirect: '/verify-email.html'
     });
   } catch (error) {
     res.status(500).json({ success: false, error: `Registration error: ${error.message}` });
@@ -821,11 +826,11 @@ exports.handleLocalLogin = async (req, res) => {
     }
 
     // Enforce email verification check for customers
-    if (user.role === 'customer' && user.emailVerified === false) {
+    if (user.role === 'customer' && user.emailVerified !== true) {
       return res.status(403).json({
         success: false,
         emailVerified: false,
-        error: 'Account inactive. Please verify your email address.'
+        error: 'Please verify your email first. Request a new OTP via /api/auth/resend-otp.'
       });
     }
 
@@ -883,78 +888,16 @@ exports.handleLocalLogin = async (req, res) => {
 
 
 
-// @desc    Execute email verification
+// @desc    Execute email verification (link-based) — deprecated
 // @route   GET /api/auth/verify-email
 exports.executeEmailVerification = async (req, res) => {
-  try {
-    const { token } = req.query;
-    console.log('TOKEN FROM URL:', token);
-    if (!token) {
-      return res.status(400).send('<h1>Verification token is missing.</h1>');
-    }
-
-    console.log('DB lookup for verification token:', { verificationToken: token, now: new Date() });
-    const stageRecord = await UnverifiedStage.findOne({
-      verificationToken: token,
-      verificationTokenExpires: { $gt: new Date() }
-    });
-    console.log('MATCHED STAGE RECORD:', stageRecord);
-
-    if (!stageRecord) {
-      return res.status(400).send(`
-        <div style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-          <h2 style="color: #ef4444;">Verification Link Expired or Invalid</h2>
-          <p>The link may have expired or is invalid. Please try registering again.</p>
-          <a href="/login.html" style="color: #6A0DAD; font-weight: bold; text-decoration: none;">Return to Login</a>
-        </div>
-      `);
-    }
-
-    // Instantiate user profile within verified accounts collection
-    await User.create({
-      name: stageRecord.name,
-      email: stageRecord.email,
-      phone: stageRecord.phone,
-      password: stageRecord.password,
-      passwordHash: stageRecord.passwordHash,
-      address1: stageRecord.address1 || '',
-      city: stageRecord.city || '',
-      state: stageRecord.state || '',
-      pincode: stageRecord.pincode || '',
-      phoneVerified: true,
-      emailVerified: true,
-      accountActive: true,
-      isActive: true,
-      role: 'customer',
-      addresses: [{
-        fullName: stageRecord.name,
-        phone: stageRecord.phone,
-        street: stageRecord.address1 || '',
-        city: stageRecord.city || '',
-        state: stageRecord.state || '',
-        zipCode: stageRecord.pincode || '',
-        isDefault: true
-      }]
-    });
-
-    // Purge baseline staged tracking parameters safely
-    await UnverifiedStage.deleteOne({ _id: stageRecord._id });
-
-    res.send(`
-      <div style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-        <h2 style="color: #28a745;">Email Verified Successfully!</h2>
-        <p>Your email has been verified. You can now checkout and manage your wishlist.</p>
-        <p>Redirecting to login in 3 seconds...</p>
-        <script>
-          setTimeout(() => {
-            window.location.href = '/login.html?verified=true';
-          }, 3000);
-        </script>
-      </div>
-    `);
-  } catch (error) {
-    res.status(500).send(`<h1>Server Error during verification: ${error.message}</h1>`);
-  }
+  // This route is intentionally deprecated. Email verification is now OTP-based.
+  return res.status(410).send(`
+    <div style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+      <h2 style="color: #ef4444;">Verification Links Disabled</h2>
+      <p>We no longer support link-based email verification. Please use the OTP verification flow at <a href="/verify-email.html">Verify Email</a>.</p>
+    </div>
+  `);
 };
 
 // @desc    Verify email OTP
@@ -965,51 +908,40 @@ exports.verifyOtp = async (req, res) => {
     if (!email || !otp) {
       return res.status(400).json({ success: false, error: 'Please provide email and OTP code' });
     }
-
     const normalizedEmail = normalizeEmail(email);
-    const stageRecord = await UnverifiedStage.findOne({
+
+    // Diagnostic: log incoming values
+    console.log('VERIFY OTP REQUEST:', { email: normalizedEmail, enteredOtp: otp });
+
+    // Retrieve record for diagnostic comparison (do not leak to client)
+    const userByEmail = await User.findOne({ email: normalizedEmail });
+    if (userByEmail) {
+      console.log('Stored OTP (DB):', userByEmail.verificationOtp);
+      console.log('OTP Expiry (DB):', userByEmail.verificationOtpExpires);
+    } else {
+      console.log('No user found for email during OTP check:', normalizedEmail);
+    }
+
+    const user = await User.findOne({
       email: normalizedEmail,
-      verificationToken: otp.trim(),
-      verificationTokenExpires: { $gt: new Date() }
+      verificationOtp: otp.trim(),
+      verificationOtpExpires: { $gt: new Date() }
     });
 
-    if (!stageRecord) {
+    if (!user) {
       return res.status(400).json({ success: false, error: 'Invalid or expired OTP. Please try again or request a new OTP.' });
     }
 
-    // Instantiate user profile within verified accounts collection
-    await User.create({
-      name: stageRecord.name,
-      email: stageRecord.email,
-      phone: stageRecord.phone,
-      password: stageRecord.password,
-      passwordHash: stageRecord.passwordHash,
-      address1: stageRecord.address1 || '',
-      city: stageRecord.city || '',
-      state: stageRecord.state || '',
-      pincode: stageRecord.pincode || '',
-      phoneVerified: true,
-      emailVerified: true,
-      accountActive: true,
-      isActive: true,
-      role: 'customer',
-      addresses: [{
-        fullName: stageRecord.name,
-        phone: stageRecord.phone,
-        street: stageRecord.address1 || '',
-        city: stageRecord.city || '',
-        state: stageRecord.state || '',
-        zipCode: stageRecord.pincode || '',
-        isDefault: true
-      }]
-    });
-
-    // Purge staging record
-    await UnverifiedStage.deleteOne({ _id: stageRecord._id });
+    user.emailVerified = true;
+    user.accountActive = true;
+    user.verificationOtp = null;
+    user.verificationOtpExpires = null;
+    await user.save();
 
     res.status(200).json({
       success: true,
-      message: 'Email verified successfully! Your account is now active.'
+      message: 'Email verified successfully! Your account is now active.',
+      redirect: '/login.html?verified=true'
     });
   } catch (error) {
     res.status(500).json({ success: false, error: `Verification error: ${error.message}` });
@@ -1025,20 +957,27 @@ exports.resendOtp = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please provide email address' });
     }
 
-    const stageRecord = await UnverifiedStage.findOne({ email: normalizeEmail(email) });
-    if (!stageRecord) {
-      return res.status(400).json({ success: false, error: 'No unverified account registration found for this email address.' });
+    const user = await User.findOne({ email: normalizeEmail(email) });
+    if (!user) {
+      return res.status(400).json({ success: false, error: 'No account found for this email address.' });
+    }
+    if (user.emailVerified === true) {
+      return res.status(400).json({ success: false, error: 'Account already verified.' });
     }
 
     // Generate new OTP
     const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
 
-    stageRecord.verificationToken = newOtp;
-    stageRecord.verificationTokenExpires = expiry;
-    await stageRecord.save();
+    user.verificationOtp = newOtp;
+    user.verificationOtpExpires = expiry;
+    await user.save();
 
-    console.log('OTP GENERATED (resend)');
+    // Diagnostic logs
+    console.log('OTP GENERATED (resend)', newOtp);
+    console.log('OTP EMAIL RECIPIENT:', user.email);
+    console.log('Saved OTP after DB write:', user.verificationOtp);
+    console.log('Saved OTP expiry after DB write:', user.verificationOtpExpires);
     try {
       const diag = await emailService.testConnection();
       console.log('SMTP status:', { transporterPresent: diag.transporterPresent, verified: diag.verified });
@@ -1049,7 +988,7 @@ exports.resendOtp = async (req, res) => {
       console.log('SMTP diag error:', e && e.message ? e.message : e);
     }
     console.log('CALLING SMTP SERVICE');
-    const smtpResResend = await emailService.sendVerificationEmail(stageRecord.email, newOtp);
+    const smtpResResend = await emailService.sendVerificationEmail(user.email, newOtp);
     console.log('SMTP RESPONSE:', smtpResResend);
     if (smtpResResend && smtpResResend.success) console.log('EMAIL SENT SUCCESSFULLY');
     else console.log('EMAIL SEND FAILED:', smtpResResend && smtpResResend.error);
@@ -1072,7 +1011,9 @@ exports.requestPasswordResetLink = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please provide email' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    // Normalize email lookup to match registration normalization rules
+    const normalizedEmail = normalizeEmail(String(email || ''));
+    const user = await User.findOne({ email: normalizedEmail });
     
     // Enterprise security: do not leak whether account exists
     if (!user) {
@@ -1088,7 +1029,12 @@ exports.requestPasswordResetLink = async (req, res) => {
     user.resetPasswordExpires = new Date(Date.now() + 3 * 60 * 1000); // 3 minutes expiry
     await user.save();
 
-    console.log('OTP GENERATED (password reset request)');
+    // Diagnostic logging
+    console.log('FORGOT PASSWORD REQUEST');
+    console.log('Recipient:', user.email);
+    console.log('OTP (generated):', otp);
+    console.log('Saved resetPasswordToken (DB):', user.resetPasswordToken);
+    console.log('Saved resetPasswordExpires (DB):', user.resetPasswordExpires);
     try {
       const diag = await emailService.testConnection();
       console.log('SMTP status:', { transporterPresent: diag.transporterPresent, verified: diag.verified });
@@ -1101,8 +1047,16 @@ exports.requestPasswordResetLink = async (req, res) => {
     console.log('CALLING SMTP SERVICE');
     const smtpResReset = await emailService.sendPasswordResetEmail(user.email, otp);
     console.log('SMTP RESPONSE:', smtpResReset);
-    if (smtpResReset && smtpResReset.success) console.log('EMAIL SENT SUCCESSFULLY');
-    else console.log('EMAIL SEND FAILED:', smtpResReset && smtpResReset.error);
+    if (smtpResReset && smtpResReset.success) {
+      console.log('EMAIL SENT SUCCESSFULLY (password reset)');
+    } else {
+      console.log('EMAIL SEND FAILED (password reset):', smtpResReset && smtpResReset.error);
+      try {
+        await logActivity(req, 'email_send_failure', `password_reset to ${user.email}: ${smtpResReset && smtpResReset.error}`);
+      } catch (e) {
+        console.log('Failed to write audit log for email send failure:', e && e.message ? e.message : e);
+      }
+    }
 
     res.status(200).json({
       success: true,
@@ -1120,6 +1074,15 @@ exports.verifyResetOtp = async (req, res) => {
     const { email, otp } = req.body;
     if (!email || !otp) {
       return res.status(400).json({ success: false, error: 'Please provide email and OTP code' });
+    }
+
+    console.log('VERIFY RESET OTP REQUEST:', { email: normalizeEmail(email), enteredOtp: otp });
+    const userByEmail = await User.findOne({ email: normalizeEmail(email) });
+    if (userByEmail) {
+      console.log('Stored reset token (DB):', userByEmail.resetPasswordToken);
+      console.log('Stored reset expiry (DB):', userByEmail.resetPasswordExpires);
+    } else {
+      console.log('No user found for email during reset OTP check:', normalizeEmail(email));
     }
 
     const user = await User.findOne({
@@ -1287,11 +1250,13 @@ exports.updateProfileMetadata = async (req, res) => {
       }
       user.email = emailStr;
       user.emailVerified = false; // require re-verification upon email change
-      const verificationToken = crypto.randomBytes(32).toString('hex');
-      const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      user.verificationToken = verificationToken;
-      user.verificationTokenExpires = verificationTokenExpires;
-      await sendVerificationEmail(emailStr, verificationToken);
+      const verificationOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      const verificationOtpExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      user.verificationOtp = verificationOtp;
+      user.verificationOtpExpires = verificationOtpExpires;
+      console.log('OTP GENERATED (email change):', verificationOtp);
+      console.log('OTP EMAIL RECIPIENT:', emailStr);
+      await sendVerificationEmail(emailStr, verificationOtp);
     }
 
     if (addresses) {

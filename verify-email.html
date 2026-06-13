@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Verify Email - Magizhvagam</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;padding:40px;background:#f9f9f9} .card{max-width:420px;margin:40px auto;padding:24px;background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06)} input{width:100%;padding:10px;margin:8px 0;border:1px solid #ddd;border-radius:4px} button{padding:10px 14px;border:none;background:#6A0DAD;color:#fff;border-radius:6px;cursor:pointer} .muted{color:#666;font-size:14px}</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Verify Your Email</h2>
+    <p class="muted">Enter the 6-digit OTP sent to your email address.</p>
+    <label for="email">Email</label>
+    <input id="email" type="email" placeholder="you@example.com" required>
+    <label for="otp">6 Digit OTP</label>
+    <input id="otp" type="text" placeholder="123456" inputmode="numeric" maxlength="6" required>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button id="verify">Verify</button>
+      <button id="resend" type="button" style="background:#888">Resend OTP</button>
+    </div>
+    <p id="msg" class="muted"></p>
+  </div>
+<script>
+document.getElementById('verify').addEventListener('click', async () => {
+  const email = document.getElementById('email').value.trim();
+  const otp = document.getElementById('otp').value.trim();
+  const msg = document.getElementById('msg');
+  msg.textContent = '';
+  if (!email || !otp) { msg.textContent = 'Please enter email and OTP.'; return; }
+  try {
+    const res = await fetch('/api/auth/verify-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, otp }) });
+    const j = await res.json();
+    if (res.ok && j.success) {
+      msg.textContent = 'Email verified successfully. Redirecting to login...';
+      setTimeout(() => window.location.href = (j.redirect || '/login.html?verified=true'), 1500);
+    } else {
+      msg.textContent = j && j.error ? j.error : 'Verification failed';
+    }
+  } catch (e) { msg.textContent = 'Network error'; }
+});
+
+document.getElementById('resend').addEventListener('click', async () => {
+  const email = document.getElementById('email').value.trim();
+  const msg = document.getElementById('msg');
+  msg.textContent = '';
+  if (!email) { msg.textContent = 'Please enter your email to resend OTP.'; return; }
+  try {
+    const res = await fetch('/api/auth/resend-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
+    const j = await res.json();
+    if (res.ok && j.success) {
+      msg.textContent = 'A new OTP has been sent to your email.';
+    } else {
+      msg.textContent = j && j.error ? j.error : 'Resend failed';
+    }
+  } catch (e) { msg.textContent = 'Network error'; }
+});
+</script>
+</body>
+</html>

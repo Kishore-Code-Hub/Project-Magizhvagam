@@ -6,7 +6,7 @@ const upload = multer({ limits: { fileSize: 5 * 1024 * 1024 } }); // Memory stor
 const { 
   handleLocalRegister, 
   handleLocalLogin, 
-  executeEmailVerification,  
+  
   requestPasswordResetLink, 
   processSecurePasswordUpdate, 
   terminateUserSession, 
@@ -32,7 +32,6 @@ const { protect, optionalProtect, adminOnly } = require('../middleware/authMiddl
 // Primary Auth Endpoints
 router.post('/register', handleLocalRegister);
 router.post('/login', handleLocalLogin);
-router.get('/verify-email', executeEmailVerification);
 router.post('/verify-otp', verifyOtp);
 router.post('/resend-otp', resendOtp);
 router.post('/forgot-password', requestPasswordResetLink);

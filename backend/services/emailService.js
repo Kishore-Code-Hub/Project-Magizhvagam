@@ -89,20 +89,16 @@ async function sendMail({ to, subject, html, text }) {
 }
 
 async function sendVerificationEmail(to, token) {
-  const subject = 'Verify Your Magizhvagam Account';
-  const verifyUrl = `${process.env.APP_ORIGIN || 'http://localhost:5000'}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
-  // Log the verification URL for diagnostics (do not keep in production)
-  console.log('EMAIL VERIFY URL:', verifyUrl);
+  const subject = 'Magizhvagam Email Verification OTP';
+  // Diagnostic logging to ensure recipient correctness
+  console.log('OTP EMAIL RECIPIENT:', to);
+  console.log('OTP CODE:', token);
   const html = `
     <div style="font-family: Arial, sans-serif; padding: 20px; max-width:600px; margin:0 auto;">
-      <h2 style="color:#b8860b">Verify Your Magizhvagam Account</h2>
-      <p>Click the button below to verify your email and activate your account.</p>
-      <div style="text-align:center; margin:24px 0;">
-        <a href="${verifyUrl}" style="background: linear-gradient(90deg,#B8860B 0%,#D4AF37 25%,#F7E27D 50%,#D4AF37 75%,#B8860B 100%); color:#111; padding:12px 20px; border-radius:6px; text-decoration:none; font-weight:700;">Verify Email</a>
-      </div>
-      <p>If the button doesn't work, visit this link:</p>
-      <p style="word-break:break-all"><a href="${verifyUrl}">${verifyUrl}</a></p>
-      <p style="color:#666; font-size:12px;">If you did not sign up, please ignore this email.</p>
+      <h2 style="color:#b8860b">Magizhvagam Email Verification</h2>
+      <p>Your One-Time Password (OTP) to verify your email is:</p>
+      <div style="text-align:center; margin:20px 0; font-size:32px; font-weight:700;">${token}</div>
+      <p>This code expires in 5 minutes. If you did not sign up, ignore this email.</p>
     </div>
   `;
   return await sendMail({ to, subject, html });

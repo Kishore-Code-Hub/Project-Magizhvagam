@@ -296,13 +296,26 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = parseInt(process.env.PORT, 10) || 5000;
 let server;
-if (!process.env.VERCEL) {
-  server = app.listen(PORT, () => {
-    console.log(`MAGIZHVAGAM E-Commerce Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+function startServer(port) {
+  if (process.env.VERCEL) return;
+  server = app.listen(port, () => {
+    console.log(`MAGIZHVAGAM E-Commerce Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
+  });
+
+  server.on('error', (err) => {
+    if (err && err.code === 'EADDRINUSE') {
+      console.error(`Port ${port} already in use. Trying ${port + 1}...`);
+      setTimeout(() => startServer(port + 1), 500);
+    } else {
+      console.error('Server error:', err);
+      process.exit(1);
+    }
   });
 }
+
+startServer(PORT);
 
 // Graceful Shutdown implementation
 const gracefulShutdown = () => {
