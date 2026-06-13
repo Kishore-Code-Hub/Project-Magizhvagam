@@ -1,11 +1,13 @@
 /**
- * MAGIZHVAGAM — Appearance Studio
- * Visual editors for homepage content, theme presets, and V4 settings sync.
+ * MAGIZHVAGAM V4 — Appearance Studio JS Controller
+ * Handles visual customizer panels, WCAG contrast safety, 14 tabs bindings,
+ * live preview iframe variables injection, and double-writes to legacy and V4 settings.
  */
 (function () {
   'use strict';
 
   let homepageV4 = null;
+  let themeV4 = null;
   let unsavedChanges = false;
 
   const SECTION_LABELS = {
@@ -62,7 +64,7 @@
   /* ─── Visual List Editor (hero banners, promo cards) ─── */
   function createListEditor(containerId, fields, items, onChange) {
     const container = document.getElementById(containerId);
-    if (!container) return;
+    if (!container) return null;
 
     function render() {
       container.innerHTML = (items || []).map((item, index) => `
@@ -70,9 +72,9 @@
           <div class="visual-editor-card-header">
             <strong>Slide ${index + 1}</strong>
             <div class="visual-editor-card-actions">
-              ${index > 0 ? `<button type="button" class="studio-btn studio-btn-secondary ve-move-up" data-i="${index}">↑</button>` : ''}
-              ${index < items.length - 1 ? `<button type="button" class="studio-btn studio-btn-secondary ve-move-down" data-i="${index}">↓</button>` : ''}
-              <button type="button" class="studio-btn studio-btn-danger ve-remove" data-i="${index}">Remove</button>
+              ${index > 0 ? `<button type="button" class="studio-btn studio-btn-secondary ve-move-up" data-i="${index}" style="padding:4px 8px; font-size:10px;">↑</button>` : ''}
+              ${index < items.length - 1 ? `<button type="button" class="studio-btn studio-btn-secondary ve-move-down" data-i="${index}" style="padding:4px 8px; font-size:10px;">↓</button>` : ''}
+              <button type="button" class="studio-btn studio-btn-danger ve-remove" data-i="${index}" style="padding:4px 8px; font-size:10px;">Remove</button>
             </div>
           </div>
           <div class="visual-editor-preview">
@@ -180,20 +182,20 @@
   /* ─── Testimonials visual editor ─── */
   function createTestimonialsEditor(containerId, items, onChange) {
     const container = document.getElementById(containerId);
-    if (!container) return;
+    if (!container) return null;
 
     function render() {
       container.innerHTML = (items || []).map((item, index) => `
         <div class="visual-editor-card" data-index="${index}">
           <div class="visual-editor-card-header">
             <strong>Review ${index + 1}</strong>
-            <button type="button" class="studio-btn studio-btn-danger ve-remove" data-i="${index}">Remove</button>
+            <button type="button" class="studio-btn studio-btn-danger ve-remove" data-i="${index}" style="padding:4px 8px; font-size:10px;">Remove</button>
           </div>
           <div class="control-group"><label>Name</label><input type="text" class="studio-input ve-field" data-i="${index}" data-field="name" value="${escapeHtml(item.name || '')}"></div>
           <div class="control-group"><label>Review Text</label><textarea class="studio-input ve-field" data-i="${index}" data-field="text" rows="3">${escapeHtml(item.text || '')}</textarea></div>
-          <div class="control-row">
+          <div class="control-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <div class="control-group"><label>Rating (1-5)</label><input type="number" min="1" max="5" class="studio-input ve-field" data-i="${index}" data-field="rating" value="${item.rating || 5}"></div>
-            <div class="control-group"><label>Location / Occasion</label><input type="text" class="studio-input ve-field" data-i="${index}" data-field="location" value="${escapeHtml(item.location || item.occasion || '')}"></div>
+            <div class="control-group"><label>Location</label><input type="text" class="studio-input ve-field" data-i="${index}" data-field="location" value="${escapeHtml(item.location || item.occasion || '')}"></div>
           </div>
         </div>
       `).join('') + `<button type="button" class="studio-btn studio-btn-secondary ve-add" style="width:100%;">+ Add Testimonial</button>`;
@@ -225,7 +227,7 @@
     }
 
     render();
-    return { getItems: () => items };
+    return { getItems: () => items, setItems: (next) => { items = next; render(); } };
   }
 
   /* ─── Homepage sections manager ─── */
@@ -236,13 +238,13 @@
     const sorted = [...sections].sort((a, b) => a.order - b.order);
     container.innerHTML = sorted.map((sec, idx) => `
       <div class="section-manager-row" data-id="${sec.id}">
-        <label class="section-toggle">
+        <label class="section-toggle" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
           <input type="checkbox" class="section-enabled" data-id="${sec.id}" ${sec.enabled ? 'checked' : ''}>
           <span>${SECTION_LABELS[sec.id] || sec.id}</span>
         </label>
         <div class="section-order-btns">
-          <button type="button" class="studio-btn studio-btn-secondary sec-up" data-i="${idx}" ${idx === 0 ? 'disabled' : ''}>↑</button>
-          <button type="button" class="studio-btn studio-btn-secondary sec-down" data-i="${idx}" ${idx === sorted.length - 1 ? 'disabled' : ''}>↓</button>
+          <button type="button" class="studio-btn studio-btn-secondary sec-up" data-i="${idx}" ${idx === 0 ? 'disabled' : ''} style="padding:4px 8px; font-size:10px;">↑</button>
+          <button type="button" class="studio-btn studio-btn-secondary sec-down" data-i="${idx}" ${idx === sorted.length - 1 ? 'disabled' : ''} style="padding:4px 8px; font-size:10px;">↓</button>
         </div>
       </div>
     `).join('');
@@ -287,6 +289,172 @@
   let promoItems = [];
   let testimonialItems = [];
 
+  // Replaces the legacy admin.js loader to coordinate the 14 tabs bindings
+  async function loadHomepageBuilderSettings() {
+    const form = document.getElementById('homepage-builder-form');
+    if (!form) return;
+
+    try {
+      // 1. Fetch site-settings (V4 Theme)
+      const themeRes = await adminFetch('/api/site-settings/theme');
+      const themeData = await themeRes.json();
+      if (themeData.success && themeData.data) {
+        themeV4 = themeData.data;
+
+        // Colors values
+        const t = themeV4.theme || {};
+        const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+
+        // Presets check
+        const activePreset = themeV4.meta?.activePresetId || 'velvet';
+        document.querySelectorAll('.preset-option-card').forEach(c => c.classList.remove('active'));
+        document.getElementById(`preset-${activePreset}`)?.classList.add('active');
+
+        // Color pickers sync
+        setVal('primary-color-field', t.hdr?.logo_text || '#D4A03A');
+        setVal('secondary-color-field', t.hdr?.nav_link_hover || '#E0A84A');
+        setVal('accent-color-field', t.hero?.badge_text || '#D4A03A');
+
+        setVal('palette-bg-main', t.hdr?.bg || '#0B0618');
+        setVal('palette-bg-surface', t.nav?.dropdown_bg || '#171027');
+        setVal('palette-text-main', t.hdr?.nav_link_color || '#FFFFFF');
+        setVal('palette-text-muted', t.hero?.subheadline_color || '#D8D8D8');
+
+        setVal('palette-color-primary', t.btn?.primary_bg || '#D4A03A');
+        setVal('palette-color-secondary', t.btn?.primary_hover_bg || '#211638');
+        setVal('palette-color-success', t.pc?.stock_in_color || '#2ECC71');
+        setVal('palette-color-error', t.pc?.stock_out_color || '#E74C3C');
+
+        // Fonts
+        setVal('font-family-field', themeV4.typography?.body?.family || 'Outfit');
+        const scaleVal = themeV4.typography?.scaleMultiplier || 1.0;
+        setVal('font-scale-field', scaleVal);
+        const fontScaleLabel = document.getElementById('font-scale-val');
+        if (fontScaleLabel) fontScaleLabel.textContent = scaleVal;
+
+        // Header
+        setVal('brand-name-field', themeV4.meta?.storeName || 'MAGIZHVAGAM');
+        setVal('logo-field', themeV4.logo || '');
+        if (typeof window.updateLogoPreview === 'function') {
+          window.updateLogoPreview(themeV4.logo || '');
+        }
+        setVal('whatsapp-contact-field', themeV4.meta?.socialLinks?.whatsapp || '919876543210');
+        
+        const stickyToggle = document.getElementById('hdr-sticky-toggle');
+        if (stickyToggle) stickyToggle.checked = t.hdr?.sticky === true || t.hdr?.sticky === undefined;
+
+        const annToggle = document.getElementById('hdr-announcement-toggle');
+        if (annToggle) annToggle.checked = t.hdr?.announcement_active !== false;
+
+        setVal('hdr-announcement-bg', t.hdr?.announcement_bg || '#C9913D');
+        setVal('hdr-announcement-text', t.hdr?.announcement_text || '#0D0A14');
+
+        // Buttons
+        const btnRadius = themeV4.layout?.btnRadius || 10;
+        let btnStyle = 'rounded';
+        if (btnRadius === 0) btnStyle = 'sharp';
+        else if (btnRadius >= 30) btnStyle = 'pill';
+        setVal('button-style-field', btnStyle);
+        setVal('button-shadow-field', t.btn?.primary_shadow ? 'pronounced' : 'soft');
+        setVal('button-weight-field', t.btn?.font_weight || '600');
+
+        // Cards
+        const cardRadius = themeV4.layout?.cardRadius || 14;
+        setVal('card-radius-field', cardRadius);
+        const cardRadiusLabel = document.getElementById('card-radius-val');
+        if (cardRadiusLabel) cardRadiusLabel.textContent = cardRadius;
+
+        const cardShadow = themeV4.layout?.shadowStrength || 1;
+        setVal('card-shadow-field', cardShadow);
+        const cardShadowLabel = document.getElementById('card-shadow-val');
+        if (cardShadowLabel) cardShadowLabel.textContent = cardShadow;
+
+        const hoverY = t.pc?.hover_translate_y || 6;
+        setVal('card-hover-y-field', hoverY);
+        const hoverYLabel = document.getElementById('card-hover-y-val');
+        if (hoverYLabel) hoverYLabel.textContent = hoverY;
+
+        setVal('card-image-bg-field', t.pc?.image_bg || '#0D0A14');
+
+        // Product details gallery
+        setVal('pdp-gallery-border-field', t.pdp?.gallery_active_border || '#C9913D');
+        setVal('pdp-spec-heading-field', t.pdp?.specs_heading_color || '#F5F0E8');
+        setVal('pdp-tab-active-field', t.pdp?.tab_active_color || '#C9913D');
+
+        // Category pages
+        setVal('category-grid-gap-field', themeV4.layout?.gridGap || 24);
+        setVal('category-grid-density-field', themeV4.layout?.gridDensity || '3');
+
+        // Mobile settings
+        const mFontScale = themeV4.layout?.mobileFontScale || 0.9;
+        setVal('mobile-font-scale-field', mFontScale);
+        const mFontScaleVal = document.getElementById('mobile-font-scale-val');
+        if (mFontScaleVal) mFontScaleVal.textContent = mFontScale;
+        setVal('mobile-header-height-field', t.hdr?.mobile_height || 64);
+        setVal('mobile-nav-bg-field', t.nav?.mobile_bg || '#0D0A14');
+
+        // Animations settings
+        const animEnableToggle = document.getElementById('anim-enable-toggle');
+        if (animEnableToggle) animEnableToggle.checked = themeV4.layout?.animationsEnabled !== false;
+        
+        const animSpeed = themeV4.layout?.animationSpeed || 0.3;
+        setVal('anim-speed-field', animSpeed);
+        const animSpeedVal = document.getElementById('anim-speed-val');
+        if (animSpeedVal) animSpeedVal.textContent = animSpeed;
+        setVal('anim-hover-style-field', t.pc?.hover_style || 'lift');
+
+        // Custom CSS
+        setVal('custom-css-field', themeV4.customCss || '');
+        if (typeof window.validateCustomCSS === 'function') {
+          window.validateCustomCSS(themeV4.customCss || '');
+        }
+
+        // Sync inputs adjacent to color pickers
+        document.querySelectorAll('.color-picker-wrapper').forEach(wrapper => {
+          const picker = wrapper.querySelector('input[type="color"]');
+          const textInput = wrapper.querySelector('input[type="text"]');
+          if (picker && textInput) textInput.value = picker.value.toUpperCase();
+        });
+      }
+
+      // 2. Fetch homepage settings (Legacy values and slider images)
+      const homeRes = await adminFetch('/api/settings/homepage');
+      const homeData = await homeRes.json();
+      if (homeData.success && homeData.setting) {
+        const setting = homeData.setting;
+
+        // Footer & Social
+        const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+        setVal('footer-content-field', setting.footerContent || '');
+        setVal('footer-copyright-field', setting.footerCopyright || '© 2026 MAGIZHVAGAM. All rights reserved.');
+        setVal('footer-instagram-field', setting.footerInstagram || '');
+        setVal('footer-facebook-field', setting.footerFacebook || '');
+        setVal('footer-twitter-field', setting.footerTwitter || '');
+        setVal('footer-whatsapp-field', setting.footerWhatsapp || '');
+
+        // Curated Products
+        setVal('featured-product-ids', (setting.featuredProductIds || []).join(', '));
+        setVal('bestseller-product-ids', (setting.bestSellerProductIds || []).join(', '));
+        setVal('newarrival-product-ids', (setting.newArrivalProductIds || []).join(', '));
+      }
+
+      // 3. Load sections, sliders, and testimonials
+      await loadV4Homepage();
+
+      // Trigger contrast compliance check
+      if (typeof window.updateContrastLock === 'function') {
+        window.updateContrastLock();
+      }
+      if (typeof window.syncLivePreview === 'function') {
+        window.syncLivePreview();
+      }
+
+    } catch (err) {
+      console.error('Failed loading Appearance Studio values:', err);
+      showToast('Error loading appearance configuration', 'error');
+    }
+  }
+
   async function loadV4Homepage() {
     try {
       const res = await adminFetch('/api/site-settings/homepage');
@@ -321,11 +489,11 @@
         });
       }
     } catch (err) {
-      console.warn('[appearance-studio] V4 homepage load failed:', err.message);
+      console.warn('V4 homepage modules failed to load:', err.message);
     }
   }
 
-  // Load About page admin settings
+  // Load About page settings
   async function loadAboutSettings() {
     try {
       const res = await adminFetch('/api/about-page');
@@ -442,13 +610,14 @@
     }
 
     try {
+      // 1. Save V4 homepage sections
       const v4Result = await saveV4Homepage();
       if (!v4Result.success) {
         showSaveStatus(false, v4Result.error || 'Failed to save homepage sections');
         return false;
       }
 
-      // Save About page settings if present
+      // 2. Save About page settings
       try {
         const aboutPayload = {
           storyHeading: document.getElementById('about-story-heading-field')?.value || '',
@@ -467,14 +636,161 @@
         console.warn('Failed to save about page', err);
       }
 
-      form.requestSubmit();
-      markClean();
-      showSaveStatus(true, `Saved successfully at ${new Date().toLocaleTimeString()}`);
-      window.dispatchEvent(new CustomEvent('mz:theme-updated'));
-      return true;
+      // 3. Save V4 Theme styling
+      const activePreset = document.querySelector('.preset-option-card.active')?.id?.replace('preset-', '') || 'velvet';
+      const themePayload = {
+        logo: document.getElementById('logo-field').value,
+        customCss: document.getElementById('custom-css-field').value,
+        meta: {
+          activePresetId: activePreset,
+          storeName: document.getElementById('brand-name-field').value.trim(),
+          socialLinks: {
+            whatsapp: document.getElementById('whatsapp-contact-field').value.trim()
+          }
+        },
+        typography: {
+          body: { family: document.getElementById('font-family-field').value },
+          heading: { family: document.getElementById('font-family-field').value },
+          scaleMultiplier: parseFloat(document.getElementById('font-scale-field').value) || 1.0
+        },
+        layout: {
+          btnRadius: document.getElementById('button-style-field').value === 'sharp' ? 0 : (document.getElementById('button-style-field').value === 'pill' ? 30 : 10),
+          cardRadius: parseInt(document.getElementById('card-radius-field').value, 10) || 14,
+          shadowStrength: parseFloat(document.getElementById('card-shadow-field').value) || 1.0,
+          gridGap: parseInt(document.getElementById('category-grid-gap-field').value, 10) || 24,
+          gridDensity: document.getElementById('category-grid-density-field').value,
+          mobileFontScale: parseFloat(document.getElementById('mobile-font-scale-field').value) || 0.9,
+          animationsEnabled: document.getElementById('anim-enable-toggle').checked,
+          animationSpeed: parseFloat(document.getElementById('anim-speed-field').value) || 0.3
+        },
+        theme: {
+          hdr: {
+            bg: document.getElementById('palette-bg-main').value,
+            border: document.getElementById('primary-color-field').value,
+            logo_text: document.getElementById('primary-color-field').value,
+            nav_link_color: document.getElementById('palette-text-main').value,
+            nav_link_hover: document.getElementById('secondary-color-field').value,
+            nav_link_active: document.getElementById('secondary-color-field').value,
+            icon_color: document.getElementById('palette-text-main').value,
+            icon_hover: document.getElementById('secondary-color-field').value,
+            sticky_bg: document.getElementById('palette-bg-main').value,
+            sticky: document.getElementById('hdr-sticky-toggle').checked,
+            announcement_active: document.getElementById('hdr-announcement-toggle').checked,
+            announcement_bg: document.getElementById('hdr-announcement-bg').value,
+            announcement_text: document.getElementById('hdr-announcement-text').value,
+            mobile_height: parseInt(document.getElementById('mobile-header-height-field').value, 10) || 64
+          },
+          nav: {
+            dropdown_bg: document.getElementById('palette-bg-surface').value,
+            dropdown_border: document.getElementById('primary-color-field').value,
+            dropdown_item_color: document.getElementById('palette-text-main').value,
+            dropdown_item_hover_bg: 'rgba(255,255,255,0.05)',
+            dropdown_item_hover_color: document.getElementById('primary-color-field').value,
+            mobile_bg: document.getElementById('mobile-nav-bg-field').value,
+            mobile_item: document.getElementById('palette-text-main').value
+          },
+          hero: {
+            headline_color: document.getElementById('palette-text-main').value,
+            subheadline_color: document.getElementById('palette-text-muted').value,
+            cta_primary_bg: document.getElementById('palette-color-primary').value,
+            cta_primary_text: document.getElementById('palette-bg-main').value,
+            cta_primary_hover_bg: document.getElementById('palette-color-secondary').value,
+            badge_text: document.getElementById('accent-color-field').value
+          },
+          pc: {
+            bg: document.getElementById('palette-bg-surface').value,
+            border: document.getElementById('primary-color-field').value,
+            image_bg: document.getElementById('card-image-bg-field').value,
+            name_color: document.getElementById('palette-text-main').value,
+            category_color: document.getElementById('palette-text-muted').value,
+            current_price_color: document.getElementById('palette-color-primary').value,
+            original_price_color: document.getElementById('palette-text-muted').value,
+            rating_color: document.getElementById('primary-color-field').value,
+            btn_bg: document.getElementById('palette-color-primary').value,
+            btn_text: document.getElementById('palette-bg-main').value,
+            btn_hover_bg: document.getElementById('palette-color-secondary').value,
+            stock_in_color: document.getElementById('palette-color-success').value,
+            stock_out_color: document.getElementById('palette-color-error').value,
+            hover_translate_y: parseInt(document.getElementById('card-hover-y-field').value, 10) || 6,
+            hover_style: document.getElementById('anim-hover-style-field').value
+          },
+          pdp: {
+            gallery_active_border: document.getElementById('pdp-gallery-border-field').value,
+            specs_heading_color: document.getElementById('pdp-spec-heading-field').value,
+            tab_active_color: document.getElementById('pdp-tab-active-field').value
+          },
+          btn: {
+            primary_bg: document.getElementById('palette-color-primary').value,
+            primary_hover_bg: document.getElementById('palette-color-secondary').value,
+            font_weight: document.getElementById('button-weight-field').value,
+            primary_shadow: document.getElementById('button-shadow-field').value === 'pronounced'
+          }
+        }
+      };
+
+      await adminFetch('/api/site-settings/theme', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(themePayload)
+      });
+
+      // 4. Save legacy settings
+      const legacyPayload = {
+        whatsappContact: document.getElementById('whatsapp-contact-field').value.trim(),
+        brandName: document.getElementById('brand-name-field').value.trim(),
+        logo: document.getElementById('logo-field').value.trim(),
+        primaryColor: document.getElementById('primary-color-field').value,
+        secondaryColor: document.getElementById('secondary-color-field').value,
+        accentColor: document.getElementById('accent-color-field').value,
+        fontFamily: document.getElementById('font-family-field').value,
+        buttonStyle: document.getElementById('button-style-field').value,
+        footerContent: document.getElementById('footer-content-field').value.trim(),
+        footerCopyright: document.getElementById('footer-copyright-field').value.trim(),
+        footerInstagram: document.getElementById('footer-instagram-field').value.trim(),
+        footerFacebook: document.getElementById('footer-facebook-field').value.trim(),
+        footerTwitter: document.getElementById('footer-twitter-field').value.trim(),
+        footerWhatsapp: document.getElementById('footer-whatsapp-field').value.trim(),
+
+        paletteBgMain: document.getElementById('palette-bg-main').value,
+        paletteBgSurface: document.getElementById('palette-bg-surface').value,
+        paletteTextMain: document.getElementById('palette-text-main').value,
+        paletteTextMuted: document.getElementById('palette-text-muted').value,
+        paletteColorPrimary: document.getElementById('palette-color-primary').value,
+        paletteColorSecondary: document.getElementById('palette-color-secondary').value,
+        paletteColorSuccess: document.getElementById('palette-color-success').value,
+        paletteColorError: document.getElementById('palette-color-error').value,
+
+        heroBanners: heroItems,
+        promotionalBanners: promoItems,
+        featuredProductIds: document.getElementById('featured-product-ids').value.split(',').map(s => s.trim()).filter(Boolean),
+        bestSellerProductIds: document.getElementById('bestseller-product-ids').value.split(',').map(s => s.trim()).filter(Boolean),
+        newArrivalProductIds: document.getElementById('newarrival-product-ids').value.split(',').map(s => s.trim()).filter(Boolean),
+        testimonials: testimonialItems
+      };
+
+      const saveRes = await adminFetch('/api/settings/homepage', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: legacyPayload })
+      });
+      const saveData = await saveRes.json();
+      if (saveData.success) {
+        showToast('All Appearance Studio settings saved successfully!', 'success');
+        markClean();
+        showSaveStatus(true, `Saved successfully at ${new Date().toLocaleTimeString()}`);
+        
+        // Broadcast theme update event to trigger reload in local storage cache
+        window.dispatchEvent(new CustomEvent('mz:theme-updated'));
+        
+        // Reload preview frame to display new styles
+        const iframe = document.getElementById('viewport-iframe');
+        if (iframe) iframe.contentWindow.location.reload();
+      } else {
+        showSaveStatus(false, saveData.error || 'Failed to save settings');
+      }
+
     } catch (err) {
       showSaveStatus(false, err.message);
-      return false;
     } finally {
       if (saveBtn) {
         saveBtn.disabled = false;
@@ -487,7 +803,7 @@
     const form = document.getElementById('homepage-builder-form');
     if (!form) return;
 
-    loadV4Homepage();
+    loadHomepageBuilderSettings();
     loadAboutSettings();
 
     const saveBtn = document.getElementById('save-settings-submit-btn');
@@ -522,6 +838,8 @@
       markDirty();
     });
   }
+
+  window.loadHomepageBuilderSettings = loadHomepageBuilderSettings;
 
   window.MZAppearanceStudio = {
     init: initAppearanceStudio,

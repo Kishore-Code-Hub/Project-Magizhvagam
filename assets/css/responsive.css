@@ -67,7 +67,6 @@
 html, body {
   width: 100% !important;
   max-width: 100% !important;
-  overflow-x: hidden !important;
   margin-right: 0 !important;
   padding-right: 0 !important;
 }
@@ -189,3 +188,454 @@ html, body {
     font-size: 12px !important;
   }
 }
+
+/* ==========================================================================
+   HOMEPAGE HEADER UI FIXES (Task 1.1)
+   ========================================================================== */
+
+/* Tablet (769px to 1024px) Header Stabilization */
+@media (min-width: 769px) and (max-width: 1024px) {
+  #main-header {
+    position: relative !important;
+    height: auto !important;
+    padding: 10px 24px !important;
+    box-sizing: border-box !important;
+  }
+  
+  .header-row-1 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    position: relative !important;
+    min-height: 50px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .header-left-slot {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex: 1 !important;
+  }
+
+  .hamburger {
+    display: flex !important;
+    margin: 0 !important;
+    z-index: 20 !important;
+  }
+
+  .logo-wrapper {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    z-index: 10 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .logo-title {
+    font-size: 22px !important;
+  }
+
+  .guest-btn {
+    display: inline-flex !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
+  }
+
+  .mobile-profile-icon {
+    display: none !important;
+  }
+
+  .header-utilities {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    flex: 1 !important;
+    z-index: 10 !important;
+  }
+
+  #header-contact-left {
+    display: none !important;
+  }
+}
+
+/* Mobile (<= 768px) Header Stabilization */
+@media (max-width: 768px) {
+  #main-header {
+    position: relative !important;
+    height: auto !important;
+    padding: 8px 16px !important;
+    box-sizing: border-box !important;
+  }
+  
+  .header-row-1 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    position: relative !important;
+    min-height: 50px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .header-left-slot {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex: 1 !important;
+  }
+
+  .hamburger {
+    display: flex !important;
+    margin: 0 !important;
+    z-index: 20 !important;
+    background: none !important;
+    border: none !important;
+    padding: 8px !important;
+    cursor: pointer !important;
+  }
+
+  .logo-wrapper {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    z-index: 10 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  .logo-title {
+    font-size: clamp(16px, 4.5vw, 20px) !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  .logo-subtitle {
+    display: none !important;
+  }
+
+  .header-utilities {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    flex: 1 !important;
+    z-index: 15 !important;
+  }
+
+  .header-utilities .guest-btn {
+    display: none !important; /* Hide Login/Register text buttons */
+  }
+
+  .header-icon-link, .header-icon-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 4px !important;
+    color: var(--text-color, #1A1523) !important;
+    position: relative !important;
+  }
+
+  .header-icon-link svg, .header-icon-btn svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .mobile-profile-icon {
+    display: inline-flex !important;
+  }
+
+  #header-contact-left {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   HOMEPAGE HERO SECTION MOBILE LAYOUT (Task 1.2)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .hero-parallax-viewport {
+    height: auto !important;
+    min-height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    padding: 24px 0 !important;
+    gap: 16px !important;
+  }
+  
+  .hero-central-layout {
+    position: relative !important;
+    width: 100% !important;
+    padding: 0 16px !important;
+    margin: 0 !important;
+    flex-grow: 0 !important;
+  }
+
+  .hero-content-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20px 16px !important;
+    border-radius: 16px !important;
+    background: rgba(26, 21, 35, 0.4) !important;
+    backdrop-filter: blur(8px) !important;
+    text-align: center !important;
+    margin: 0 !important;
+  }
+
+  .hero-headline {
+    font-size: 24px !important;
+    line-height: 1.2 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .hero-subtext {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    margin-bottom: 20px !important;
+  }
+
+  .hero-cta-action-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .hero-cta-action-row .btn {
+    width: 100% !important;
+    padding: 12px 0 !important;
+    font-size: 14px !important;
+  }
+  
+  /* Dynamic slider on mobile */
+  .hero-slider-viewport {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 380px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .hero-slide {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+  }
+
+  .hero-slide .hero-content-alignment {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20px 16px !important;
+    margin: 0 !important;
+    border-radius: 16px !important;
+    text-align: center !important;
+    background: rgba(26, 21, 35, 0.4) !important;
+    backdrop-filter: blur(8px) !important;
+  }
+  
+  .hero-slide-title {
+    font-size: 24px !important;
+    line-height: 1.2 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .hero-slide-subtitle {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    margin-bottom: 20px !important;
+  }
+
+  .hero-slide-cta {
+    width: 100% !important;
+    padding: 12px 0 !important;
+    display: block !important;
+  }
+}
+
+/* ==========================================================================
+   HOMEPAGE COLLECTION CARDS (Task 2.4 Rebuild)
+   ========================================================================== */
+
+/* Hero Content Card Desktop Width styling */
+@media (min-width: 1025px) {
+  .hero-central-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 40px !important;
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 40px 24px !important;
+    box-sizing: border-box !important;
+    z-index: 10 !important;
+  }
+
+  .hero-content-card {
+    width: 100% !important;
+    max-width: 760px !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+    padding: 40px !important;
+    box-sizing: border-box !important;
+  }
+  
+  .hero-cta-action-row {
+    justify-content: center !important;
+  }
+
+  .hero-visual-showcase {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    max-width: 850px !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    position: relative !important;
+    z-index: 20 !important;
+  }
+
+  /* Floating cards removed - hero simplification Phase 1 */
+}
+
+/* Tablet Overrides (769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hero-central-layout {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 30px !important;
+    padding: 0 24px !important;
+  }
+  .hero-content-card {
+    max-width: 760px !important;
+    width: 100% !important;
+    text-align: center !important;
+  }
+  .hero-visual-showcase {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+    max-width: 760px !important;
+    height: auto !important;
+  }
+  /* Floating cards removed - hero simplification Phase 1 */
+}
+
+/* Mobile Overrides (<= 768px) */
+@media (max-width: 768px) {
+  .hero-central-layout {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 24px !important;
+    margin: 0 !important;
+    padding: 0 16px !important;
+  }
+  
+  .hero-content-card {
+    text-align: center !important;
+    max-width: 100% !important;
+    padding: 20px 16px !important;
+  }
+
+  .hero-visual-showcase {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    margin-top: 16px !important;
+  }
+
+  /* Floating cards removed - hero simplification Phase 1 */
+}
+
+/* ==========================================================================
+   HERO SLIDER ANIMATION POLISH (Task 2.2)
+   ========================================================================== */
+.hero-slide .hero-slide-title,
+.hero-slide .hero-slide-subtitle,
+.hero-slide .hero-slide-cta {
+  opacity: 0 !important;
+  transform: translateY(20px) !important;
+  transition: opacity 0.8s ease, transform 0.8s ease !important;
+}
+
+.hero-slide.active .hero-slide-title {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  transition-delay: 0.2s !important;
+}
+
+.hero-slide.active .hero-slide-subtitle {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  transition-delay: 0.4s !important;
+}
+
+.hero-slide.active .hero-slide-cta {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  transition-delay: 0.6s !important;
+}
+
+@media (max-width: 568px) {
+  .footer-newsletter-form {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .footer-newsletter-input,
+  .footer-newsletter-btn {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+.sidebar-auth-section {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  margin-top: 15px !important;
+  border-top: 1px solid var(--card-border) !important;
+  padding-top: 10px !important;
+}
+
+@media (max-width: 768px) {
+  #toast-container {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: calc(100% - 32px) !important;
+    max-width: 400px !important;
+    top: 10px !important;
+  }
+  .toast {
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 12px 18px !important;
+    font-size: 13px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+

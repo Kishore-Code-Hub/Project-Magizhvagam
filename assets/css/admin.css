@@ -10,14 +10,14 @@
 
 /* ─── Admin Design Tokens ─── */
 :root {
-  --adm-bg: #0F172A;
-  --adm-surface: #1E293B;
-  --adm-card-bg: #1E293B;
-  --adm-border: #334155;
-  --adm-text: #F8FAFC;
-  --adm-text-muted: #94A3B8;
-  --adm-accent: #38BDF8;
-  --adm-accent-hover: #0284C7;
+  --adm-bg: #F8FAFC;
+  --adm-surface: #FFFFFF;
+  --adm-card-bg: #FFFFFF;
+  --adm-border: #E2E8F0;
+  --adm-text: #0F172A;
+  --adm-text-muted: #64748B;
+  --adm-accent: #6A0DAD;
+  --adm-accent-hover: #5A0A95;
   --adm-danger: #EF4444;
   --adm-success: #10B981;
   --adm-warning: #F59E0B;
@@ -45,17 +45,17 @@
   --color-error: var(--adm-danger);
   --primary-color: var(--adm-accent);
   --primary-accent: var(--adm-accent);
-  --primary-purple: 207, 90%, 60%;
-  --primary-gold: 207, 90%, 60%;
-  --rose-pink: 207, 90%, 60%;
+  --primary-purple: 270, 90%, 40%;
+  --primary-gold: 45, 90%, 50%;
+  --rose-pink: 330, 90%, 50%;
   --card-bg: var(--adm-surface);
   --card-border: var(--adm-border);
   --gold-accent: var(--adm-accent);
   --header-bg: var(--adm-surface);
   --footer-bg: var(--adm-surface);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 
   /* Base layout */
   display: flex;
@@ -74,8 +74,8 @@ body:has(.admin-layout) {
 /* ─── Admin Sidebar ─── */
 .admin-sidebar {
   width: 260px;
-  background-color: #0B0F19 !important;
-  color: #FFFFFF !important;
+  background-color: var(--adm-surface) !important;
+  color: var(--adm-text) !important;
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -93,7 +93,7 @@ body:has(.admin-layout) {
   font-weight: 800;
   letter-spacing: 1px;
   border-bottom: 1px solid var(--adm-border) !important;
-  background: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%);
+  background: linear-gradient(135deg, var(--adm-accent) 0%, var(--adm-accent-hover) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-align: center;
@@ -128,9 +128,9 @@ body:has(.admin-layout) {
 
 .admin-menu li a:hover,
 .admin-menu li.active a {
-  background-color: rgba(56, 189, 248, 0.08) !important;
-  color: #38BDF8 !important;
-  border-left: 4px solid #38BDF8;
+  background-color: rgba(106, 13, 173, 0.06) !important;
+  color: var(--adm-accent) !important;
+  border-left: 4px solid var(--adm-accent);
   padding-left: 12px;
 }
 
@@ -186,7 +186,7 @@ body:has(.admin-layout) {
   border-radius: 12px;
   background-color: var(--adm-surface) !important;
   border: 1px solid var(--adm-border) !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 .metric-card div {
@@ -198,7 +198,7 @@ body:has(.admin-layout) {
   font-weight: 800;
   margin-top: 8px;
   font-family: 'Outfit', sans-serif;
-  color: #38BDF8 !important;
+  color: var(--adm-accent) !important;
 }
 
 /* ─── Data Tables readability ─── */
@@ -209,7 +209,7 @@ body:has(.admin-layout) {
 }
 
 .admin-table th {
-  background-color: rgba(56, 189, 248, 0.08) !important;
+  background-color: rgba(106, 13, 173, 0.05) !important;
   padding: 14px 16px;
   font-weight: 700;
   text-align: left;
@@ -236,7 +236,7 @@ body:has(.admin-layout) {
 }
 
 .admin-table tr:hover {
-  background-color: rgba(255, 255, 255, 0.03) !important;
+  background-color: rgba(0, 0, 0, 0.02) !important;
 }
 
 /* ─── Admin status badges (inline rendered by JS) ─── */

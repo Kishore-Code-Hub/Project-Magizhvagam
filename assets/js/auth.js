@@ -60,20 +60,20 @@ async function handleLogin(email, password, redirectUrl = '/index.html') {
 }
 
 // Customer sign-up handler
-async function handleRegister(name, email, phone, password, address1, pincode, city, state) {
+async function handleRegister(name, email, phone, password) {
   try {
     const res = await fetch(`${AUTH_API}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ name, email, phone, password, address1, pincode, city, state })
+      body: JSON.stringify({ name, email, phone, password })
     });
 
     const data = await res.json();
     if (!data.success) {
       showToast(data.error || 'Registration failed', 'error');
       // Unlock inputs
-      ['name', 'email', 'phone', 'password', 'confirm-password', 'address1', 'pincode', 'city', 'state'].forEach(id => {
+      ['name', 'email', 'phone', 'password', 'confirm-password'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.disabled = false;
       });
@@ -94,7 +94,7 @@ async function handleRegister(name, email, phone, password, address1, pincode, c
   } catch (error) {
     showToast('Connection error during registration', 'error');
     // Unlock inputs
-    ['name', 'email', 'phone', 'password', 'confirm-password', 'address1', 'pincode', 'city', 'state'].forEach(id => {
+    ['name', 'email', 'phone', 'password', 'confirm-password'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.disabled = false;
     });

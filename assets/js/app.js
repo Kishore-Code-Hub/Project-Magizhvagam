@@ -97,6 +97,7 @@ window.setSessionUser = (user) => {
     email: user.email,
     role: user.role,
     phone: user.phone || user.phoneNumber || user.mobile || '',
+    profilePicture: user.profilePicture || '',
     addresses: user.addresses || [],
     address1: user.address1 || '',
     city: user.city || '',
@@ -113,6 +114,17 @@ window.setSessionUser = (user) => {
   profileNameEls.forEach(el => { el.textContent = normalized.name; });
   const memberNameEl = document.getElementById('member-name');
   if (memberNameEl) memberNameEl.textContent = normalized.name;
+
+  // Update header avatar image dynamically
+  const headerAvatarEl = document.querySelector('.profile-avatar-img');
+  if (headerAvatarEl) {
+    if (normalized.profilePicture) {
+      headerAvatarEl.src = normalized.profilePicture + '?t=' + Date.now();
+      headerAvatarEl.style.display = 'block';
+    } else {
+      headerAvatarEl.style.display = 'none';
+    }
+  }
 
   // Legacy global wishlist/cart keys must not leak across users
   localStorage.removeItem('magizhvagam_wishlist');
@@ -154,37 +166,42 @@ window.resolveProductImage = (url) => {
 let settingsPromise = null;
 async function fetchSettings() {
   if (globalSettings) return globalSettings;
+  // Prefer fresh API data; fall back to cached value only on network failure.
   if (settingsPromise) return settingsPromise;
 
   settingsPromise = (async () => {
+    // Try API first (no-store to avoid returning stale caches)
     try {
-      const res = await fetch('/api/settings/homepage');
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
-        console.error('Failed to parse settings JSON. Raw response:', text);
-        data = { success: false, setting: {} };
-      }
-      if (data.success && data.setting) {
-        globalSettings = data.setting;
-        try {
-          localStorage.setItem('mz-homepage-settings', JSON.stringify(globalSettings));
-        } catch (e) {}
-        return globalSettings;
+      const res = await fetch('/api/settings/homepage', { cache: 'no-store' });
+      if (res && res.ok) {
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch (e) { data = { success: false, setting: {} }; }
+        if (data.success && data.setting) {
+          globalSettings = data.setting;
+          try { localStorage.setItem('mz-homepage-settings', JSON.stringify(globalSettings)); } catch (e) {}
+          console.debug('[fetchSettings] source=api');
+          return globalSettings;
+        }
       }
     } catch (err) {
-      console.error('Error fetching settings:', err);
-      if (typeof showToast === 'function') {
-        showToast('Failed to load site settings.', 'error');
-      }
-    } finally {
-      settingsPromise = null;
+      console.warn('[fetchSettings] API fetch failed, attempting cache', err && err.message);
     }
+
+    // API failed — try cache
+    try {
+      const cached = localStorage.getItem('mz-homepage-settings');
+      if (cached) {
+        globalSettings = JSON.parse(cached);
+        console.debug('[fetchSettings] source=cache');
+        return globalSettings;
+      }
+    } catch (e) { /* ignore cache parse errors */ }
+
+    settingsPromise = null;
     return {};
   })();
+
   return settingsPromise;
 }
 window.fetchSettings = fetchSettings;
@@ -457,6 +474,14 @@ let featureTogglesPromise = null;
 
 async function fetchFeatureToggles() {
   if (window.featureToggles) return window.featureToggles;
+  try {
+    const cached = localStorage.getItem('mz-feature-toggles');
+    if (cached) {
+      window.featureToggles = JSON.parse(cached);
+      return window.featureToggles;
+    }
+  } catch (e) {}
+
   if (featureTogglesPromise) return featureTogglesPromise;
 
   featureTogglesPromise = (async () => {
@@ -465,6 +490,9 @@ async function fetchFeatureToggles() {
       const data = await res.json();
       if (data.success) {
         window.featureToggles = data.toggles;
+        try {
+          localStorage.setItem('mz-feature-toggles', JSON.stringify(data.toggles));
+        } catch (e) {}
         return data.toggles;
       }
     } catch (err) {
@@ -616,13 +644,24 @@ window.showToast = (message, type = 'success') => {
   if (!container) {
     container = document.createElement('div');
     container.id = 'toast-container';
-    container.style.cssText = 'position: fixed !important; z-index: 9999 !important; top: 20px !important; right: 20px !important; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
+    container.style.cssText = 'position: fixed !important; z-index: 99999 !important; top: 20px !important; right: 20px !important; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
     document.body.appendChild(container);
   }
 
   const toast = document.createElement('div');
   toast.className = `toast toast-${type} scale-in`;
-  toast.innerHTML = `<span>${message}</span>`;
+  toast.style.cssText = 'pointer-events: auto;';
+  
+  let icon = '';
+  if (type === 'success') {
+    icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+  } else if (type === 'error') {
+    icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+  } else {
+    icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+  }
+
+  toast.innerHTML = `<span style="display:flex; align-items:center; gap:8px;">${icon} <span>${message}</span></span>`;
 
   container.appendChild(toast);
 
@@ -631,7 +670,7 @@ window.showToast = (message, type = 'success') => {
     toast.style.transform = 'translateY(10px)';
     toast.style.transition = 'all 0.5s ease';
     setTimeout(() => toast.remove(), 500);
-  }, 3000);
+  }, 3500);
 };
 
 // Theme toggle removed â€” site uses premium light theme only.
@@ -994,23 +1033,33 @@ function injectComponents(settings, user = null) {
       </form>
     </div>`;
 
-  // Theme is controlled exclusively via Appearance Studio — no storefront toggle
   let authUtilHtml = '';
   if (!user) {
-    // GUEST: Login + Register buttons
+    // GUEST: Login + Register buttons (Desktop) & Profile Icon (Mobile)
     authUtilHtml = `
       <a href="/login.html" class="guest-btn guest-btn-login" id="header-login-btn">Login</a>
-      <a href="/register.html" class="guest-btn guest-btn-register" id="header-register-btn">Register</a>`;
+      <a href="/register.html" class="guest-btn guest-btn-register" id="header-register-btn">Register</a>
+      <a href="/login.html" class="header-icon-link mobile-profile-icon" id="mobile-profile-login-link" aria-label="Login">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </a>`;
   } else if (user.role === 'admin') {
     // ADMIN browsing storefront: Browse Store + Logout only
+    const avatarHtml = (user.profilePicture) ? `
+      <img src="${user.profilePicture}" alt="${user.name}" class="profile-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; display: block;">
+    ` : `
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    `;
     authUtilHtml = `
       <a href="/index.html" class="guest-btn guest-btn-login" id="header-browse-store-btn">Browse Store</a>
       <div class="account-menu-wrapper" id="account-menu-wrapper">
-        <button class="header-icon-btn" aria-label="Admin session">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
+        <button class="header-icon-btn" aria-label="Admin session" style="${user.profilePicture ? 'padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1.5px solid var(--gold-color); overflow: hidden; width: 28px; height: 28px;' : ''}">
+          ${avatarHtml}
         </button>
         <div class="account-dropdown">
           <a href="#" class="dropdown-link logout-link" onclick="window.handleLogout(); return false;">Logout</a>
@@ -1018,13 +1067,18 @@ function injectComponents(settings, user = null) {
       </div>`;
   } else {
     // LOGGED-IN USER: Account icon with dropdown
+    const avatarHtml = (user.profilePicture) ? `
+      <img src="${user.profilePicture}" alt="${user.name}" class="profile-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; display: block;">
+    ` : `
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    `;
     authUtilHtml = `
       <div class="account-menu-wrapper" id="account-menu-wrapper">
-        <button class="header-icon-btn" aria-label="My Account">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
+        <button class="header-icon-btn" aria-label="My Account" style="${user.profilePicture ? 'padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1.5px solid var(--gold-color); overflow: hidden; width: 28px; height: 28px;' : ''}">
+          ${avatarHtml}
         </button>
         <div class="account-dropdown">
           <div class="dropdown-link" style="font-weight: 700; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; color: var(--text-color);">Hello, <span id="user-name-display" class="profile-name">${user.name}</span></div>
@@ -1036,7 +1090,7 @@ function injectComponents(settings, user = null) {
       </div>`;
   }
 
-  // â”€â”€ NAV LINKS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── NAV LINKS ─────────────────────────────────────────────────────────────
   const navLinksHtml = `
     <nav class="nav-menu" id="desktop-nav" aria-label="Main navigation">
       <a href="/index.html" class="nav-link">Home</a>
@@ -1046,7 +1100,7 @@ function injectComponents(settings, user = null) {
       <a href="/contact.html" class="nav-link">Contact</a>
     </nav>`;
 
-  // â”€â”€ BUILD MOBILE SIDEBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── BUILD MOBILE SIDEBAR ──────────────────────────────────────────────────
   let mobileSidebarAuthLinks = '';
   if (!user) {
     mobileSidebarAuthLinks = `
@@ -1055,16 +1109,16 @@ function injectComponents(settings, user = null) {
   } else if (user.role === 'admin') {
     mobileSidebarAuthLinks = `
       <a href="/index.html" class="sidebar-link">Browse Store</a>
-      <a href="#" class="sidebar-link logout-btn" onclick="window.handleLogout(); return false;">Logout</a>`;
+      <a href="#" class="sidebar-link sidebar-logout" onclick="window.handleLogout(); return false;">Logout</a>`;
   } else {
     // Accordion: tap Account to expand sub-links
     mobileSidebarAuthLinks = `
       <button class="sidebar-account-toggle" id="sidebar-account-toggle" type="button">Account (<span class="profile-name">${user.name}</span>) <span class="arrow" id="sidebar-account-arrow">&#9658;</span></button>
       <div class="sidebar-account-submenu" id="sidebar-account-submenu">
-        <a href="/profile.html">My Profile</a>
-        <a href="/profile.html#orders">My Orders</a>
-        <a href="/wishlist.html">Wishlist</a>
-        <a href="#" class="sidebar-logout" onclick="window.handleLogout(); return false;">Logout</a>
+        <a href="/profile.html" class="sidebar-link">My Profile</a>
+        <a href="/profile.html#orders" class="sidebar-link">My Orders</a>
+        <a href="/wishlist.html" class="sidebar-link">Wishlist</a>
+        <a href="#" class="sidebar-link sidebar-logout" onclick="window.handleLogout(); return false;">Logout</a>
       </div>`;
   }
 
@@ -1075,12 +1129,21 @@ function injectComponents(settings, user = null) {
       headerEl.innerHTML = `
         <div class="header-container-wrapper">
           <div class="container">
-            <!-- ROW 1: Contact info | Centered Logo | Utility Icons -->
+            <!-- ROW 1: Hamburger & Contact Left | Centered Logo | Utility Icons -->
             <div class="header-row-1">
-              <!-- Left: Contact info -->
-              <div class="header-contact-info" id="header-contact-left">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.93 6.93l1.51-1.51a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-                <a href="/contact.html">Get in Touch</a>
+              <!-- Left Slot -->
+              <div class="header-left-slot">
+                <!-- Hamburger -->
+                <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </button>
+                <!-- Left: Contact info -->
+                <div class="header-contact-info" id="header-contact-left">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.93 6.93l1.51-1.51a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                  <a href="/contact.html">Get in Touch</a>
+                </div>
               </div>
 
               <!-- Center: Logo -->
@@ -1094,13 +1157,6 @@ function injectComponents(settings, user = null) {
                 ${wishlistIconHtml}
                 ${cartIconHtml}
                 ${authUtilHtml}
-
-                <!-- Hamburger (mobile only) -->
-                <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </button>
               </div>
             </div>
 
@@ -1122,8 +1178,11 @@ function injectComponents(settings, user = null) {
             <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close menu">&times;</button>
           </div>
           <ul class="sidebar-menu mobile-nav-list">
-            ${mobileSidebarAuthLinks}
+            <!-- Dynamic links populated by nav.js -->
           </ul>
+          <div class="sidebar-auth-section" id="sidebar-auth-section">
+            ${mobileSidebarAuthLinks}
+          </div>
         </div>
 
         <!-- Backdrop overlay -->
@@ -1151,13 +1210,21 @@ function injectComponents(settings, user = null) {
         <div class="header-container-wrapper">
           <div class="container">
 
-            <!-- ROW 1: Contact info | Centered Logo | Utility Icons -->
+            <!-- ROW 1: Hamburger & Contact Left | Centered Logo | Utility Icons -->
             <div class="header-row-1">
-
-              <!-- Left: Contact info -->
-              <div class="header-contact-info" id="header-contact-left">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.93 6.93l1.51-1.51a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-                <a href="/contact.html">Get in Touch</a>
+              <!-- Left Slot -->
+              <div class="header-left-slot">
+                <!-- Hamburger -->
+                <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </button>
+                <!-- Left: Contact info -->
+                <div class="header-contact-info" id="header-contact-left">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.93 6.93l1.51-1.51a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                  <a href="/contact.html">Get in Touch</a>
+                </div>
               </div>
 
               <!-- Center: Logo -->
@@ -1171,13 +1238,6 @@ function injectComponents(settings, user = null) {
                 ${wishlistIconHtml}
                 ${cartIconHtml}
                 ${authUtilHtml}
-
-                <!-- Hamburger (mobile only) -->
-                <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </button>
               </div>
             </div>
 
@@ -1202,8 +1262,10 @@ function injectComponents(settings, user = null) {
             <li><a href="/index.html#categories" class="sidebar-link">Categories</a></li>
             <li><a href="/about.html" class="sidebar-link">About Us</a></li>
             <li><a href="/contact.html" class="sidebar-link">Contact</a></li>
-            ${mobileSidebarAuthLinks}
           </ul>
+          <div class="sidebar-auth-section" id="sidebar-auth-section">
+            ${mobileSidebarAuthLinks}
+          </div>
         </div>
 
         <!-- Backdrop overlay -->
@@ -1772,7 +1834,7 @@ window.createProductCardHTML = (p) => {
         ${badgesHtml}
       </div>
       
-      <div class="image-zoom-container" style="height:220px; background:#FAF9F6; display:flex; align-items:center; justify-content:center; position:relative; border-bottom:1px solid var(--card-border); overflow:hidden;">
+      <div class="image-zoom-container" style="height:220px; aspect-ratio: 16 / 10; background:#FAF9F6; display:flex; align-items:center; justify-content:center; position:relative; border-bottom:1px solid var(--card-border); overflow:hidden;">
         <a href="/product-details.html?id=${pId}" style="width:100%; height:100%; display:block; position:relative;">
           <img src="${imgUrl}" alt="${nameEscaped}" class="product-primary-img" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
           ${hasAltImage ? `<img src="${secondaryImgUrl}" alt="${nameEscaped}" class="product-secondary-img" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">` : ''}

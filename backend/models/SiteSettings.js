@@ -388,7 +388,8 @@ const SiteSettingsSchema = new mongoose.Schema({
       youtube: { type: String, default: '' },
       whatsapp: { type: String, default: '' }
     }
-  }
+  },
+  customCss: { type: String, default: '' }
 }, { _id: false, timestamps: false, collection: 'site_settings_v4' });
 
 // Export defaults for use in theme-loader fallback

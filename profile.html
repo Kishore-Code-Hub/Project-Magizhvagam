@@ -366,7 +366,7 @@
       // Set avatar picture
       const avatarImg = document.getElementById('profile-avatar-img');
       if (avatarImg && activeUser.profilePicture) {
-        avatarImg.src = activeUser.profilePicture;
+        avatarImg.src = activeUser.profilePicture + '?t=' + Date.now();
       }
 
       // Avatar upload submission handler
@@ -400,7 +400,7 @@
             if (data.success) {
               showToast('Avatar updated successfully!', 'success');
               if (avatarImg) {
-                avatarImg.src = data.profilePicture;
+                avatarImg.src = data.profilePicture + '?t=' + Date.now();
               }
               // Update local session data
               activeUser.profilePicture = data.profilePicture;

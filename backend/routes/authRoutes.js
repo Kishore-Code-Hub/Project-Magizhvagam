@@ -21,7 +21,11 @@ const {
   getCustomers,
   adminToggleRole,
   adminForceResetPassword,
-  adminUnlockAccount
+  adminUnlockAccount,
+  verifyOtp,
+  resendOtp,
+  verifyResetOtp,
+  resetPasswordWithOtp
 } = require('../controllers/authController');
 const { protect, optionalProtect, adminOnly } = require('../middleware/authMiddleware');
 
@@ -29,7 +33,11 @@ const { protect, optionalProtect, adminOnly } = require('../middleware/authMiddl
 router.post('/register', handleLocalRegister);
 router.post('/login', handleLocalLogin);
 router.get('/verify-email', executeEmailVerification);
+router.post('/verify-otp', verifyOtp);
+router.post('/resend-otp', resendOtp);
 router.post('/forgot-password', requestPasswordResetLink);
+router.post('/verify-reset-otp', verifyResetOtp);
+router.post('/reset-password', resetPasswordWithOtp);
 router.post('/reset-password/:token', processSecurePasswordUpdate);
 router.post('/logout', terminateUserSession);
 

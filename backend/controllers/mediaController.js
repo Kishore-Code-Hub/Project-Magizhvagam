@@ -73,6 +73,10 @@ exports.uploadMedia = async (req, res) => {
       return res.status(400).json({ success: false, error: 'No image file provided' });
     }
 
+    if (!req.file.mimetype.startsWith('image/')) {
+      return res.status(400).json({ success: false, error: 'Only image files are allowed' });
+    }
+
     ensureUploadDir();
 
     const baseName = path.parse(req.file.originalname).name
@@ -174,6 +178,10 @@ exports.replaceMedia = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'No image file provided' });
+    }
+
+    if (!req.file.mimetype.startsWith('image/')) {
+      return res.status(400).json({ success: false, error: 'Only image files are allowed' });
     }
 
     const asset = await MediaAsset.findById(req.params.id);

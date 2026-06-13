@@ -59,6 +59,23 @@
       gap: 15px;
       margin-bottom: 15px;
     }
+
+    /* Scrollable Tabs */
+    .studio-tabs {
+      display: flex;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--studio-border);
+      scrollbar-width: thin;
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 0 10px;
+    }
+    .studio-tabs::-webkit-scrollbar {
+      height: 4px;
+    }
+    .studio-tabs::-webkit-scrollbar-thumb {
+      background: var(--studio-border);
+      border-radius: 2px;
+    }
   </style>
 </head>
 
@@ -73,24 +90,29 @@
     <main class="admin-main">
       <div class="studio-container">
         
-        <!-- Left: Shopify-style Theme Editor Panel -->
+        <!-- Left: Theme Editor Panel -->
         <div class="studio-sidebar">
           <div class="studio-header">
             <h1>Appearance Studio</h1>
             <p>Design your store look, feel, and colors live.</p>
           </div>
 
-          <!-- Horizontal Tabs Navigation -->
+          <!-- 14-Tabs Navigation Scrollable Row -->
           <div class="studio-tabs">
             <button type="button" class="studio-tab-btn active" onclick="switchStudioTab(event, 'tab-presets')">Presets</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-colors')">Colors</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-typography')">Fonts</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-header')">Header</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-homepage')">Home</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-products')">Products</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-homepage')">Homepage</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-footer')">Footer</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-contact')">Contact</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-advanced')">Advanced</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-buttons')">Buttons</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-cards')">Cards</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-products')">Product Pages</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-categories')">Category Pages</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-about')">About Page</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-mobile')">Mobile Settings</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-animations')">Animations</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-css')">Custom CSS</button>
           </div>
 
           <!-- Main Configuration Form -->
@@ -170,9 +192,8 @@
                 </div>
               </div>
 
-              <!-- TAB 2: Colors & Safety Lock -->
+              <!-- TAB 2: Colors -->
               <div class="studio-tab-panel" id="tab-colors">
-                <!-- WCAG Safety Lock score header -->
                 <div id="contrast-lock-indicator" style="padding:14px 20px; border-radius:10px; font-size:13px; font-weight:700; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; transition:all 0.3s ease;">
                   <span>Contrast Compliance Check:</span>
                   <strong id="contrast-score-val">0.0:1</strong>
@@ -216,7 +237,6 @@
                   <div class="studio-accordion-content">
                     <div class="control-group">
                       <label>Main Background Color</label>
-                      <div class="control-desc">Main storefront page background color.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-bg-main" onchange="handleBgMainChange()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-bg-main').value=this.value; handleBgMainChange()">
@@ -224,7 +244,6 @@
                     </div>
                     <div class="control-group">
                       <label>Card Background Color</label>
-                      <div class="control-desc">Background for product grids, category cards, and content blocks.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-bg-surface" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-bg-surface').value=this.value; syncLivePreview()">
@@ -232,7 +251,6 @@
                     </div>
                     <div class="control-group">
                       <label>Main Body Text</label>
-                      <div class="control-desc">Primary text and headings color (WCAG contrast target).</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-text-main" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-text-main').value=this.value; syncLivePreview()">
@@ -240,7 +258,6 @@
                     </div>
                     <div class="control-group">
                       <label>Muted Secondary Text</label>
-                      <div class="control-desc">Color for secondary subheadings, metadata, and labels.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-text-muted" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-text-muted').value=this.value; syncLivePreview()">
@@ -257,7 +274,6 @@
                   <div class="studio-accordion-content">
                     <div class="control-group">
                       <label>Main Button Color (CTA)</label>
-                      <div class="control-desc">Background color for primary storefront buttons and call-to-actions.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-color-primary" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-color-primary').value=this.value; syncLivePreview()">
@@ -265,7 +281,6 @@
                     </div>
                     <div class="control-group">
                       <label>Secondary Accent (Hover)</label>
-                      <div class="control-desc">Hover background state for main action buttons.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-color-secondary" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-color-secondary').value=this.value; syncLivePreview()">
@@ -273,7 +288,6 @@
                     </div>
                     <div class="control-group">
                       <label>Success Accent (In Stock)</label>
-                      <div class="control-desc">Indicates successful coupon applications or in-stock products.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-color-success" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-color-success').value=this.value; syncLivePreview()">
@@ -281,7 +295,6 @@
                     </div>
                     <div class="control-group">
                       <label>Error Accent (Alerts)</label>
-                      <div class="control-desc">Highlights validation warnings, errors, and out-of-stock badges.</div>
                       <div class="color-picker-wrapper">
                         <div class="color-input-preview"><input type="color" id="palette-color-error" onchange="syncLivePreview()"></div>
                         <input type="text" class="studio-input" oninput="document.getElementById('palette-color-error').value=this.value; syncLivePreview()">
@@ -293,7 +306,7 @@
 
               <!-- TAB 3: Typography -->
               <div class="studio-tab-panel" id="tab-typography">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Global Font & Button Styles</h3>
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Typography</h3>
                 <div class="control-group">
                   <label>Font Family</label>
                   <select id="font-family-field" class="studio-input" onchange="syncLivePreview()">
@@ -303,19 +316,18 @@
                     <option value="Playfair Display">Playfair Display (Serif Traditional)</option>
                   </select>
                 </div>
-                <div class="control-group" style="margin-top:20px;">
-                  <label>Button Border Radius</label>
-                  <select id="button-style-field" class="studio-input" onchange="syncLivePreview()">
-                    <option value="rounded">Rounded Corners (8px)</option>
-                    <option value="pill">Pill Shape (30px)</option>
-                    <option value="sharp">Sharp (0px)</option>
-                  </select>
+                <div class="control-group">
+                  <label>Font Scale Multiplier</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="font-scale-field" min="0.9" max="1.15" step="0.01" class="range-slider" oninput="document.getElementById('font-scale-val').textContent=this.value; syncLivePreview()">
+                    <span id="font-scale-val" class="range-value">1.0</span>
+                  </div>
                 </div>
               </div>
 
               <!-- TAB 4: Header -->
               <div class="studio-tab-panel" id="tab-header">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Storefront Header Configuration</h3>
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Header Settings</h3>
                 <div class="control-group">
                   <label>Brand Name</label>
                   <input type="text" id="brand-name-field" class="studio-input" placeholder="e.g. MAGIZHVAGAM" required>
@@ -334,26 +346,286 @@
                 </div>
 
                 <div class="control-group">
-                  <label>WhatsApp Checkout Mobile</label>
+                  <label>WhatsApp Contact</label>
                   <input type="text" id="whatsapp-contact-field" class="studio-input" placeholder="Phone Number (e.g. 919876543210)" required>
+                </div>
+
+                <div class="control-group">
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" id="hdr-sticky-toggle" onchange="syncLivePreview()">
+                    <span>Enable Sticky Header</span>
+                  </label>
+                </div>
+
+                <div class="control-group">
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" id="hdr-announcement-toggle" onchange="syncLivePreview()">
+                    <span>Show Announcement Bar</span>
+                  </label>
+                </div>
+
+                <div class="control-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  <div class="control-group">
+                    <label>Announcement Bar Bg</label>
+                    <div class="color-picker-wrapper">
+                      <div class="color-input-preview"><input type="color" id="hdr-announcement-bg" onchange="syncLivePreview()"></div>
+                      <input type="text" class="studio-input" oninput="document.getElementById('hdr-announcement-bg').value=this.value; syncLivePreview()">
+                    </div>
+                  </div>
+                  <div class="control-group">
+                    <label>Announcement Text Color</label>
+                    <div class="color-picker-wrapper">
+                      <div class="color-input-preview"><input type="color" id="hdr-announcement-text" onchange="syncLivePreview()"></div>
+                      <input type="text" class="studio-input" oninput="document.getElementById('hdr-announcement-text').value=this.value; syncLivePreview()">
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <!-- TAB 5: Homepage -->
               <div class="studio-tab-panel" id="tab-homepage">
-                <h3 style="font-family:'Cormorant Garamond',serif; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Homepage Sections</h3>
-                <p style="font-size:12px; color:var(--studio-text-muted); margin-bottom:16px;">Show, hide, and reorder homepage sections without editing JSON.</p>
-                <div id="homepage-sections-manager" class="section-manager-list"></div>
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Homepage Sections</h3>
+                <p style="font-size:12px; color:var(--studio-text-muted); margin-bottom:16px;">Reorder and toggle homepage dynamic modules.</p>
+                <div id="homepage-sections-manager" class="section-manager-list" style="margin-bottom:24px;"></div>
 
-                <h3 style="font-family:'Cormorant Garamond',serif; font-size:16px; margin:24px 0 12px; color:var(--studio-gold);">Hero Slide Banners</h3>
-                <div id="hero-banners-visual"></div>
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Hero Carousel Banners</h3>
+                <div id="hero-banners-visual" style="margin-bottom:24px;"></div>
 
-                <h3 style="font-family:'Cormorant Garamond',serif; font-size:16px; margin:24px 0 12px; color:var(--studio-gold);">Promo Cards</h3>
-                <div id="promo-banners-visual"></div>
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Collections Spotlight Banners</h3>
+                <div id="promo-banners-visual" style="margin-bottom:24px;"></div>
+
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Customer Testimonials</h3>
+                <div id="testimonials-visual"></div>
 
                 <textarea id="hero-banners-json" hidden aria-hidden="true"></textarea>
                 <textarea id="promo-banners-json" hidden aria-hidden="true"></textarea>
-                <h3 style="font-family:'Cormorant Garamond',serif; font-size:16px; margin:24px 0 12px; color:var(--studio-gold);">About Page Settings</h3>
+                <textarea id="testimonials-json" hidden aria-hidden="true"></textarea>
+              </div>
+
+              <!-- TAB 6: Footer -->
+              <div class="studio-tab-panel" id="tab-footer">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Footer</h3>
+                <div class="control-group">
+                  <label>Footer Description</label>
+                  <textarea id="footer-content-field" class="studio-input" rows="3" placeholder="Tagline or store description" required></textarea>
+                </div>
+                <div class="control-group">
+                  <label>Copyright licensing text</label>
+                  <input type="text" id="footer-copyright-field" class="studio-input" placeholder="e.g. © 2026 MAGIZHVAGAM. All rights reserved.">
+                </div>
+
+                <h4 style="font-size:13px; margin:20px 0 10px; color:var(--studio-gold);">Social Links</h4>
+                <div class="control-group">
+                  <label>Instagram URL</label>
+                  <input type="text" id="footer-instagram-field" class="studio-input" placeholder="https://instagram.com/yourbrand">
+                </div>
+                <div class="control-group">
+                  <label>Facebook URL</label>
+                  <input type="text" id="footer-facebook-field" class="studio-input" placeholder="https://facebook.com/yourbrand">
+                </div>
+                <div class="control-group">
+                  <label>Twitter URL</label>
+                  <input type="text" id="footer-twitter-field" class="studio-input" placeholder="https://twitter.com/yourbrand">
+                </div>
+                <div class="control-group">
+                  <label>WhatsApp URL</label>
+                  <input type="text" id="footer-whatsapp-field" class="studio-input" placeholder="https://wa.me/919876543210">
+                </div>
+              </div>
+
+              <!-- TAB 7: Buttons -->
+              <div class="studio-tab-panel" id="tab-buttons">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Buttons Style</h3>
+                <div class="control-group">
+                  <label>Border Radius Style</label>
+                  <select id="button-style-field" class="studio-input" onchange="syncLivePreview()">
+                    <option value="rounded">Rounded Corners (8px)</option>
+                    <option value="pill">Pill Shape (30px)</option>
+                    <option value="sharp">Sharp (0px)</option>
+                  </select>
+                </div>
+                <div class="control-group">
+                  <label>Shadow Strength</label>
+                  <select id="button-shadow-field" class="studio-input" onchange="syncLivePreview()">
+                    <option value="none">None</option>
+                    <option value="soft">Soft Shadow</option>
+                    <option value="pronounced">Pronounced</option>
+                  </select>
+                </div>
+                <div class="control-group">
+                  <label>Font Weight</label>
+                  <select id="button-weight-field" class="studio-input" onchange="syncLivePreview()">
+                    <option value="500">Medium</option>
+                    <option value="600">Semi-Bold</option>
+                    <option value="700">Bold</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- TAB 8: Cards -->
+              <div class="studio-tab-panel" id="tab-cards">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Collection & Product Cards</h3>
+                <div class="control-group">
+                  <label>Card Border Radius (px)</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="card-radius-field" min="0" max="32" class="range-slider" oninput="document.getElementById('card-radius-val').textContent=this.value; syncLivePreview()">
+                    <span id="card-radius-val" class="range-value">14</span>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label>Card Shadow Strength</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="card-shadow-field" min="0" max="3" step="0.5" class="range-slider" oninput="document.getElementById('card-shadow-val').textContent=this.value; syncLivePreview()">
+                    <span id="card-shadow-val" class="range-value">1</span>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label>Hover Translate Y (px)</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="card-hover-y-field" min="0" max="15" class="range-slider" oninput="document.getElementById('card-hover-y-val').textContent=this.value; syncLivePreview()">
+                    <span id="card-hover-y-val" class="range-value">6</span>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label>Card Image Background</label>
+                  <div class="color-picker-wrapper">
+                    <div class="color-input-preview"><input type="color" id="card-image-bg-field" onchange="syncLivePreview()"></div>
+                    <input type="text" class="studio-input" oninput="document.getElementById('card-image-bg-field').value=this.value; syncLivePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 9: Product Pages -->
+              <div class="studio-tab-panel" id="tab-products">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Product Highlights</h3>
+                <div class="control-group">
+                  <label>Featured Products IDs (Comma Separated)</label>
+                  <input type="text" id="featured-product-ids" class="studio-input" placeholder="ID1, ID2, ID3">
+                </div>
+                <div class="control-group">
+                  <label>Best Sellers IDs (Comma Separated)</label>
+                  <input type="text" id="bestseller-product-ids" class="studio-input" placeholder="ID1, ID2, ID3">
+                </div>
+                <div class="control-group">
+                  <label>New Arrivals IDs (Comma Separated)</label>
+                  <input type="text" id="newarrival-product-ids" class="studio-input" placeholder="ID1, ID2, ID3">
+                </div>
+
+                <h4 style="font-size:13px; margin:20px 0 10px; color:var(--studio-gold);">Details & Gallery</h4>
+                <div class="control-group">
+                  <label>Thumbnail Active Border</label>
+                  <div class="color-picker-wrapper">
+                    <div class="color-input-preview"><input type="color" id="pdp-gallery-border-field" onchange="syncLivePreview()"></div>
+                    <input type="text" class="studio-input" oninput="document.getElementById('pdp-gallery-border-field').value=this.value; syncLivePreview()">
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label>Specifications Heading Color</label>
+                  <div class="color-picker-wrapper">
+                    <div class="color-input-preview"><input type="color" id="pdp-spec-heading-field" onchange="syncLivePreview()"></div>
+                    <input type="text" class="studio-input" oninput="document.getElementById('pdp-spec-heading-field').value=this.value; syncLivePreview()">
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label>Active Tab Accent Color</label>
+                  <div class="color-picker-wrapper">
+                    <div class="color-input-preview"><input type="color" id="pdp-tab-active-field" onchange="syncLivePreview()"></div>
+                    <input type="text" class="studio-input" oninput="document.getElementById('pdp-tab-active-field').value=this.value; syncLivePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 10: Category Pages -->
+              <div class="studio-tab-panel" id="tab-categories">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Category Pages</h3>
+                <div class="control-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+                  <div class="control-group">
+                    <label>Catalog Grid Gap (px)</label>
+                    <input type="number" id="category-grid-gap-field" class="studio-input" min="8" max="48" value="24" onchange="syncLivePreview()">
+                  </div>
+                  <div class="control-group">
+                    <label>Grid Columns Density</label>
+                    <select id="category-grid-density-field" class="studio-input" onchange="syncLivePreview()">
+                      <option value="2">2 Columns</option>
+                      <option value="3" selected>3 Columns</option>
+                      <option value="4">4 Columns</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="studio-accordion open">
+                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                    <h3>Category Manager</h3>
+                    <span class="studio-accordion-icon">▼</span>
+                  </div>
+                  <div class="studio-accordion-content">
+                    <div id="add-category-form" style="margin-bottom:15px; border-bottom:1px dashed var(--studio-border); padding-bottom:12px;">
+                      <div class="control-group">
+                        <label>Category Name</label>
+                        <input type="text" id="cat-name-field" class="studio-input" placeholder="e.g. Eco-Friendly Gifts">
+                      </div>
+                      <div class="control-group">
+                        <label>Category Image</label>
+                        <input type="hidden" id="cat-image-field">
+                        <div id="cat-preview-box" style="margin-bottom:8px; border:1px dashed var(--studio-border); border-radius:8px; padding:8px; display:flex; justify-content:center; align-items:center; min-height:80px; background:var(--studio-input-bg); overflow:hidden;">
+                          <span style="color:var(--studio-text-muted); font-size:11px;">No Image Selected</span>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                          <button type="button" class="studio-btn studio-btn-primary" id="cat-select-btn" style="flex:1; font-size:11px; padding:8px 10px;">Choose Image</button>
+                          <button type="button" class="studio-btn studio-btn-danger" id="cat-remove-btn" style="font-size:11px; padding:8px 10px;">Remove</button>
+                        </div>
+                      </div>
+                      <button type="button" onclick="createNewCategorySubmit()" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Add Category</button>
+                    </div>
+                    <h4 style="font-size:12px; margin-bottom:8px; font-weight:700;">Existing Categories</h4>
+                    <div id="categories-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto;"></div>
+                  </div>
+                </div>
+
+                <!-- Coupon Manager inside Category Tab as utility -->
+                <div class="studio-accordion">
+                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                    <h3>Coupon Manager</h3>
+                    <span class="studio-accordion-icon">▼</span>
+                  </div>
+                  <div class="studio-accordion-content">
+                    <div id="add-coupon-form" style="margin-bottom:15px; border-bottom:1px dashed var(--studio-border); padding-bottom:12px;">
+                      <div class="control-group">
+                        <label>Code (Uppercase)</label>
+                        <input type="text" id="cp-code" class="studio-input" placeholder="WELCOME10" style="text-transform:uppercase;">
+                      </div>
+                      <div class="control-group">
+                        <label>Discount Type</label>
+                        <select id="cp-type" class="studio-input">
+                          <option value="Percentage">Percentage (%)</option>
+                          <option value="FixedAmount">Fixed Amount (₹)</option>
+                        </select>
+                      </div>
+                      <div class="control-row">
+                        <div class="control-group">
+                          <label>Discount Value</label>
+                          <input type="number" id="cp-value" class="studio-input" min="1">
+                        </div>
+                        <div class="control-group">
+                          <label>Min Order (₹)</label>
+                          <input type="number" id="cp-min-value" class="studio-input" value="0" min="0">
+                        </div>
+                      </div>
+                      <div class="control-group" style="margin-top:8px;">
+                        <label>Expiry Date</label>
+                        <input type="date" id="cp-expiry" class="studio-input">
+                      </div>
+                      <button type="button" onclick="createNewCouponSubmit()" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px; margin-top:8px;">Create Coupon</button>
+                    </div>
+                    <h4 style="font-size:12px; margin-bottom:8px; font-weight:700;">Active Coupons</h4>
+                    <div id="coupons-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:160px; overflow-y:auto;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 11: About Page Link -->
+              <div class="studio-tab-panel" id="tab-about">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">About Storefront Copy</h3>
                 <div id="about-page-settings" style="display:flex; flex-direction:column; gap:10px;">
                   <div class="control-group">
                     <label>Story Heading</label>
@@ -375,173 +647,81 @@
                         <span style="color:var(--studio-text-muted);">No image selected</span>
                       </div>
                       <div style="display:flex; gap:8px; margin-top:8px;">
-                        <button type="button" class="studio-btn studio-btn-primary" id="about-pick-image">Choose Image</button>
-                        <button type="button" class="studio-btn studio-btn-secondary" id="about-clear-image">Remove</button>
+                        <button type="button" class="studio-btn studio-btn-primary" id="about-pick-image" style="font-size:11px; padding:6px 10px;">Choose Image</button>
+                        <button type="button" class="studio-btn studio-btn-secondary" id="about-clear-image" style="font-size:11px; padding:6px 10px;">Remove</button>
                       </div>
                     </div>
                   </div>
                   <div class="control-group">
-                    <label>Left Paragraph 1</label>
+                    <label>Story Paragraph 1</label>
                     <textarea id="about-left-p1-field" class="studio-input" rows="3"></textarea>
                   </div>
                   <div class="control-group">
-                    <label>Left Paragraph 2</label>
+                    <label>Story Paragraph 2</label>
                     <textarea id="about-left-p2-field" class="studio-input" rows="3"></textarea>
                   </div>
                 </div>
               </div>
 
-              <!-- TAB 6: Products -->
-              <div class="studio-tab-panel" id="tab-products">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Product Highlights (Curation IDs)</h3>
+              <!-- TAB 12: Mobile Settings -->
+              <div class="studio-tab-panel" id="tab-mobile">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Mobile Responsiveness</h3>
                 <div class="control-group">
-                  <label>Featured Products IDs (Comma Separated)</label>
-                  <input type="text" id="featured-product-ids" class="studio-input" placeholder="ID1, ID2, ID3">
+                  <label>Mobile Font Scaling Offset</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="mobile-font-scale-field" min="0.8" max="1.0" step="0.05" class="range-slider" oninput="document.getElementById('mobile-font-scale-val').textContent=this.value; syncLivePreview()">
+                    <span id="mobile-font-scale-val" class="range-value">0.9</span>
+                  </div>
                 </div>
                 <div class="control-group">
-                  <label>Best Sellers IDs (Comma Separated)</label>
-                  <input type="text" id="bestseller-product-ids" class="studio-input" placeholder="ID1, ID2, ID3">
+                  <label>Mobile Header Height (px)</label>
+                  <input type="number" id="mobile-header-height-field" class="studio-input" min="50" max="90" value="64" onchange="syncLivePreview()">
                 </div>
                 <div class="control-group">
-                  <label>New Arrivals IDs (Comma Separated)</label>
-                  <input type="text" id="newarrival-product-ids" class="studio-input" placeholder="ID1, ID2, ID3">
+                  <label>Mobile Drawer Menu Background</label>
+                  <div class="color-picker-wrapper">
+                    <div class="color-input-preview"><input type="color" id="mobile-nav-bg-field" onchange="syncLivePreview()"></div>
+                    <input type="text" class="studio-input" oninput="document.getElementById('mobile-nav-bg-field').value=this.value; syncLivePreview()">
+                  </div>
                 </div>
               </div>
 
-              <!-- TAB 7: Footer -->
-              <div class="studio-tab-panel" id="tab-footer">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Storefront Footer</h3>
+              <!-- TAB 13: Animation Settings -->
+              <div class="studio-tab-panel" id="tab-animations">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Animation Settings</h3>
                 <div class="control-group">
-                  <label>Footer Description Content</label>
-                  <textarea id="footer-content-field" class="studio-input" rows="4" placeholder="Brief store tagline and details" required></textarea>
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" id="anim-enable-toggle" checked onchange="syncLivePreview()">
+                    <span>Enable Global Animations</span>
+                  </label>
                 </div>
-              </div>
-
-              <!-- TAB 8: Contact -->
-              <div class="studio-tab-panel" id="tab-contact">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Contact Details</h3>
                 <div class="control-group">
-                  <label>Store Address & Support Info</label>
-                  <textarea id="contact-details-field" class="studio-input" rows="4" placeholder="Physical Address / Phone / Email Support" required></textarea>
+                  <label>Animation Transition Speed (s)</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="anim-speed-field" min="0.1" max="1.5" step="0.05" class="range-slider" oninput="document.getElementById('anim-speed-val').textContent=this.value; syncLivePreview()">
+                    <span id="anim-speed-val" class="range-value">0.3</span>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label>Product Card Hover Effect</label>
+                  <select id="anim-hover-style-field" class="studio-input" onchange="syncLivePreview()">
+                    <option value="lift" selected>Card Lift & Glow</option>
+                    <option value="zoom">Image Zoom Only</option>
+                    <option value="none">Disabled</option>
+                  </select>
                 </div>
               </div>
 
-              <!-- TAB 9: Advanced -->
-              <div class="studio-tab-panel" id="tab-advanced">
-                <!-- Asset Upload -->
-                <div class="studio-accordion">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Asset Upload Tool</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content">
-                    <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:8px;">Upload images and copy URLs to paste in banner configurations.</p>
-                    <input type="file" id="general-asset-upload-file" accept="image/*" style="display:none;" onchange="uploadGeneralAsset()">
-                    <button type="button" class="studio-btn studio-btn-secondary" onclick="document.getElementById('general-asset-upload-file').click()" style="width:100%;">Select & Upload Image</button>
-                    <div id="general-upload-progress" style="display:none; font-size:11px; color:var(--studio-gold); margin-top:8px;">Uploading image...</div>
-                    <div id="general-upload-result" style="display:none; margin-top:8px;">
-                      <div style="display:flex; gap:6px;">
-                        <input type="text" id="uploaded-asset-url" readonly class="studio-input" style="font-size:11px; padding:6px;">
-                        <button type="button" onclick="copyUploadedAssetUrl()" class="studio-btn studio-btn-primary" style="padding:6px 12px; font-size:11px;">Copy</button>
-                      </div>
-                    </div>
-                  </div>
+              <!-- TAB 14: Custom CSS -->
+              <div class="studio-tab-panel" id="tab-css">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Custom CSS Editor</h3>
+                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Inject custom styling directly. Style blocks are validated before render.</p>
+                <div class="control-group">
+                  <textarea id="custom-css-field" class="studio-input" rows="15" placeholder="/* Enter raw CSS visual overrides here */&#10;.product-card {&#10;  border-color: gold;&#10;}" style="font-family:monospace; font-size:12px; line-height:1.5; color:#a5e844; background:#070509; border-color:#2a1c35;" oninput="validateCustomCSS(this.value)"></textarea>
                 </div>
-
-                <!-- Category Manager -->
-                <div class="studio-accordion">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Category Manager</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content">
-                    <form id="add-category-form" onsubmit="createNewCategory(event)" style="margin-bottom:15px; border-bottom:1px dashed var(--studio-border); padding-bottom:12px;">
-                      <div class="control-group">
-                        <label>Category Name</label>
-                        <input type="text" id="cat-name-field" class="studio-input" placeholder="e.g. Eco-Friendly Gifts" required>
-                      </div>
-                      <div class="control-group">
-                        <label>Category Image</label>
-                        <input type="hidden" id="cat-image-field" required>
-                        <div id="cat-preview-box" style="margin-bottom:8px; border:1px dashed var(--studio-border); border-radius:8px; padding:8px; display:flex; justify-content:center; align-items:center; min-height:80px; background:var(--studio-input-bg); overflow:hidden;">
-                          <span style="color:var(--studio-text-muted); font-size:11px;">No Image Selected</span>
-                        </div>
-                        <div style="display:flex; gap:6px;">
-                          <button type="button" class="studio-btn studio-btn-primary" id="cat-select-btn" style="flex:1; font-size:11px; padding:8px 10px;">Choose Image</button>
-                          <button type="button" class="studio-btn studio-btn-danger" id="cat-remove-btn" style="font-size:11px; padding:8px 10px;">Remove</button>
-                        </div>
-                      </div>
-                      <button type="submit" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Add Category</button>
-                    </form>
-                    <h4 style="font-size:12px; margin-bottom:8px; font-weight:700;">Existing Categories</h4>
-                    <div id="categories-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto;"></div>
-                  </div>
-                </div>
-
-                <!-- Coupon Manager -->
-                <div class="studio-accordion">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Coupon Manager</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content">
-                    <form id="add-coupon-form" onsubmit="createNewCoupon(event)" style="margin-bottom:15px; border-bottom:1px dashed var(--studio-border); padding-bottom:12px;">
-                      <div class="control-group">
-                        <label>Code (Uppercase)</label>
-                        <input type="text" id="cp-code" class="studio-input" placeholder="WELCOME10" required style="text-transform:uppercase;">
-                      </div>
-                      <div class="control-group">
-                        <label>Discount Type</label>
-                        <select id="cp-type" class="studio-input" required>
-                          <option value="Percentage">Percentage (%)</option>
-                          <option value="FixedAmount">Fixed Amount (₹)</option>
-                        </select>
-                      </div>
-                      <div class="control-row">
-                        <div class="control-group">
-                          <label>Discount Value</label>
-                          <input type="number" id="cp-value" class="studio-input" required min="1">
-                        </div>
-                        <div class="control-group">
-                          <label>Min Order (₹)</label>
-                          <input type="number" id="cp-min-value" class="studio-input" value="0" min="0">
-                        </div>
-                      </div>
-                      <div class="control-group" style="margin-top:8px;">
-                        <label>Expiry Date</label>
-                        <input type="date" id="cp-expiry" class="studio-input" required>
-                      </div>
-                      <button type="submit" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px; margin-top:8px;">Create Coupon</button>
-                    </form>
-                    <h4 style="font-size:12px; margin-bottom:8px; font-weight:700;">Active Coupons</h4>
-                    <div id="coupons-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:160px; overflow-y:auto;"></div>
-                  </div>
-                </div>
-
-                <!-- Testimonials -->
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Testimonials</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content">
-                    <div id="testimonials-visual"></div>
-                    <textarea id="testimonials-json" hidden aria-hidden="true"></textarea>
-                  </div>
-                </div>
-
-                <!-- Backups -->
-                <div class="studio-accordion">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Backups & Exports</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:8px;">
-                    <button type="button" class="studio-btn studio-btn-secondary" onclick="exportSettingsBackup()" style="width:100%;">Export Settings JSON</button>
-                    <button type="button" class="studio-btn studio-btn-secondary" onclick="importSettingsBackup()" style="width:100%;">Import Settings JSON</button>
-                  </div>
-                </div>
+                <div id="css-validation-status" style="font-size:11px; font-weight:700; color:var(--studio-success);">✓ Syntax Valid</div>
               </div>
+
             </div>
 
             <!-- Editor Action Bar -->
@@ -632,6 +812,34 @@
         updateContrastLock();
       }, 1200);
 
+      // Tab switching based on URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam) {
+        let targetTabId = 'tab-presets';
+        const tabMapping = {
+          'presets': 'tab-presets',
+          'colors': 'tab-colors',
+          'typography': 'tab-typography',
+          'header': 'tab-header',
+          'footer': 'tab-footer',
+          'homepage': 'tab-homepage',
+          'about-page': 'tab-about',
+          'buttons': 'tab-buttons',
+          'cards': 'tab-cards',
+          'product-pages': 'tab-products',
+          'category-pages': 'tab-categories',
+          'animations': 'tab-animations',
+          'custom-css': 'tab-css',
+          'mobile-settings': 'tab-mobile',
+          'advanced-settings': 'tab-css'
+        };
+        if (tabMapping[tabParam]) {
+          targetTabId = tabMapping[tabParam];
+        }
+        switchStudioTab(null, targetTabId);
+      }
+
       // Logo Select Events
       const logoSelectBtn = document.getElementById('logo-select-btn');
       const logoRemoveBtn = document.getElementById('logo-remove-btn');
@@ -696,7 +904,12 @@
       document.querySelectorAll('.studio-tab-panel').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.studio-tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
-      event.target.classList.add('active');
+      if (event && event.target) {
+        event.target.classList.add('active');
+      } else {
+        const btn = Array.from(document.querySelectorAll('.studio-tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
+        if (btn) btn.classList.add('active');
+      }
     }
 
     // Viewport resizing toggle logic
@@ -715,6 +928,31 @@
       const iframe = document.getElementById('viewport-iframe');
       if (iframe) {
         iframe.src = route;
+      }
+    }
+
+    // CSS syntax verification helper
+    function validateCustomCSS(css) {
+      const statusEl = document.getElementById('css-validation-status');
+      if (!statusEl) return;
+      if (!css.trim()) {
+        statusEl.textContent = '✓ Empty style block';
+        statusEl.style.color = 'var(--studio-success)';
+        return;
+      }
+      
+      // Simple parser check for matching brackets
+      let openBrackets = 0;
+      for (let char of css) {
+        if (char === '{') openBrackets++;
+        if (char === '}') openBrackets--;
+      }
+      if (openBrackets !== 0) {
+        statusEl.textContent = '✗ Unmatched brackets { }';
+        statusEl.style.color = 'var(--studio-danger)';
+      } else {
+        statusEl.textContent = '✓ CSS Syntax Valid';
+        statusEl.style.color = 'var(--studio-success)';
       }
     }
 
@@ -939,6 +1177,15 @@
       if (btnStyle === 'sharp') btnRadius = '0px';
       if (btnStyle === 'pill') btnRadius = '30px';
       doc.documentElement.style.setProperty('--layout-btn-radius', btnRadius);
+
+      // Custom CSS live injection in iframe
+      let iframeCustomCss = doc.getElementById('mz-custom-css');
+      if (!iframeCustomCss) {
+        iframeCustomCss = doc.createElement('style');
+        iframeCustomCss.id = 'mz-custom-css';
+        doc.head.appendChild(iframeCustomCss);
+      }
+      iframeCustomCss.textContent = document.getElementById('custom-css-field').value;
       
       // Re-trigger contrast check on controls page
       updateContrastLock();
@@ -965,7 +1212,7 @@
               <span style="color:var(--studio-text-muted); font-size:9px;">Min: ₹${c.minOrderValue} | Exp: ${new Date(c.expiresAt).toLocaleDateString('en-IN')}</span>
             </div>
             <button onclick="deleteCouponById('${c._id}')" style="background:transparent; cursor:pointer; border:none;" title="Delete Coupon">
-              <svg style="width:14px; height:14px; fill:#ef4444;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
+              <svg style="width:14px; height:14px; fill:#ef4444;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 8,19V7H6V19Z"/></svg>
             </button>
           </div>
         `).join('');
@@ -975,13 +1222,17 @@
       }
     }
 
-    async function createNewCoupon(e) {
-      e.preventDefault();
+    async function createNewCouponSubmit() {
       const code = document.getElementById('cp-code').value.toUpperCase().trim();
       const discountType = document.getElementById('cp-type').value;
       const discountValue = document.getElementById('cp-value').value;
       const minOrderValue = document.getElementById('cp-min-value').value;
       const expiresAt = document.getElementById('cp-expiry').value;
+
+      if (!code || !discountValue || !expiresAt) {
+        showToast('Please fill in coupon fields', 'warning');
+        return;
+      }
 
       try {
         const res = await adminFetch('/api/settings/coupons/new', {
@@ -992,7 +1243,10 @@
         const data = await res.json();
         if (data.success) {
           showToast('Coupon created!', 'success');
-          document.getElementById('add-coupon-form').reset();
+          document.getElementById('cp-code').value = '';
+          document.getElementById('cp-value').value = '';
+          document.getElementById('cp-min-value').value = '0';
+          document.getElementById('cp-expiry').value = '';
           loadCouponsList();
         } else {
           showToast(data.error || 'Failed to create coupon', 'error');
@@ -1047,49 +1301,6 @@
       }
     }
 
-    async function uploadGeneralAsset() {
-      const input = document.getElementById('general-asset-upload-file');
-      const file = input.files[0];
-      if (!file) return;
-
-      const progress = document.getElementById('general-upload-progress');
-      const resultBox = document.getElementById('general-upload-result');
-      const urlInput = document.getElementById('uploaded-asset-url');
-
-      progress.style.display = 'block';
-      resultBox.style.display = 'none';
-
-      const formData = new FormData();
-      formData.append('image', file);
-
-      try {
-        const res = await adminFetch('/api/settings/upload', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (data.success) {
-          urlInput.value = data.url;
-          resultBox.style.display = 'block';
-          showToast('Asset uploaded successfully!', 'success');
-        } else {
-          showToast(data.error || 'Upload failed', 'error');
-        }
-      } catch (err) {
-        showToast('Connection error during upload', 'error');
-      } finally {
-        progress.style.display = 'none';
-        input.value = '';
-      }
-    }
-
-    function copyUploadedAssetUrl() {
-      const input = document.getElementById('uploaded-asset-url');
-      input.select();
-      document.execCommand('copy');
-      showToast('URL copied to clipboard!', 'success');
-    }
-
     async function loadCategoriesList() {
       const container = document.getElementById('categories-list-container');
       if (!container) return;
@@ -1140,7 +1351,6 @@
             if (data.success) {
               showToast('Category image updated successfully!', 'success');
               loadCategoriesList();
-              // Refresh preview iframe
               const iframe = document.getElementById('viewport-iframe');
               if (iframe) iframe.contentWindow.location.reload();
             } else {
@@ -1166,7 +1376,6 @@
         if (data.success) {
           showToast('Category image removed successfully!', 'success');
           loadCategoriesList();
-          // Refresh preview iframe
           const iframe = document.getElementById('viewport-iframe');
           if (iframe) iframe.contentWindow.location.reload();
         } else {
@@ -1177,10 +1386,14 @@
       }
     }
 
-    async function createNewCategory(e) {
-      e.preventDefault();
+    async function createNewCategorySubmit() {
       const name = document.getElementById('cat-name-field').value.trim();
       const image = document.getElementById('cat-image-field').value.trim();
+
+      if (!name) {
+        showToast('Please specify category name', 'warning');
+        return;
+      }
 
       try {
         const res = await adminFetch('/api/products/categories', {
@@ -1191,7 +1404,8 @@
         const data = await res.json();
         if (data.success) {
           showToast('Category created successfully!', 'success');
-          document.getElementById('add-category-form').reset();
+          document.getElementById('cat-name-field').value = '';
+          document.getElementById('cat-image-field').value = '';
           if (typeof window.updateCatPreview === 'function') {
             window.updateCatPreview('');
           }

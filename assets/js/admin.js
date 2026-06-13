@@ -43,7 +43,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.body.style.visibility = 'visible';
   }
 
+  applyAdminBranding();
   injectAdminSidebar();
+
 
   // Route to page-specific loads
   const path = window.location.pathname;
@@ -73,22 +75,45 @@ function injectAdminSidebar() {
   if (!sidebar) return;
 
   const path = window.location.pathname;
+  const urlParams = new URLSearchParams(window.location.search);
+  const currentTab = urlParams.get('tab') || 'presets';
+
   const activeCls = (file) => path.includes(file) ? 'active' : '';
+  const activeTabCls = (tab) => (path.includes('settings.html') && currentTab === tab) ? 'active' : '';
 
   sidebar.className = 'admin-sidebar';
   sidebar.innerHTML = `
     <div class="admin-logo">MAGIZHVAGAM</div>
-    <ul class="admin-menu">
+    <ul class="admin-menu" style="overflow-y: auto; height: calc(100vh - 100px); padding-bottom: 40px; margin: 0; list-style: none;">
       <li class="${activeCls('dashboard.html')}"><a href="/admin/dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
       <li class="${activeCls('products.html')}"><a href="/admin/products.html"><i data-lucide="gift"></i> Products</a></li>
       <li class="${activeCls('orders.html')}"><a href="/admin/orders.html"><i data-lucide="shopping-bag"></i> Orders</a></li>
       <li class="${activeCls('invoices.html')}"><a href="/admin/invoices.html"><i data-lucide="file-text"></i> Invoices</a></li>
       <li class="${activeCls('customers.html')}"><a href="/admin/customers.html"><i data-lucide="users"></i> Customers</a></li>
       <li class="${activeCls('reports.html')}"><a href="/admin/reports.html"><i data-lucide="bar-chart-2"></i> Reports</a></li>
-      <li class="${activeCls('settings.html')}"><a href="/admin/settings.html"><i data-lucide="palette"></i> Appearance Studio</a></li>
       <li class="${activeCls('media.html')}"><a href="/admin/media.html"><i data-lucide="image"></i> Media Library</a></li>
-      <li style="margin-top:40px; border-top:1px solid rgba(255,255,255,0.08); padding-top:20px;">
-        <a href="#" onclick="window.handleLogout(); return false;" style="color:#ef4444;"><i data-lucide="log-out"></i> Sign Out</a>
+      
+      <!-- Reorganized Appearance Entries -->
+      <li style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Appearance</li>
+      
+      <li class="${activeTabCls('presets')}"><a href="/admin/settings.html?tab=presets"><i data-lucide="layout"></i> Theme Presets</a></li>
+      <li class="${activeTabCls('colors')}"><a href="/admin/settings.html?tab=colors"><i data-lucide="droplet"></i> Colors</a></li>
+      <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography"><i data-lucide="type"></i> Typography</a></li>
+      <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header"><i data-lucide="panel-top"></i> Header Settings</a></li>
+      <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer"><i data-lucide="panel-bottom"></i> Footer Settings</a></li>
+      <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage"><i data-lucide="home"></i> Homepage Elements</a></li>
+      <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page"><i data-lucide="info"></i> About Page</a></li>
+      <li class="${activeTabCls('buttons')}"><a href="/admin/settings.html?tab=buttons"><i data-lucide="mouse-pointer"></i> Buttons</a></li>
+      <li class="${activeTabCls('cards')}"><a href="/admin/settings.html?tab=cards"><i data-lucide="credit-card"></i> Cards</a></li>
+      <li class="${activeTabCls('product-pages')}"><a href="/admin/settings.html?tab=product-pages"><i data-lucide="package"></i> Product Pages</a></li>
+      <li class="${activeTabCls('category-pages')}"><a href="/admin/settings.html?tab=category-pages"><i data-lucide="layers"></i> Category Pages</a></li>
+      <li class="${activeTabCls('animations')}"><a href="/admin/settings.html?tab=animations"><i data-lucide="sparkles"></i> Animations</a></li>
+      <li class="${activeTabCls('custom-css')}"><a href="/admin/settings.html?tab=custom-css"><i data-lucide="code"></i> Custom CSS</a></li>
+      <li class="${activeTabCls('mobile-settings')}"><a href="/admin/settings.html?tab=mobile-settings"><i data-lucide="smartphone"></i> Mobile Settings</a></li>
+      <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings"><i data-lucide="settings"></i> Advanced Settings</a></li>
+
+      <li style="margin-top:20px; border-top:1px solid var(--adm-border); padding-top:15px;">
+        <a href="#" onclick="window.handleLogout(); return false;" style="color:#ef4444 !important;"><i data-lucide="log-out"></i> Sign Out</a>
       </li>
     </ul>
   `;
@@ -769,149 +794,8 @@ async function handleAdminCustomerAction(customerId, action) {
 window.handleAdminCustomerAction = handleAdminCustomerAction;
 
 
-// 5. Admin Homepage Builder and configuration values loader
-async function loadHomepageBuilderSettings() {
-  const form = document.getElementById('homepage-builder-form');
-  if (!form) return;
+// 5. Admin Homepage Builder and configuration values loader is handled by appearance-studio.js
 
-  try {
-    const res = await adminFetch('/api/settings/homepage');
-    const data = await res.json();
-    if (data.success && data.setting) {
-      const setting = data.setting;
-
-      // Load WhatsApp Contact field
-      document.getElementById('whatsapp-contact-field').value = setting.whatsappContact || '';
-
-      // Load Branding & Appearance fields
-      document.getElementById('brand-name-field').value = setting.brandName || '';
-      document.getElementById('logo-field').value = setting.logo || '';
-      if (typeof window.updateLogoPreview === 'function') {
-        window.updateLogoPreview(setting.logo || '');
-      }
-      document.getElementById('primary-color-field').value = setting.primaryColor || '#6A0DAD';
-      document.getElementById('secondary-color-field').value = setting.secondaryColor || '#FF4F81';
-      document.getElementById('accent-color-field').value = setting.accentColor || '#FFD700';
-      document.getElementById('font-family-field').value = setting.fontFamily || 'Outfit';
-      document.getElementById('button-style-field').value = setting.buttonStyle || 'rounded';
-      document.getElementById('footer-content-field').value = setting.footerContent || '';
-      document.getElementById('contact-details-field').value = setting.contactDetails || '';
-
-      // Load custom color palette values
-      document.getElementById('palette-bg-main').value = setting.paletteBgMain || '#ffffff';
-      document.getElementById('palette-bg-surface').value = setting.paletteBgSurface || '#f8f9fa';
-      document.getElementById('palette-text-main').value = setting.paletteTextMain || '#212529';
-      document.getElementById('palette-text-muted').value = setting.paletteTextMuted || '#6c757d';
-      document.getElementById('palette-color-primary').value = setting.paletteColorPrimary || '#8a2be2';
-      document.getElementById('palette-color-secondary').value = setting.paletteColorSecondary || '#ff1493';
-      document.getElementById('palette-color-success').value = setting.paletteColorSuccess || '#28a745';
-      document.getElementById('palette-color-error').value = setting.paletteColorError || '#dc3545';
-
-      // Load hero slide arrays textareas
-      document.getElementById('hero-banners-json').value = JSON.stringify(setting.heroBanners, null, 2);
-      document.getElementById('promo-banners-json').value = JSON.stringify(setting.promotionalBanners, null, 2);
-
-      // Load curated product list selectors
-      document.getElementById('featured-product-ids').value = setting.featuredProductIds.join(', ');
-      document.getElementById('bestseller-product-ids').value = setting.bestSellerProductIds.join(', ');
-      document.getElementById('newarrival-product-ids').value = setting.newArrivalProductIds.join(', ');
-
-      // Load Testimonials JSON
-      document.getElementById('testimonials-json').value = JSON.stringify(setting.testimonials, null, 2);
-
-      // Sync hex text inputs adjacent to color pickers
-      document.querySelectorAll('.color-picker-wrapper').forEach(wrapper => {
-        const picker = wrapper.querySelector('input[type="color"]');
-        const textInput = wrapper.querySelector('input[type="text"]');
-        if (picker && textInput) textInput.value = picker.value.toUpperCase();
-      });
-
-      // Update safety contrast lock and live preview dynamically
-      if (typeof updateContrastLock === 'function') updateContrastLock();
-      if (typeof syncLivePreview === 'function') syncLivePreview();
-    }
-  } catch (err) {
-    showToast('Failed to load homepage builder config', 'error');
-  }
-
-  // Register settings save form submit
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    // Safety Lock: validate contrast ratio before saving to prevent broken color configs
-    if (typeof window.getContrastRatio === 'function') {
-      const bgHex = document.getElementById('palette-bg-main').value;
-      const textHex = document.getElementById('palette-text-main').value;
-      const ratio = window.getContrastRatio(bgHex, textHex);
-      if (ratio < 3.0) {
-        showToast(`Warning: Contrast ratio is low (${ratio.toFixed(1)}:1). Saving anyway.`, 'warning');
-      }
-    }
-
-    const saveBtn = form.querySelector('button[type="submit"]');
-    saveBtn.disabled = true;
-    saveBtn.textContent = 'Saving Settings...';
-
-    try {
-      const updatedValue = {
-        whatsappContact: document.getElementById('whatsapp-contact-field').value.trim(),
-        brandName: document.getElementById('brand-name-field').value.trim(),
-        logo: document.getElementById('logo-field').value.trim(),
-        primaryColor: document.getElementById('primary-color-field').value,
-        secondaryColor: document.getElementById('secondary-color-field').value,
-        accentColor: document.getElementById('accent-color-field').value,
-        fontFamily: document.getElementById('font-family-field').value,
-        buttonStyle: document.getElementById('button-style-field').value,
-        footerContent: document.getElementById('footer-content-field').value.trim(),
-        contactDetails: document.getElementById('contact-details-field').value.trim(),
-
-        paletteBgMain: document.getElementById('palette-bg-main').value,
-        paletteBgSurface: document.getElementById('palette-bg-surface').value,
-        paletteTextMain: document.getElementById('palette-text-main').value,
-        paletteTextMuted: document.getElementById('palette-text-muted').value,
-        paletteColorPrimary: document.getElementById('palette-color-primary').value,
-        paletteColorSecondary: document.getElementById('palette-color-secondary').value,
-        paletteColorSuccess: document.getElementById('palette-color-success').value,
-        paletteColorError: document.getElementById('palette-color-error').value,
-
-        heroBanners: JSON.parse(document.getElementById('hero-banners-json').value),
-        promotionalBanners: JSON.parse(document.getElementById('promo-banners-json').value),
-        featuredProductIds: document.getElementById('featured-product-ids').value.split(',').map(s => s.trim()).filter(Boolean),
-        bestSellerProductIds: document.getElementById('bestseller-product-ids').value.split(',').map(s => s.trim()).filter(Boolean),
-        newArrivalProductIds: document.getElementById('newarrival-product-ids').value.split(',').map(s => s.trim()).filter(Boolean),
-        trendingProductIds: document.getElementById('featured-product-ids').value.split(',').map(s => s.trim()).filter(Boolean),
-        recommendedProductIds: document.getElementById('newarrival-product-ids').value.split(',').map(s => s.trim()).filter(Boolean),
-        categoryHighlights: [], // Retained or computed
-        testimonials: JSON.parse(document.getElementById('testimonials-json').value)
-      };
-
-      // Query categories for category highlights backfill
-      const catRes = await adminFetch('/api/products/categories');
-      const catData = await catRes.json();
-      if (catData.success && catData.categories.length > 0) {
-        updatedValue.categoryHighlights = catData.categories.slice(0, 4).map(c => c._id);
-      }
-
-      const saveRes = await adminFetch('/api/settings/homepage', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ value: updatedValue })
-      });
-      const saveData = await saveRes.json();
-      if (saveData.success) {
-        showToast('Homepage settings saved and updated!', 'success');
-        if (window.MZAppearanceStudio) window.MZAppearanceStudio.markClean();
-      } else {
-        showToast(saveData.error || 'Failed to save', 'error');
-      }
-    } catch (error) {
-      showToast('Validation failed: check JSON structure formatting', 'error');
-    } finally {
-      saveBtn.disabled = false;
-      saveBtn.textContent = 'Save All Settings';
-    }
-  });
-}
 
 // 6. Settings export, import & reset handlers
 window.exportSettingsBackup = async () => {
@@ -1636,3 +1520,32 @@ window.viewCustomerDeepProfile = async (customerId) => {
     showToast('Error displaying deep profile details', 'error');
   }
 };
+
+async function applyAdminBranding() {
+  try {
+    const res = await adminFetch('/api/settings/homepage');
+    const data = await res.json();
+    if (data.success && data.setting) {
+      const s = data.setting;
+      const root = document.documentElement;
+      if (s.paletteBgMain) root.style.setProperty('--adm-bg', s.paletteBgMain);
+      if (s.paletteBgSurface) {
+        root.style.setProperty('--adm-surface', s.paletteBgSurface);
+        root.style.setProperty('--adm-card-bg', s.paletteBgSurface);
+      }
+      if (s.primaryColor) {
+        root.style.setProperty('--adm-accent', s.primaryColor);
+        // compute a border color or use accent/primary with low opacity
+        root.style.setProperty('--adm-border', s.paletteBgSurface === '#ffffff' || s.paletteBgSurface === '#FFFFFF' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)');
+      }
+      if (s.secondaryColor) root.style.setProperty('--adm-accent-hover', s.secondaryColor);
+      if (s.paletteTextMain) root.style.setProperty('--adm-text', s.paletteTextMain);
+      if (s.paletteTextMuted) root.style.setProperty('--adm-text-muted', s.paletteTextMuted);
+      if (s.paletteColorSuccess) root.style.setProperty('--adm-success', s.paletteColorSuccess);
+      if (s.paletteColorError) root.style.setProperty('--adm-danger', s.paletteColorError);
+    }
+  } catch (err) {
+    console.error('Failed to load dynamic admin branding', err);
+  }
+}
+

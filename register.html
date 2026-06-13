@@ -97,34 +97,34 @@
           <label for="confirm-password">Confirm Password</label>
           <input type="password" id="confirm-password" class="form-control" placeholder="••••••••" required>
         </div>
-        <div class="form-group">
-          <label for="address1">Address Line 1</label>
-          <input type="text" id="address1" class="form-control" placeholder="House/Flat No, Street" required>
-        </div>
-        <div class="form-group">
-          <label for="pincode">Pincode</label>
-          <input type="text" id="pincode" class="form-control" placeholder="6-digit numeric" required maxlength="6" pattern="^[1-9][0-9]{5}$">
-        </div>
-        <div class="form-group">
-          <label for="city">City</label>
-          <input type="text" id="city" class="form-control" placeholder="City" required>
-        </div>
-        <div class="form-group">
-          <label for="state">State</label>
-          <input type="text" id="state" class="form-control" placeholder="State" required>
-        </div>
-
-
 
         <button type="submit" class="btn btn-primary"
           style="width: 100%; margin-top: 10px; border-radius: 8px;">Register</button>
       </form>
 
-
-
       <div style="text-align: center; margin-top: 24px; font-size: 14px;">
         <span style="color: var(--text-muted);">Already have an account?</span>
         <a href="/login.html" style="color: hsl(var(--primary-purple)); font-weight: 700; margin-left: 4px;">Sign In</a>
+      </div>
+
+      <!-- Registration OTP Container -->
+      <div id="otp-container" style="display: none;">
+        <h2 style="font-size: 26px; text-align: center; margin-bottom: 8px; font-family: 'Outfit';">Verify Email</h2>
+        <p style="text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">We have sent a 6-digit OTP code to <strong id="sent-otp-email">your email</strong>. Enter the OTP below to activate your account.</p>
+        
+        <form id="otp-verify-form">
+          <div class="form-group">
+            <label for="otp-code">6-Digit OTP</label>
+            <input type="text" id="otp-code" class="form-control" placeholder="123456" maxlength="6" pattern="[0-9]{6}" required style="text-align: center; font-size: 20px; letter-spacing: 4px;">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px; border-radius: 8px;">Verify OTP</button>
+          
+          <div id="otp-timer-container" style="margin-top: 20px; padding: 16px; border-radius: 8px; background: rgba(106, 13, 173, 0.05); border: 1px solid rgba(106, 13, 173, 0.15); text-align: center;">
+            <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-color);">Resend code available in:</p>
+            <div id="otp-timer-clock" style="font-size: 24px; font-weight: 700; color: hsl(var(--primary-purple)); font-family: monospace;">05:00</div>
+            <button type="button" id="resend-otp-btn" class="btn btn-secondary" style="width: 100%; margin-top: 14px; border-radius: 8px; font-size: 12px; padding: 8px 0;" disabled>Request New OTP</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -140,49 +140,6 @@
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script>
-    document.getElementById('pincode').addEventListener('input', async (e) => {
-      const pincode = e.target.value.trim();
-      const cityInput = document.getElementById('city');
-      const stateInput = document.getElementById('state');
-
-      // Check if it matches a valid 6-digit pincode format before fetching
-      if (/^[1-9][0-9]{5}$/.test(pincode)) {
-        try {
-          const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
-          if (!res.ok) throw new Error('API response error');
-          const data = await res.json();
-          
-          if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice && data[0].PostOffice.length > 0) {
-            const postOffice = data[0].PostOffice[0];
-            cityInput.value = postOffice.District;
-            stateInput.value = postOffice.State;
-            
-            // Lock fields
-            cityInput.readOnly = true;
-            stateInput.readOnly = true;
-          } else {
-            showToast('Invalid Indian Pincode. Please verify.', 'error');
-            cityInput.value = '';
-            stateInput.value = '';
-            cityInput.readOnly = false;
-            stateInput.readOnly = false;
-          }
-        } catch (err) {
-          console.error('Pincode fetch failed:', err);
-          showToast('Pincode verification service unavailable. Please enter City and State manually.', 'warning');
-          // Fallback: unlock fields so user isn't blocked
-          cityInput.readOnly = false;
-          stateInput.readOnly = false;
-        }
-      } else {
-        // Unlock fields if pincode is partially typed or cleared
-        cityInput.readOnly = false;
-        stateInput.readOnly = false;
-      }
-    });
-
-    let otpSent = false;
-
     // Real-time Password Strength Meter
     const passwordInput = document.getElementById('password');
     const strengthBar = document.getElementById('strength-bar');
@@ -219,7 +176,77 @@
       }
     });
 
+    let otpTimerInterval = null;
+    function startOtpTimer() {
+      if (otpTimerInterval) clearInterval(otpTimerInterval);
+      const resendBtn = document.getElementById('resend-otp-btn');
+      const timerClock = document.getElementById('otp-timer-clock');
+      resendBtn.disabled = true;
+      resendBtn.style.opacity = '0.6';
+      resendBtn.style.cursor = 'not-allowed';
+      
+      let timeLeft = 300; // 5 minutes in seconds
+      otpTimerInterval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+          clearInterval(otpTimerInterval);
+          otpTimerInterval = null;
+          timerClock.textContent = "00:00";
+          resendBtn.disabled = false;
+          resendBtn.style.opacity = '1';
+          resendBtn.style.cursor = 'pointer';
+        } else {
+          const minutes = Math.floor(timeLeft / 60);
+          const seconds = timeLeft % 60;
+          timerClock.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+      }, 1000);
+    }
 
+    document.getElementById('otp-verify-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const otp = document.getElementById('otp-code').value.trim();
+      const email = window.registeredEmail;
+      
+      try {
+        const res = await fetch('/api/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Email verified successfully! Redirecting to login...', 'success');
+          setTimeout(() => {
+            window.location.replace('/login.html?verified=true');
+          }, 2000);
+        } else {
+          showToast(data.error || 'Verification failed', 'error');
+        }
+      } catch (err) {
+        showToast('Connection error during OTP verification', 'error');
+      }
+    });
+
+    document.getElementById('resend-otp-btn').addEventListener('click', async () => {
+      const email = window.registeredEmail;
+      try {
+        const res = await fetch('/api/auth/resend-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('A new OTP code has been sent to your email.', 'success');
+          startOtpTimer();
+        } else {
+          showToast(data.error || 'Failed to resend OTP', 'error');
+        }
+      } catch (err) {
+        showToast('Connection error resending OTP', 'error');
+      }
+    });
 
     document.getElementById('register-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -228,10 +255,6 @@
       const phone = document.getElementById('phone').value.trim();
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirm-password').value;
-      const address1 = document.getElementById('address1').value.trim();
-      const pincode = document.getElementById('pincode').value.trim();
-      const city = document.getElementById('city').value.trim();
-      const state = document.getElementById('state').value.trim();
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
@@ -242,12 +265,6 @@
       const phoneRegex = /^[0-9]{10}$/;
       if (!phoneRegex.test(phone)) {
         showToast('Please enter a valid 10 digit mobile number.', 'error');
-        return;
-      }
-
-      const pincodeRegex = /^[1-9][0-9]{5}$/;
-      if (!pincodeRegex.test(pincode)) {
-        showToast('Please enter a valid 6 digit Indian pincode.', 'error');
         return;
       }
 
@@ -264,7 +281,7 @@
       }
 
       // Lock form inputs
-      ['name', 'email', 'phone', 'password', 'confirm-password', 'address1', 'pincode', 'city', 'state'].forEach(id => {
+      ['name', 'email', 'phone', 'password', 'confirm-password'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.disabled = true;
       });
@@ -278,7 +295,53 @@
       }
 
       showToast('Creating account and sending verification email...', 'info');
-      await handleRegister(name, email, phone, password, address1, pincode, city, state);
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, phone, password })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          showToast(data.error || 'Registration failed', 'error');
+          // Unlock inputs
+          ['name', 'email', 'phone', 'password', 'confirm-password'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.disabled = false;
+          });
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+          }
+          return;
+        }
+
+        showToast('Registration successful! A verification OTP has been sent.', 'success');
+        window.registeredEmail = email;
+        document.getElementById('sent-otp-email').textContent = email;
+        
+        // Transition to OTP Verify container
+        document.getElementById('register-form').style.display = 'none';
+        const cardTitle = document.querySelector('.auth-card h2');
+        if (cardTitle) cardTitle.style.display = 'none';
+        const cardDesc = document.querySelector('.auth-card p');
+        if (cardDesc) cardDesc.style.display = 'none';
+        
+        document.getElementById('otp-container').style.display = 'block';
+        startOtpTimer();
+      } catch (error) {
+        showToast('Connection error during registration', 'error');
+        ['name', 'email', 'phone', 'password', 'confirm-password'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.disabled = false;
+        });
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.style.opacity = '1';
+          submitBtn.style.cursor = 'pointer';
+        }
+      }
     });
   </script>
 </body>

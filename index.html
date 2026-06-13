@@ -36,41 +36,20 @@
 
   <section class="hero-parallax-viewport" data-mz-section="hero">
     <div class="parallax-layer bg-canvas"></div>
-
-    <!-- Hero slider container (populated by assets/js/home.js) -->
     <div id="hero-slider-container" class="hero-slider-viewport"></div>
-
-    <div class="parallax-layer midground-3d" id="hero-3d-canvas-container"></div>
-
-    <div class="parallax-layer foreground-ui container">
-      <div class="hero-content-alignment glass-panel">
-        <span class="hero-badge" style="display:none"></span>
-        <h1 class="hero-headline" style="display:none"></h1>
-        <p class="hero-subtext" style="display:none"></p>
-
-        <div class="hero-cta-action-row" style="display:none">
-          <a href="#" class="btn btn-primary"></a>
-          <a href="#" class="btn btn-secondary"></a>
+    
+    <div class="hero-central-layout container">
+      <div class="hero-content-card hero-content-alignment glass-panel animated fade-in-up">
+        <span class="hero-badge-tag" aria-hidden="true"></span>
+        <h1 class="hero-headline"></h1>
+        <p class="hero-subtext"></p>
+        <div class="hero-cta-action-row">
+          <a href="/products.html" class="btn btn-primary">Order & Inquire</a>
+          <a href="#categories" class="btn btn-secondary">Explore Collections</a>
         </div>
       </div>
 
-      <!-- Right: Premium floating collection cards showcase -->
-      <div class="hero-visual-showcase">
-        <div class="floating-cards-wrapper">
-          <div class="floating-card card-left glass-panel">
-            <img src="/assets/images/celebration_hampers.png" alt="Celebration Hampers">
-            <span class="floating-card-label">Celebration Hampers</span>
-          </div>
-          <div class="floating-card card-center glass-panel">
-            <img src="/assets/images/banners/hero_slide_1.jpg" alt="Luxury Return Gifts">
-            <span class="floating-card-label">Luxury Returns</span>
-          </div>
-          <div class="floating-card card-right glass-panel">
-            <img src="/assets/images/corporate_gifts.png" alt="Corporate Gifts">
-            <span class="floating-card-label">Corporate Gifts</span>
-          </div>
-        </div>
-      </div>
+      <!-- Floating collection cards removed (Phase 1 simplification) -->
     </div>
   </section>
   <!-- Flash sale section removed to respect HomepageSectionsV4 toggles; flash sale will be injected only by JS when enabled -->

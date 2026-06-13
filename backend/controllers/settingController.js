@@ -823,6 +823,10 @@ exports.uploadSettingsImage = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please upload an image file' });
     }
 
+    if (!req.file.mimetype.startsWith('image/')) {
+      return res.status(400).json({ success: false, error: 'Only image files are allowed' });
+    }
+
     const sharp = require('sharp');
     const fs = require('fs');
     const path = require('path');

@@ -27,24 +27,21 @@ const createTransporter = () => {
 const transporter = createTransporter();
 
 /**
- * Dispatch verification email to user
+ * Dispatch verification OTP to user
  * @param {string} to - Recipient email
- * @param {string} token - Cryptographic token
+ * @param {string} otp - 6-digit verification code
  */
-exports.sendVerificationEmail = async (to, token) => {
-  const verificationLink = `http://localhost:${process.env.PORT || 5000}/api/auth/verify-email?token=${token}`;
-  const subject = 'Magizhvagam Account Verification';
+exports.sendVerificationEmail = async (to, otp) => {
+  const subject = 'Magizhvagam Account Verification OTP';
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px;">
       <h2 style="color: #6A0DAD; text-align: center;">Magizhvagam E-Commerce</h2>
       <p>Hello,</p>
-      <p>Thank you for registering on our platform! Please click the button below to verify your email address and unlock all checkout and wishlist functionalities:</p>
+      <p>Thank you for registering on our platform! Please use the following One-Time Password (OTP) to verify your email address and activate your account:</p>
       <div style="text-align: center; margin: 30px 0;">
-        <a href="${verificationLink}" style="background-color: #6A0DAD; color: white; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block;">Verify Email</a>
+        <span style="background-color: #F3E8FF; border: 2px dashed #6A0DAD; color: #6A0DAD; padding: 14px 28px; font-size: 28px; font-weight: bold; border-radius: 6px; letter-spacing: 5px; display: inline-block;">${otp}</span>
       </div>
-      <p>If the button doesn't work, you can copy and paste the following link into your browser:</p>
-      <p style="word-break: break-all; color: #666;">${verificationLink}</p>
-      <p style="margin-top: 30px; font-size: 12px; color: #888;">This link will expire in 24 hours. If you did not register on our site, please ignore this email.</p>
+      <p style="margin-top: 30px; font-size: 12px; color: #888;">This OTP is valid for 5 minutes. If you did not register on our site, please ignore this email.</p>
     </div>
   `;
 
@@ -56,39 +53,35 @@ exports.sendVerificationEmail = async (to, token) => {
         subject,
         html: htmlContent
       });
-      console.log(`Verification email sent successfully to ${to}`);
+      console.log(`Verification OTP sent successfully to ${to}`);
     } catch (error) {
-      console.error(`Error sending verification email to ${to}:`, error.message);
-      // Fallback log link to console
-      console.log(`[FALLBACK LINK] Verification link for ${to}: ${verificationLink}`);
+      console.error(`Error sending verification OTP to ${to}:`, error.message);
+      console.log(`[FALLBACK] Verification OTP for ${to}: ${otp}`);
     }
   } else {
     console.log(`----------------------------------------`);
-    console.log(`[CONSOLE EMAIL ROUTE] Verification link for ${to}:`);
-    console.log(verificationLink);
+    console.log(`[CONSOLE EMAIL ROUTE] Verification OTP for ${to}:`);
+    console.log(otp);
     console.log(`----------------------------------------`);
   }
 };
 
 /**
- * Dispatch password reset email to user
+ * Dispatch password reset OTP to user
  * @param {string} to - Recipient email
- * @param {string} token - Cryptographic token
+ * @param {string} otp - 6-digit reset code
  */
-exports.sendPasswordResetEmail = async (to, token) => {
-  const resetLink = `http://localhost:${process.env.PORT || 5000}/login.html?resetToken=${token}`;
-  const subject = 'Magizhvagam Password Reset Request';
+exports.sendPasswordResetEmail = async (to, otp) => {
+  const subject = 'Magizhvagam Password Reset OTP';
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px;">
       <h2 style="color: #6A0DAD; text-align: center;">Magizhvagam Security</h2>
       <p>Hello,</p>
-      <p>We received a request to reset the password for your Magizhvagam account. Click the button below to update your password:</p>
+      <p>We received a request to reset the password for your Magizhvagam account. Please use the following One-Time Password (OTP) to proceed with updating your password:</p>
       <div style="text-align: center; margin: 30px 0;">
-        <a href="${resetLink}" style="background-color: #6A0DAD; color: white; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block;">Reset Password</a>
+        <span style="background-color: #F3E8FF; border: 2px dashed #6A0DAD; color: #6A0DAD; padding: 14px 28px; font-size: 28px; font-weight: bold; border-radius: 6px; letter-spacing: 5px; display: inline-block;">${otp}</span>
       </div>
-      <p>If the button doesn't work, you can copy and paste the following link into your browser:</p>
-      <p style="word-break: break-all; color: #666;">${resetLink}</p>
-      <p style="margin-top: 30px; font-size: 12px; color: #888;">This password reset link is bound to a tight 1-hour expiration lifespan. If you did not request a password reset, please ignore this email.</p>
+      <p style="margin-top: 30px; font-size: 12px; color: #888;">This password reset OTP is valid for 3 minutes. If you did not request a password reset, please ignore this email.</p>
     </div>
   `;
 
@@ -100,15 +93,15 @@ exports.sendPasswordResetEmail = async (to, token) => {
         subject,
         html: htmlContent
       });
-      console.log(`Password reset email sent successfully to ${to}`);
+      console.log(`Password reset OTP sent successfully to ${to}`);
     } catch (error) {
-      console.error(`Error sending password reset email to ${to}:`, error.message);
-      console.log(`[FALLBACK LINK] Reset link for ${to}: ${resetLink}`);
+      console.error(`Error sending password reset OTP to ${to}:`, error.message);
+      console.log(`[FALLBACK] Reset OTP for ${to}: ${otp}`);
     }
   } else {
     console.log(`----------------------------------------`);
-    console.log(`[CONSOLE EMAIL ROUTE] Password Reset link for ${to}:`);
-    console.log(resetLink);
+    console.log(`[CONSOLE EMAIL ROUTE] Password Reset OTP for ${to}:`);
+    console.log(otp);
     console.log(`----------------------------------------`);
   }
 };

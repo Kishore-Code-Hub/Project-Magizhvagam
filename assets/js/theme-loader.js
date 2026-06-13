@@ -522,6 +522,14 @@
     if (allDeclarations.length > 0) {
       styleEl.textContent = `:root {\n${allDeclarations.join('\n')}\n}`;
     }
+
+    let customCssEl = document.getElementById('mz-custom-css');
+    if (!customCssEl) {
+      customCssEl = document.createElement('style');
+      customCssEl.id = 'mz-custom-css';
+      document.head.appendChild(customCssEl);
+    }
+    customCssEl.textContent = data.customCss || '';
   }
 
   // Synchronously load from localStorage cache and apply to avoid paint flash
@@ -596,6 +604,7 @@
   window.addEventListener('mz:theme-updated', function () {
     localStorage.removeItem('mz-theme-cache');
     localStorage.removeItem('mz-homepage-settings');
+    localStorage.removeItem('mz-feature-toggles');
     fetchAndUpdate(null);
   });
 
@@ -607,6 +616,7 @@
     reload: function () {
       localStorage.removeItem('mz-theme-cache');
       localStorage.removeItem('mz-homepage-settings');
+      localStorage.removeItem('mz-feature-toggles');
       return fetchAndUpdate(null);
     },
     getMap: function () { return SETTINGS_TO_CSS_MAP; }

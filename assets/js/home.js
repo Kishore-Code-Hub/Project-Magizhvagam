@@ -92,7 +92,7 @@ function applyHeroSectionConfig(config) {
     const ctaRow = heroSection.querySelector('.hero-cta-action-row');
     if (ctaRow) ctaRow.style.display = anyLabel ? '' : 'none';
   }
-  // Apply banner background to the bg-canvas if provided. If no banner image, keep floating cards visible.
+  // Apply banner background to the bg-canvas if provided. If no banner image, keep static foreground visible.
   const banner = (config.banners && config.banners[0]) ? config.banners[0] : null;
   const bg = heroSection.querySelector('.bg-canvas');
   if (bg) {
@@ -113,6 +113,13 @@ function applyHeroSectionConfig(config) {
 
   // Expose V4 hero banners to global scope for the slider renderer
   try { window.mzHeroSlides = (config.banners && Array.isArray(config.banners)) ? config.banners : []; } catch (e) { window.mzHeroSlides = []; }
+
+  // Reveal hero content wrapper only when admin provided content exists
+  const staticCard = heroSection.querySelector('.hero-content-card');
+  const hasContent = (config && ((config.headline && config.headline.trim()) || (config.subtext && config.subtext.trim()) || (config.badge && config.badge.trim()) || (ctas && Array.from(ctas).some(el => el && el.textContent && el.textContent.trim()))));
+  if (staticCard) {
+    staticCard.style.display = hasContent ? '' : 'none';
+  }
 }
 
 function renderNewsletterSection(config) {
@@ -152,6 +159,12 @@ function renderTestimonialsV4(items) {
 async function loadHomepageData() {
   try {
     const usedV4 = await loadHomepageV4Sections();
+
+    // Hide static hero content initially to avoid showing hardcoded defaults
+    const heroSectionInit = document.querySelector('[data-mz-section="hero"]');
+    const _staticCardInit = heroSectionInit ? heroSectionInit.querySelector('.hero-content-card') : null;
+    if (_staticCardInit) _staticCardInit.style.display = 'none';
+
     const config = await window.fetchSettings();
 
     if (!config) {
@@ -162,17 +175,48 @@ async function loadHomepageData() {
 
     const toggles = window.featureToggles || await window.fetchFeatureToggles();
 
-    // 1. Load Hero Banners Slider (prefer V4 banners exposed by applyHeroSectionConfig)
-    const heroBanners = (window.mzHeroSlides && window.mzHeroSlides.length) ? window.mzHeroSlides : (config.heroBanners || []);
+    // 1. Load Hero Banners Slider
+    // Priority: V4 (`window.mzHeroSlides` from /api/site-settings/homepage) ONLY.
+    // Legacy `config.heroBanners` and localStorage MUST NOT override V4 — single source-of-truth.
+    const heroBanners = (window.mzHeroSlides && window.mzHeroSlides.length) ? window.mzHeroSlides : [];
+    const heroSource = (heroBanners && heroBanners.length) ? 'homepage_v4' : 'none';
+    console.log('Hero Data Source:', heroSource);
+    console.log('Hero Settings Loaded:', heroBanners);
+
+    // Defensive: ensure legacy cached homepage settings do not override V4 rendering
+    try { localStorage.removeItem('mz-homepage-settings'); } catch (e) { /* ignore */ }
     renderHeroBanners(heroBanners);
 
     // 2. Load Highlights Categories
     renderCategoryHighlights(config.categoryHighlights);
 
-    // 3. Load Dynamic Product Sections
-    await loadProductSection(config.featuredProductIds, 'featured-products-mount');
-    await loadProductSection(config.bestSellerProductIds, 'bestseller-products-grid');
-    await loadProductSection(config.newArrivalProductIds, 'newarrival-products-grid');
+    // 3. Load Dynamic Product Sections using IntersectionObserver for lazy-loading (Performance)
+    const lazySections = [
+      { ids: config.featuredProductIds, elementId: 'featured-products-mount' },
+      { ids: config.bestSellerProductIds, elementId: 'bestseller-products-grid' },
+      { ids: config.newArrivalProductIds, elementId: 'newarrival-products-grid' }
+    ];
+
+    if ('IntersectionObserver' in window) {
+      lazySections.forEach(sec => {
+        const grid = document.getElementById(sec.elementId);
+        if (!grid) return;
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              loadProductSection(sec.ids, sec.elementId);
+              observer.unobserve(grid);
+            }
+          });
+        }, { rootMargin: '200px 0px' });
+        observer.observe(grid);
+      });
+    } else {
+      await loadProductSection(config.featuredProductIds, 'featured-products-mount');
+      await loadProductSection(config.bestSellerProductIds, 'bestseller-products-grid');
+      await loadProductSection(config.newArrivalProductIds, 'newarrival-products-grid');
+    }
+
 
     // 4. Load Promotional Banners & Countdown Timer
     const promosEnabled = (toggles && toggles.promosEnabled !== false);
@@ -271,12 +315,12 @@ function renderHeroBanners(banners) {
   if (!container) return;
 
   const heroSection = document.querySelector('[data-mz-section="hero"]');
-  const staticCard = heroSection ? heroSection.querySelector('.foreground-ui .hero-content-alignment') : null;
+  const staticCard = heroSection ? heroSection.querySelector('.hero-content-card') : null;
 
   // Do not render any default or demo slides. Only render when explicit banners are provided by admin.
   if (!banners || !Array.isArray(banners) || banners.length === 0) {
     container.innerHTML = '';
-    if (staticCard) staticCard.style.display = '';
+    console.log('Rendering Hero: no banners provided');
     return;
   }
 
@@ -310,6 +354,8 @@ function renderHeroBanners(banners) {
       </div>
     </div>
   `).join('');
+
+  console.log('Rendering Hero:', slides);
 
   // Slider state
   let currentSlide = 0;
@@ -361,10 +407,7 @@ function renderHeroBanners(banners) {
   showSlide(0);
   currentSlide = 0;
 
-  // Keep static foreground UI (text + floating cards) visible above slides.
-  // The slider uses opacity-based crossfade; foreground decorations must remain visible.
-  // Do not hide or remove the `.parallax-layer.foreground-ui` element here.
-  // (Previous behaviour hid floating cards when slides existed which caused them to disappear.)
+  // The slider uses opacity-based crossfade for slide transitions.
 
   if (slideEls.length > 1) startSlider();
 }

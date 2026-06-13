@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const https = require('https');
 const User = require('../models/User');
+const UnverifiedStage = require('../models/UnverifiedStage');
 const Order = require('../models/Order');
 const { generateAccessToken, generateRefreshToken } = require('../middleware/authMiddleware');
 const { JWT_REFRESH_SECRET } = require('../config/jwt');
@@ -16,26 +17,20 @@ const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/emai
 // @access  Public
 exports.register = async (req, res) => {
   try {
-    // Check if registration is globally enabled
     const toggles = await getFeatureToggleValues();
     if (!toggles.registrationEnabled) {
       return res.status(403).json({ success: false, error: 'This feature is temporarily disabled.' });
     }
 
-    const { name, email, phone, password, address1, city, state, pincode } = req.body;
+    const { name, email, phone, password } = req.body;
 
-    // Coerce all parameters safely to string primitives before processing
     const nameStr = String(name || '').trim();
     const emailStr = String(email || '').toLowerCase().trim();
     const phoneStr = String(phone || '').trim();
     const passwordStr = String(password || '');
-    const address1Str = String(address1 || '').trim();
-    const cityStr = String(city || '').trim();
-    const stateStr = String(state || '').trim();
-    const pincodeStr = String(pincode || '').trim();
 
-    if (!nameStr || !emailStr || !phoneStr || !passwordStr || !address1Str || !cityStr || !stateStr || !pincodeStr) {
-      return res.status(400).json({ success: false, error: 'Please provide all required fields including address, pincode, city and state' });
+    if (!nameStr || !emailStr || !phoneStr || !passwordStr) {
+      return res.status(400).json({ success: false, error: 'Please provide all required fields including name, email, phone, and password' });
     }
 
     // Verify email formatting
@@ -56,9 +51,10 @@ exports.register = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please enter a valid 6 digit Indian pincode' });
     }
 
-    // Verify password minimum length
-    if (passwordStr.length < 6) {
-      return res.status(400).json({ success: false, error: 'Password must be at least 6 characters long' });
+    // Enterprise Password strength checking
+    const strengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+    if (!strengthRegex.test(passwordStr)) {
+      return res.status(400).json({ success: false, error: 'Password does not meet enterprise strength criteria: minimum 8 characters, at least 1 uppercase letter, 1 lowercase letter, 1 numerical digit, and 1 special symbol.' });
     }
 
     const userExists = await User.findOne({ email: emailStr });
@@ -67,69 +63,37 @@ exports.register = async (req, res) => {
     }
 
     const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(passwordStr, salt);
+    const hashedPassword = await bcrypt.hash(passwordStr, salt);
 
-    const user = await User.create({
-      name: nameStr,
-      email: emailStr,
-      phone: phoneStr,
-      passwordHash,
-      address1: address1Str,
-      city: cityStr,
-      state: stateStr,
-      pincode: pincodeStr,
-      phoneVerified: true, // OTP verified at registration stage
-      role: 'customer', // default role
-      addresses: [{
-        fullName: nameStr,
+    // Generate Verification OTP (5-minute expiry)
+    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationTokenExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    // Write parameters into the temporary staging area collection
+    await UnverifiedStage.findOneAndUpdate(
+      { email: emailStr },
+      {
+        name: nameStr,
+        email: emailStr,
         phone: phoneStr,
-        street: address1Str,
-        city: cityStr,
-        state: stateStr,
-        zipCode: pincodeStr,
-        isDefault: true
-      }]
-    });
+        password: hashedPassword,
+        passwordHash: hashedPassword,
+        address1: '',
+        city: '',
+        state: '',
+        pincode: '',
+        verificationToken,
+        verificationTokenExpires
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
 
-    // Automatically log user in: generate tokens & set cookies
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    user.refreshToken = refreshToken;
-    await user.save();
-
-    res.cookie('admin_accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000 // 15 minutes
-    });
-
-    res.cookie('admin_refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
-
-    await logActivity(req, 'login_success', `Logged in on registration as: ${user.role}`);
+    // Send Verification Email
+    await sendVerificationEmail(emailStr, verificationToken);
 
     res.status(201).json({
       success: true,
-      message: 'Registration successful! You have been logged in.',
-      accessToken,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        addresses: user.addresses,
-        address1: user.address1,
-        city: user.city,
-        state: user.state,
-        pincode: user.pincode
-      }
+      message: 'Registration successful! A verification email has been sent to your email address. Please verify your email before logging in.'
     });
   } catch (error) {
     res.status(500).json({ success: false, error: `Registration error: ${error.message}` });
@@ -698,19 +662,15 @@ exports.handleLocalRegister = async (req, res) => {
       return res.status(403).json({ success: false, error: 'This feature is temporarily disabled.' });
     }
 
-    const { name, email, phone, password, address1, city, state, pincode } = req.body;
+    const { name, email, phone, password } = req.body;
 
     const nameStr = String(name || '').trim();
     const emailStr = String(email || '').toLowerCase().trim();
     const phoneStr = String(phone || '').trim();
     const passwordStr = String(password || '');
-    const address1Str = String(address1 || '').trim();
-    const cityStr = String(city || '').trim();
-    const stateStr = String(state || '').trim();
-    const pincodeStr = String(pincode || '').trim();
 
-    if (!nameStr || !emailStr || !phoneStr || !passwordStr || !address1Str || !cityStr || !stateStr || !pincodeStr) {
-      return res.status(400).json({ success: false, error: 'Please provide all required fields including address, pincode, city and state' });
+    if (!nameStr || !emailStr || !phoneStr || !passwordStr) {
+      return res.status(400).json({ success: false, error: 'Please provide all required fields including name, email, phone, and password' });
     }
 
     // Verify email formatting
@@ -723,12 +683,6 @@ exports.handleLocalRegister = async (req, res) => {
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phoneStr)) {
       return res.status(400).json({ success: false, error: 'Please enter a valid 10 digit mobile number' });
-    }
-
-    // Verify pincode formatting
-    const pincodeRegex = /^[1-9][0-9]{5}$/;
-    if (!pincodeRegex.test(pincodeStr)) {
-      return res.status(400).json({ success: false, error: 'Please enter a valid 6 digit Indian pincode' });
     }
 
     // Enterprise Password strength checking (minimum 8 characters, at least 1 uppercase, 1 lowercase, 1 number, 1 special character)
@@ -745,42 +699,31 @@ exports.handleLocalRegister = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(passwordStr, salt);
 
-    // Generate Verification Token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    // Generate Verification OTP (5-minute expiry)
+    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationTokenExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    const user = await User.create({
-      name: nameStr,
-      email: emailStr,
-      phone: phoneStr,
-      password: hashedPassword,
-      passwordHash: hashedPassword, // Keep for backward compatibility
-      address1: address1Str,
-      city: cityStr,
-      state: stateStr,
-      pincode: pincodeStr,
-      phoneVerified: true, // OTP verified at registration stage
-      emailVerified: false, // Local register requires email verification
-      verificationToken,
-      verificationTokenExpires,
-      role: 'customer',
-      addresses: [{
-        fullName: nameStr,
+    // Write parameters into the temporary staging area collection
+    await UnverifiedStage.findOneAndUpdate(
+      { email: emailStr },
+      {
+        name: nameStr,
+        email: emailStr,
         phone: phoneStr,
-        street: address1Str,
-        city: cityStr,
-        state: stateStr,
-        zipCode: pincodeStr,
-        isDefault: true
-      }]
-    });
+        password: hashedPassword,
+        passwordHash: hashedPassword,
+        verificationToken,
+        verificationTokenExpires
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
 
     // Send Verification Email
     await sendVerificationEmail(emailStr, verificationToken);
 
     res.status(201).json({
       success: true,
-      message: 'Registration successful! A verification email has been sent to your email address. Please verify your email before logging in.'
+      message: 'Registration successful! A verification OTP has been sent to your email address. Please verify using the OTP.'
     });
   } catch (error) {
     res.status(500).json({ success: false, error: `Registration error: ${error.message}` });
@@ -804,7 +747,7 @@ exports.handleLocalLogin = async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
       await logActivity(req, 'login_failure', `Invalid email attempt for: ${email}`);
-      return res.status(401).json({ success: false, error: 'Invalid credentials' });
+      return res.status(401).json({ success: false, error: 'Email address not registered.' });
     }
 
     // Check account lockout status
@@ -817,7 +760,7 @@ exports.handleLocalLogin = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password || user.passwordHash || '');
     if (!isMatch) {
       user.loginAttempts = (user.loginAttempts || 0) + 1;
-      let msg = 'Invalid credentials';
+      let msg = 'Incorrect password entered.';
 
       if (user.loginAttempts >= 5) {
         user.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 mins lock
@@ -843,7 +786,7 @@ exports.handleLocalLogin = async (req, res) => {
       return res.status(403).json({
         success: false,
         emailVerified: false,
-        error: 'Please verify your email address to proceed. Check your inbox for the verification link.'
+        error: 'Account inactive. Please verify your email address.'
       });
     }
 
@@ -910,12 +853,12 @@ exports.executeEmailVerification = async (req, res) => {
       return res.status(400).send('<h1>Verification token is missing.</h1>');
     }
 
-    const user = await User.findOne({
+    const stageRecord = await UnverifiedStage.findOne({
       verificationToken: token,
       verificationTokenExpires: { $gt: Date.now() }
     });
 
-    if (!user) {
+    if (!stageRecord) {
       return res.status(400).send(`
         <div style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
           <h2 style="color: #ef4444;">Verification Link Expired or Invalid</h2>
@@ -925,10 +868,33 @@ exports.executeEmailVerification = async (req, res) => {
       `);
     }
 
-    user.emailVerified = true;
-    user.verificationToken = null;
-    user.verificationTokenExpires = null;
-    await user.save();
+    // Instantiate user profile within verified accounts collection
+    await User.create({
+      name: stageRecord.name,
+      email: stageRecord.email,
+      phone: stageRecord.phone,
+      password: stageRecord.password,
+      passwordHash: stageRecord.passwordHash,
+      address1: stageRecord.address1 || '',
+      city: stageRecord.city || '',
+      state: stageRecord.state || '',
+      pincode: stageRecord.pincode || '',
+      phoneVerified: true,
+      emailVerified: true,
+      role: 'customer',
+      addresses: [{
+        fullName: stageRecord.name,
+        phone: stageRecord.phone,
+        street: stageRecord.address1 || '',
+        city: stageRecord.city || '',
+        state: stageRecord.state || '',
+        zipCode: stageRecord.pincode || '',
+        isDefault: true
+      }]
+    });
+
+    // Purge baseline staged tracking parameters safely
+    await UnverifiedStage.deleteOne({ _id: stageRecord._id });
 
     res.send(`
       <div style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
@@ -947,7 +913,96 @@ exports.executeEmailVerification = async (req, res) => {
   }
 };
 
-// @desc    Request password reset link
+// @desc    Verify email OTP
+// @route   POST /api/auth/verify-otp
+exports.verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, error: 'Please provide email and OTP code' });
+    }
+
+    const stageRecord = await UnverifiedStage.findOne({
+      email: email.toLowerCase().trim(),
+      verificationToken: otp.trim(),
+      verificationTokenExpires: { $gt: Date.now() }
+    });
+
+    if (!stageRecord) {
+      return res.status(400).json({ success: false, error: 'Invalid or expired OTP. Please try again or request a new OTP.' });
+    }
+
+    // Instantiate user profile within verified accounts collection
+    await User.create({
+      name: stageRecord.name,
+      email: stageRecord.email,
+      phone: stageRecord.phone,
+      password: stageRecord.password,
+      passwordHash: stageRecord.passwordHash,
+      address1: stageRecord.address1 || '',
+      city: stageRecord.city || '',
+      state: stageRecord.state || '',
+      pincode: stageRecord.pincode || '',
+      phoneVerified: true,
+      emailVerified: true,
+      role: 'customer',
+      addresses: [{
+        fullName: stageRecord.name,
+        phone: stageRecord.phone,
+        street: stageRecord.address1 || '',
+        city: stageRecord.city || '',
+        state: stageRecord.state || '',
+        zipCode: stageRecord.pincode || '',
+        isDefault: true
+      }]
+    });
+
+    // Purge staging record
+    await UnverifiedStage.deleteOne({ _id: stageRecord._id });
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully! Your account is now active.'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: `Verification error: ${error.message}` });
+  }
+};
+
+// @desc    Resend verification OTP
+// @route   POST /api/auth/resend-otp
+exports.resendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Please provide email address' });
+    }
+
+    const stageRecord = await UnverifiedStage.findOne({ email: email.toLowerCase().trim() });
+    if (!stageRecord) {
+      return res.status(400).json({ success: false, error: 'No unverified account registration found for this email address.' });
+    }
+
+    // Generate new OTP
+    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+
+    stageRecord.verificationToken = newOtp;
+    stageRecord.verificationTokenExpires = expiry;
+    await stageRecord.save();
+
+    await sendVerificationEmail(stageRecord.email, newOtp);
+
+    res.status(200).json({
+      success: true,
+      message: 'A new 6-digit OTP code has been sent to your email address.'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: `Failed to resend OTP: ${error.message}` });
+  }
+};
+
+// @desc    Request password reset OTP
 // @route   POST /api/auth/forgot-password
 exports.requestPasswordResetLink = async (req, res) => {
   try {
@@ -962,27 +1017,99 @@ exports.requestPasswordResetLink = async (req, res) => {
     if (!user) {
       return res.status(200).json({
         success: true,
-        message: 'If an account exists with this email, a password reset link has been sent.'
+        message: 'If an account exists with this email, a 6-digit OTP has been sent.'
       });
     }
 
-    const token = crypto.randomBytes(32).toString('hex');
-    user.resetPasswordToken = token;
-    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    // Generate 6-digit OTP for password reset
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetPasswordToken = otp;
+    user.resetPasswordExpires = new Date(Date.now() + 3 * 60 * 1000); // 3 minutes expiry
     await user.save();
 
-    await sendPasswordResetEmail(user.email, token);
+    await sendPasswordResetEmail(user.email, otp);
 
     res.status(200).json({
       success: true,
-      message: 'If an account exists with this email, a password reset link has been sent.'
+      message: 'If an account exists with this email, a 6-digit OTP has been sent.'
     });
   } catch (error) {
     res.status(500).json({ success: false, error: `Password recovery error: ${error.message}` });
   }
 };
 
-// @desc    Process secure password update
+// @desc    Verify reset OTP
+// @route   POST /api/auth/verify-reset-otp
+exports.verifyResetOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, error: 'Please provide email and OTP code' });
+    }
+
+    const user = await User.findOne({
+      email: email.toLowerCase().trim(),
+      resetPasswordToken: otp.trim(),
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, error: 'Invalid or expired password reset OTP.' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'OTP verified successfully! You may now proceed to reset your password.'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: `OTP verification error: ${error.message}` });
+  }
+};
+
+// @desc    Reset password using email and OTP
+// @route   POST /api/auth/reset-password
+exports.resetPasswordWithOtp = async (req, res) => {
+  try {
+    const { email, otp, password } = req.body;
+    if (!email || !otp || !password) {
+      return res.status(400).json({ success: false, error: 'Please provide email, OTP, and new password' });
+    }
+
+    const strengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+    if (!strengthRegex.test(password)) {
+      return res.status(400).json({ success: false, error: 'Password must be at least 8 characters long, and contain at least 1 uppercase letter, 1 lowercase letter, 1 numerical digit, and 1 special symbol.' });
+    }
+
+    const user = await User.findOne({
+      email: email.toLowerCase().trim(),
+      resetPasswordToken: otp.trim(),
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, error: 'Invalid or expired password reset OTP.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    user.password = hashedPassword;
+    user.passwordHash = hashedPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    user.loginAttempts = 0;
+    user.lockUntil = null;
+    await user.save();
+
+    await logActivity(req, 'password_reset_success', `Password successfully reset for: ${user.email}`);
+
+    res.status(200).json({ success: true, message: 'Password reset successfully! You can now login.' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: `Password update error: ${error.message}` });
+  }
+};
+
+// @desc    Process secure password update (Maintain token route for backwards compatibility)
 // @route   POST /api/auth/reset-password/:token
 exports.processSecurePasswordUpdate = async (req, res) => {
   try {
@@ -993,7 +1120,6 @@ exports.processSecurePasswordUpdate = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Password is required' });
     }
 
-    // Verify strength on reset password
     const strengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
     if (!strengthRegex.test(password)) {
       return res.status(400).json({ success: false, error: 'Password must be at least 8 characters long, and contain at least 1 uppercase letter, 1 lowercase letter, 1 numerical digit, and 1 special symbol.' });
@@ -1012,7 +1138,7 @@ exports.processSecurePasswordUpdate = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     user.password = hashedPassword;
-    user.passwordHash = hashedPassword; // Keep for backward compatibility
+    user.passwordHash = hashedPassword;
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
     user.loginAttempts = 0;
@@ -1153,6 +1279,10 @@ exports.handleAvatarUploadCloudinary = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'Please upload an image file' });
+    }
+
+    if (!req.file.mimetype.startsWith('image/')) {
+      return res.status(400).json({ success: false, error: 'Only image files are allowed!' });
     }
 
     // Optimize image using sharp
