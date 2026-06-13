@@ -1036,9 +1036,10 @@ function injectComponents(settings, user = null) {
   let authUtilHtml = '';
   if (!user) {
     // GUEST: Login + Register buttons (Desktop) & Profile Icon (Mobile)
+    const allowSignup = !(window.featureToggles && window.featureToggles.allowSignup === false);
     authUtilHtml = `
       <a href="/login.html" class="guest-btn guest-btn-login" id="header-login-btn">Login</a>
-      <a href="/register.html" class="guest-btn guest-btn-register" id="header-register-btn">Register</a>
+      ${allowSignup ? '<a href="/register.html" class="guest-btn guest-btn-register" id="header-register-btn">Register</a>' : ''}
       <a href="/login.html" class="header-icon-link mobile-profile-icon" id="mobile-profile-login-link" aria-label="Login">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
@@ -1103,9 +1104,10 @@ function injectComponents(settings, user = null) {
   // ── BUILD MOBILE SIDEBAR ──────────────────────────────────────────────────
   let mobileSidebarAuthLinks = '';
   if (!user) {
+    const allowSignup = !(window.featureToggles && window.featureToggles.allowSignup === false);
     mobileSidebarAuthLinks = `
       <a href="/login.html" class="sidebar-link">Login</a>
-      <a href="/register.html" class="sidebar-link">Register</a>`;
+      ${allowSignup ? '<a href="/register.html" class="sidebar-link">Register</a>' : ''}`;
   } else if (user.role === 'admin') {
     mobileSidebarAuthLinks = `
       <a href="/index.html" class="sidebar-link">Browse Store</a>
@@ -1638,6 +1640,7 @@ window.showLoginRegisterModal = (context = 'action') => {
   if (context === 'wishlist') reasonText = 'Please login or create a customer account to continue.';
   if (context === 'cart') reasonText = 'Please login or create a customer account to continue.';
 
+  const allowSignup = !(window.featureToggles && window.featureToggles.allowSignup === false);
   modal.innerHTML = `
     <div class="modal-content glass scale-in" style="max-width: 420px; padding: 30px; text-align: center; border-radius: 16px; position:relative; background:#FAF9F6; border:1px solid var(--card-border); color:var(--text-color);">
       <button id="close-guest-modal-btn" style="position:absolute; top:15px; right:15px; background:transparent; font-size:18px; font-weight:bold; color:var(--text-muted); cursor:pointer; border:none;">✕</button>
@@ -1651,7 +1654,7 @@ window.showLoginRegisterModal = (context = 'action') => {
       <p style="font-size:14px; color:var(--text-muted); line-height:1.6; margin-bottom:24px;">${reasonText}</p>
       <div style="display:flex; flex-direction:column; gap:10px;">
         <a href="/login.html?redirect=${redirectPath}" class="btn btn-primary" style="padding:10px; border-radius:8px; font-weight:600; text-decoration:none; text-align:center; display:block;">Sign In / Login</a>
-        <a href="/register.html?redirect=${redirectPath}" class="btn btn-secondary" style="padding:10px; border-radius:8px; border-width:1px; font-weight:600; text-decoration:none; text-align:center; display:block; border-color:hsl(var(--primary-purple)); color:hsl(var(--primary-purple));">Create An Account</a>
+        ${allowSignup ? `<a href="/register.html?redirect=${redirectPath}" class="btn btn-secondary" style="padding:10px; border-radius:8px; border-width:1px; font-weight:600; text-decoration:none; text-align:center; display:block; border-color:hsl(var(--primary-purple)); color:hsl(var(--primary-purple));">Create An Account</a>` : ''}
         <button id="cancel-guest-modal-btn" class="btn" style="background:transparent; color:var(--text-muted); font-size:13px; font-weight:600; cursor:pointer; border:none; margin-top:5px;">Cancel</button>
       </div>
     </div>

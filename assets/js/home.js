@@ -13,16 +13,28 @@ const HERO_SLIDE_INTERVAL = 5000;
 async function loadHomepageV4Sections() {
   try {
     const res = await fetch('/api/site-settings/homepage');
+    if (res.status !== 200) {
+      console.log('[HERO] API failed, fallback retained');
+      return false;
+    }
     const json = await res.json();
-    if (!json.success || !json.data?.sections) return false;
+    if (!json.success || !json.data?.sections) {
+      console.log('[HERO] API failed, fallback retained');
+      return false;
+    }
+
+    console.log('[HERO] API loaded successfully');
 
     const sections = [...json.data.sections].sort((a, b) => a.order - b.order);
 
     sections.forEach(sec => {
       const el = document.querySelector(`[data-mz-section="${sec.id}"]`);
       if (el) {
-        el.style.display = sec.enabled ? '' : 'none';
-        el.hidden = !sec.enabled;
+        // Under no circumstances do we hide the hero content card
+        if (sec.id !== 'hero') {
+          el.style.display = sec.enabled ? '' : 'none';
+          el.hidden = !sec.enabled;
+        }
       }
     });
 
@@ -30,7 +42,6 @@ async function loadHomepageV4Sections() {
     if (heroSec?.enabled && heroSec.config) {
       applyHeroSectionConfig(heroSec.config);
     }
-
 
     const testSec = sections.find(s => s.id === 'testimonials');
     if (testSec?.enabled && testSec.config?.items?.length) {
@@ -44,7 +55,8 @@ async function loadHomepageV4Sections() {
 
     return true;
   } catch (err) {
-    console.warn('[home.js] V4 homepage sections unavailable, using legacy API');
+    console.warn('[home.js] V4 homepage sections unavailable');
+    console.log('[HERO] API failed, fallback retained');
     return false;
   }
 }
@@ -53,31 +65,24 @@ function applyHeroSectionConfig(config) {
   const heroSection = document.querySelector('[data-mz-section="hero"]');
   if (!heroSection) return;
 
-  const badge = heroSection.querySelector('.hero-badge');
+  const card = heroSection.querySelector('.hero-content-card');
+  if (card) {
+    card.style.display = '';
+    card.hidden = false;
+  }
+
+  const badge = heroSection.querySelector('.hero-badge') || heroSection.querySelector('.hero-badge-tag');
   const headline = heroSection.querySelector('.hero-headline');
   const subtext = heroSection.querySelector('.hero-subtext');
   const ctas = heroSection.querySelectorAll('.hero-cta-action-row .btn');
+  const bg = heroSection.querySelector('.bg-canvas');
 
-  // Hide by default; show only when admin provides content
-  if (badge) badge.style.display = 'none';
-  if (headline) headline.style.display = 'none';
-  if (subtext) subtext.style.display = 'none';
-  const ctaRowDefault = heroSection.querySelector('.hero-cta-action-row');
-  if (ctaRowDefault) ctaRowDefault.style.display = 'none';
-
-  if (config.headline && headline) {
-    headline.innerHTML = config.headline.replace(/\n/g, '<br>');
-    headline.style.display = '';
-  }
-  if (config.subtext && subtext) {
-    subtext.textContent = config.subtext;
-    subtext.style.display = '';
-  }
+  // 1. Update badge text
   if (config.badge && badge) {
     badge.textContent = config.badge;
-    badge.style.display = '';
   }
 
+  // 2. Update CTA buttons
   if (ctas[0] && config.cta1Label) {
     ctas[0].textContent = config.cta1Label;
     if (config.cta1Link) ctas[0].href = config.cta1Link;
@@ -86,39 +91,67 @@ function applyHeroSectionConfig(config) {
     ctas[1].textContent = config.cta2Label;
     if (config.cta2Link) ctas[1].href = config.cta2Link;
   }
-  // Show CTA row only if at least one CTA has label
-  if (ctas && ctas.length) {
-    const anyLabel = Array.from(ctas).some(el => el && el.textContent && el.textContent.trim());
-    const ctaRow = heroSection.querySelector('.hero-cta-action-row');
-    if (ctaRow) ctaRow.style.display = anyLabel ? '' : 'none';
+
+  // 3. Update top-level background image
+  if (bg && config.backgroundImage) {
+    bg.style.backgroundImage = `url('${config.backgroundImage}')`;
+    bg.style.backgroundSize = 'cover';
+    bg.style.backgroundPosition = 'center';
   }
-  // Apply banner background to the bg-canvas if provided. If no banner image, keep static foreground visible.
-  const banner = (config.banners && config.banners[0]) ? config.banners[0] : null;
-  const bg = heroSection.querySelector('.bg-canvas');
-  if (bg) {
-    if (banner && banner.image) {
-      bg.style.backgroundImage = `url('${banner.image}')`;
-      bg.style.backgroundSize = 'cover';
-      bg.style.backgroundPosition = 'center';
-    } else {
-      bg.style.backgroundImage = '';
+
+  // 4. Update texts if top-level fields are provided
+  if (config.headline && headline) {
+    headline.textContent = config.headline;
+  }
+  if (config.subtext && subtext) {
+    subtext.textContent = config.subtext;
+  }
+
+  // 5. Handle banners array (single or multiple slides)
+  if (config.banners && Array.isArray(config.banners) && config.banners.length > 0) {
+    const slides = config.banners.filter(s => s.image);
+    if (slides.length > 0) {
+      let currentIdx = 0;
+      
+      const updateSlide = (idx) => {
+        const s = slides[idx];
+        if (!s) return;
+
+        if (bg && s.image) {
+          bg.style.backgroundImage = `url('${s.image}')`;
+          bg.style.backgroundSize = 'cover';
+          bg.style.backgroundPosition = 'center';
+        }
+
+        // Slide title/subtitle priority, falling back to top-level, then fallback DOM text
+        if (headline) {
+          headline.textContent = s.title || config.headline || headline.textContent;
+        }
+        if (subtext) {
+          subtext.textContent = s.subtitle || config.subtext || subtext.textContent;
+        }
+
+        const btnText = s.btnText || s.ctaLabel;
+        if (btnText && ctas[0]) {
+          ctas[0].textContent = btnText;
+          if (s.link || s.ctaLink) ctas[0].href = s.link || s.ctaLink;
+        }
+      };
+
+      // Apply initial slide immediately
+      updateSlide(0);
+
+      // Rotate if there are multiple slides
+      if (slides.length > 1) {
+        if (window.mzHeroSliderTimer) {
+          clearInterval(window.mzHeroSliderTimer);
+        }
+        window.mzHeroSliderTimer = setInterval(() => {
+          currentIdx = (currentIdx + 1) % slides.length;
+          updateSlide(currentIdx);
+        }, HERO_SLIDE_INTERVAL);
+      }
     }
-  }
-
-  // If banner contains title/subtitle, prefer banner text over headline/subtext
-  if (banner) {
-    if (banner.title && headline) headline.innerHTML = banner.title.replace(/\n/g, '<br>');
-    if (banner.subtitle && subtext) subtext.textContent = banner.subtitle;
-  }
-
-  // Expose V4 hero banners to global scope for the slider renderer
-  try { window.mzHeroSlides = (config.banners && Array.isArray(config.banners)) ? config.banners : []; } catch (e) { window.mzHeroSlides = []; }
-
-  // Reveal hero content wrapper only when admin provided content exists
-  const staticCard = heroSection.querySelector('.hero-content-card');
-  const hasContent = (config && ((config.headline && config.headline.trim()) || (config.subtext && config.subtext.trim()) || (config.badge && config.badge.trim()) || (ctas && Array.from(ctas).some(el => el && el.textContent && el.textContent.trim()))));
-  if (staticCard) {
-    staticCard.style.display = hasContent ? '' : 'none';
   }
 }
 
@@ -158,12 +191,9 @@ function renderTestimonialsV4(items) {
 
 async function loadHomepageData() {
   try {
+    console.log('[HERO] Using fallback content');
     const usedV4 = await loadHomepageV4Sections();
-
-    // Hide static hero content initially to avoid showing hardcoded defaults
-    const heroSectionInit = document.querySelector('[data-mz-section="hero"]');
-    const _staticCardInit = heroSectionInit ? heroSectionInit.querySelector('.hero-content-card') : null;
-    if (_staticCardInit) _staticCardInit.style.display = 'none';
+    // Do NOT hide static hero card. Keep fallback content visible at all times.
 
     const config = await window.fetchSettings();
 
@@ -175,17 +205,8 @@ async function loadHomepageData() {
 
     const toggles = window.featureToggles || await window.fetchFeatureToggles();
 
-    // 1. Load Hero Banners Slider
-    // Priority: V4 (`window.mzHeroSlides` from /api/site-settings/homepage) ONLY.
-    // Legacy `config.heroBanners` and localStorage MUST NOT override V4 — single source-of-truth.
-    const heroBanners = (window.mzHeroSlides && window.mzHeroSlides.length) ? window.mzHeroSlides : [];
-    const heroSource = (heroBanners && heroBanners.length) ? 'homepage_v4' : 'none';
-    console.log('Hero Data Source:', heroSource);
-    console.log('Hero Settings Loaded:', heroBanners);
-
     // Defensive: ensure legacy cached homepage settings do not override V4 rendering
     try { localStorage.removeItem('mz-homepage-settings'); } catch (e) { /* ignore */ }
-    renderHeroBanners(heroBanners);
 
     // 2. Load Highlights Categories
     renderCategoryHighlights(config.categoryHighlights);
@@ -309,108 +330,7 @@ async function loadHomepageData() {
   }
 }
 
-// 1. Hero Banners Renderer & Slider Logic
-function renderHeroBanners(banners) {
-  const container = document.getElementById('hero-slider-container');
-  if (!container) return;
-
-  const heroSection = document.querySelector('[data-mz-section="hero"]');
-  const staticCard = heroSection ? heroSection.querySelector('.hero-content-card') : null;
-
-  // Do not render any default or demo slides. Only render when explicit banners are provided by admin.
-  if (!banners || !Array.isArray(banners) || banners.length === 0) {
-    container.innerHTML = '';
-    console.log('Rendering Hero: no banners provided');
-    return;
-  }
-
-  // Build slide objects from provided banners (no hardcoded limits)
-  const slides = banners.map((b) => ({
-    image: (b.image || '').trim(),
-    title: b.title || '',
-    subtitle: b.subtitle || '',
-    btnText: b.btnText || b.ctaLabel || '',
-    link: b.link || b.ctaLink || '#'
-  })).filter(s => s.image);
-
-  if (slides.length === 0) {
-    container.innerHTML = '';
-    if (staticCard) staticCard.style.display = '';
-    return;
-  }
-
-  // Hide the static content card so only the active slide's content card is shown
-  if (staticCard) {
-    staticCard.style.display = 'none';
-  }
-
-  // Render slide elements (each slide owns the full hero content)
-  container.innerHTML = slides.map((slide, index) => `
-    <div class="hero-slide ${index === 0 ? 'active' : ''}" data-slide-index="${index}" style="background-image: url('${slide.image}');">
-      <div class="hero-content-alignment glass-panel" style="margin-left:48px;">
-        <h1 class="hero-slide-title">${slide.title || ''}</h1>
-        <p class="hero-slide-subtitle">${slide.subtitle || ''}</p>
-        ${slide.btnText ? `<a href="${slide.link}" class="btn btn-gold hero-slide-cta">${slide.btnText}</a>` : ''}
-      </div>
-    </div>
-  `).join('');
-
-  console.log('Rendering Hero:', slides);
-
-  // Slider state
-  let currentSlide = 0;
-  const slideEls = Array.from(container.querySelectorAll('.hero-slide'));
-
-  const showSlide = (idx) => {
-    slideEls.forEach((el, i) => {
-      if (i === idx) {
-        el.classList.add('active');
-        el.setAttribute('aria-hidden', 'false');
-      } else {
-        el.classList.remove('active');
-        el.setAttribute('aria-hidden', 'true');
-      }
-    });
-  };
-
-  const startSlider = () => {
-    stopSlider();
-    if (slideEls.length <= 1) return; // No rotation if only one slide
-    window.mzHeroSliderTimer = setInterval(() => {
-      const next = (currentSlide + 1) % slideEls.length;
-      showSlide(next);
-      currentSlide = next;
-    }, HERO_SLIDE_INTERVAL);
-  };
-
-  const stopSlider = () => {
-    if (window.mzHeroSliderTimer) {
-      clearInterval(window.mzHeroSliderTimer);
-      window.mzHeroSliderTimer = null;
-    }
-  };
-
-  // Pause when tab inactive and resume on active
-  const handleVisibility = () => {
-    if (document.hidden) {
-      stopSlider();
-    } else {
-      // small delay to allow render
-      setTimeout(() => startSlider(), 250);
-    }
-  };
-
-  document.removeEventListener('visibilitychange', handleVisibility);
-  document.addEventListener('visibilitychange', handleVisibility);
-
-  // Initialize
-  showSlide(0);
-  currentSlide = 0;
-
-  // The slider uses opacity-based crossfade for slide transitions.
-
-  if (slideEls.length > 1) startSlider();
-}
+// renderHeroBanners removed in favor of single source of truth applyHeroSectionConfig
 
 
 // 2. Category Highlights Renderer

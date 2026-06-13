@@ -13,6 +13,7 @@ const mongoose = require('mongoose');
 const connectDB = require('./services/db');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
+const Setting = require('./models/Setting');
 const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = require('./config/jwt');
 
 // Route files
@@ -221,7 +222,7 @@ const checkCustomerPageAuth = async (req, res, next) => {
 const customerPages = ['profile.html', 'wishlist.html', 'checkout.html'];
 const publicPages = [
   'index.html', 'about.html', 'contact.html', 'products.html',
-  'product-details.html', 'cart.html', 'login.html', 'register.html'
+  'product-details.html', 'cart.html', 'login.html'
 ];
 
 customerPages.forEach(page => {
@@ -234,6 +235,33 @@ publicPages.forEach(page => {
   app.get(`/${page}`, (req, res) => {
     res.sendFile(path.join(__dirname, '../', page));
   });
+});
+
+// Custom handlers for signup pages with allowSignup toggles
+app.get('/signup', async (req, res) => {
+  try {
+    const settingObj = await Setting.findOne({ key: 'allowSignup' });
+    const allowSignup = settingObj ? settingObj.value === true : true;
+    if (!allowSignup) {
+      return res.status(200).send('New registrations are temporarily disabled. Please contact administrator.');
+    }
+    return res.redirect('/register.html');
+  } catch (err) {
+    return res.redirect('/register.html');
+  }
+});
+
+app.get('/register.html', async (req, res) => {
+  try {
+    const settingObj = await Setting.findOne({ key: 'allowSignup' });
+    const allowSignup = settingObj ? settingObj.value === true : true;
+    if (!allowSignup) {
+      return res.status(200).send('New registrations are temporarily disabled. Please contact administrator.');
+    }
+    res.sendFile(path.join(__dirname, '../', 'register.html'));
+  } catch (err) {
+    res.sendFile(path.join(__dirname, '../', 'register.html'));
+  }
 });
 
 // Serve sitemap.xml and robots.txt

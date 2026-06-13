@@ -17,9 +17,13 @@ const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/emai
 // @access  Public
 exports.register = async (req, res) => {
   try {
+    const Setting = require('../models/Setting');
+    const settingObj = await Setting.findOne({ key: 'allowSignup' });
+    const allowSignup = settingObj ? settingObj.value === true : true;
+    
     const toggles = await getFeatureToggleValues();
-    if (!toggles.registrationEnabled) {
-      return res.status(403).json({ success: false, error: 'This feature is temporarily disabled.' });
+    if (!toggles.registrationEnabled || !allowSignup) {
+      return res.status(403).json({ success: false, error: 'New registrations are temporarily disabled. Please contact administrator.' });
     }
 
     const { name, email, phone, password } = req.body;
@@ -657,9 +661,13 @@ exports.updateAddressById = async (req, res) => {
 // @route   POST /api/auth/register
 exports.handleLocalRegister = async (req, res) => {
   try {
+    const Setting = require('../models/Setting');
+    const settingObj = await Setting.findOne({ key: 'allowSignup' });
+    const allowSignup = settingObj ? settingObj.value === true : true;
+    
     const toggles = await getFeatureToggleValues();
-    if (!toggles.registrationEnabled) {
-      return res.status(403).json({ success: false, error: 'This feature is temporarily disabled.' });
+    if (!toggles.registrationEnabled || !allowSignup) {
+      return res.status(403).json({ success: false, error: 'New registrations are temporarily disabled. Please contact administrator.' });
     }
 
     const { name, email, phone, password } = req.body;
@@ -855,7 +863,7 @@ exports.executeEmailVerification = async (req, res) => {
 
     const stageRecord = await UnverifiedStage.findOne({
       verificationToken: token,
-      verificationTokenExpires: { $gt: Date.now() }
+      verificationTokenExpires: { $gt: new Date() }
     });
 
     if (!stageRecord) {
@@ -925,7 +933,7 @@ exports.verifyOtp = async (req, res) => {
     const stageRecord = await UnverifiedStage.findOne({
       email: email.toLowerCase().trim(),
       verificationToken: otp.trim(),
-      verificationTokenExpires: { $gt: Date.now() }
+      verificationTokenExpires: { $gt: new Date() }
     });
 
     if (!stageRecord) {
@@ -1050,7 +1058,7 @@ exports.verifyResetOtp = async (req, res) => {
     const user = await User.findOne({
       email: email.toLowerCase().trim(),
       resetPasswordToken: otp.trim(),
-      resetPasswordExpires: { $gt: Date.now() }
+      resetPasswordExpires: { $gt: new Date() }
     });
 
     if (!user) {
@@ -1083,7 +1091,7 @@ exports.resetPasswordWithOtp = async (req, res) => {
     const user = await User.findOne({
       email: email.toLowerCase().trim(),
       resetPasswordToken: otp.trim(),
-      resetPasswordExpires: { $gt: Date.now() }
+      resetPasswordExpires: { $gt: new Date() }
     });
 
     if (!user) {
@@ -1127,7 +1135,7 @@ exports.processSecurePasswordUpdate = async (req, res) => {
 
     const user = await User.findOne({
       resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }
+      resetPasswordExpires: { $gt: new Date() }
     });
 
     if (!user) {

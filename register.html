@@ -181,9 +181,8 @@
       if (otpTimerInterval) clearInterval(otpTimerInterval);
       const resendBtn = document.getElementById('resend-otp-btn');
       const timerClock = document.getElementById('otp-timer-clock');
-      resendBtn.disabled = true;
-      resendBtn.style.opacity = '0.6';
-      resendBtn.style.cursor = 'not-allowed';
+      resendBtn.setAttribute('disabled', 'true');
+      resendBtn.setAttribute('style', 'width: 100%; margin-top: 14px; border-radius: 8px; font-size: 12px; padding: 8px 0; opacity: 0.5; pointer-events: none; cursor: not-allowed;');
       
       let timeLeft = 300; // 5 minutes in seconds
       otpTimerInterval = setInterval(() => {
@@ -192,13 +191,14 @@
           clearInterval(otpTimerInterval);
           otpTimerInterval = null;
           timerClock.textContent = "00:00";
-          resendBtn.disabled = false;
-          resendBtn.style.opacity = '1';
-          resendBtn.style.cursor = 'pointer';
+          resendBtn.removeAttribute('disabled');
+          resendBtn.setAttribute('style', 'width: 100%; margin-top: 14px; border-radius: 8px; font-size: 12px; padding: 8px 0;');
         } else {
           const minutes = Math.floor(timeLeft / 60);
           const seconds = timeLeft % 60;
           timerClock.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+          resendBtn.setAttribute('disabled', 'true');
+          resendBtn.setAttribute('style', 'width: 100%; margin-top: 14px; border-radius: 8px; font-size: 12px; padding: 8px 0; opacity: 0.5; pointer-events: none; cursor: not-allowed;');
         }
       }, 1000);
     }

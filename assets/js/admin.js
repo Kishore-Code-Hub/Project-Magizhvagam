@@ -976,13 +976,34 @@ async function toggleProductFeatured(id, isFeatured) {
 window.toggleProductFeatured = toggleProductFeatured;
 
 window.resetSettingsToDefault = async () => {
-  if (!confirm('Are you sure you want to reset all store custom settings to default?')) return;
+  if (!confirm('Are you sure you want to reset all store custom settings to Luxury Ivory Light defaults?')) return;
   try {
     const res = await adminFetch('/api/settings/homepage/reset', { method: 'POST' });
     const data = await res.json();
     if (data.success) {
-      showToast('Settings reset completed!', 'success');
-      loadHomepageBuilderSettings();
+      // Clear any cached theme data from browser storage
+      try {
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.includes('theme') || key.includes('settings') || key.includes('customCSS') || key.includes('palette') || key.includes('site_settings'))) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+      } catch (e) { /* storage access may fail in some contexts */ }
+
+      showToast('Settings reset to Luxury Ivory Light defaults!', 'success');
+
+      // Reload settings UI
+      if (typeof loadHomepageBuilderSettings === 'function') {
+        loadHomepageBuilderSettings();
+      }
+
+      // Trigger live preview sync if the appearance studio is open
+      if (typeof syncLivePreview === 'function') {
+        setTimeout(() => syncLivePreview(), 500);
+      }
     } else {
       showToast(data.error || 'Reset failed', 'error');
     }
