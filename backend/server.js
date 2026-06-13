@@ -34,8 +34,21 @@ const app = express();
 
 app.use(compression());
 
-// 1. Database Connection
-connectDB();
+// 1. Graceful Shutdown — register BEFORE connecting so SIGINT during
+//    the DB connect wait is handled cleanly (nodemon sends SIGINT on save)
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
+
+// 2. Database Connection — await before starting HTTP server
+//    so no requests are served while MongoDB is still connecting
+connectDB()
+  .then(() => {
+    startServer(PORT);
+  })
+  .catch((err) => {
+    console.error('FATAL: Could not connect to MongoDB. Server will not start.', err.message);
+    process.exit(1);
+  });
 
 // 2. Global Security Middlewares
 // Setup Helmet headers with relaxed policies for fonts/images from third parties (Google Fonts/Cloudinary)
@@ -315,10 +328,9 @@ function startServer(port) {
   });
 }
 
-startServer(PORT);
-
-// Graceful Shutdown implementation
-const gracefulShutdown = () => {
+// Graceful Shutdown — defined here so it can be referenced by the
+// signal handlers registered at the top of the file (before connectDB)
+function gracefulShutdown() {
   console.log('Initiating graceful shutdown...');
   if (server) {
     server.close(async () => {
@@ -336,9 +348,6 @@ const gracefulShutdown = () => {
   } else {
     process.exit(0);
   }
-};
-
-process.on('SIGINT', gracefulShutdown);
-process.on('SIGTERM', gracefulShutdown);
+}
 
 module.exports = app;

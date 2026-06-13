@@ -13,217 +13,10 @@ const { sendVerificationEmail, sendPasswordResetEmail } = emailService;
 const normalizeEmail = require('../utils/normalizeEmail');
 
 
-// @desc    Register a new customer
-// @route   POST /api/auth/register
-// @access  Public
-exports.register = async (req, res) => {
-  try {
-    const Setting = require('../models/Setting');
-    const settingObj = await Setting.findOne({ key: 'allowSignup' });
-    const allowSignup = settingObj ? settingObj.value === true : true;
-    
-    const toggles = await getFeatureToggleValues();
-    if (!toggles.registrationEnabled || !allowSignup) {
-      return res.status(403).json({ success: false, error: 'New registrations are temporarily disabled. Please contact administrator.' });
-    }
+// NOTE: The original exports.register had a runtime crash (pincodeStr was never declared).
+// The original exports.login bypassed the unified password check.
+// Both have been removed. Active handlers: handleLocalRegister and handleLocalLogin (below).
 
-    const { name, email, phone, password } = req.body;
-
-    const nameStr = String(name || '').trim();
-    const emailStr = normalizeEmail(String(email || ''));
-    const phoneStr = String(phone || '').trim();
-    const passwordStr = String(password || '');
-
-    if (!nameStr || !emailStr || !phoneStr || !passwordStr) {
-      return res.status(400).json({ success: false, error: 'Please provide all required fields including name, email, phone, and password' });
-    }
-
-    // Verify email formatting
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailStr)) {
-      return res.status(400).json({ success: false, error: 'Please enter a valid email address' });
-    }
-
-    // Verify phone formatting
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(phoneStr)) {
-      return res.status(400).json({ success: false, error: 'Please enter a valid 10 digit mobile number' });
-    }
-
-    // Verify pincode formatting
-    const pincodeRegex = /^[1-9][0-9]{5}$/;
-    if (!pincodeRegex.test(pincodeStr)) {
-      return res.status(400).json({ success: false, error: 'Please enter a valid 6 digit Indian pincode' });
-    }
-
-    // Enterprise Password strength checking
-    const strengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
-    if (!strengthRegex.test(passwordStr)) {
-      return res.status(400).json({ success: false, error: 'Password does not meet enterprise strength criteria: minimum 8 characters, at least 1 uppercase letter, 1 lowercase letter, 1 numerical digit, and 1 special symbol.' });
-    }
-
-    const userExists = await User.findOne({ email: emailStr });
-    if (userExists) {
-      return res.status(400).json({ success: false, error: 'User already exists with this email' });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(passwordStr, salt);
-
-    // Generate Verification OTP (5-minute expiry)
-    const verificationOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    const verificationOtpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-
-    // Create user record immediately (emailVerified remains false)
-    const newUser = await User.create({
-      name: nameStr,
-      email: emailStr,
-      phone: phoneStr,
-      password: hashedPassword,
-      passwordHash: hashedPassword,
-      address1: '',
-      city: '',
-      state: '',
-      pincode: '',
-      emailVerified: false,
-      accountActive: false,
-      isActive: false,
-      verificationOtp,
-      verificationOtpExpires
-    });
-
-    // Diagnostic: confirm OTP stored on new user record
-    console.log('Saved OTP (registration):', newUser.verificationOtp);
-
-    // Send Verification OTP email
-    console.log('OTP GENERATED (registration)', verificationOtp);
-    console.log('OTP EMAIL RECIPIENT:', newUser.email);
-    try {
-      const diag = await emailService.testConnection();
-      console.log('SMTP status:', { transporterPresent: diag.transporterPresent, verified: diag.verified });
-      if (!diag.transporterPresent || !diag.verified || !diag.verified.success) {
-        console.log('OTP (SMTP not verified):', verificationOtp);
-      }
-    } catch (e) {
-      console.log('SMTP diag error:', e && e.message ? e.message : e);
-    }
-    console.log('CALLING SMTP SERVICE');
-    const smtpResult = await emailService.sendVerificationEmail(newUser.email, verificationOtp);
-    console.log('SMTP RESPONSE:', smtpResult);
-    if (smtpResult && smtpResult.success) console.log('EMAIL SENT SUCCESSFULLY');
-    else console.log('EMAIL SEND FAILED:', smtpResult && smtpResult.error);
-
-    res.status(201).json({
-      success: true,
-      message: 'Registration successful! A verification OTP has been sent to your email address. Please verify using the OTP.',
-      redirect: '/verify-email.html'
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: `Registration error: ${error.message}` });
-  }
-};
-
-// @desc    Login user & acquire tokens
-// @route   POST /api/auth/login
-// @access  Public
-exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (typeof email !== 'string' || typeof password !== 'string') {
-      return res.status(400).json({ success: false, error: 'Invalid input format' });
-    }
-
-    if (!email || !password) {
-      return res.status(400).json({ success: false, error: 'Please provide email and password' });
-    }
-
-    const user = await User.findOne({ email: normalizeEmail(email) });
-    if (!user) {
-      await logActivity(req, 'login_failure', `Invalid email attempt for: ${email}`);
-      return res.status(401).json({ success: false, error: 'Invalid credentials' });
-    }
-
-    // Check account lockout status
-    if (user.lockUntil && user.lockUntil > Date.now()) {
-      const remainingMins = Math.ceil((user.lockUntil - Date.now()) / (60 * 1000));
-      await logActivity(req, 'login_lockedout', `Blocked attempt for locked account: ${email}`);
-      return res.status(403).json({ success: false, error: `Account is temporarily locked. Try again in ${remainingMins} minutes.` });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) {
-      user.loginAttempts = (user.loginAttempts || 0) + 1;
-      let msg = 'Invalid credentials';
-
-      if (user.loginAttempts >= 5) {
-        user.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 mins lock
-        msg = 'Too many failed attempts. Account locked for 30 minutes.';
-        await logActivity(req, 'account_locked', `Account locked after 5 failures: ${email}`);
-      } else {
-        await logActivity(req, 'login_failure', `Failed login attempt ${user.loginAttempts}/5 for: ${email}`);
-      }
-
-      await user.save();
-      return res.status(401).json({ success: false, error: msg });
-    }
-
-    if (user.role === 'admin') {
-      return res.status(403).json({
-        success: false,
-        error: 'Administrator accounts must sign in at /admin/login'
-      });
-    }
-
-    // Reset attempts on successful login
-    user.loginAttempts = 0;
-    user.lockUntil = undefined;
-
-    // Generate tokens
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    // Save refresh token to user model
-    user.refreshToken = refreshToken;
-    await user.save();
-
-    // Set secure HTTP-Only cookies
-    res.cookie('admin_accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000 // 15 minutes
-    });
-
-    res.cookie('admin_refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
-
-    // Log login success
-    await logActivity(req, 'login_success', `Logged in as: ${user.role}`);
-
-    res.status(200).json({
-      success: true,
-      accessToken,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        address1: user.address1 || '',
-        city: user.city || '',
-        state: user.state || '',
-        pincode: user.pincode || ''
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: `Login error: ${error.message}` });
-  }
-};
 
 // @desc    Admin login & role validation
 // @route   POST /api/auth/admin/login
@@ -965,9 +758,9 @@ exports.resendOtp = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Account already verified.' });
     }
 
-    // Generate new OTP
+    // Generate new OTP (15-minute expiry — matches registration OTP window)
     const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+    const expiry = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
 
     user.verificationOtp = newOtp;
     user.verificationOtpExpires = expiry;
@@ -1023,10 +816,10 @@ exports.requestPasswordResetLink = async (req, res) => {
       });
     }
 
-    // Generate 6-digit OTP for password reset
+    // Generate 6-digit OTP for password reset (10-minute expiry)
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     user.resetPasswordToken = otp;
-    user.resetPasswordExpires = new Date(Date.now() + 3 * 60 * 1000); // 3 minutes expiry
+    user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
     await user.save();
 
     // Diagnostic logging

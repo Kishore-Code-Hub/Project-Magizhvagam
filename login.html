@@ -114,7 +114,7 @@
           
           <div id="forgot-timer-container" style="margin-top: 20px; padding: 16px; border-radius: 8px; background: rgba(106, 13, 173, 0.05); border: 1px solid rgba(106, 13, 173, 0.15); text-align: center;">
             <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-color);">The OTP will expire in:</p>
-            <div id="forgot-timer-clock" style="font-size: 24px; font-weight: 700; color: hsl(var(--primary-purple)); font-family: monospace; margin-bottom: 12px;">03:00</div>
+            <div id="forgot-timer-clock" style="font-size: 24px; font-weight: 700; color: hsl(var(--primary-purple)); font-family: monospace; margin-bottom: 12px;">10:00</div>
             <button type="button" id="forgot-resend-otp-btn" class="btn btn-secondary" style="width: 100%; border-radius: 8px; font-size: 12px; padding: 8px 0;" disabled>Request New OTP</button>
           </div>
           <button type="button" onclick="resetForgotForm();" class="btn btn-secondary" style="width: 100%; margin-top: 10px; border-radius: 8px; font-size: 12px; padding: 8px 0;">Back</button>
@@ -215,7 +215,7 @@
       
       const timerClock = document.getElementById('forgot-timer-clock');
       if (timerClock) {
-        timerClock.textContent = "03:00";
+        timerClock.textContent = "10:00";
         timerClock.style.color = "hsl(var(--primary-purple))";
       }
       const resendBtn = document.getElementById('forgot-resend-otp-btn');
@@ -235,7 +235,7 @@
       resendBtn.setAttribute('style', 'width: 100%; border-radius: 8px; font-size: 12px; padding: 8px 0; opacity: 0.5; pointer-events: none; cursor: not-allowed;');
       resendBtn.textContent = 'Request New OTP';
       
-      let timeLeft = 180; // 3 minutes in seconds
+      let timeLeft = 600; // 10 minutes in seconds
       forgotTimerInterval = setInterval(() => {
         timeLeft--;
         if (timeLeft <= 0) {

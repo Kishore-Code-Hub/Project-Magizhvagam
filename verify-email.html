@@ -1,59 +1,243 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Verify Email - Magizhvagam</title>
-  <style>body{font-family:Arial,Helvetica,sans-serif;padding:40px;background:#f9f9f9} .card{max-width:420px;margin:40px auto;padding:24px;background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06)} input{width:100%;padding:10px;margin:8px 0;border:1px solid #ddd;border-radius:4px} button{padding:10px 14px;border:none;background:#6A0DAD;color:#fff;border-radius:6px;cursor:pointer} .muted{color:#666;font-size:14px}</style>
-</head>
-<body>
-  <div class="card">
-    <h2>Verify Your Email</h2>
-    <p class="muted">Enter the 6-digit OTP sent to your email address.</p>
-    <label for="email">Email</label>
-    <input id="email" type="email" placeholder="you@example.com" required>
-    <label for="otp">6 Digit OTP</label>
-    <input id="otp" type="text" placeholder="123456" inputmode="numeric" maxlength="6" required>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button id="verify">Verify</button>
-      <button id="resend" type="button" style="background:#888">Resend OTP</button>
-    </div>
-    <p id="msg" class="muted"></p>
-  </div>
-<script>
-document.getElementById('verify').addEventListener('click', async () => {
-  const email = document.getElementById('email').value.trim();
-  const otp = document.getElementById('otp').value.trim();
-  const msg = document.getElementById('msg');
-  msg.textContent = '';
-  if (!email || !otp) { msg.textContent = 'Please enter email and OTP.'; return; }
-  try {
-    const res = await fetch('/api/auth/verify-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, otp }) });
-    const j = await res.json();
-    if (res.ok && j.success) {
-      msg.textContent = 'Email verified successfully. Redirecting to login...';
-      setTimeout(() => window.location.href = (j.redirect || '/login.html?verified=true'), 1500);
-    } else {
-      msg.textContent = j && j.error ? j.error : 'Verification failed';
-    }
-  } catch (e) { msg.textContent = 'Network error'; }
-});
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Email | MAGIZHVAGAM - Premium Return Gifts</title>
+  <link rel="stylesheet" href="/assets/css/theme.defaults.css">
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/typography.css">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+  <style id="mz-theme-vars"></style>
+  <script src="/assets/js/theme-loader.js"></script>
 
-document.getElementById('resend').addEventListener('click', async () => {
-  const email = document.getElementById('email').value.trim();
-  const msg = document.getElementById('msg');
-  msg.textContent = '';
-  if (!email) { msg.textContent = 'Please enter your email to resend OTP.'; return; }
-  try {
-    const res = await fetch('/api/auth/resend-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
-    const j = await res.json();
-    if (res.ok && j.success) {
-      msg.textContent = 'A new OTP has been sent to your email.';
-    } else {
-      msg.textContent = j && j.error ? j.error : 'Resend failed';
+  <style>
+    .auth-wrapper {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px 60px;
     }
-  } catch (e) { msg.textContent = 'Network error'; }
-});
-</script>
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      padding: 40px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: rgba(0, 0, 0, 0.02);
+      color: var(--text-color);
+      transition: var(--transition);
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+    }
+    .form-control:focus {
+      border-color: hsl(var(--primary-purple));
+      background: rgba(255, 255, 255, 0.9);
+      outline: none;
+    }
+    .verify-icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(106, 13, 173, 0.08);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .verify-icon svg {
+      color: hsl(var(--primary-purple));
+    }
+    #status-msg {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      display: none;
+    }
+    #status-msg.error {
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    #status-msg.success {
+      background: rgba(16, 185, 129, 0.08);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+  </style>
+</head>
+<body class="inner-page">
+
+  <!-- Shared Header Injection Element -->
+  <header id="main-header"></header>
+
+  <div class="auth-wrapper">
+    <div class="auth-card glass animated scale-in">
+
+      <div class="verify-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+      </div>
+
+      <h2 style="font-size: 26px; text-align: center; margin-bottom: 8px; font-family: 'Outfit';">Verify Your Email</h2>
+      <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 28px;">
+        Enter the 6-digit OTP sent to your email address to activate your account.
+      </p>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input id="email" type="email" class="form-control" placeholder="you@example.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="otp">6-Digit OTP Code</label>
+        <input id="otp" type="text" class="form-control" placeholder="123456"
+          inputmode="numeric" maxlength="6" required
+          style="text-align: center; font-size: 22px; letter-spacing: 6px; font-weight: 700;">
+      </div>
+
+      <button id="verify-btn" class="btn btn-primary" style="width: 100%; border-radius: 8px;">
+        Verify &amp; Activate Account
+      </button>
+
+      <button id="resend-btn" type="button" class="btn btn-secondary"
+        style="width: 100%; margin-top: 12px; border-radius: 8px; font-size: 13px;">
+        Resend OTP
+      </button>
+
+      <div id="status-msg"></div>
+
+      <div style="text-align: center; margin-top: 24px; font-size: 13px;">
+        <span style="color: var(--text-muted);">Already verified?</span>
+        <a href="/login.html" style="color: hsl(var(--primary-purple)); font-weight: 700; margin-left: 4px;">Sign In</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shared Footer Injection Element -->
+  <footer id="main-footer"></footer>
+
+  <!-- Scripts -->
+  <script src="/assets/js/animation-loader.js"></script>
+  <script src="/assets/js/nav.js"></script>
+  <script src="/assets/js/footer.js"></script>
+  <script src="/assets/js/storefront-init.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script>
+    // Auto-populate email from query param (e.g. redirected from register.html)
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const emailParam = params.get('email');
+      if (emailParam) {
+        const emailInput = document.getElementById('email');
+        if (emailInput) {
+          emailInput.value = decodeURIComponent(emailParam);
+          emailInput.readOnly = true;
+          emailInput.style.opacity = '0.7';
+        }
+      }
+    })();
+
+    function showStatus(msg, type) {
+      const el = document.getElementById('status-msg');
+      el.textContent = msg;
+      el.className = type; // 'error' or 'success'
+      el.style.display = 'block';
+    }
+
+    document.getElementById('verify-btn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      const otp = document.getElementById('otp').value.trim();
+
+      if (!email || !otp) {
+        showStatus('Please enter your email address and the 6-digit OTP code.', 'error');
+        return;
+      }
+      if (!/^\d{6}$/.test(otp)) {
+        showStatus('OTP must be exactly 6 digits.', 'error');
+        return;
+      }
+
+      document.getElementById('verify-btn').disabled = true;
+      document.getElementById('verify-btn').textContent = 'Verifying...';
+
+      try {
+        const res = await fetch('/api/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          showStatus('Email verified successfully! Redirecting to login...', 'success');
+          setTimeout(() => {
+            window.location.href = data.redirect || '/login.html?verified=true';
+          }, 1500);
+        } else {
+          showStatus(data.error || 'Verification failed. Please check your OTP and try again.', 'error');
+          document.getElementById('verify-btn').disabled = false;
+          document.getElementById('verify-btn').textContent = 'Verify & Activate Account';
+        }
+      } catch (e) {
+        showStatus('Network error. Please check your connection and try again.', 'error');
+        document.getElementById('verify-btn').disabled = false;
+        document.getElementById('verify-btn').textContent = 'Verify & Activate Account';
+      }
+    });
+
+    document.getElementById('resend-btn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      if (!email) {
+        showStatus('Please enter your email address first.', 'error');
+        return;
+      }
+
+      document.getElementById('resend-btn').disabled = true;
+      document.getElementById('resend-btn').textContent = 'Sending...';
+
+      try {
+        const res = await fetch('/api/auth/resend-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          showStatus('A new 6-digit OTP has been sent to your email address.', 'success');
+        } else {
+          showStatus(data.error || 'Failed to resend OTP. Please try again.', 'error');
+        }
+      } catch (e) {
+        showStatus('Network error. Please check your connection and try again.', 'error');
+      }
+
+      setTimeout(() => {
+        document.getElementById('resend-btn').disabled = false;
+        document.getElementById('resend-btn').textContent = 'Resend OTP';
+      }, 30000); // 30-second cooldown on resend button
+    });
+  </script>
 </body>
 </html>
