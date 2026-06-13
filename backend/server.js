@@ -28,6 +28,7 @@ const adminPageRoutes = require('./routes/adminPageRoutes');
 const siteSettingsRoutes = require('./routes/siteSettingsRoutes');
 const mediaRoutes = require('./routes/mediaRoutes');
 const aboutRoutes = require('./routes/aboutRoutes');
+const adminSystemRoutes = require('./routes/adminSystemRoutes');
 
 const app = express();
 
@@ -137,6 +138,7 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/site-settings', siteSettingsRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/about-page', aboutRoutes);
+app.use('/api/admin/system', adminSystemRoutes);
 
 
 // 4. Mount Admin Protected Pages Route Router (MUST BE BEFORE ROOT STATIC ROUTE)

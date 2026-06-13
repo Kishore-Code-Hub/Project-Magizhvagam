@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>System Diagnostics — Admin | Magizhvagam</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout" style="padding:24px;">
+    <h1>System Diagnostics</h1>
+    <section style="margin-top:16px;">
+      <button id="refresh-diag" class="btn">Refresh Diagnostics</button>
+      <pre id="diag-output" style="background:#f7f7f7; padding:12px; border-radius:6px; margin-top:12px; max-height:360px; overflow:auto;"></pre>
+    </section>
+
+    <section style="margin-top:24px;">
+      <h2>SMTP Test Email</h2>
+      <label>Recipient Email</label>
+      <input id="test-recipient" type="email" placeholder="admin@example.com" style="display:block; padding:8px; width:320px; margin:8px 0;" />
+      <button id="send-test" class="btn">Send Test Email</button>
+      <pre id="send-output" style="background:#f7f7f7; padding:12px; border-radius:6px; margin-top:12px; max-height:200px; overflow:auto;"></pre>
+    </section>
+
+    <p style="margin-top:30px; color:#666; font-size:13px;">Note: Admin session required. This page calls <code>/api/admin/system/smtp-test</code> and <code>/api/admin/system/smtp-send-test</code>.</p>
+  </div>
+
+  <script src="/assets/js/admin-system.js"></script>
+</body>
+</html>

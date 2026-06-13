@@ -723,7 +723,8 @@ img.lazy-loaded {
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0.08em;
-  background: linear-gradient(135deg, hsl(var(--primary-purple)) 0%, hsl(var(--rose-pink)) 100%);
+  /* Premium gold gradient for brand mark */
+  background: linear-gradient(90deg,#B8860B 0%,#D4AF37 25%,#F7E27D 50%,#D4AF37 75%,#B8860B 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -738,6 +739,18 @@ img.lazy-loaded {
   color: var(--text-muted);
   margin-top: 5px;
   transition: opacity 0.3s ease, height 0.3s ease, margin-top 0.3s ease;
+}
+
+/* Footer brand logo gradient */
+.footer-logo {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background: linear-gradient(90deg,#B8860B 0%,#D4AF37 25%,#F7E27D 50%,#D4AF37 75%,#B8860B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Right: utility icons */

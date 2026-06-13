@@ -35,7 +35,7 @@ const connectDB = async () => {
             addresses: [{
               fullName: 'Admin Main Office',
               phone: '9876543210',
-              street: '12 Luxury Palace St',
+              street: 'Magizhvagam',
               city: 'Chennai',
               state: 'Tamil Nadu',
               zipCode: '600001',

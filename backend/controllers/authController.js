@@ -9,7 +9,9 @@ const { generateAccessToken, generateRefreshToken } = require('../middleware/aut
 const { JWT_REFRESH_SECRET } = require('../config/jwt');
 const { logActivity } = require('../services/auditService');
 const { getFeatureToggleValues } = require('./settingController');
-const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/emailService');
+const emailService = require('../services/emailService');
+const { sendVerificationEmail, sendPasswordResetEmail } = emailService;
+const normalizeEmail = require('../utils/normalizeEmail');
 
 
 // @desc    Register a new customer
@@ -29,7 +31,7 @@ exports.register = async (req, res) => {
     const { name, email, phone, password } = req.body;
 
     const nameStr = String(name || '').trim();
-    const emailStr = String(email || '').toLowerCase().trim();
+    const emailStr = normalizeEmail(String(email || ''));
     const phoneStr = String(phone || '').trim();
     const passwordStr = String(password || '');
 
@@ -93,7 +95,21 @@ exports.register = async (req, res) => {
     );
 
     // Send Verification Email
-    await sendVerificationEmail(emailStr, verificationToken);
+    console.log('OTP GENERATED (registration)');
+    try {
+      const diag = await emailService.testConnection();
+      console.log('SMTP status:', { transporterPresent: diag.transporterPresent, verified: diag.verified });
+      if (!diag.transporterPresent || !diag.verified || !diag.verified.success) {
+        console.log('OTP (SMTP not verified):', verificationToken);
+      }
+    } catch (e) {
+      console.log('SMTP diag error:', e && e.message ? e.message : e);
+    }
+    console.log('CALLING SMTP SERVICE');
+    const smtpResult = await emailService.sendVerificationEmail(emailStr, verificationToken);
+    console.log('SMTP RESPONSE:', smtpResult);
+    if (smtpResult && smtpResult.success) console.log('EMAIL SENT SUCCESSFULLY');
+    else console.log('EMAIL SEND FAILED:', smtpResult && smtpResult.error);
 
     res.status(201).json({
       success: true,
@@ -119,7 +135,7 @@ exports.login = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please provide email and password' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const user = await User.findOne({ email: normalizeEmail(email) });
     if (!user) {
       await logActivity(req, 'login_failure', `Invalid email attempt for: ${email}`);
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
@@ -224,7 +240,7 @@ exports.adminLogin = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please provide email and password' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const user = await User.findOne({ email: normalizeEmail(email) });
     if (!user) {
       console.log('[DEBUG AUTH] Rejection: User not found in database');
       await logActivity(req, 'login_failure', `Invalid email attempt for: ${email}`);
@@ -711,8 +727,8 @@ exports.handleLocalRegister = async (req, res) => {
     const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
     const verificationTokenExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    // Write parameters into the temporary staging area collection
-    await UnverifiedStage.findOneAndUpdate(
+    // Write parameters into the temporary staging area collection and log saved token
+    const stageRecord = await UnverifiedStage.findOneAndUpdate(
       { email: emailStr },
       {
         name: nameStr,
@@ -725,9 +741,24 @@ exports.handleLocalRegister = async (req, res) => {
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
+    console.log('TOKEN SAVED TO DB:', { email: stageRecord.email, verificationToken: stageRecord.verificationToken });
 
     // Send Verification Email
-    await sendVerificationEmail(emailStr, verificationToken);
+    console.log('OTP GENERATED (registration - secondary)', verificationToken);
+    try {
+      const diag = await emailService.testConnection();
+      console.log('SMTP status:', { transporterPresent: diag.transporterPresent, verified: diag.verified });
+      if (!diag.transporterPresent || !diag.verified || !diag.verified.success) {
+        console.log('OTP (SMTP not verified):', verificationToken);
+      }
+    } catch (e) {
+      console.log('SMTP diag error:', e && e.message ? e.message : e);
+    }
+    console.log('CALLING SMTP SERVICE');
+    const smtpResult2 = await emailService.sendVerificationEmail(emailStr, verificationToken);
+    console.log('SMTP RESPONSE:', smtpResult2);
+    if (smtpResult2 && smtpResult2.success) console.log('EMAIL SENT SUCCESSFULLY');
+    else console.log('EMAIL SEND FAILED:', smtpResult2 && smtpResult2.error);
 
     res.status(201).json({
       success: true,
@@ -752,7 +783,7 @@ exports.handleLocalLogin = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please provide email and password' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const user = await User.findOne({ email: normalizeEmail(email) });
     if (!user) {
       await logActivity(req, 'login_failure', `Invalid email attempt for: ${email}`);
       return res.status(401).json({ success: false, error: 'Email address not registered.' });
@@ -790,7 +821,7 @@ exports.handleLocalLogin = async (req, res) => {
     }
 
     // Enforce email verification check for customers
-    if (user.role === 'customer' && !user.emailVerified) {
+    if (user.role === 'customer' && user.emailVerified === false) {
       return res.status(403).json({
         success: false,
         emailVerified: false,
@@ -857,14 +888,17 @@ exports.handleLocalLogin = async (req, res) => {
 exports.executeEmailVerification = async (req, res) => {
   try {
     const { token } = req.query;
+    console.log('TOKEN FROM URL:', token);
     if (!token) {
       return res.status(400).send('<h1>Verification token is missing.</h1>');
     }
 
+    console.log('DB lookup for verification token:', { verificationToken: token, now: new Date() });
     const stageRecord = await UnverifiedStage.findOne({
       verificationToken: token,
       verificationTokenExpires: { $gt: new Date() }
     });
+    console.log('MATCHED STAGE RECORD:', stageRecord);
 
     if (!stageRecord) {
       return res.status(400).send(`
@@ -889,6 +923,8 @@ exports.executeEmailVerification = async (req, res) => {
       pincode: stageRecord.pincode || '',
       phoneVerified: true,
       emailVerified: true,
+      accountActive: true,
+      isActive: true,
       role: 'customer',
       addresses: [{
         fullName: stageRecord.name,
@@ -930,8 +966,9 @@ exports.verifyOtp = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please provide email and OTP code' });
     }
 
+    const normalizedEmail = normalizeEmail(email);
     const stageRecord = await UnverifiedStage.findOne({
-      email: email.toLowerCase().trim(),
+      email: normalizedEmail,
       verificationToken: otp.trim(),
       verificationTokenExpires: { $gt: new Date() }
     });
@@ -953,6 +990,8 @@ exports.verifyOtp = async (req, res) => {
       pincode: stageRecord.pincode || '',
       phoneVerified: true,
       emailVerified: true,
+      accountActive: true,
+      isActive: true,
       role: 'customer',
       addresses: [{
         fullName: stageRecord.name,
@@ -986,7 +1025,7 @@ exports.resendOtp = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please provide email address' });
     }
 
-    const stageRecord = await UnverifiedStage.findOne({ email: email.toLowerCase().trim() });
+    const stageRecord = await UnverifiedStage.findOne({ email: normalizeEmail(email) });
     if (!stageRecord) {
       return res.status(400).json({ success: false, error: 'No unverified account registration found for this email address.' });
     }
@@ -999,7 +1038,21 @@ exports.resendOtp = async (req, res) => {
     stageRecord.verificationTokenExpires = expiry;
     await stageRecord.save();
 
-    await sendVerificationEmail(stageRecord.email, newOtp);
+    console.log('OTP GENERATED (resend)');
+    try {
+      const diag = await emailService.testConnection();
+      console.log('SMTP status:', { transporterPresent: diag.transporterPresent, verified: diag.verified });
+      if (!diag.transporterPresent || !diag.verified || !diag.verified.success) {
+        console.log('OTP (SMTP not verified):', newOtp);
+      }
+    } catch (e) {
+      console.log('SMTP diag error:', e && e.message ? e.message : e);
+    }
+    console.log('CALLING SMTP SERVICE');
+    const smtpResResend = await emailService.sendVerificationEmail(stageRecord.email, newOtp);
+    console.log('SMTP RESPONSE:', smtpResResend);
+    if (smtpResResend && smtpResResend.success) console.log('EMAIL SENT SUCCESSFULLY');
+    else console.log('EMAIL SEND FAILED:', smtpResResend && smtpResResend.error);
 
     res.status(200).json({
       success: true,
@@ -1035,7 +1088,21 @@ exports.requestPasswordResetLink = async (req, res) => {
     user.resetPasswordExpires = new Date(Date.now() + 3 * 60 * 1000); // 3 minutes expiry
     await user.save();
 
-    await sendPasswordResetEmail(user.email, otp);
+    console.log('OTP GENERATED (password reset request)');
+    try {
+      const diag = await emailService.testConnection();
+      console.log('SMTP status:', { transporterPresent: diag.transporterPresent, verified: diag.verified });
+      if (!diag.transporterPresent || !diag.verified || !diag.verified.success) {
+        console.log('OTP (SMTP not verified):', otp);
+      }
+    } catch (e) {
+      console.log('SMTP diag error:', e && e.message ? e.message : e);
+    }
+    console.log('CALLING SMTP SERVICE');
+    const smtpResReset = await emailService.sendPasswordResetEmail(user.email, otp);
+    console.log('SMTP RESPONSE:', smtpResReset);
+    if (smtpResReset && smtpResReset.success) console.log('EMAIL SENT SUCCESSFULLY');
+    else console.log('EMAIL SEND FAILED:', smtpResReset && smtpResReset.error);
 
     res.status(200).json({
       success: true,
@@ -1056,7 +1123,7 @@ exports.verifyResetOtp = async (req, res) => {
     }
 
     const user = await User.findOne({
-      email: email.toLowerCase().trim(),
+      email: normalizeEmail(email),
       resetPasswordToken: otp.trim(),
       resetPasswordExpires: { $gt: new Date() }
     });
@@ -1089,7 +1156,7 @@ exports.resetPasswordWithOtp = async (req, res) => {
     }
 
     const user = await User.findOne({
-      email: email.toLowerCase().trim(),
+      email: normalizeEmail(email),
       resetPasswordToken: otp.trim(),
       resetPasswordExpires: { $gt: new Date() }
     });
@@ -1107,6 +1174,10 @@ exports.resetPasswordWithOtp = async (req, res) => {
     user.resetPasswordExpires = null;
     user.loginAttempts = 0;
     user.lockUntil = null;
+    // Mark email as verified and activate account after successful password reset
+    user.emailVerified = true;
+    user.accountActive = true;
+    user.isActive = true;
     await user.save();
 
     await logActivity(req, 'password_reset_success', `Password successfully reset for: ${user.email}`);

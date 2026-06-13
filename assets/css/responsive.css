@@ -219,10 +219,18 @@ html, body {
     flex: 1 !important;
   }
 
-  .hamburger {
-    display: flex !important;
-    margin: 0 !important;
-    z-index: 20 !important;
+    .hamburger {
+      display: flex !important;
+      margin: 0 !important;
+      z-index: 30 !important;
+      background: none !important;
+      border: none !important;
+      padding: 8px !important;
+      cursor: pointer !important;
+      position: absolute !important;
+      left: 16px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
   }
 
   .logo-wrapper {
@@ -333,6 +341,10 @@ html, body {
     gap: 8px !important;
     flex: 1 !important;
     z-index: 15 !important;
+      position: absolute !important;
+      right: 16px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
   }
 
   .header-utilities .guest-btn {

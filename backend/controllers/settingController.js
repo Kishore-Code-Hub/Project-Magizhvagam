@@ -451,7 +451,7 @@ exports.resetSetting = async (req, res) => {
       fontFamily: 'Outfit',
       buttonStyle: 'rounded',
       footerContent: 'Making Every Celebration Memorable. Premium Return Gifts and Customized Gifts for weddings, baby showers, birthdays, and corporate events.',
-      contactDetails: '12 Luxury Palace St, Chennai, Tamil Nadu - 600001',
+      contactDetails: 'Chennai, Tamil Nadu - 600001',
       paletteBgMain: '#F7F4EE',
       paletteBgSurface: '#FFFFFF',
       paletteTextMain: '#111111',

@@ -37,6 +37,9 @@ const UserSchema = new mongoose.Schema({
   
   // Verification & Self-Service Token Containers
   emailVerified: { type: Boolean, default: false },
+  // Account active flags (used by auth flows)
+  accountActive: { type: Boolean, default: false },
+  isActive: { type: Boolean, default: false },
   verificationToken: { type: String, default: null },
   verificationTokenExpires: { type: Date, default: null },
   resetPasswordToken: { type: String, default: null },

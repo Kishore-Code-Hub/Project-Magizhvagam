@@ -377,7 +377,7 @@ exports.generateInvoice = async (req, res) => {
 
           <div class="footer">
             Thank you for shopping at <strong>MAGIZHVAGAM</strong>.<br>
-            For any queries, contact support at support@magizhvagam.com or WhatsApp us at ${displayPhone}.
+            For any queries, contact support at hellomagizhvagam@gmail.com or WhatsApp us at ${displayPhone}.
           </div>
         </div>
         <script>window.print();</script>

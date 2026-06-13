@@ -59,9 +59,9 @@ const FooterConfigSchema = new mongoose.Schema({
     { platform: 'youtube', url: '#', visible: false }
   ]},
   contact: {
-    address: { value: { type: String, default: '12 Luxury Palace St, Chennai, Tamil Nadu - 600001' }, visible: { type: Boolean, default: true } },
+    address: { value: { type: String, default: 'Chennai, Tamil Nadu - 600001' }, visible: { type: Boolean, default: true } },
     phone: { value: { type: String, default: '+91 98940 86929' }, visible: { type: Boolean, default: true } },
-    email: { value: { type: String, default: 'hello@magizhvagam.com' }, visible: { type: Boolean, default: true } }
+    email: { value: { type: String, default: 'hellomagizhvagam@gmail.com' }, visible: { type: Boolean, default: true } }
   },
   newsletter: {
     heading: { type: String, default: 'Join Our Community' },
