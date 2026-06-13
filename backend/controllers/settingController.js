@@ -248,7 +248,8 @@ const DEFAULT_FEATURE_TOGGLES = {
   homepageLayoutFeatured: true,
   flashSaleActive: false,
   flashSaleText: "Mega Flash Sale! Get 20% off all return gifts!",
-  flashSaleTargetDate: null
+  flashSaleTargetDate: null,
+  customerLoginRequirement: true
 };
 
 // @desc    Get feature toggles (cached helper for internal use)
@@ -303,6 +304,7 @@ exports.updateFeatureToggles = async (req, res) => {
     if (toggles.announcementBannerEnabled !== undefined) sanitized.announcementBannerEnabled = !!toggles.announcementBannerEnabled;
     if (toggles.themeAccentColor !== undefined) sanitized.themeAccentColor = String(toggles.themeAccentColor || '#6A0DAD').trim();
     if (toggles.homepageLayoutFeatured !== undefined) sanitized.homepageLayoutFeatured = !!toggles.homepageLayoutFeatured;
+    if (toggles.customerLoginRequirement !== undefined) sanitized.customerLoginRequirement = !!toggles.customerLoginRequirement;
     if (toggles.flashSaleActive !== undefined) sanitized.flashSaleActive = !!toggles.flashSaleActive;
     if (toggles.flashSaleText !== undefined) sanitized.flashSaleText = String(toggles.flashSaleText || '').trim();
     if (toggles.flashSaleTargetDate !== undefined) sanitized.flashSaleTargetDate = toggles.flashSaleTargetDate ? new Date(toggles.flashSaleTargetDate) : null;

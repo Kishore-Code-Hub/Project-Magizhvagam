@@ -192,7 +192,23 @@ const checkCustomerPageAuth = async (req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   let token = req.cookies ? req.cookies.admin_accessToken : null;
 
+  const isCheckout = req.path === '/checkout.html';
+  let loginRequired = true;
+  if (isCheckout) {
+    try {
+      const settingObj = await Setting.findOne({ key: 'featureToggles' });
+      if (settingObj && settingObj.value && settingObj.value.customerLoginRequirement === false) {
+        loginRequired = false;
+      }
+    } catch (err) {
+      console.error('Error reading featureToggles in middleware:', err);
+    }
+  }
+
   if (!token) {
+    if (!loginRequired) {
+      return next();
+    }
     return res.redirect(`/login.html?redirect=${req.path.slice(1)}`);
   }
 
@@ -201,6 +217,9 @@ const checkCustomerPageAuth = async (req, res, next) => {
     const user = await User.findById(decoded.id);
     if (user) {
       req.user = user;
+      return next();
+    }
+    if (!loginRequired) {
       return next();
     }
     return res.redirect(`/login.html?redirect=${req.path.slice(1)}`);
@@ -228,6 +247,9 @@ const checkCustomerPageAuth = async (req, res, next) => {
           }
         } catch (err) { }
       }
+    }
+    if (!loginRequired) {
+      return next();
     }
     return res.redirect(`/login.html?redirect=${req.path.slice(1)}`);
   }

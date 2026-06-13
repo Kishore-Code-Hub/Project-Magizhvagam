@@ -27,6 +27,29 @@ console.log("ERROR:",e.message);
             return response;
           }
 
+          // Check if guest checkout is allowed
+          let customerLoginRequirement = true;
+          try {
+            const cachedToggles = localStorage.getItem('mz-feature-toggles');
+            if (cachedToggles) {
+              const parsed = JSON.parse(cachedToggles);
+              if (parsed && parsed.customerLoginRequirement === false) {
+                customerLoginRequirement = false;
+              }
+            }
+          } catch (e) {}
+
+          const protectedPages = ['/profile.html', '/wishlist.html'];
+          if (customerLoginRequirement) {
+            protectedPages.push('/checkout.html');
+            protectedPages.push('/cart.html');
+          }
+          const isProtected = protectedPages.some(p => path.endsWith(p));
+
+          if (!isProtected) {
+            return response;
+          }
+
           // Clear session and user info
           if (typeof window.setSessionUser === 'function') {
             window.setSessionUser(null);
@@ -239,7 +262,22 @@ window.validateUserSession = async function validateUserSession() {
 
       const path = window.location.pathname;
       const isAuthPage = ['/login.html', '/register.html'].some((p) => path.endsWith(p));
-      const isProtected = ['/profile.html', '/wishlist.html', '/checkout.html', '/cart.html'].some(p => path.endsWith(p)) || path.includes('/admin/');
+      
+      let customerLoginRequirement = true;
+      try {
+        const toggles = await fetchFeatureToggles();
+        if (toggles && toggles.customerLoginRequirement === false) {
+          customerLoginRequirement = false;
+        }
+      } catch (e) {}
+
+      const protectedPages = ['/profile.html', '/wishlist.html'];
+      if (customerLoginRequirement) {
+        protectedPages.push('/checkout.html');
+        protectedPages.push('/cart.html');
+      }
+      const isProtected = protectedPages.some(p => path.endsWith(p)) || path.includes('/admin/');
+
       if (isProtected && !isAuthPage) {
         const redirectPath = window.location.pathname.substring(1) + window.location.search;
         if (path.includes('/admin/')) {
@@ -693,6 +731,8 @@ function setCartCache(cart) {
   const key = getCartStorageKey();
   if (key) {
     localStorage.setItem(key, JSON.stringify(cart || []));
+  } else {
+    localStorage.setItem('magizhvagam_guest_cart', JSON.stringify(cart || []));
   }
   localStorage.removeItem('magizhvagam_cart');
 }
@@ -728,6 +768,20 @@ function setWishlistCache(wishlist) {
 window.setWishlistCache = setWishlistCache;
 
 window.getCart = () => {
+  const user = getStoredUser();
+  const toggles = window.featureToggles;
+  const loginRequired = !(toggles && toggles.customerLoginRequirement === false);
+
+  if (!user && !loginRequired) {
+    try {
+      const val = localStorage.getItem('magizhvagam_guest_cart');
+      if (!val || val === 'undefined' || val === 'null') return [];
+      return JSON.parse(val) || [];
+    } catch (err) {
+      return [];
+    }
+  }
+
   if (!isLoggedInCustomer()) return [];
   const key = getCartStorageKey();
   if (!key) return [];
@@ -859,6 +913,7 @@ window.mergeCartAndWishlistAfterLogin = async () => {
 window.clearServerCart = async () => {
   if (!isLoggedInCustomer()) {
     localStorage.removeItem('magizhvagam_cart');
+    localStorage.removeItem('magizhvagam_guest_cart');
     const key = getCartStorageKey();
     if (key) localStorage.removeItem(key);
     syncCartCounters();
@@ -908,16 +963,46 @@ async function addToCartAsync(productId, name, price, image, quantity, silent) {
 
 window.addToCart = (productId, name, price, image, quantity = 1, silent = false) => {
   const user = getStoredUser();
-  if (!user) {
-    showToast('Please login or create a customer account to continue.', 'error');
-    window.showLoginRegisterModal('cart');
-    return;
+  const toggles = window.featureToggles;
+  const loginRequired = !(toggles && toggles.customerLoginRequirement === false);
+
+  if (loginRequired) {
+    if (!user) {
+      showToast('Please login or create a customer account to continue.', 'error');
+      window.showLoginRegisterModal('cart');
+      return;
+    }
+    if (user.role !== 'customer') {
+      if (!silent) showToast('Cart is available for customer accounts only', 'error');
+      return;
+    }
+    addToCartAsync(productId, name, price, image, quantity, silent);
+  } else {
+    // Guest cart flows
+    if (user && user.role !== 'customer') {
+      if (!silent) showToast('Cart is available for customer/guest accounts only', 'error');
+      return;
+    }
+    if (user) {
+      addToCartAsync(productId, name, price, image, quantity, silent);
+    } else {
+      let guestCart = [];
+      try {
+        const stored = localStorage.getItem('magizhvagam_guest_cart');
+        if (stored) guestCart = JSON.parse(stored);
+      } catch (e) {}
+      const existing = guestCart.find(item => item.productId === productId);
+      if (existing) {
+        existing.quantity += Number(quantity);
+      } else {
+        guestCart.push({ productId, name, price, image, quantity: Number(quantity) });
+      }
+      localStorage.setItem('magizhvagam_guest_cart', JSON.stringify(guestCart));
+      syncCartCounters();
+      if (!silent) showToast(`Added "${name}" to Cart!`, 'success');
+      window.dispatchEvent(new Event('cartUpdated'));
+    }
   }
-  if (user.role !== 'customer') {
-    if (!silent) showToast('Cart is available for customer accounts only', 'error');
-    return;
-  }
-  addToCartAsync(productId, name, price, image, quantity, silent);
 };
 
 async function toggleWishlistAsync(productId, name, price, image) {

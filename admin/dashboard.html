@@ -67,6 +67,22 @@
           </label>
         </div>
 
+        <!-- Customer Login Requirement Toggle -->
+        <div class="feature-toggle-row" id="toggle-row-customerLoginRequirement">
+          <div class="feature-toggle-info">
+            <div class="feature-toggle-icon customer-login">🔐</div>
+            <div>
+              <div class="feature-toggle-label">Customer Login Requirement</div>
+              <div class="feature-toggle-desc">Require customer login for Add to Cart, Checkout, and Dashboard access</div>
+            </div>
+          </div>
+          <span class="feature-toggle-status active" id="toggle-status-customerLoginRequirement">Active</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-customerLoginRequirement" checked onchange="handleFeatureToggle('customerLoginRequirement', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
         <!-- Coupon Engine Toggle -->
         <div class="feature-toggle-row" id="toggle-row-coupon">
           <div class="feature-toggle-info">

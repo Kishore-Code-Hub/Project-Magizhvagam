@@ -724,11 +724,11 @@ img.lazy-loaded {
   line-height: 1;
   letter-spacing: 0.08em;
   /* Solid premium gold — single unified color, no gradient */
-  color: #C89B3C;
-  background: none;
-  -webkit-background-clip: initial;
-  -webkit-text-fill-color: initial;
-  background-clip: initial;
+  color: #C89B3C !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: initial !important;
+  background-clip: initial !important;
   transition: font-size 0.3s ease;
 }
 .logo-subtitle {
@@ -749,11 +749,11 @@ img.lazy-loaded {
   font-weight: 800;
   letter-spacing: 0.08em;
   /* Solid premium gold — matches header logo */
-  color: #C89B3C;
-  background: none;
-  -webkit-background-clip: initial;
-  -webkit-text-fill-color: initial;
-  background-clip: initial;
+  color: #C89B3C !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: initial !important;
+  background-clip: initial !important;
 }
 
 /* Right: utility icons */
@@ -835,7 +835,7 @@ img.lazy-loaded {
 }
 .account-dropdown {
   position: absolute;
-  top: calc(100% + 14px);
+  top: 100% !important;
   right: 0;
   width: 200px;
   background: var(--card-bg);
@@ -2531,9 +2531,9 @@ body.inner-page {
 }
 
 h1, h2, h3, h4, h5, h6,
-.hero-headline, .logo-title, .section-title-center-block h2,
+.hero-headline, .section-title-center-block h2,
 .section-header-split-alignment h2, .feature-card-item h3,
-.footer-column-heading, .footer-newsletter-heading, .footer-logo {
+.footer-column-heading, .footer-newsletter-heading {
   color: var(--color-text-primary) !important;
 }
 
@@ -3097,10 +3097,10 @@ h1, h2, h3, h4, h5, h6,
 /* Light mode specific text overrides */
 :root[data-theme="light"] h1, :root[data-theme="light"] h2, :root[data-theme="light"] h3,
 :root[data-theme="light"] h4, :root[data-theme="light"] h5, :root[data-theme="light"] h6,
-:root[data-theme="light"] .hero-headline, :root[data-theme="light"] .logo-title,
+:root[data-theme="light"] .hero-headline,
 :root[data-theme="light"] .section-title-center-block h2, :root[data-theme="light"] .section-header-split-alignment h2,
 :root[data-theme="light"] .feature-card-item h3, :root[data-theme="light"] .footer-column-heading,
-:root[data-theme="light"] .footer-newsletter-heading, :root[data-theme="light"] .footer-logo,
+:root[data-theme="light"] .footer-newsletter-heading,
 :root[data-theme="light"] .product-card h4, :root[data-theme="light"] .category-card h4 {
   color: #1C1726 !important;
 }

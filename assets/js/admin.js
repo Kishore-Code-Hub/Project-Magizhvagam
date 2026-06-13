@@ -1235,6 +1235,7 @@ async function loadFeatureToggles() {
       promosEnabled: { type: 'checkbox', checkbox: 'toggle-promosEnabled', status: 'toggle-status-promos' },
       announcementBannerEnabled: { type: 'checkbox', checkbox: 'toggle-announcementBannerEnabled', status: 'toggle-status-announcement-banner' },
       homepageLayoutFeatured: { type: 'checkbox', checkbox: 'toggle-homepageLayoutFeatured', status: 'toggle-status-homepageLayoutFeatured' },
+      customerLoginRequirement: { type: 'checkbox', checkbox: 'toggle-customerLoginRequirement', status: 'toggle-status-customerLoginRequirement' },
       flashSaleActive: { type: 'checkbox', checkbox: 'toggle-flashSaleActive', status: 'toggle-status-flashSaleActive' },
       themeAccentColor: { type: 'color', input: 'toggle-themeAccentColor', status: 'toggle-status-themeAccentColor' }
     };
@@ -1308,6 +1309,7 @@ async function handleFeatureToggle(key, enabled) {
         promosEnabled: 'toggle-status-promos',
         announcementBannerEnabled: 'toggle-status-announcement-banner',
         homepageLayoutFeatured: 'toggle-status-homepageLayoutFeatured',
+        customerLoginRequirement: 'toggle-status-customerLoginRequirement',
         flashSaleActive: 'toggle-status-flashSaleActive',
         themeAccentColor: 'toggle-status-themeAccentColor'
       };
@@ -1322,6 +1324,7 @@ async function handleFeatureToggle(key, enabled) {
         promosEnabled: 'Flash Sales & Banners',
         announcementBannerEnabled: 'Announcement Banner',
         homepageLayoutFeatured: 'Homepage Featured Curation',
+        customerLoginRequirement: 'Customer Login Requirement',
         flashSaleActive: 'Flash Sale Countdown Banner',
         themeAccentColor: 'Theme Accent Color'
       };

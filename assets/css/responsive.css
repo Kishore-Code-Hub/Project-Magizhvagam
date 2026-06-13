@@ -147,7 +147,7 @@ html, body {
 @media (max-width: 768px) {
   .cart-container, 
   .checkout-layout, 
-  .profile-ready, 
+  .profile-container, 
   .admin-layout {
     flex-direction: column !important;
     gap: 20px !important;
@@ -156,9 +156,20 @@ html, body {
   .cart-summary, 
   .filter-sidebar, 
   .admin-sidebar, 
+  .profile-sidebar,
+  .profile-main,
   .checkout-summary-column {
     width: 100% !important;
     max-width: 100% !important;
+  }
+
+  .auth-wrapper {
+    padding: 32px 16px 48px !important;
+    min-height: auto !important;
+  }
+
+  .profile-layout {
+    padding: 24px 0 40px !important;
   }
   
   .cart-items-table {
@@ -390,31 +401,36 @@ html, body {
    ========================================================================== */
 @media (max-width: 768px) {
   .hero-parallax-viewport {
-    height: auto !important;
-    min-height: auto !important;
+    position: relative !important;
+    height: 80dvh !important;
+    min-height: 480px !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: flex-start !important;
-    align-items: stretch !important;
-    padding: 24px 0 !important;
-    gap: 16px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 0 !important;
+    gap: 0 !important;
   }
   
   .hero-central-layout {
     position: relative !important;
+    z-index: 10 !important;
     width: 100% !important;
     padding: 0 16px !important;
     margin: 0 !important;
-    flex-grow: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
   }
 
   .hero-content-card {
     width: 100% !important;
     max-width: 100% !important;
-    padding: 20px 16px !important;
+    padding: 24px 16px !important;
     border-radius: 16px !important;
-    background: rgba(26, 21, 35, 0.4) !important;
+    background: rgba(26, 21, 35, 0.55) !important;
     backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
     text-align: center !important;
     margin: 0 !important;
   }
@@ -446,11 +462,12 @@ html, body {
   
   /* Dynamic slider on mobile */
   .hero-slider-viewport {
-    position: relative !important;
+    position: absolute !important;
+    inset: 0 !important;
     width: 100% !important;
-    height: auto !important;
-    min-height: 380px !important;
-    margin-bottom: 16px !important;
+    height: 100% !important;
+    z-index: 2 !important;
+    margin-bottom: 0 !important;
   }
 
   .hero-slide {
