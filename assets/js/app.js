@@ -1533,7 +1533,7 @@ function injectComponents(settings, user = null) {
           </div>
           <div>
             <h4 style="color:white; font-size:16px; margin-bottom:16px;">Contact Support</h4>
-            <p style="color:#A59AB0; font-size:14px; margin-bottom:10px;">Chennai, Tamil Nadu - 600001</p>
+            <p style="color:#A59AB0; font-size:14px; margin-bottom:10px;">Chennai, Tamil Nadu, India</p>
             <p style="color:#A59AB0; font-size:14px; margin-bottom:10px;">Email: hellomagizhvagam@gmail.com</p>
             <p class="contact-phone-val" style="color:#A59AB0; font-size:14px;">WhatsApp: +91 98765 43210</p>
           </div>

@@ -45,9 +45,14 @@ const FooterConfigSchema = new mongoose.Schema({
       {
         heading: 'Customer Care', links: [
           { label: 'Contact Us', url: '/contact.html' },
-          { label: 'FAQs', url: '/#faq' },
-          { label: 'Track Order', url: '/profile.html' },
-          { label: 'Return Policy', url: '/about.html#returns' }
+          { label: 'FAQs', url: '/about.html#faq' },
+          { label: 'Track Your Order', url: '/profile.html' },
+          { label: 'Return & Refund Policy', url: '/about.html#returns' },
+          { label: 'Cancellation Policy', url: '/about.html#cancellation' },
+          { label: 'Shipping Information', url: '/about.html#shipping' },
+          { label: 'Privacy Policy', url: '/about.html#privacy' },
+          { label: 'Terms & Conditions', url: '/about.html#terms' },
+          { label: 'Bulk Orders & Corporate Gifts', url: '/contact.html' }
         ]
       },
       {
@@ -69,15 +74,15 @@ const FooterConfigSchema = new mongoose.Schema({
     ]
   },
   contact: {
-    address: { value: { type: String, default: 'Chennai, Tamil Nadu - 600001' }, visible: { type: Boolean, default: true } },
+    address: { value: { type: String, default: 'Chennai, Tamil Nadu, India' }, visible: { type: Boolean, default: true } },
     phone: { value: { type: String, default: '+91 98940 86929' }, visible: { type: Boolean, default: true } },
     email: { value: { type: String, default: 'hellomagizhvagam@gmail.com' }, visible: { type: Boolean, default: true } }
   },
   newsletter: {
     heading: { type: String, default: 'Join Our WhatsApp Community' },
-    placeholder: { type: String, default: 'Enter your Name' },
-    ctaLabel: { type: String, default: 'Join Now' },
-    incentive: { type: String, default: 'Get Latest Updates & Offers' }
+    placeholder: { type: String, default: 'Enter your Email' },
+    ctaLabel: { type: String, default: 'Join WhatsApp Community' },
+    incentive: { type: String, default: 'Get Latest Updates, New Arrivals, Festival Collections & Special Announcements.' }
   },
   copyright: {
     text: { type: String, default: '© {YEAR} Magizhvagam. All rights reserved.' },

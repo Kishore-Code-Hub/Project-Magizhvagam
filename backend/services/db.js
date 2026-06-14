@@ -53,6 +53,21 @@ const connectDB = async () => {
         console.error('Failed to seed/verify admin user:', seedErr.message);
       }
 
+      // Auto-seed active footer configuration if not present (does not overwrite existing)
+      try {
+        const FooterConfig = require('../models/FooterConfig');
+        const existingFooter = await FooterConfig.findOne({ _id: 'active' });
+        if (!existingFooter) {
+          console.log('Active footer configuration not found. Seeding default footer config...');
+          await FooterConfig.create({ _id: 'active' });
+          console.log('Default footer configuration seeded successfully.');
+        } else {
+          console.log('Active footer configuration exists. Skipped seeding to preserve customizations.');
+        }
+      } catch (footerSeedErr) {
+        console.error('Failed to seed active footer configuration:', footerSeedErr.message);
+      }
+
       return conn;
     } catch (error) {
       console.error(`CRITICAL: MongoDB connection failed: ${error.message}`);
