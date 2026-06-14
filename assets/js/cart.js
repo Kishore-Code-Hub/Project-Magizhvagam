@@ -302,7 +302,10 @@ async function handleCouponApply(e) {
 
 window.proceedToCheckout = async () => {
   const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
-  if (!user) {
+  const toggles = window.featureToggles || {};
+  const loginRequired = !(toggles.customerLoginRequirement === false);
+
+  if (!user && loginRequired) {
     showToast('Please login or create a customer account to continue.', 'error');
     if (typeof window.showLoginRegisterModal === 'function') {
       window.showLoginRegisterModal('cart');
@@ -315,22 +318,7 @@ window.proceedToCheckout = async () => {
     return;
   }
 
-  const toggles = window.featureToggles || {};
   if (toggles.whatsappCheckoutEnabled) {
-    const userPhone = user.phone || user.phoneNumber || user.mobile || 'No phone number linked';
-    
-    // Trace and extract the current selected address, or fall back natively to the user's default card entry
-    const selectedAddressObj = (typeof currentSelectedAddress !== 'undefined' ? currentSelectedAddress : null) || (user.addresses && user.addresses.find(a => a.isDefault)) || (user.addresses && user.addresses[0]) || null;
-    let fullAddrText = '';
-    if (selectedAddressObj) {
-      const street2Text = selectedAddressObj.street2 ? `, ${selectedAddressObj.street2}` : '';
-      fullAddrText = `${selectedAddressObj.street || ''}${street2Text}, ${selectedAddressObj.city || ''}, ${selectedAddressObj.state || ''} - ${selectedAddressObj.zipCode || ''}`;
-    } else if (user.address1) {
-      fullAddrText = `${user.address1}, ${user.city || ''}, ${user.state || ''} - ${user.pincode || ''}`;
-    } else {
-      fullAddrText = 'No shipping address provided.';
-    }
-
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const appliedCoupon = JSON.parse(localStorage.getItem('magizhvagam_applied_coupon'));
     let discount = 0;
@@ -348,14 +336,12 @@ window.proceedToCheckout = async () => {
 
     const itemsStr = cart.map((item, idx) => {
       const lineTotal = item.price * item.quantity;
-      return `${idx + 1}.\nProduct ID: ${item.productId}\nProduct Name: ${item.name}\nQuantity: ${item.quantity}\nUnit Price: \u20B9${item.price}\nLine Total: \u20B9${lineTotal}`;
+      return `${idx + 1}.\nProduct ID/SKU: ${item.productId || item.sku || 'N/A'}\nProduct Name: ${item.name}\nQuantity: ${item.quantity}\nUnit Price: \u20B9${item.price}\nLine Total: \u20B9${lineTotal}`;
     }).join('\n\n');
 
     const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-    const message = `🛍️ *MAGIZHVAGAM ORDER REQUEST*\n\n━━━━━━━━━━━━━━\n\n📦 *PRODUCTS*\n\n${itemsStr}\n\n━━━━━━━━━━━━━━\n\n💰 *ORDER SUMMARY*\n\nSubtotal: \u20B9${subtotal}\nDiscount: -\u20B9${discount}\nTax (5%): \u20B9${tax}\nShipping: ${shipping === 0 ? 'FREE' : '\u20B9' + shipping}\n*Grand Total: \u20B9${total}*\n\n━━━━━━━━━━━━━━\n\n👤 *CUSTOMER DETAILS*\n\nName: ${user.name}\nPhone: ${userPhone}\nEmail: ${user.email || 'N/A'}\nAddress: ${fullAddrText}\n\n━━━━━━━━━━━━━━\n\n_Please confirm availability and order processing._`;
-
-    const triggerWhatsAppRedirect = async () => {
+    const triggerWhatsAppRedirect = async (customerName, customerPhone) => {
       let whatsappNumber = '919876543210';
       try {
         const settings = typeof fetchSettings === 'function' ? await fetchSettings() : null;
@@ -364,14 +350,30 @@ window.proceedToCheckout = async () => {
         }
       } catch (err) { }
 
+      let fullAddrText = 'Not provided (Guest)';
+      if (user) {
+        const selectedAddressObj = (typeof currentSelectedAddress !== 'undefined' ? currentSelectedAddress : null) || (user.addresses && user.addresses.find(a => a.isDefault)) || (user.addresses && user.addresses[0]) || null;
+        if (selectedAddressObj) {
+          const street2Text = selectedAddressObj.street2 ? `, ${selectedAddressObj.street2}` : '';
+          fullAddrText = `${selectedAddressObj.street || ''}${street2Text}, ${selectedAddressObj.city || ''}, ${selectedAddressObj.state || ''} - ${selectedAddressObj.zipCode || ''}`;
+        } else if (user.address1) {
+          fullAddrText = `${user.address1}, ${user.city || ''}, ${user.state || ''} - ${user.pincode || ''}`;
+        } else {
+          fullAddrText = 'No shipping address provided.';
+        }
+      }
+
+      const message = `🛍️ *MAGIZHVAGAM ORDER REQUEST*\n\n━━━━━━━━━━━━━━\n\n📦 *PRODUCTS*\n\n${itemsStr}\n\n━━━━━━━━━━━━━━\n\n💰 *ORDER SUMMARY*\n\nSubtotal: \u20B9${subtotal}\nDiscount: -\u20B9${discount}\nTax (5%): \u20B9${tax}\nShipping: ${shipping === 0 ? 'FREE' : '\u20B9' + shipping}\n*Grand Total: \u20B9${total}*\n\n━━━━━━━━━━━━━━\n\n👤 *CUSTOMER DETAILS*\n\nName: ${customerName}\nPhone: ${customerPhone}\nEmail: ${user ? (user.email || 'N/A') : 'N/A'}\nAddress: ${fullAddrText}\n\n━━━━━━━━━━━━━━\n\n_Please confirm availability and order processing._`;
+
       // Clear cart cache locally and on server
       localStorage.removeItem('magizhvagam_applied_coupon');
       if (typeof window.clearServerCart === 'function') {
         await window.clearServerCart();
       } else {
-        const userKey = `magizhvagam_cart_${user.id || user._id || ''}`;
+        const userKey = `magizhvagam_cart_${user ? (user.id || user._id || '') : ''}`;
         localStorage.removeItem(userKey);
         localStorage.removeItem('magizhvagam_cart');
+        localStorage.removeItem('magizhvagam_guest_cart');
         if (typeof syncCartCounters === 'function') syncCartCounters();
       }
 
@@ -384,7 +386,9 @@ window.proceedToCheckout = async () => {
     if (typeof window.showWhatsAppConfirmationModal === 'function') {
       window.showWhatsAppConfirmationModal({ itemCount: totalCount, totalPrice: total }, triggerWhatsAppRedirect);
     } else {
-      triggerWhatsAppRedirect();
+      const customerName = user ? user.name : 'Guest Customer';
+      const customerPhone = user ? (user.phone || user.phoneNumber || user.mobile || 'Not provided') : 'Not provided';
+      triggerWhatsAppRedirect(customerName, customerPhone);
     }
     return;
   }

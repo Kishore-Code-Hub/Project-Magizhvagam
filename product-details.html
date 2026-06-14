@@ -618,8 +618,6 @@
       const finalPrice = isDiscounted ? activeProduct.discountPrice : price;
       const totalPrice = finalPrice * qty;
 
-      // Get customer name from local storage or ask
-      let customerName = 'Guest Customer';
       let user = null;
       try {
         const stored = localStorage.getItem('magizhvagam_user');
@@ -627,14 +625,6 @@
           user = JSON.parse(stored);
         }
       } catch (err) { }
-      if (user) {
-        customerName = user.name;
-      } else {
-        const inputName = prompt("Please enter your name for the order:");
-        if (inputName && inputName.trim()) {
-          customerName = inputName.trim();
-        }
-      }
 
       // Fetch dynamic WhatsApp contact from homepage setting
       let number = '919876543210';
@@ -645,32 +635,29 @@
         }
       } catch (err) { }
 
-      // Get customer details block
-      let detailsBlock = `--- CUSTOMER DETAILS ---\nName: ${customerName}`;
-      if (user) {
-        const userPhone = user.phone || user.phoneNumber || user.mobile || 'No phone number linked';
-        detailsBlock += `\nPhone: ${userPhone}`;
-
-        // Trace and extract the current selected address, or fall back natively to the user's default card entry
-        const selectedAddressObj = (typeof currentSelectedAddress !== 'undefined' ? currentSelectedAddress : null) || (user.addresses && user.addresses.find(a => a.isDefault)) || (user.addresses && user.addresses[0]) || null;
-        let addrStr = '';
-        if (selectedAddressObj) {
-          const street2Text = selectedAddressObj.street2 ? `, ${selectedAddressObj.street2}` : '';
-          addrStr = `${selectedAddressObj.street || ''}${street2Text}, ${selectedAddressObj.city || ''}, ${selectedAddressObj.state || ''} - ${selectedAddressObj.zipCode || ''}`;
-        } else if (user.address1) {
-          addrStr = `${user.address1}, ${user.city || ''}, ${user.state || ''} - ${user.pincode || ''}`;
+      const triggerWhatsAppRedirect = (customerName, customerPhone) => {
+        // Get customer details block
+        let detailsBlock = `--- CUSTOMER DETAILS ---\nName: ${customerName}\nPhone: ${customerPhone}`;
+        if (user) {
+          // Trace and extract the current selected address, or fall back natively to the user's default card entry
+          const selectedAddressObj = (user.addresses && user.addresses.find(a => a.isDefault)) || (user.addresses && user.addresses[0]) || null;
+          let addrStr = '';
+          if (selectedAddressObj) {
+            const street2Text = selectedAddressObj.street2 ? `, ${selectedAddressObj.street2}` : '';
+            addrStr = `${selectedAddressObj.street || ''}${street2Text}, ${selectedAddressObj.city || ''}, ${selectedAddressObj.state || ''} - ${selectedAddressObj.zipCode || ''}`;
+          } else if (user.address1) {
+            addrStr = `${user.address1}, ${user.city || ''}, ${user.state || ''} - ${user.pincode || ''}`;
+          } else {
+            addrStr = 'No shipping address provided.';
+          }
+          detailsBlock += `\nShipping Address: ${addrStr}`;
         } else {
-          addrStr = 'No shipping address provided.';
+          detailsBlock += `\nShipping Address: Not provided (Guest)`;
         }
-        detailsBlock += `\nShipping Address: ${addrStr}`;
-      } else {
-        detailsBlock += `\nPhone: Not provided (Guest)\nShipping Address: Not provided (Guest)`;
-      }
 
-      // Format clean message text block
-      const message = `Hello MAGIZHVAGAM,\n\nI would like to order:\n\nProduct: ${activeProduct.name}\nProduct ID: ${activeProduct._id}\nQuantity: ${qty}\nPrice: ${formatPrice(totalPrice)}\n\n${detailsBlock}`;
+        // Format clean message text block
+        const message = `Hello MAGIZHVAGAM,\n\nI would like to order:\n\nProduct: ${activeProduct.name}\nProduct ID/SKU: ${activeProduct._id || activeProduct.id || activeProduct.sku || 'N/A'}\nQuantity: ${qty}\nPrice: ${formatPrice(totalPrice)}\n\n${detailsBlock}`;
 
-      const triggerWhatsAppRedirect = () => {
         const whatsappUrl = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
       };
@@ -678,7 +665,9 @@
       if (typeof window.showWhatsAppConfirmationModal === 'function') {
         window.showWhatsAppConfirmationModal({ itemCount: Number(qty), totalPrice: totalPrice }, triggerWhatsAppRedirect);
       } else {
-        triggerWhatsAppRedirect();
+        const customerName = user ? user.name : 'Guest Customer';
+        const customerPhone = user ? (user.phone || user.phoneNumber || user.mobile || 'Not provided') : 'Not provided';
+        triggerWhatsAppRedirect(customerName, customerPhone);
       }
     }
   </script>

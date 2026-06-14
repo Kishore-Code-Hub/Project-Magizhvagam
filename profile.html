@@ -680,17 +680,26 @@
       }
 
       async function deleteAddress(index) {
-        if (!confirm('Are you sure you want to delete this address?')) return;
-        const addresses = [...activeUser.addresses];
-        const wasDefault = addresses[index]?.isDefault;
-        addresses.splice(index, 1);
-        if (wasDefault && addresses.length > 0) {
-          addresses[0].isDefault = true;
-        }
-        const updated = await updateUserProfile({ addresses });
-        if (updated) {
-          activeUser = updated;
-          await loadAddresses();
+        const performDelete = async () => {
+          const addresses = [...activeUser.addresses];
+          const wasDefault = addresses[index]?.isDefault;
+          addresses.splice(index, 1);
+          if (wasDefault && addresses.length > 0) {
+            addresses[0].isDefault = true;
+          }
+          const updated = await updateUserProfile({ addresses });
+          if (updated) {
+            activeUser = updated;
+            await loadAddresses();
+          }
+        };
+
+        if (typeof window.showConfirmModal === 'function') {
+          window.showConfirmModal('Are you sure you want to delete this address?', performDelete);
+        } else {
+          if (confirm('Are you sure you want to delete this address?')) {
+            await performDelete();
+          }
         }
       }
     });

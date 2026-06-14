@@ -833,6 +833,16 @@ img.lazy-loaded {
   transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
   z-index: 1100;
 }
+.account-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: transparent;
+  z-index: -1;
+}
 .account-menu-wrapper:hover .account-dropdown {
   opacity: 1;
   visibility: visible;
