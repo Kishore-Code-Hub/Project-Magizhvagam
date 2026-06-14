@@ -1,6 +1,6 @@
 console.log("APP LOADED");
-window.addEventListener("error",(e)=>{
-console.log("ERROR:",e.message);
+window.addEventListener("error", (e) => {
+  console.log("ERROR:", e.message);
 });
 
 /**
@@ -24,39 +24,6 @@ console.log("ERROR:",e.message);
           if (path.includes('/admin')) {
             // Admin page: redirect directly without wiping customer session/cart/wishlist
             window.location.replace('/admin/login?redirect=' + encodeURIComponent(redirectPath));
-            return response;
-          }
-
-          // Check if guest checkout is allowed
-          let customerLoginRequirement = true;
-          try {
-            const cachedToggles = localStorage.getItem('mz-feature-toggles');
-            if (cachedToggles) {
-              const parsed = JSON.parse(cachedToggles);
-              if (parsed && parsed.customerLoginRequirement === false) {
-                customerLoginRequirement = false;
-              }
-            }
-          } catch (e) {}
-
-          if (!customerLoginRequirement) {
-            // When Customer Login Requirement = OFF, profile and wishlist pages are completely forbidden for guests.
-            // Redirect guests attempting to access them directly to the homepage.
-            const forbiddenGuestPages = ['/profile.html', '/wishlist.html'];
-            if (forbiddenGuestPages.some(p => path.endsWith(p))) {
-              window.location.replace('/index.html');
-              return response;
-            }
-          }
-
-          const protectedPages = ['/profile.html', '/wishlist.html'];
-          if (customerLoginRequirement) {
-            protectedPages.push('/checkout.html');
-            protectedPages.push('/cart.html');
-          }
-          const isProtected = protectedPages.some(p => path.endsWith(p));
-
-          if (!isProtected) {
             return response;
           }
 
@@ -212,7 +179,7 @@ async function fetchSettings() {
         try { data = JSON.parse(text); } catch (e) { data = { success: false, setting: {} }; }
         if (data.success && data.setting) {
           globalSettings = data.setting;
-          try { localStorage.setItem('mz-homepage-settings', JSON.stringify(globalSettings)); } catch (e) {}
+          try { localStorage.setItem('mz-homepage-settings', JSON.stringify(globalSettings)); } catch (e) { }
           console.debug('[fetchSettings] source=api');
           return globalSettings;
         }
@@ -272,22 +239,7 @@ window.validateUserSession = async function validateUserSession() {
 
       const path = window.location.pathname;
       const isAuthPage = ['/login.html', '/register.html'].some((p) => path.endsWith(p));
-      
-      let customerLoginRequirement = true;
-      try {
-        const toggles = await fetchFeatureToggles();
-        if (toggles && toggles.customerLoginRequirement === false) {
-          customerLoginRequirement = false;
-        }
-      } catch (e) {}
-
-      const protectedPages = ['/profile.html', '/wishlist.html'];
-      if (customerLoginRequirement) {
-        protectedPages.push('/checkout.html');
-        protectedPages.push('/cart.html');
-      }
-      const isProtected = protectedPages.some(p => path.endsWith(p)) || path.includes('/admin/');
-
+      const isProtected = ['/profile.html', '/wishlist.html', '/checkout.html', '/cart.html'].some(p => path.endsWith(p)) || path.includes('/admin/');
       if (isProtected && !isAuthPage) {
         const redirectPath = window.location.pathname.substring(1) + window.location.search;
         if (path.includes('/admin/')) {
@@ -528,7 +480,7 @@ async function fetchFeatureToggles() {
       window.featureToggles = JSON.parse(cached);
       return window.featureToggles;
     }
-  } catch (e) {}
+  } catch (e) { }
 
   if (featureTogglesPromise) return featureTogglesPromise;
 
@@ -540,7 +492,7 @@ async function fetchFeatureToggles() {
         window.featureToggles = data.toggles;
         try {
           localStorage.setItem('mz-feature-toggles', JSON.stringify(data.toggles));
-        } catch (e) {}
+        } catch (e) { }
         return data.toggles;
       }
     } catch (err) {
@@ -565,7 +517,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         applyAppearanceSettings(globalSettings);
       }
     }
-  } catch (e) {}
+  } catch (e) { }
 
   if (isStandaloneAdminLoginPage()) {
     initIcons();
@@ -581,13 +533,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   injectComponents(settings, user);
 
-  // Enforce wishlist system toggle (also hidden if customer login requirement is OFF)
-  const wishlistEnabled = toggles && toggles.wishlistEnabled !== false && toggles.customerLoginRequirement !== false;
-  if (!wishlistEnabled) {
+  // Enforce wishlist system toggle
+  if (toggles && toggles.wishlistEnabled === false) {
     const wishLink = document.getElementById('header-wishlist-link');
     if (wishLink) wishLink.style.display = 'none';
 
-    document.querySelectorAll('.wishlist-btn, .product-wishlist-btn, #header-wishlist-link').forEach(btn => btn.style.display = 'none');
+    document.querySelectorAll('.wishlist-btn').forEach(btn => btn.style.display = 'none');
   }
 
   syncCartCounters();
@@ -700,7 +651,7 @@ window.showToast = (message, type = 'success') => {
   const toast = document.createElement('div');
   toast.className = `toast toast-${type} scale-in`;
   toast.style.cssText = 'pointer-events: auto;';
-  
+
   let icon = '';
   if (type === 'success') {
     icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
@@ -742,8 +693,6 @@ function setCartCache(cart) {
   const key = getCartStorageKey();
   if (key) {
     localStorage.setItem(key, JSON.stringify(cart || []));
-  } else {
-    localStorage.setItem('magizhvagam_guest_cart', JSON.stringify(cart || []));
   }
   localStorage.removeItem('magizhvagam_cart');
 }
@@ -779,20 +728,6 @@ function setWishlistCache(wishlist) {
 window.setWishlistCache = setWishlistCache;
 
 window.getCart = () => {
-  const user = getStoredUser();
-  const toggles = window.featureToggles;
-  const loginRequired = !(toggles && toggles.customerLoginRequirement === false);
-
-  if (!user && !loginRequired) {
-    try {
-      const val = localStorage.getItem('magizhvagam_guest_cart');
-      if (!val || val === 'undefined' || val === 'null') return [];
-      return JSON.parse(val) || [];
-    } catch (err) {
-      return [];
-    }
-  }
-
   if (!isLoggedInCustomer()) return [];
   const key = getCartStorageKey();
   if (!key) return [];
@@ -924,7 +859,6 @@ window.mergeCartAndWishlistAfterLogin = async () => {
 window.clearServerCart = async () => {
   if (!isLoggedInCustomer()) {
     localStorage.removeItem('magizhvagam_cart');
-    localStorage.removeItem('magizhvagam_guest_cart');
     const key = getCartStorageKey();
     if (key) localStorage.removeItem(key);
     syncCartCounters();
@@ -974,46 +908,16 @@ async function addToCartAsync(productId, name, price, image, quantity, silent) {
 
 window.addToCart = (productId, name, price, image, quantity = 1, silent = false) => {
   const user = getStoredUser();
-  const toggles = window.featureToggles;
-  const loginRequired = !(toggles && toggles.customerLoginRequirement === false);
-
-  if (loginRequired) {
-    if (!user) {
-      showToast('Please login or create a customer account to continue.', 'error');
-      window.showLoginRegisterModal('cart');
-      return;
-    }
-    if (user.role !== 'customer') {
-      if (!silent) showToast('Cart is available for customer accounts only', 'error');
-      return;
-    }
-    addToCartAsync(productId, name, price, image, quantity, silent);
-  } else {
-    // Guest cart flows
-    if (user && user.role !== 'customer') {
-      if (!silent) showToast('Cart is available for customer/guest accounts only', 'error');
-      return;
-    }
-    if (user) {
-      addToCartAsync(productId, name, price, image, quantity, silent);
-    } else {
-      let guestCart = [];
-      try {
-        const stored = localStorage.getItem('magizhvagam_guest_cart');
-        if (stored) guestCart = JSON.parse(stored);
-      } catch (e) {}
-      const existing = guestCart.find(item => item.productId === productId);
-      if (existing) {
-        existing.quantity += Number(quantity);
-      } else {
-        guestCart.push({ productId, name, price, image, quantity: Number(quantity) });
-      }
-      localStorage.setItem('magizhvagam_guest_cart', JSON.stringify(guestCart));
-      syncCartCounters();
-      if (!silent) showToast(`Added "${name}" to Cart!`, 'success');
-      window.dispatchEvent(new Event('cartUpdated'));
-    }
+  if (!user) {
+    showToast('Please login or create a customer account to continue.', 'error');
+    window.showLoginRegisterModal('cart');
+    return;
   }
+  if (user.role !== 'customer') {
+    if (!silent) showToast('Cart is available for customer accounts only', 'error');
+    return;
+  }
+  addToCartAsync(productId, name, price, image, quantity, silent);
 };
 
 async function toggleWishlistAsync(productId, name, price, image) {
@@ -1094,11 +998,8 @@ function injectComponents(settings, user = null) {
   }
 
   // ── UTILITY ICONS (Right side of Row 1) ──────────────────────────────────
-  const loginRequired = !(window.featureToggles && window.featureToggles.customerLoginRequirement === false);
-  const wishlistEnabled = !(window.featureToggles && window.featureToggles.wishlistEnabled === false) && loginRequired;
-
-  // Wishlist icon (visible for guest and customer, not admin, when wishlist feature is active and login is required)
-  const wishlistIconHtml = (wishlistEnabled && (!user || user.role === 'customer')) ? `
+  // Wishlist icon (visible for guest and customer, not admin)
+  const wishlistIconHtml = (!user || user.role === 'customer') ? `
     <a href="${!user ? '#' : '/wishlist.html'}" class="header-icon-link" aria-label="Wishlist" id="header-wishlist-link" ${!user ? 'onclick="window.showLoginRegisterModal(\'wishlist\'); return false;"' : ''}>
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -1134,21 +1035,17 @@ function injectComponents(settings, user = null) {
 
   let authUtilHtml = '';
   if (!user) {
-    if (loginRequired) {
-      // GUEST: Login + Register buttons (Desktop) & Profile Icon (Mobile)
-      const allowSignup = !(window.featureToggles && window.featureToggles.allowSignup === false);
-      authUtilHtml = `
-        <a href="/login.html" class="guest-btn guest-btn-login" id="header-login-btn">Login</a>
-        ${allowSignup ? '<a href="/register.html" class="guest-btn guest-btn-register" id="header-register-btn">Register</a>' : ''}
-        <a href="/login.html" class="header-icon-link mobile-profile-icon" id="mobile-profile-login-link" aria-label="Login">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-        </a>`;
-    } else {
-      authUtilHtml = ''; // Hide login/register/profile completely
-    }
+    // GUEST: Login + Register buttons (Desktop) & Profile Icon (Mobile)
+    const allowSignup = !(window.featureToggles && window.featureToggles.allowSignup === false);
+    authUtilHtml = `
+      <a href="/login.html" class="guest-btn guest-btn-login" id="header-login-btn">Login</a>
+      ${allowSignup ? '<a href="/register.html" class="guest-btn guest-btn-register" id="header-register-btn">Register</a>' : ''}
+      <a href="/login.html" class="header-icon-link mobile-profile-icon" id="mobile-profile-login-link" aria-label="Login">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </a>`;
   } else if (user.role === 'admin') {
     // ADMIN browsing storefront: Browse Store + Logout only
     const avatarHtml = (user.profilePicture) ? `
@@ -1170,32 +1067,28 @@ function injectComponents(settings, user = null) {
         </div>
       </div>`;
   } else {
-    // LOGGED-IN CUSTOMER
-    if (loginRequired) {
-      const avatarHtml = (user.profilePicture) ? `
-        <img src="${user.profilePicture}" alt="${user.name}" class="profile-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; display: block;">
-      ` : `
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-      `;
-      authUtilHtml = `
-        <div class="account-menu-wrapper" id="account-menu-wrapper">
-          <button class="header-icon-btn" aria-label="My Account" style="${user.profilePicture ? 'padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1.5px solid var(--gold-color); overflow: hidden; width: 28px; height: 28px;' : ''}">
-            ${avatarHtml}
-          </button>
-          <div class="account-dropdown">
-            <div class="dropdown-link" style="font-weight: 700; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; color: var(--text-color);">Hello, <span id="user-name-display" class="profile-name">${user.name}</span></div>
-            <a href="/profile.html" class="dropdown-link">My Profile</a>
-            <a href="/profile.html#orders" class="dropdown-link">My Orders</a>
-            ${wishlistEnabled ? '<a href="/wishlist.html" class="dropdown-link">Wishlist</a>' : ''}
-            <a href="#" class="dropdown-link logout-link" onclick="window.handleLogout(); return false;">Logout</a>
-          </div>
-        </div>`;
-    } else {
-      authUtilHtml = ''; // Hide customer profile completely
-    }
+    // LOGGED-IN USER: Account icon with dropdown
+    const avatarHtml = (user.profilePicture) ? `
+      <img src="${user.profilePicture}" alt="${user.name}" class="profile-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; display: block;">
+    ` : `
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    `;
+    authUtilHtml = `
+      <div class="account-menu-wrapper" id="account-menu-wrapper">
+        <button class="header-icon-btn" aria-label="My Account" style="${user.profilePicture ? 'padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1.5px solid var(--gold-color); overflow: hidden; width: 28px; height: 28px;' : ''}">
+          ${avatarHtml}
+        </button>
+        <div class="account-dropdown">
+          <div class="dropdown-link" style="font-weight: 700; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; color: var(--text-color);">Hello, <span id="user-name-display" class="profile-name">${user.name}</span></div>
+          <a href="/profile.html" class="dropdown-link">My Profile</a>
+          <a href="/profile.html#orders" class="dropdown-link">My Orders</a>
+          <a href="/wishlist.html" class="dropdown-link">Wishlist</a>
+          <a href="#" class="dropdown-link logout-link" onclick="window.handleLogout(); return false;">Logout</a>
+        </div>
+      </div>`;
   }
 
   // ── NAV LINKS ─────────────────────────────────────────────────────────────
@@ -1210,35 +1103,25 @@ function injectComponents(settings, user = null) {
 
   // ── BUILD MOBILE SIDEBAR ──────────────────────────────────────────────────
   let mobileSidebarAuthLinks = '';
-  if (loginRequired) {
-    if (!user) {
-      const allowSignup = !(window.featureToggles && window.featureToggles.allowSignup === false);
-      mobileSidebarAuthLinks = `
-        <a href="/login.html" class="sidebar-link">Login</a>
-        ${allowSignup ? '<a href="/register.html" class="sidebar-link">Register</a>' : ''}`;
-    } else if (user.role === 'admin') {
-      mobileSidebarAuthLinks = `
-        <a href="/index.html" class="sidebar-link">Browse Store</a>
-        <a href="#" class="sidebar-link sidebar-logout" onclick="window.handleLogout(); return false;">Logout</a>`;
-    } else {
-      // Accordion: tap Account to expand sub-links
-      mobileSidebarAuthLinks = `
-        <button class="sidebar-account-toggle" id="sidebar-account-toggle" type="button">Account (<span class="profile-name">${user.name}</span>) <span class="arrow" id="sidebar-account-arrow">&#9658;</span></button>
-        <div class="sidebar-account-submenu" id="sidebar-account-submenu">
-          <a href="/profile.html" class="sidebar-link">My Profile</a>
-          <a href="/profile.html#orders" class="sidebar-link">My Orders</a>
-          ${wishlistEnabled ? '<a href="/wishlist.html" class="sidebar-link">Wishlist</a>' : ''}
-          <a href="#" class="sidebar-link sidebar-logout" onclick="window.handleLogout(); return false;">Logout</a>
-        </div>`;
-    }
+  if (!user) {
+    const allowSignup = !(window.featureToggles && window.featureToggles.allowSignup === false);
+    mobileSidebarAuthLinks = `
+      <a href="/login.html" class="sidebar-link">Login</a>
+      ${allowSignup ? '<a href="/register.html" class="sidebar-link">Register</a>' : ''}`;
+  } else if (user.role === 'admin') {
+    mobileSidebarAuthLinks = `
+      <a href="/index.html" class="sidebar-link">Browse Store</a>
+      <a href="#" class="sidebar-link sidebar-logout" onclick="window.handleLogout(); return false;">Logout</a>`;
   } else {
-    if (user && user.role === 'admin') {
-      mobileSidebarAuthLinks = `
-        <a href="/index.html" class="sidebar-link">Browse Store</a>
-        <a href="#" class="sidebar-link sidebar-logout" onclick="window.handleLogout(); return false;">Logout</a>`;
-    } else {
-      mobileSidebarAuthLinks = '';
-    }
+    // Accordion: tap Account to expand sub-links
+    mobileSidebarAuthLinks = `
+      <button class="sidebar-account-toggle" id="sidebar-account-toggle" type="button">Account (<span class="profile-name">${user.name}</span>) <span class="arrow" id="sidebar-account-arrow">&#9658;</span></button>
+      <div class="sidebar-account-submenu" id="sidebar-account-submenu">
+        <a href="/profile.html" class="sidebar-link">My Profile</a>
+        <a href="/profile.html#orders" class="sidebar-link">My Orders</a>
+        <a href="/wishlist.html" class="sidebar-link">Wishlist</a>
+        <a href="#" class="sidebar-link sidebar-logout" onclick="window.handleLogout(); return false;">Logout</a>
+      </div>`;
   }
 
   // ── INJECT HEADER HTML ──────────────────────────────────────────────────
@@ -1588,7 +1471,8 @@ function injectComponents(settings, user = null) {
         document.body.classList.add('inner-page');
         document.body.style.paddingTop = hh + 'px';
       } else {
-        // No margin-top offset needed on mobile/desktop for absolute slider backdrop
+        const heroEl = document.getElementById('hero-slider-container');
+        if (heroEl) heroEl.style.marginTop = hh + 'px';
       }
     });
 
@@ -1788,6 +1672,113 @@ window.getQueryParam = (name) => {
   return urlParams.get(name);
 };
 
+// Global Quick View Modal
+window.openQuickViewModal = async (productId) => {
+  try {
+    const res = await fetch(`/api/products/${productId}`);
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('Failed to parse Quick View product JSON. Raw response:', text);
+      throw e;
+    }
+    if (!data.success || !data.product) {
+      showToast('Could not load product details', 'error');
+      return;
+    }
+
+    const p = data.product;
+    const price = typeof p.price === 'number' ? p.price : Number(p.price) || 0;
+    const isDiscounted = p.discountPrice !== undefined && p.discountPrice !== null;
+    const finalPrice = isDiscounted ? p.discountPrice : price;
+    const imgUrl = p.images && p.images[0] ? p.images[0].url : '/assets/images/default-product.webp';
+
+    // Remove existing quick view modal if any
+    const existing = document.getElementById('global-quickview-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'global-quickview-modal';
+    modal.className = 'modal-overlay';
+    modal.style.display = 'flex';
+    modal.style.zIndex = '9999';
+
+    // Badges HTML
+    let badgesHtml = '';
+    if (p.stock === 0) {
+      badgesHtml += `<span class="badge" style="background:#ef4444; color:white; margin-right:5px;">OUT OF STOCK</span>`;
+    }
+    if (isDiscounted) {
+      const saving = (price > 0) ? Math.round(((price - p.discountPrice) / price) * 100) : 0;
+      badgesHtml += `<span class="badge badge-new" style="margin-right:5px;">-${saving}% OFF</span>`;
+    }
+    if (p.tags && (p.tags.includes('new') || p.tags.includes('new-arrival'))) {
+      badgesHtml += `<span class="badge" style="background:#8b5cf6; color:white; margin-right:5px;">NEW ARRIVAL</span>`;
+    }
+    if (p.tags && (p.tags.includes('bestseller') || p.tags.includes('best-seller'))) {
+      badgesHtml += `<span class="badge badge-featured" style="margin-right:5px;">BESTSELLER</span>`;
+    }
+
+    modal.innerHTML = `
+      <div class="modal-content glass animated scale-in" style="max-width: 800px; padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; position:relative;">
+        <button onclick="document.getElementById('global-quickview-modal').remove()" style="position:absolute; top:15px; right:15px; background:transparent; font-size:20px; font-weight:bold; color:var(--text-muted); cursor:pointer;">✕</button>
+        
+        <!-- Left: Images -->
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div style="height:300px; border-radius:12px; overflow:hidden; border:1px solid var(--card-border); background:#FAF9F6; display:flex; align-items:center; justify-content:center;">
+            <img id="qv-main-img" src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
+          </div>
+          <div style="display:flex; gap:10px; overflow-x:auto;">
+            ${(p.images || []).map((img, idx) => `
+              <button onclick="document.getElementById('qv-main-img').src='${img.url}'" style="width:60px; height:60px; border-radius:6px; overflow:hidden; border:1px solid var(--card-border); cursor:pointer;">
+                <img src="${img.url}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Right: Info -->
+        <div style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div style="margin-bottom:10px;">${badgesHtml}</div>
+            <h3 style="font-size:24px; font-family:'Outfit'; margin-bottom:8px; color:var(--text-color);">${p.name}</h3>
+            <span style="font-size:12px; color:hsl(var(--primary-purple)); font-weight:700; text-transform:uppercase;">${p.category ? p.category.name : 'Catalogue'}</span>
+            
+            <div style="display:flex; align-items:baseline; gap:10px; margin:15px 0;">
+              <span style="font-size:24px; font-weight:800; color:hsl(var(--primary-purple));">${formatPrice(finalPrice)}</span>
+              ${isDiscounted ? `<span style="font-size:16px; text-decoration:line-through; color:var(--text-muted);">${formatPrice(price)}</span>` : ''}
+            </div>
+            
+            <p style="font-size:14px; color:var(--text-muted); line-height:1.6; margin-bottom:20px;">${p.description}</p>
+            
+            <div style="font-size:13px; color:var(--text-color); margin-bottom:20px; display:grid; grid-template-columns:1fr 1fr; gap:10px; border-top:1px solid var(--card-border); padding-top:15px;">
+              <div><strong>Material:</strong> ${p.specifications.material || 'N/A'}</div>
+              <div><strong>Dimensions:</strong> ${p.specifications.dimensions || 'N/A'}</div>
+              <div><strong>Weight:</strong> ${p.specifications.weight || 'N/A'}</div>
+              <div><strong>Color:</strong> ${p.specifications.color || 'N/A'}</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:12px;">
+            <button class="btn btn-primary" onclick="addToCart('${p._id}', '${p.name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', ${finalPrice}, '${imgUrl}'); document.getElementById('global-quickview-modal').remove();" style="flex-grow:1; border-radius:8px; padding:10px;" ${p.stock === 0 ? 'disabled' : ''}>
+              ${p.stock === 0 ? 'Sold Out' : 'Add To Cart'}
+            </button>
+            ${(window.featureToggles && window.featureToggles.wishlistEnabled === false) ? '' : `
+            <button class="btn btn-secondary" onclick="toggleWishlist('${p._id}', '${p.name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', ${finalPrice}, '${imgUrl}'); document.getElementById('global-quickview-modal').remove();" style="border-radius:8px; padding:10px; border-width:1px;" aria-label="Add to Wishlist">
+              ❤️ 
+            </button>`}
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+  } catch (err) {
+    showToast('Failed to open Quick View', 'error');
+  }
+};
 
 // Global Reusable Product Card HTML Compiler
 window.createProductCardHTML = (p) => {
@@ -1852,7 +1843,10 @@ window.createProductCardHTML = (p) => {
           ${hasAltImage ? `<img src="${secondaryImgUrl}" alt="${nameEscaped}" class="product-secondary-img" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">` : ''}
         </a>
         
-        
+        <!-- Quick View Overlay Button -->
+        <button class="quickview-overlay-btn" onclick="window.openQuickViewModal('${pId}')" style="position:absolute; bottom:12px; left:50%; transform:translateX(-50%); padding:6px 14px; font-size:12px; font-weight:700; font-family:'Outfit'; border-radius:20px; background:rgba(255,255,255,0.9); border:1px solid var(--card-border); color:var(--text-color); cursor:pointer; opacity:0; transition:all 0.3s ease; box-shadow:0 4px 10px rgba(0,0,0,0.1); z-index:11;">
+          Quick View
+        </button>
 
         ${(hideShopActions || (window.featureToggles && window.featureToggles.wishlistEnabled === false)) ? '' : `<button type="button" class="wishlist-btn" data-product-id="${pId}" data-product-name="${encodeURIComponent(name)}" data-product-price="${finalPrice}" data-product-image="${encodeURIComponent(imgUrl)}" style="position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.85); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; border:none; box-shadow:0 2px 5px rgba(0,0,0,0.1);" aria-label="Add to wishlist">
           <svg style="width:18px; height:18px; ${heartFill} stroke-width:2; pointer-events:none;" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
@@ -1923,224 +1917,32 @@ window.showWhatsAppConfirmationModal = (summary, onConfirm) => {
   };
   backdrop.addEventListener('click', closeModal);
 
-  let defaultName = '';
-  let defaultPhone = '';
-  try {
-    const stored = localStorage.getItem('magizhvagam_user');
-    if (stored && stored !== 'undefined' && stored !== 'null') {
-      const u = JSON.parse(stored);
-      if (u) {
-        defaultName = u.name || '';
-        defaultPhone = u.phone || u.phoneNumber || u.mobile || '';
-      }
-    }
-  } catch (e) {}
-
   modal.innerHTML = `
-    <div class="modal-content glass scale-in" style="max-width: 420px; padding: 30px; text-align: left; border-radius: 16px; position:relative; background:#FAF9F6; border:1px solid var(--card-border); color:var(--text-color);">
+    <div class="modal-content glass scale-in" style="max-width: 420px; padding: 30px; text-align: center; border-radius: 16px; position:relative; background:#FAF9F6; border:1px solid var(--card-border); color:var(--text-color);">
       <button id="close-whatsapp-modal-btn" style="position:absolute; top:15px; right:15px; background:transparent; font-size:18px; font-weight:bold; color:var(--text-muted); cursor:pointer; border:none;">✕</button>
       <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
         <div style="background: rgba(37, 211, 102, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
           <svg style="width:32px; height:32px; fill:#25D366;" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.32a8.188 8.188 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24M8.53 7.33c-.15 0-.41.06-.63.29-.22.23-.84.82-.84 2s.87 2.33.99 2.49c.12.17 1.71 2.61 4.15 3.66.58.25 1.03.4 1.39.51.58.18 1.11.16 1.53.1.47-.07 1.45-.59 1.65-1.17.2-.58.2-1.07.14-1.17-.06-.1-.23-.16-.49-.29-.26-.13-1.53-.76-1.77-.85-.24-.09-.41-.13-.58.13-.17.26-.66.85-.81 1.02-.15.17-.3.19-.56.06-.26-.13-1.1-.41-2.1-1.3-.78-.7-1.31-1.56-1.46-1.82-.15-.26-.02-.4.11-.53.12-.11.26-.3.39-.46.13-.17.17-.29.26-.49.09-.19.04-.37-.02-.49-.06-.12-.58-1.4-1.8-1.82c-.22-.05-.44-.05-.63-.05z"/></svg>
         </div>
       </div>
-      <h3 style="font-family:'Outfit'; font-size:22px; text-align:center; margin-bottom:10px; color:var(--text-color);">WhatsApp Inquiry</h3>
-      <p style="font-size:14px; text-align:center; color:var(--text-muted); line-height:1.6; margin-bottom:20px;">
+      <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:10px; color:var(--text-color);">WhatsApp Inquiry</h3>
+      <p style="font-size:14px; color:var(--text-muted); line-height:1.6; margin-bottom:24px;">
         You are about to inquire about your order of <strong>${summary.itemCount} items</strong> for a total price of <strong>${formatPrice(summary.totalPrice)}</strong>.
       </p>
-      
-      <div style="margin-bottom:15px;">
-        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Your Name *</label>
-        <input type="text" id="whatsapp-name-input" class="form-control" style="border: 1px solid var(--card-border); padding: 10px; width:100%; border-radius:8px;" placeholder="Enter name">
-      </div>
-      <div style="margin-bottom:20px;">
-        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Indian Phone Number *</label>
-        <input type="tel" id="whatsapp-phone-input" class="form-control" style="border: 1px solid var(--card-border); padding: 10px; width:100%; border-radius:8px;" placeholder="e.g. 9876543210">
-      </div>
-      
-      <div id="whatsapp-modal-error" style="color:#ef4444; font-size:13px; font-weight:600; margin-bottom:15px; display:none; text-align:center;"></div>
-
       <div style="display:flex; flex-direction:column; gap:10px;">
-        <button id="confirm-whatsapp-btn" class="btn btn-primary" style="padding:12px; border-radius:8px; font-weight:600; font-family:'Outfit'; text-align:center; width:100%;">Confirm & Open WhatsApp</button>
-        <button id="cancel-whatsapp-btn" class="btn btn-secondary" style="padding:12px; border-radius:8px; border-width:1px; font-weight:600; font-family:'Outfit'; border-color:hsl(var(--primary-purple)); color:hsl(var(--primary-purple)); text-align:center; width:100%;">Cancel</button>
+        <button id="confirm-whatsapp-btn" class="btn btn-primary" style="padding:12px; border-radius:8px; font-weight:600; font-family:'Outfit';">Confirm & Open WhatsApp</button>
+        <button id="cancel-whatsapp-btn" class="btn btn-secondary" style="padding:12px; border-radius:8px; border-width:1px; font-weight:600; font-family:'Outfit'; border-color:hsl(var(--primary-purple)); color:hsl(var(--primary-purple));">Cancel / Back to Cart</button>
       </div>
     </div>
   `;
   document.body.appendChild(backdrop);
   document.body.appendChild(modal);
-
-  const nameInput = modal.querySelector('#whatsapp-name-input');
-  const phoneInput = modal.querySelector('#whatsapp-phone-input');
-  nameInput.value = defaultName;
-  phoneInput.value = defaultPhone;
-
-  const showError = (err) => {
-    const errDiv = modal.querySelector('#whatsapp-modal-error');
-    if (errDiv) {
-      errDiv.textContent = err;
-      errDiv.style.display = 'block';
-    }
-  };
 
   modal.querySelector('#close-whatsapp-modal-btn').addEventListener('click', closeModal);
   modal.querySelector('#cancel-whatsapp-btn').addEventListener('click', closeModal);
   modal.querySelector('#confirm-whatsapp-btn').addEventListener('click', () => {
-    const nameVal = nameInput.value.trim();
-    const phoneVal = phoneInput.value.trim();
-
-    if (!nameVal || nameVal.length < 2) {
-      showError('Please enter your name (minimum 2 characters).');
-      return;
-    }
-    const phoneRegex = /^[6-9]\d{9}$/;
-    if (!phoneRegex.test(phoneVal)) {
-      showError('Please enter a valid 10-digit Indian mobile number.');
-      return;
-    }
-
-    closeModal();
-    onConfirm(nameVal, phoneVal);
-  });
-};
-
-window.showConfirmModal = (message, onConfirm) => {
-  const existingModal = document.getElementById('confirm-modal');
-  if (existingModal) existingModal.remove();
-  const existingBackdrop = document.getElementById('confirm-backdrop');
-  if (existingBackdrop) existingBackdrop.remove();
-
-  const backdrop = document.createElement('div');
-  backdrop.id = 'confirm-backdrop';
-  backdrop.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; backdrop-filter: blur(8px) !important; background: rgba(0, 0, 0, 0.4) !important; z-index: 100008 !important;';
-
-  const modal = document.createElement('div');
-  modal.id = 'confirm-modal';
-  modal.style.cssText = 'position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; z-index: 100009 !important; display: block !important;';
-
-  const closeModal = () => {
-    backdrop.remove();
-    modal.remove();
-  };
-  backdrop.addEventListener('click', closeModal);
-
-  modal.innerHTML = `
-    <div class="modal-content glass scale-in" style="max-width: 380px; padding: 24px; text-align: center; border-radius: 12px; position:relative; background:#FAF9F6; border:1px solid var(--card-border); color:var(--text-color);">
-      <h3 style="font-family:'Outfit'; font-size:18px; margin-bottom:12px; color:var(--text-color);">Confirm Action</h3>
-      <p style="font-size:14px; color:var(--text-muted); line-height:1.5; margin-bottom:20px;">${message}</p>
-      <div style="display:flex; gap:10px; justify-content:center;">
-        <button id="confirm-ok-btn" class="btn btn-primary" style="padding:10px 20px; border-radius:8px; font-size:13px; font-weight:600; font-family:'Outfit'; text-align:center;">Confirm</button>
-        <button id="confirm-cancel-btn" class="btn btn-secondary" style="padding:10px 20px; border-radius:8px; font-size:13px; font-weight:600; font-family:'Outfit'; border:1px solid var(--card-border); text-align:center;">Cancel</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(backdrop);
-  document.body.appendChild(modal);
-
-  modal.querySelector('#confirm-cancel-btn').addEventListener('click', closeModal);
-  modal.querySelector('#confirm-ok-btn').addEventListener('click', () => {
     closeModal();
     onConfirm();
   });
 };
-
-// Generic press-and-hold helper for quantity buttons
-(function() {
-  let pressTimer = null;
-  let repeatInterval = null;
-  let activeBtn = null;
-  let hasRepeated = false;
-
-  function startHold(btn) {
-    if (!btn) return;
-    stopHold();
-    activeBtn = btn;
-    hasRepeated = false;
-
-    // First change after 300ms
-    pressTimer = setTimeout(() => {
-      hasRepeated = true;
-      triggerAction(btn);
-
-      // Repeat every 120ms
-      repeatInterval = setInterval(() => {
-        triggerAction(btn);
-      }, 120);
-    }, 300);
-  }
-
-  function stopHold() {
-    if (pressTimer) {
-      clearTimeout(pressTimer);
-      pressTimer = null;
-      // If released before 300ms repeat timer, trigger one click manually
-      if (!hasRepeated && activeBtn) {
-        triggerAction(activeBtn);
-      }
-    }
-    if (repeatInterval) {
-      clearInterval(repeatInterval);
-      repeatInterval = null;
-    }
-    activeBtn = null;
-  }
-
-  function triggerAction(btn) {
-    if (btn.onclick) {
-      btn.onclick();
-    } else {
-      const event = new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-        view: window
-      });
-      event.isSyntheticHold = true;
-      btn.dispatchEvent(event);
-    }
-  }
-
-  // Bind global event listeners with preventDefault to avoid scrolling / double triggers
-  document.addEventListener('mousedown', (e) => {
-    const btn = e.target.closest('.qty-btn, .qty-minus, .qty-plus');
-    if (btn) {
-      e.preventDefault();
-      startHold(btn);
-    }
-  });
-
-  document.addEventListener('mouseup', () => {
-    stopHold();
-  });
-
-  document.addEventListener('mouseleave', () => {
-    stopHold();
-  });
-
-  document.addEventListener('touchstart', (e) => {
-    const btn = e.target.closest('.qty-btn, .qty-minus, .qty-plus');
-    if (btn) {
-      e.preventDefault(); // Prevent accidental zoom/scrolling while holding
-      startHold(btn);
-    }
-  }, { passive: false });
-
-  document.addEventListener('touchend', () => {
-    stopHold();
-  });
-
-  document.addEventListener('touchcancel', () => {
-    stopHold();
-  });
-
-  // Intercept the browser's final click event if we have already repeated
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.qty-btn, .qty-minus, .qty-plus');
-    if (btn) {
-      if (hasRepeated && !e.isSyntheticHold) {
-        e.preventDefault();
-        e.stopPropagation();
-        hasRepeated = false;
-      }
-    }
-  }, true); // Use capture phase
-})();
 
