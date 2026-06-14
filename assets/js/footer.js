@@ -87,28 +87,16 @@
       contactHtml = `<div class="footer-column footer-contact"><h4 class="footer-column-heading">Contact</h4>${contactItems.join('')}</div>`;
     }
 
-    // Newsletter -> WhatsApp Lead Capture
+    // Newsletter
     let newsletterHtml = '';
     if (newsletter.heading) {
       newsletterHtml = `
         <div class="footer-newsletter">
-          <div class="footer-newsletter-info">
-            <h4 class="footer-newsletter-heading" style="display: flex; align-items: center; gap: 8px;">
-              <span style="color: #25D366; display: inline-flex; align-items: center;">${SOCIAL_ICONS.whatsapp}</span>
-              ${newsletter.heading}
-            </h4>
-            ${newsletter.incentive ? `<p class="footer-newsletter-incentive">${newsletter.incentive}</p>` : ''}
-          </div>
-          <form class="footer-newsletter-form" style="display: flex; flex-direction: column; gap: 10px; flex-grow: 1; max-width: 480px;">
-            <div style="display: flex; gap: 10px; width: 100%; flex-wrap: wrap;">
-              <input type="text" class="footer-newsletter-name" placeholder="Enter your Name (Optional)" style="flex-grow: 1; padding: 12px 18px; border-radius: 8px; background: var(--ft-newsletter-input-bg, #1A1523); border: 1px solid var(--ft-newsletter-input-border, #3A2E4A); color: var(--text-color); font-size: 14px;">
-              <input type="email" class="footer-newsletter-input" placeholder="${newsletter.placeholder || 'Enter your Email'}" required style="flex-grow: 1; padding: 12px 18px; border-radius: 8px; background: var(--ft-newsletter-input-bg, #1A1523); border: 1px solid var(--ft-newsletter-input-border, #3A2E4A); color: var(--text-color); font-size: 14px;">
-              <button type="submit" class="footer-newsletter-btn" style="background: #25D366; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; flex-shrink: 0; cursor: pointer; transition: all 0.25s ease;">
-                <span style="display: inline-flex; align-items: center; fill: currentColor; stroke: currentColor;">${SOCIAL_ICONS.whatsapp}</span>
-                ${newsletter.ctaLabel || 'Join WhatsApp Community'}
-              </button>
-            </div>
-            <div class="footer-newsletter-error" style="color: #ff4d4d; font-size: 12px; display: none; text-align: left; width: 100%; font-weight: 500;"></div>
+          <h4 class="footer-newsletter-heading">${newsletter.heading}</h4>
+          ${newsletter.incentive ? `<p class="footer-newsletter-incentive">${newsletter.incentive}</p>` : ''}
+          <form class="footer-newsletter-form" onsubmit="event.preventDefault(); window.showToast && window.showToast('Thanks for subscribing!', 'success');">
+            <input type="email" class="footer-newsletter-input" placeholder="${newsletter.placeholder || 'Enter your email'}" required>
+            <button type="submit" class="footer-newsletter-btn">${newsletter.ctaLabel || 'Subscribe'}</button>
           </form>
         </div>
       `;
@@ -146,61 +134,6 @@
     `;
   }
 
-  function attachNewsletterListener(footerEl, config) {
-    const form = footerEl.querySelector('.footer-newsletter-form');
-    if (!form) return;
-
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const nameInput = form.querySelector('.footer-newsletter-name');
-      const emailInput = form.querySelector('.footer-newsletter-input');
-      const errorDiv = form.querySelector('.footer-newsletter-error');
-
-      const name = nameInput ? nameInput.value.trim() : '';
-      const email = emailInput ? emailInput.value.trim() : '';
-
-      // Email validation regex
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email) {
-        if (errorDiv) {
-          errorDiv.textContent = 'Email address is required.';
-          errorDiv.style.display = 'block';
-        }
-        return;
-      }
-      if (!emailRegex.test(email)) {
-        if (errorDiv) {
-          errorDiv.textContent = 'Please enter a valid email address.';
-          errorDiv.style.display = 'block';
-        }
-        return;
-      }
-
-      if (errorDiv) {
-        errorDiv.style.display = 'none';
-        errorDiv.textContent = '';
-      }
-
-      // Format WhatsApp message
-      const message = `Hello MAGIZHVAGAM,\n\nI would like to join the WhatsApp Community.\n\nName:\n${name}\n\nEmail:\n${email}\n\nPlease add me to future updates, festival collections, and announcements.\n\nThank you.`;
-      
-      let whatsappPhone = (config.contact && config.contact.phone && config.contact.phone.value) ? config.contact.phone.value.replace(/\D/g, '') : '919894086929';
-      if (whatsappPhone.length === 10) {
-        whatsappPhone = '91' + whatsappPhone;
-      }
-
-      const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`;
-      
-      if (window.showToast) {
-        window.showToast('Opening WhatsApp to join community...', 'success');
-      }
-      
-      window.open(whatsappUrl, '_blank');
-      if (nameInput) nameInput.value = '';
-      if (emailInput) emailInput.value = '';
-    });
-  }
-
   window.__mzFooter = {
     render: async function(footerEl) {
       if (!footerEl) return;
@@ -208,7 +141,6 @@
       if (config) {
         footerEl.innerHTML = renderFooter(config);
         footerEl.classList.add('footer-v4-loaded');
-        attachNewsletterListener(footerEl, config);
       }
     }
   };
