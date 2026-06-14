@@ -32,42 +32,52 @@ const FooterConfigSchema = new mongoose.Schema({
     originStatement: { type: String, default: 'Handcrafted with love in Tamil Nadu, India.' }
   },
   columnCount: { type: Number, enum: [2, 3, 4], default: 3 },
-  columns: { type: [FooterColumnSchema], default: () => [
-    { heading: 'Quick Links', links: [
-      { label: 'Shop All', url: '/products.html' },
-      { label: 'New Arrivals', url: '/products.html?sort=newest' },
-      { label: 'Best Sellers', url: '/products.html?sort=bestSelling' },
-      { label: 'About Us', url: '/about.html' }
-    ]},
-    { heading: 'Customer Care', links: [
-      { label: 'Contact Us', url: '/contact.html' },
-      { label: 'FAQs', url: '/#faq' },
-      { label: 'Track Order', url: '/profile.html' },
-      { label: 'Return Policy', url: '/about.html#returns' }
-    ]},
-    { heading: 'Categories', links: [
-      { label: 'Wedding Return Gifts', url: '/products.html?category=wedding-return-gifts' },
-      { label: 'Birthday Gifts', url: '/products.html?category=birthday-gifts' },
-      { label: 'Eco-Friendly', url: '/products.html?category=eco-friendly-gifts' },
-      { label: 'Gift Hampers', url: '/products.html?category=gift-hampers' }
-    ]}
-  ]},
-  social: { type: [SocialLinkSchema], default: () => [
-    { platform: 'instagram', url: '#', visible: true },
-    { platform: 'facebook', url: '#', visible: true },
-    { platform: 'whatsapp', url: '#', visible: true },
-    { platform: 'youtube', url: '#', visible: false }
-  ]},
+  columns: {
+    type: [FooterColumnSchema], default: () => [
+      {
+        heading: 'Quick Links', links: [
+          { label: 'Shop All', url: '/products.html' },
+          { label: 'New Arrivals', url: '/products.html?sort=newest' },
+          { label: 'Best Sellers', url: '/products.html?sort=bestSelling' },
+          { label: 'About Us', url: '/about.html' }
+        ]
+      },
+      {
+        heading: 'Customer Care', links: [
+          { label: 'Contact Us', url: '/contact.html' },
+          { label: 'FAQs', url: '/#faq' },
+          { label: 'Track Order', url: '/profile.html' },
+          { label: 'Return Policy', url: '/about.html#returns' }
+        ]
+      },
+      {
+        heading: 'Categories', links: [
+          { label: 'Wedding Return Gifts', url: '/products.html?category=wedding-return-gifts' },
+          { label: 'Birthday Gifts', url: '/products.html?category=birthday-gifts' },
+          { label: 'Eco-Friendly', url: '/products.html?category=eco-friendly-gifts' },
+          { label: 'Gift Hampers', url: '/products.html?category=gift-hampers' }
+        ]
+      }
+    ]
+  },
+  social: {
+    type: [SocialLinkSchema], default: () => [
+      { platform: 'instagram', url: '#', visible: true },
+      { platform: 'facebook', url: '#', visible: true },
+      { platform: 'whatsapp', url: '#', visible: true },
+      { platform: 'youtube', url: '#', visible: false }
+    ]
+  },
   contact: {
     address: { value: { type: String, default: 'Chennai, Tamil Nadu - 600001' }, visible: { type: Boolean, default: true } },
     phone: { value: { type: String, default: '+91 98940 86929' }, visible: { type: Boolean, default: true } },
     email: { value: { type: String, default: 'hellomagizhvagam@gmail.com' }, visible: { type: Boolean, default: true } }
   },
   newsletter: {
-    heading: { type: String, default: 'Join Our Community' },
-    placeholder: { type: String, default: 'Enter your email' },
-    ctaLabel: { type: String, default: 'Subscribe' },
-    incentive: { type: String, default: 'Get 10% off your first order!' }
+    heading: { type: String, default: 'Join Our WhatsApp Community' },
+    placeholder: { type: String, default: 'Enter your Name' },
+    ctaLabel: { type: String, default: 'Join Now' },
+    incentive: { type: String, default: 'Get Latest Updates & Offers' }
   },
   copyright: {
     text: { type: String, default: '© {YEAR} Magizhvagam. All rights reserved.' },

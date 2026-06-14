@@ -83,6 +83,22 @@
           </label>
         </div>
 
+        <!-- Registration Portal Toggle -->
+        <div class="feature-toggle-row" id="toggle-row-registration">
+          <div class="feature-toggle-info">
+            <div class="feature-toggle-icon registration">📝</div>
+            <div>
+              <div class="feature-toggle-label">Customer Registration Portal</div>
+              <div class="feature-toggle-desc">Allow new customers to create accounts</div>
+            </div>
+          </div>
+          <span class="feature-toggle-status active" id="toggle-status-registration">Active</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-registrationEnabled" checked onchange="handleFeatureToggle('registrationEnabled', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
         <!-- Coupon Engine Toggle -->
         <div class="feature-toggle-row" id="toggle-row-coupon">
           <div class="feature-toggle-info">
@@ -147,21 +163,7 @@
           </label>
         </div>
 
-        <!-- Recommendation Engine Toggle -->
-        <div class="feature-toggle-row" id="toggle-row-recommendations">
-          <div class="feature-toggle-info">
-            <div class="feature-toggle-icon recommendations">🤖</div>
-            <div>
-              <div class="feature-toggle-label">Recommendation Engine</div>
-              <div class="feature-toggle-desc">Enable relational recommendations (AI) or best-sellers fallback</div>
-            </div>
-          </div>
-          <span class="feature-toggle-status active" id="toggle-status-recommendations">Active</span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="toggle-recommendationsEnabled" checked onchange="handleFeatureToggle('recommendationsEnabled', this.checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
+
 
         <!-- Flash Sales & Promos Toggle -->
         <div class="feature-toggle-row" id="toggle-row-promos">
@@ -179,21 +181,7 @@
           </label>
         </div>
 
-        <!-- Live Announcement Banner Toggle -->
-        <div class="feature-toggle-row" id="toggle-row-announcement-banner">
-          <div class="feature-toggle-info">
-            <div class="feature-toggle-icon announcement-banner">📢</div>
-            <div>
-              <div class="feature-toggle-label">Live Announcement Banner</div>
-              <div class="feature-toggle-desc">Show site-wide announcement text banner at the top of header</div>
-            </div>
-          </div>
-          <span class="feature-toggle-status active" id="toggle-status-announcementBannerEnabled">Active</span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="toggle-announcementBannerEnabled" checked onchange="handleFeatureToggle('announcementBannerEnabled', this.checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
+
 
         <!-- Global Theme Accent Picker -->
         <div class="feature-toggle-row" id="toggle-row-theme-accent">
