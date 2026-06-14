@@ -2825,10 +2825,20 @@ h1, h2, h3, h4, h5, h6,
   
   .header-row-1 {
     display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
     align-items: center !important;
-    justify-content: center !important;
+  }
+
+  .header-left-slot {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+
+  .hamburger {
+    align-self: center !important;
+    margin-top: 0 !important;
+    top: auto !important;
+    transform: none !important;
   }
 
   /* 2. Strict Viewport Bounds Stabilization */

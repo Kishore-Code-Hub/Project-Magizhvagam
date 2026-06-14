@@ -1903,6 +1903,17 @@ window.showWhatsAppConfirmationModal = (summary, onConfirm) => {
   const existingBackdrop = document.getElementById('whatsapp-confirm-backdrop');
   if (existingBackdrop) existingBackdrop.remove();
 
+  let user = null;
+  try {
+    const stored = localStorage.getItem('magizhvagam_user');
+    if (stored && stored !== 'undefined' && stored !== 'null') {
+      user = JSON.parse(stored);
+    }
+  } catch (err) {}
+
+  const defaultName = user ? user.name || '' : '';
+  const defaultPhone = user ? user.phone || user.phoneNumber || user.mobile || '' : '';
+
   const backdrop = document.createElement('div');
   backdrop.id = 'whatsapp-confirm-backdrop';
   backdrop.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; backdrop-filter: blur(12px) !important; background: rgba(0, 0, 0, 0.45) !important; z-index: 100008 !important;';
@@ -1926,9 +1937,23 @@ window.showWhatsAppConfirmationModal = (summary, onConfirm) => {
         </div>
       </div>
       <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:10px; color:var(--text-color);">WhatsApp Inquiry</h3>
-      <p style="font-size:14px; color:var(--text-muted); line-height:1.6; margin-bottom:24px;">
+      <p style="font-size:14px; color:var(--text-muted); line-height:1.6; margin-bottom:18px;">
         You are about to inquire about your order of <strong>${summary.itemCount} items</strong> for a total price of <strong>${formatPrice(summary.totalPrice)}</strong>.
       </p>
+
+      <div style="margin: 20px 0; text-align: left; display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label for="wa-customer-name" style="display:block; font-size:12px; font-weight:700; margin-bottom:6px; color:var(--text-color);">Name</label>
+          <input type="text" id="wa-customer-name" placeholder="Enter your name" style="width:100%; padding:10px 12px; border:1px solid var(--card-border); border-radius:8px; font-size:14px; font-family:'Outfit'; background:#FFFFFF; color:var(--text-color); outline:none; box-sizing:border-box;" value="${defaultName}">
+          <span id="wa-name-error" style="color:#ef4444; font-size:11px; display:none; margin-top:4px;">Name must be at least 2 characters.</span>
+        </div>
+        <div>
+          <label for="wa-customer-phone" style="display:block; font-size:12px; font-weight:700; margin-bottom:6px; color:var(--text-color);">Phone Number</label>
+          <input type="tel" id="wa-customer-phone" placeholder="10-digit Indian Mobile" style="width:100%; padding:10px 12px; border:1px solid var(--card-border); border-radius:8px; font-size:14px; font-family:'Outfit'; background:#FFFFFF; color:var(--text-color); outline:none; box-sizing:border-box;" value="${defaultPhone}">
+          <span id="wa-phone-error" style="color:#ef4444; font-size:11px; display:none; margin-top:4px;">Phone number must be a 10-digit Indian mobile starting with 6, 7, 8, or 9.</span>
+        </div>
+      </div>
+
       <div style="display:flex; flex-direction:column; gap:10px;">
         <button id="confirm-whatsapp-btn" class="btn btn-primary" style="padding:12px; border-radius:8px; font-weight:600; font-family:'Outfit';">Confirm & Open WhatsApp</button>
         <button id="cancel-whatsapp-btn" class="btn btn-secondary" style="padding:12px; border-radius:8px; border-width:1px; font-weight:600; font-family:'Outfit'; border-color:hsl(var(--primary-purple)); color:hsl(var(--primary-purple));">Cancel / Back to Cart</button>
@@ -1938,11 +1963,196 @@ window.showWhatsAppConfirmationModal = (summary, onConfirm) => {
   document.body.appendChild(backdrop);
   document.body.appendChild(modal);
 
+  const nameInput = modal.querySelector('#wa-customer-name');
+  const phoneInput = modal.querySelector('#wa-customer-phone');
+  const nameError = modal.querySelector('#wa-name-error');
+  const phoneError = modal.querySelector('#wa-phone-error');
+
+  // Clear errors on input
+  nameInput.addEventListener('input', () => {
+    nameError.style.display = 'none';
+    nameInput.style.borderColor = 'var(--card-border)';
+  });
+  phoneInput.addEventListener('input', () => {
+    phoneError.style.display = 'none';
+    phoneInput.style.borderColor = 'var(--card-border)';
+  });
+
   modal.querySelector('#close-whatsapp-modal-btn').addEventListener('click', closeModal);
   modal.querySelector('#cancel-whatsapp-btn').addEventListener('click', closeModal);
   modal.querySelector('#confirm-whatsapp-btn').addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    const phone = phoneInput.value.trim();
+    
+    let isValid = true;
+
+    if (name.length < 2) {
+      nameError.style.display = 'block';
+      nameInput.style.borderColor = '#ef4444';
+      isValid = false;
+    }
+
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+      phoneError.style.display = 'block';
+      phoneInput.style.borderColor = '#ef4444';
+      isValid = false;
+    }
+
+    if (!isValid) return;
+
     closeModal();
-    onConfirm();
+    onConfirm(name, phone);
   });
 };
+
+// --- QUANTITY HOLD-TO-REPEAT FUNCTIONALITY ---
+(() => {
+  let holdTimer = null;
+  let repeatInterval = null;
+  let isHolding = false;
+  let wasRepeated = false;
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  function getButtonDetails(btn) {
+    if (!btn) return null;
+    const isMinus = btn.classList.contains('qty-minus');
+    const isPlus = btn.classList.contains('qty-plus');
+    if (!isMinus && !isPlus) return null;
+
+    const changeVal = isMinus ? -1 : 1;
+
+    // Check if on product details page
+    const detailsInput = document.getElementById('details-qty-input');
+    if (detailsInput) {
+      return {
+        type: 'details',
+        input: detailsInput,
+        changeVal: changeVal
+      };
+    }
+
+    // Check if on cart page (elements have data-id attribute)
+    const productId = btn.getAttribute('data-id');
+    if (productId) {
+      return {
+        type: 'cart',
+        productId: productId,
+        changeVal: changeVal
+      };
+    }
+
+    return null;
+  }
+
+  function triggerUpdate(details) {
+    if (details.type === 'details') {
+      if (typeof window.updateQty === 'function') {
+        window.updateQty(details.changeVal);
+      }
+    } else if (details.type === 'cart') {
+      if (typeof window.changeCartQty === 'function') {
+        window.changeCartQty(details.productId, details.changeVal);
+      }
+    }
+  }
+
+  function handleStart(e, btn) {
+    // If touchscreen touch, record position
+    if (e.touches && e.touches[0]) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }
+
+    const details = getButtonDetails(btn);
+    if (!details) return;
+
+    isHolding = true;
+    wasRepeated = false;
+
+    // Start hold timer
+    holdTimer = setTimeout(() => {
+      wasRepeated = true;
+      triggerUpdate(details);
+
+      // Repeat interval every 100ms
+      repeatInterval = setInterval(() => {
+        triggerUpdate(details);
+      }, 100);
+    }, 500);
+  }
+
+  function handleEnd() {
+    clearTimeout(holdTimer);
+    clearInterval(repeatInterval);
+    holdTimer = null;
+    repeatInterval = null;
+    isHolding = false;
+    // Keep wasRepeated true slightly longer to intercept the subsequent click event
+    setTimeout(() => {
+      wasRepeated = false;
+    }, 50);
+  }
+
+  // Delegated mousedown and touchstart
+  document.addEventListener('mousedown', (e) => {
+    const btn = e.target.closest('.qty-btn');
+    if (btn) {
+      // Only handle left clicks
+      if (e.button !== 0) return;
+      handleStart(e, btn);
+    }
+  }, true);
+
+  document.addEventListener('touchstart', (e) => {
+    const btn = e.target.closest('.qty-btn');
+    if (btn) {
+      handleStart(e, btn);
+    }
+  }, { passive: true, capture: true });
+
+  // Delegated mousedowns/touch endings
+  document.addEventListener('mouseup', () => {
+    if (isHolding) handleEnd();
+  }, true);
+
+  document.addEventListener('mouseleave', () => {
+    if (isHolding) handleEnd();
+  }, true);
+
+  document.addEventListener('touchend', () => {
+    if (isHolding) handleEnd();
+  }, { passive: true, capture: true });
+
+  document.addEventListener('touchcancel', () => {
+    if (isHolding) handleEnd();
+  }, { passive: true, capture: true });
+
+  // Cancel long-press if user scrolls or drags finger
+  document.addEventListener('touchmove', (e) => {
+    if (isHolding && e.touches && e.touches[0]) {
+      const x = e.touches[0].clientX;
+      const y = e.touches[0].clientY;
+      if (Math.abs(x - touchStartX) > 10 || Math.abs(y - touchStartY) > 10) {
+        handleEnd();
+      }
+    }
+  }, { passive: true, capture: true });
+
+  // Block focus loss issue
+  window.addEventListener('blur', () => {
+    if (isHolding) handleEnd();
+  });
+
+  // Intercept subsequent click event to prevent double execution
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.qty-btn');
+    if (btn && wasRepeated) {
+      e.preventDefault();
+      e.stopPropagation();
+      wasRepeated = false;
+    }
+  }, true);
+})();
 

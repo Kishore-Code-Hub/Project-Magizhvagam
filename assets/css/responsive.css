@@ -244,8 +244,9 @@ html, body {
   .hamburger {
     display: flex !important;
     position: static !important;
+    align-self: center !important;
     transform: none !important;
-    margin-top: 4px !important;
+    margin-top: 0 !important;
     margin-bottom: 0 !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
@@ -254,6 +255,7 @@ html, body {
     border: none !important;
     cursor: pointer !important;
     z-index: auto !important;
+    top: auto !important;
   }
 
   /* Logo — centered naturally by equal-flex left/right slots */
@@ -333,8 +335,9 @@ html, body {
   .hamburger {
     display: flex !important;
     position: static !important;
+    align-self: center !important;
     transform: none !important;
-    margin-top: 4px !important;
+    margin-top: 0 !important;
     margin-bottom: 0 !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
@@ -343,6 +346,7 @@ html, body {
     border: none !important;
     cursor: pointer !important;
     z-index: auto !important;
+    top: auto !important;
   }
 
   /* Logo — centered naturally by equal-flex left/right slots */
