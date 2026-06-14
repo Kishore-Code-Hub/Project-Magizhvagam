@@ -347,6 +347,19 @@
 
       document.querySelector('.profile-layout')?.classList.add('profile-ready');
 
+      // Hide Wishlist tab if disabled globally
+      const toggles = typeof fetchFeatureToggles === 'function' ? await fetchFeatureToggles() : null;
+      const wishlistEnabled = !(toggles && toggles.wishlistEnabled === false);
+      if (!wishlistEnabled) {
+        const wishlistNavToggle = document.querySelector('.profile-nav-link[data-tab="tab-wishlist"]');
+        if (wishlistNavToggle) wishlistNavToggle.style.display = 'none';
+        
+        // If current tab is wishlist, switch to profile
+        if (window.location.hash === '#wishlist') {
+          window.location.hash = '#profile';
+        }
+      }
+
       // Profile sidebar navigation (event delegation — no inline onclick)
       document.querySelectorAll('.profile-nav-link').forEach((link) => {
         const activate = () => switchProfileTab(link, link.getAttribute('data-tab'));

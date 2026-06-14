@@ -21,6 +21,12 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Order items, shipping address, and payment method are required' });
     }
 
+    // Verify Customer Login Requirement
+    const toggles = await getFeatureToggleValues();
+    if (toggles.customerLoginRequirement !== false && !req.user) {
+      return res.status(401).json({ success: false, error: 'Customer login is required to place an order.' });
+    }
+
     // Determine User context
     let userId = null;
     if (req.user) {

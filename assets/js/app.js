@@ -1083,8 +1083,9 @@ function injectComponents(settings, user = null) {
   }
 
   // ── UTILITY ICONS (Right side of Row 1) ──────────────────────────────────
-  // Wishlist icon (visible for guest and customer, not admin)
-  const wishlistIconHtml = (!user || user.role === 'customer') ? `
+  // Wishlist icon (visible for guest and customer, not admin, when wishlist feature is active)
+  const wishlistEnabled = !(window.featureToggles && window.featureToggles.wishlistEnabled === false);
+  const wishlistIconHtml = (wishlistEnabled && (!user || user.role === 'customer')) ? `
     <a href="${!user ? '#' : '/wishlist.html'}" class="header-icon-link" aria-label="Wishlist" id="header-wishlist-link" ${!user ? 'onclick="window.showLoginRegisterModal(\'wishlist\'); return false;"' : ''}>
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -1170,7 +1171,7 @@ function injectComponents(settings, user = null) {
           <div class="dropdown-link" style="font-weight: 700; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; color: var(--text-color);">Hello, <span id="user-name-display" class="profile-name">${user.name}</span></div>
           <a href="/profile.html" class="dropdown-link">My Profile</a>
           <a href="/profile.html#orders" class="dropdown-link">My Orders</a>
-          <a href="/wishlist.html" class="dropdown-link">Wishlist</a>
+          ${wishlistEnabled ? '<a href="/wishlist.html" class="dropdown-link">Wishlist</a>' : ''}
           <a href="#" class="dropdown-link logout-link" onclick="window.handleLogout(); return false;">Logout</a>
         </div>
       </div>`;
@@ -1204,7 +1205,7 @@ function injectComponents(settings, user = null) {
       <div class="sidebar-account-submenu" id="sidebar-account-submenu">
         <a href="/profile.html" class="sidebar-link">My Profile</a>
         <a href="/profile.html#orders" class="sidebar-link">My Orders</a>
-        <a href="/wishlist.html" class="sidebar-link">Wishlist</a>
+        ${wishlistEnabled ? '<a href="/wishlist.html" class="sidebar-link">Wishlist</a>' : ''}
         <a href="#" class="sidebar-link sidebar-logout" onclick="window.handleLogout(); return false;">Logout</a>
       </div>`;
   }
@@ -1556,8 +1557,7 @@ function injectComponents(settings, user = null) {
         document.body.classList.add('inner-page');
         document.body.style.paddingTop = hh + 'px';
       } else {
-        const heroEl = document.getElementById('hero-slider-container');
-        if (heroEl) heroEl.style.marginTop = hh + 'px';
+        // No margin-top offset needed on mobile/desktop for absolute slider backdrop
       }
     });
 
@@ -1757,113 +1757,6 @@ window.getQueryParam = (name) => {
   return urlParams.get(name);
 };
 
-// Global Quick View Modal
-window.openQuickViewModal = async (productId) => {
-  try {
-    const res = await fetch(`/api/products/${productId}`);
-    const text = await res.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error('Failed to parse Quick View product JSON. Raw response:', text);
-      throw e;
-    }
-    if (!data.success || !data.product) {
-      showToast('Could not load product details', 'error');
-      return;
-    }
-
-    const p = data.product;
-    const price = typeof p.price === 'number' ? p.price : Number(p.price) || 0;
-    const isDiscounted = p.discountPrice !== undefined && p.discountPrice !== null;
-    const finalPrice = isDiscounted ? p.discountPrice : price;
-    const imgUrl = p.images && p.images[0] ? p.images[0].url : '/assets/images/default-product.webp';
-
-    // Remove existing quick view modal if any
-    const existing = document.getElementById('global-quickview-modal');
-    if (existing) existing.remove();
-
-    const modal = document.createElement('div');
-    modal.id = 'global-quickview-modal';
-    modal.className = 'modal-overlay';
-    modal.style.display = 'flex';
-    modal.style.zIndex = '9999';
-
-    // Badges HTML
-    let badgesHtml = '';
-    if (p.stock === 0) {
-      badgesHtml += `<span class="badge" style="background:#ef4444; color:white; margin-right:5px;">OUT OF STOCK</span>`;
-    }
-    if (isDiscounted) {
-      const saving = (price > 0) ? Math.round(((price - p.discountPrice) / price) * 100) : 0;
-      badgesHtml += `<span class="badge badge-new" style="margin-right:5px;">-${saving}% OFF</span>`;
-    }
-    if (p.tags && (p.tags.includes('new') || p.tags.includes('new-arrival'))) {
-      badgesHtml += `<span class="badge" style="background:#8b5cf6; color:white; margin-right:5px;">NEW ARRIVAL</span>`;
-    }
-    if (p.tags && (p.tags.includes('bestseller') || p.tags.includes('best-seller'))) {
-      badgesHtml += `<span class="badge badge-featured" style="margin-right:5px;">BESTSELLER</span>`;
-    }
-
-    modal.innerHTML = `
-      <div class="modal-content glass animated scale-in" style="max-width: 800px; padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; position:relative;">
-        <button onclick="document.getElementById('global-quickview-modal').remove()" style="position:absolute; top:15px; right:15px; background:transparent; font-size:20px; font-weight:bold; color:var(--text-muted); cursor:pointer;">✕</button>
-        
-        <!-- Left: Images -->
-        <div style="display:flex; flex-direction:column; gap:12px;">
-          <div style="height:300px; border-radius:12px; overflow:hidden; border:1px solid var(--card-border); background:#FAF9F6; display:flex; align-items:center; justify-content:center;">
-            <img id="qv-main-img" src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
-          </div>
-          <div style="display:flex; gap:10px; overflow-x:auto;">
-            ${(p.images || []).map((img, idx) => `
-              <button onclick="document.getElementById('qv-main-img').src='${img.url}'" style="width:60px; height:60px; border-radius:6px; overflow:hidden; border:1px solid var(--card-border); cursor:pointer;">
-                <img src="${img.url}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
-              </button>
-            `).join('')}
-          </div>
-        </div>
-
-        <!-- Right: Info -->
-        <div style="display:flex; flex-direction:column; justify-content:space-between;">
-          <div>
-            <div style="margin-bottom:10px;">${badgesHtml}</div>
-            <h3 style="font-size:24px; font-family:'Outfit'; margin-bottom:8px; color:var(--text-color);">${p.name}</h3>
-            <span style="font-size:12px; color:hsl(var(--primary-purple)); font-weight:700; text-transform:uppercase;">${p.category ? p.category.name : 'Catalogue'}</span>
-            
-            <div style="display:flex; align-items:baseline; gap:10px; margin:15px 0;">
-              <span style="font-size:24px; font-weight:800; color:hsl(var(--primary-purple));">${formatPrice(finalPrice)}</span>
-              ${isDiscounted ? `<span style="font-size:16px; text-decoration:line-through; color:var(--text-muted);">${formatPrice(price)}</span>` : ''}
-            </div>
-            
-            <p style="font-size:14px; color:var(--text-muted); line-height:1.6; margin-bottom:20px;">${p.description}</p>
-            
-            <div style="font-size:13px; color:var(--text-color); margin-bottom:20px; display:grid; grid-template-columns:1fr 1fr; gap:10px; border-top:1px solid var(--card-border); padding-top:15px;">
-              <div><strong>Material:</strong> ${p.specifications.material || 'N/A'}</div>
-              <div><strong>Dimensions:</strong> ${p.specifications.dimensions || 'N/A'}</div>
-              <div><strong>Weight:</strong> ${p.specifications.weight || 'N/A'}</div>
-              <div><strong>Color:</strong> ${p.specifications.color || 'N/A'}</div>
-            </div>
-          </div>
-
-          <div style="display:flex; gap:12px;">
-            <button class="btn btn-primary" onclick="addToCart('${p._id}', '${p.name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', ${finalPrice}, '${imgUrl}'); document.getElementById('global-quickview-modal').remove();" style="flex-grow:1; border-radius:8px; padding:10px;" ${p.stock === 0 ? 'disabled' : ''}>
-              ${p.stock === 0 ? 'Sold Out' : 'Add To Cart'}
-            </button>
-            ${(window.featureToggles && window.featureToggles.wishlistEnabled === false) ? '' : `
-            <button class="btn btn-secondary" onclick="toggleWishlist('${p._id}', '${p.name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', ${finalPrice}, '${imgUrl}'); document.getElementById('global-quickview-modal').remove();" style="border-radius:8px; padding:10px; border-width:1px;" aria-label="Add to Wishlist">
-              ❤️ 
-            </button>`}
-          </div>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-  } catch (err) {
-    showToast('Failed to open Quick View', 'error');
-  }
-};
 
 // Global Reusable Product Card HTML Compiler
 window.createProductCardHTML = (p) => {
@@ -1928,10 +1821,7 @@ window.createProductCardHTML = (p) => {
           ${hasAltImage ? `<img src="${secondaryImgUrl}" alt="${nameEscaped}" class="product-secondary-img" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">` : ''}
         </a>
         
-        <!-- Quick View Overlay Button -->
-        <button class="quickview-overlay-btn" onclick="window.openQuickViewModal('${pId}')" style="position:absolute; bottom:12px; left:50%; transform:translateX(-50%); padding:6px 14px; font-size:12px; font-weight:700; font-family:'Outfit'; border-radius:20px; background:rgba(255,255,255,0.9); border:1px solid var(--card-border); color:var(--text-color); cursor:pointer; opacity:0; transition:all 0.3s ease; box-shadow:0 4px 10px rgba(0,0,0,0.1); z-index:11;">
-          Quick View
-        </button>
+        
 
         ${(hideShopActions || (window.featureToggles && window.featureToggles.wishlistEnabled === false)) ? '' : `<button type="button" class="wishlist-btn" data-product-id="${pId}" data-product-name="${encodeURIComponent(name)}" data-product-price="${finalPrice}" data-product-image="${encodeURIComponent(imgUrl)}" style="position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.85); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; border:none; box-shadow:0 2px 5px rgba(0,0,0,0.1);" aria-label="Add to wishlist">
           <svg style="width:18px; height:18px; ${heartFill} stroke-width:2; pointer-events:none;" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
@@ -2030,4 +1920,99 @@ window.showWhatsAppConfirmationModal = (summary, onConfirm) => {
     onConfirm();
   });
 };
+
+// Generic press-and-hold helper for quantity buttons
+(function() {
+  let pressTimer = null;
+  let repeatInterval = null;
+  let activeBtn = null;
+  let hasRepeated = false;
+
+  function startHold(btn) {
+    if (!btn) return;
+    stopHold();
+    activeBtn = btn;
+    hasRepeated = false;
+
+    // First change after 300ms
+    pressTimer = setTimeout(() => {
+      hasRepeated = true;
+      triggerAction(btn);
+
+      // Repeat every 100ms - 150ms
+      repeatInterval = setInterval(() => {
+        triggerAction(btn);
+      }, 120);
+    }, 300);
+  }
+
+  function stopHold() {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      pressTimer = null;
+    }
+    if (repeatInterval) {
+      clearInterval(repeatInterval);
+      repeatInterval = null;
+    }
+    activeBtn = null;
+  }
+
+  function triggerAction(btn) {
+    if (btn.onclick) {
+      btn.onclick();
+    } else {
+      const event = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
+      event.isSyntheticHold = true;
+      btn.dispatchEvent(event);
+    }
+  }
+
+  // Bind global event listeners
+  document.addEventListener('mousedown', (e) => {
+    const btn = e.target.closest('.qty-btn, .qty-minus, .qty-plus');
+    if (btn) {
+      startHold(btn);
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    stopHold();
+  });
+
+  document.addEventListener('mouseleave', () => {
+    stopHold();
+  });
+
+  document.addEventListener('touchstart', (e) => {
+    const btn = e.target.closest('.qty-btn, .qty-minus, .qty-plus');
+    if (btn) {
+      startHold(btn);
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    stopHold();
+  });
+
+  document.addEventListener('touchcancel', () => {
+    stopHold();
+  });
+
+  // Intercept the browser's final click event if we have already repeated
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.qty-btn, .qty-minus, .qty-plus');
+    if (btn) {
+      if (hasRepeated && !e.isSyntheticHold) {
+        e.preventDefault();
+        e.stopPropagation();
+        hasRepeated = false;
+      }
+    }
+  }, true); // Use capture phase
+})();
 

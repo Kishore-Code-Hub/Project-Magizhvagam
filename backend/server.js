@@ -193,8 +193,9 @@ const checkCustomerPageAuth = async (req, res, next) => {
   let token = req.cookies ? req.cookies.admin_accessToken : null;
 
   const isCheckout = req.path === '/checkout.html';
+  const isCart = req.path === '/cart.html';
   let loginRequired = true;
-  if (isCheckout) {
+  if (isCheckout || isCart) {
     try {
       const settingObj = await Setting.findOne({ key: 'featureToggles' });
       if (settingObj && settingObj.value && settingObj.value.customerLoginRequirement === false) {
@@ -256,10 +257,10 @@ const checkCustomerPageAuth = async (req, res, next) => {
 };
 
 // 6. Serve Public and Protected HTML Pages Specifically
-const customerPages = ['profile.html', 'wishlist.html', 'checkout.html'];
+const customerPages = ['profile.html', 'wishlist.html', 'checkout.html', 'cart.html'];
 const publicPages = [
   'index.html', 'about.html', 'contact.html', 'products.html',
-  'product-details.html', 'cart.html', 'login.html'
+  'product-details.html', 'login.html'
 ];
 
 customerPages.forEach(page => {

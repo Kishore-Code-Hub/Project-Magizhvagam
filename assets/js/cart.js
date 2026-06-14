@@ -331,9 +331,6 @@ window.proceedToCheckout = async () => {
       fullAddrText = 'No shipping address provided.';
     }
 
-    const itemsStr = cart.map(item => `- ${item.name} x ${item.quantity} (Price: ${formatPrice(item.price)})`).join('\n');
-
-    // Calculate pricing summary
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const appliedCoupon = JSON.parse(localStorage.getItem('magizhvagam_applied_coupon'));
     let discount = 0;
@@ -349,9 +346,14 @@ window.proceedToCheckout = async () => {
     const shipping = taxable >= 1500 ? 0 : 100;
     const total = taxable + tax + shipping;
 
+    const itemsStr = cart.map((item, idx) => {
+      const lineTotal = item.price * item.quantity;
+      return `${idx + 1}.\nProduct ID: ${item.productId}\nProduct Name: ${item.name}\nQuantity: ${item.quantity}\nUnit Price: \u20B9${item.price}\nLine Total: \u20B9${lineTotal}`;
+    }).join('\n\n');
+
     const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-    const message = `Hello Magizhvagam, I would like to place an order: \n\n *Items:*\n${itemsStr} \n\n *Summary:*\nSubtotal: ${formatPrice(subtotal)} \nDiscount: -${formatPrice(discount)} \nTax (5%): ${formatPrice(tax)} \nShipping: ${shipping === 0 ? 'FREE' : formatPrice(shipping)} \n *Total: ${formatPrice(total)}*\n\n--- CUSTOMER DETAILS ---\nName: ${user.name}\nPhone: ${userPhone}\nShipping Address: ${fullAddrText}`;
+    const message = `🛍️ *MAGIZHVAGAM ORDER REQUEST*\n\n━━━━━━━━━━━━━━\n\n📦 *PRODUCTS*\n\n${itemsStr}\n\n━━━━━━━━━━━━━━\n\n💰 *ORDER SUMMARY*\n\nSubtotal: \u20B9${subtotal}\nDiscount: -\u20B9${discount}\nTax (5%): \u20B9${tax}\nShipping: ${shipping === 0 ? 'FREE' : '\u20B9' + shipping}\n*Grand Total: \u20B9${total}*\n\n━━━━━━━━━━━━━━\n\n👤 *CUSTOMER DETAILS*\n\nName: ${user.name}\nPhone: ${userPhone}\nEmail: ${user.email || 'N/A'}\nAddress: ${fullAddrText}\n\n━━━━━━━━━━━━━━\n\n_Please confirm availability and order processing._`;
 
     const triggerWhatsAppRedirect = async () => {
       let whatsappNumber = '919876543210';

@@ -674,6 +674,32 @@ html, body {
     font-size: 13px !important;
     box-sizing: border-box !important;
   }
+
+  /* My Account Profile Page Mobile Optimizations */
+  .profile-container {
+    gap: 16px !important;
+    margin-top: 16px !important;
+  }
+  .profile-sidebar {
+    padding: 16px !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+  }
+  .profile-tab {
+    padding: 20px 16px !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .menu-link {
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+    margin-bottom: 6px !important;
+  }
+  #profile-sign-out-btn {
+    margin-top: 12px !important;
+    padding-top: 12px !important;
+  }
 }
 
 

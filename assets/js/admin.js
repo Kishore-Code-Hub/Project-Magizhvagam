@@ -1227,7 +1227,6 @@ async function loadFeatureToggles() {
     const toggleMap = {
       wishlistEnabled: { type: 'checkbox', checkbox: 'toggle-wishlistEnabled', status: 'toggle-status-wishlist' },
       couponsEnabled: { type: 'checkbox', checkbox: 'toggle-couponsEnabled', status: 'toggle-status-coupon' },
-      registrationEnabled: { type: 'checkbox', checkbox: 'toggle-registrationEnabled', status: 'toggle-status-registration' },
       whatsappCheckoutEnabled: { type: 'checkbox', checkbox: 'toggle-whatsappCheckoutEnabled', status: 'toggle-status-whatsapp' },
       codEnabled: { type: 'checkbox', checkbox: 'toggle-codEnabled', status: 'toggle-status-cod' },
       reviewsEnabled: { type: 'checkbox', checkbox: 'toggle-reviewsEnabled', status: 'toggle-status-reviews' },
@@ -1301,7 +1300,6 @@ async function handleFeatureToggle(key, enabled) {
       const statusMap = {
         wishlistEnabled: 'toggle-status-wishlist',
         couponsEnabled: 'toggle-status-coupon',
-        registrationEnabled: 'toggle-status-registration',
         whatsappCheckoutEnabled: 'toggle-status-whatsapp',
         codEnabled: 'toggle-status-cod',
         reviewsEnabled: 'toggle-status-reviews',
@@ -1316,7 +1314,6 @@ async function handleFeatureToggle(key, enabled) {
       const labelMap = {
         wishlistEnabled: 'Wishlist System',
         couponsEnabled: 'Coupon Engine',
-        registrationEnabled: 'Registration Portal',
         whatsappCheckoutEnabled: 'WhatsApp Checkout',
         codEnabled: 'Cash on Delivery',
         reviewsEnabled: 'Reviews & Ratings',
