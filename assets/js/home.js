@@ -5,7 +5,39 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   loadHomepageData();
+  initProductTicker();
 });
+
+async function initProductTicker() {
+  const track = document.getElementById('infinite-ticker-track');
+  if (!track) return;
+  try {
+    const res = await fetch('/api/products?limit=15');
+    const data = await res.json();
+    if (data.success && data.products && data.products.length > 0) {
+      const list = data.products;
+      // Double the list to make scrolling seamless
+      const doubledList = [...list, ...list];
+      
+      track.innerHTML = doubledList.map(p => `
+        <a href="/product-details.html?id=${p._id}" class="ticker-item glass" style="display: flex; align-items: center; gap: 12px; padding: 10px 18px; border-radius: 12px; text-decoration: none; min-width: 250px; flex-shrink: 0; box-sizing: border-box;">
+          <img src="${p.images[0] ? p.images[0].url : '/assets/images/default-product.webp'}" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover;" onerror="this.src='/assets/images/default-product.webp'">
+          <div style="display: flex; flex-direction: column; text-align: left;">
+            <span style="font-family: 'Outfit'; font-size: 13px; font-weight: 600; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;">${p.name}</span>
+            <span style="font-size: 11px; color: var(--color-brand-primary); font-weight: 700;">₹${p.price}</span>
+          </div>
+        </a>
+      `).join('');
+    } else {
+      const section = track.closest('.infinite-product-ticker-section');
+      if (section) section.style.display = 'none';
+    }
+  } catch (err) {
+    console.error('Error initializing product ticker:', err);
+    const section = track.closest('.infinite-product-ticker-section');
+    if (section) section.style.display = 'none';
+  }
+}
 
 // Configurable hero slide interval (ms)
 const HERO_SLIDE_INTERVAL = 5000;
@@ -112,7 +144,7 @@ function applyHeroSectionConfig(config) {
     const slides = config.banners.filter(s => s.image);
     if (slides.length > 0) {
       let currentIdx = 0;
-      
+
       const updateSlide = (idx) => {
         const s = slides[idx];
         if (!s) return;
@@ -161,10 +193,10 @@ function renderNewsletterSection(config) {
   section.innerHTML = `
     <div class="newsletter-inner glass-panel" data-reveal>
       <h2>${config.heading || 'Stay in the Loop'}</h2>
-      <p>${config.incentive || 'Subscribe for exclusive offers and gift inspiration.'}</p>
+      <p>${config.incentive || 'Stay Tuned for exclusive offers and gift inspiration.'}</p>
       <form class="newsletter-form" onsubmit="event.preventDefault(); if(window.showToast) showToast('Thank you for subscribing!', 'success');">
         <input type="email" required placeholder="${config.placeholder || 'Enter your email'}" aria-label="Email address">
-        <button type="submit" class="btn btn-primary">${config.ctaLabel || 'Subscribe'}</button>
+        <button type="submit" class="btn btn-primary">${config.ctaLabel || 'Send'}</button>
       </form>
     </div>
   `;
@@ -250,24 +282,24 @@ async function loadHomepageData() {
 
     const flashSaleActive = (toggles && toggles.flashSaleActive === true);
     let flashEl = document.getElementById('flash-sale-timer-section');
- 
+
     if (flashSaleActive && toggles.flashSaleTargetDate) {
       const targetDate = new Date(toggles.flashSaleTargetDate);
       const flashSaleText = toggles.flashSaleText || "Flash Sale Ending Soon!";
- 
+
       if (!flashEl) {
         flashEl = document.createElement('div');
         flashEl.id = 'flash-sale-timer-section';
         flashEl.className = 'container flash-sale-timer-section glass animated scale-in';
- 
+
         const categoriesSec = document.getElementById('categories');
         if (categoriesSec) {
           categoriesSec.parentNode.insertBefore(flashEl, categoriesSec);
         }
       }
- 
+
       flashEl.style.display = 'flex'; // Ensure visible
- 
+
       const updateCountdown = () => {
         const now = new Date().getTime();
         const distance = targetDate.getTime() - now;
@@ -278,7 +310,7 @@ async function loadHomepageData() {
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
- 
+
         flashEl.innerHTML = `
           <div class="countdown-info-block">
             <span class="countdown-icon">⚡</span>
@@ -294,7 +326,7 @@ async function loadHomepageData() {
           </div>
         `;
       };
- 
+
       updateCountdown();
       if (window.mzHomepageCountdownInterval) {
         clearInterval(window.mzHomepageCountdownInterval);

@@ -104,6 +104,7 @@
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-typography')">Fonts</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-header')">Header</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-homepage')">Homepage</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-testimonials')">Testimonials</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-footer')">Footer</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-buttons')">Buttons</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-cards')">Cards</button>
@@ -394,12 +395,16 @@
                 <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Collections Spotlight Banners</h3>
                 <div id="promo-banners-visual" style="margin-bottom:24px;"></div>
 
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Customer Testimonials</h3>
-                <div id="testimonials-visual"></div>
-
                 <textarea id="hero-banners-json" hidden aria-hidden="true"></textarea>
                 <textarea id="promo-banners-json" hidden aria-hidden="true"></textarea>
                 <textarea id="testimonials-json" hidden aria-hidden="true"></textarea>
+              </div>
+
+              <!-- TAB 5.5: Testimonials -->
+              <div class="studio-tab-panel" id="tab-testimonials">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Customer Testimonials</h3>
+                <p style="font-size:12px; color:var(--studio-text-muted); margin-bottom:16px;">Add, edit, and manage customer testimonials displayed in the 'What Our Clients Say' section on the homepage.</p>
+                <div id="testimonials-visual"></div>
               </div>
 
               <!-- TAB 6: Footer -->
@@ -824,6 +829,7 @@
           'header': 'tab-header',
           'footer': 'tab-footer',
           'homepage': 'tab-homepage',
+          'testimonials': 'tab-testimonials',
           'about-page': 'tab-about',
           'buttons': 'tab-buttons',
           'cards': 'tab-cards',

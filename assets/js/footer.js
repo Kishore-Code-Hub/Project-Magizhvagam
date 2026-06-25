@@ -114,15 +114,8 @@
       `;
     }
 
-    // Payment badges
+    // Payment badges removed by user request
     let badgesHtml = '';
-    if (badges.visible && badges.methods && badges.methods.length) {
-      badgesHtml = `
-        <div class="footer-payment-badges">
-          ${badges.methods.map(m => `<span class="payment-badge">${m}</span>`).join('')}
-        </div>
-      `;
-    }
 
     // Copyright
     let copyrightText = copyright.text || '';

@@ -98,7 +98,7 @@ async function sendVerificationEmail(to, token) {
       <h2 style="color:#b8860b">Magizhvagam Email Verification</h2>
       <p>Your One-Time Password (OTP) to verify your email is:</p>
       <div style="text-align:center; margin:20px 0; font-size:32px; font-weight:700;">${token}</div>
-      <p>This code expires in 5 minutes. If you did not sign up, ignore this email.</p>
+      <p>This code expires in 3 minutes. If you did not sign up, ignore this email.</p>
     </div>
   `;
   return await sendMail({ to, subject, html });

@@ -736,6 +736,46 @@ html, body {
   }
 }
 
+/* ==========================================================================
+   MOBILE VIEW SPACING, ALIGNMENT & BUTTON OFFSET CORRECTIONS
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Category Highlight Alignment */
+  #category-highlights-mount {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+    display: grid !important;
+  }
+  
+  .category-card {
+    display: block !important;
+  }
+  
+  /* Search Button Offset */
+  #search-toggle-btn, .search-toggle-btn {
+    transform: translateX(-6px) !important;
+  }
+  
+  /* Section Header Splitting & Spacing */
+  .section-header-split-alignment {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 12px !important;
+  }
+  
+  .section-header-split-alignment .btn {
+    width: 100% !important;
+    max-width: 250px !important;
+    margin: 0 auto !important;
+  }
+  
+  /* Container Spacing Standardization */
+  .container {
+    padding: 0 20px !important;
+  }
+}
+
 
 
 

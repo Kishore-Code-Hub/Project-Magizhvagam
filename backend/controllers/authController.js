@@ -107,7 +107,7 @@ exports.adminLogin = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 15 * 60 * 1000 // 15 minutes
+      maxAge: 3 * 60 * 1000 // 3 minutes
     });
 
     res.cookie('admin_refreshToken', refreshToken, {
@@ -199,7 +199,7 @@ exports.refresh = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 15 * 60 * 1000
+      maxAge: 3 * 60 * 1000
     });
 
     res.status(200).json({ success: true, accessToken });
@@ -519,9 +519,9 @@ exports.handleLocalRegister = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(passwordStr, salt);
 
-    // Generate Verification OTP (5-minute expiry)
+    // Generate Verification OTP (3-minute expiry)
     const verificationOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    const verificationOtpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    const verificationOtpExpires = new Date(Date.now() + 3 * 60 * 1000); // 3 minutes
 
     // Create user record immediately
     const newUser = await User.create({
@@ -645,7 +645,7 @@ exports.handleLocalLogin = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 15 * 60 * 1000 // 15 minutes
+      maxAge: 3 * 60 * 1000 // 3 minutes
     });
 
     res.cookie('admin_refreshToken', refreshToken, {
@@ -758,9 +758,9 @@ exports.resendOtp = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Account already verified.' });
     }
 
-    // Generate new OTP (15-minute expiry — matches registration OTP window)
+    // Generate new OTP (3-minute expiry — matches registration OTP window)
     const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiry = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+    const expiry = new Date(Date.now() + 3 * 60 * 1000); // 3 mins
 
     user.verificationOtp = newOtp;
     user.verificationOtpExpires = expiry;

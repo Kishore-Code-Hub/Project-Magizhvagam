@@ -573,7 +573,9 @@
         name: t.name,
         text: t.text,
         rating: t.rating || 5,
-        verified: t.verified !== false
+        verified: t.verified !== false,
+        location: t.location || '',
+        occasion: t.occasion || ''
       })), null, 2);
     }
   }

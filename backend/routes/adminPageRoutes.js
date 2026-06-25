@@ -13,7 +13,8 @@ const ALLOWED_ADMIN_PAGES = new Set([
   'settings.html',
   'media.html',
   'reports.html',
-  'invoices.html'
+  'invoices.html',
+  'system-diagnostics.html'
 ]);
 
 // Authenticate helper for HTML pages (redirect-based instead of JSON error responses)
@@ -67,7 +68,7 @@ const tryHtmlAutoRefresh = async (req, res, next, page) => {
     const newAccessToken = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       JWT_ACCESS_SECRET,
-      { expiresIn: '15m' }
+      { expiresIn: '3m' }
     );
 
     // Set cookie
@@ -75,7 +76,7 @@ const tryHtmlAutoRefresh = async (req, res, next, page) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 15 * 60 * 1000 // 15 mins
+      maxAge: 3 * 60 * 1000 // 3 mins
     });
 
     req.user = user;

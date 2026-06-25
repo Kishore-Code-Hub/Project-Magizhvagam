@@ -9,7 +9,7 @@ const generateAccessToken = (user) => {
   return jwt.sign(
     { id: user._id, email: user.email, role: user.role },
     JWT_ACCESS_SECRET,
-    { expiresIn: '15m' }
+    { expiresIn: '3m' }
   );
 };
 
@@ -77,7 +77,7 @@ const tryAutoRefresh = async (req, res, next) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 15 * 60 * 1000
+      maxAge: 3 * 60 * 1000
     });
 
     req.user = await User.findById(decoded.id).select(USER_SAFE_SELECT);
@@ -126,7 +126,7 @@ const optionalProtect = async (req, res, next) => {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
-          maxAge: 15 * 60 * 1000
+          maxAge: 3 * 60 * 1000
         });
         req.user = await User.findById(decoded.id).select(USER_SAFE_SELECT);
         return next();

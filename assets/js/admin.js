@@ -102,6 +102,7 @@ function injectAdminSidebar() {
       <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header"><i data-lucide="panel-top"></i> Header Settings</a></li>
       <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer"><i data-lucide="panel-bottom"></i> Footer Settings</a></li>
       <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage"><i data-lucide="home"></i> Homepage Elements</a></li>
+      <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials"><i data-lucide="message-square"></i> Testimonials</a></li>
       <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page"><i data-lucide="info"></i> About Page</a></li>
       <li class="${activeTabCls('buttons')}"><a href="/admin/settings.html?tab=buttons"><i data-lucide="mouse-pointer"></i> Buttons</a></li>
       <li class="${activeTabCls('cards')}"><a href="/admin/settings.html?tab=cards"><i data-lucide="credit-card"></i> Cards</a></li>
