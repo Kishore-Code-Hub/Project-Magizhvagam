@@ -70,6 +70,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Sidebar injection (reusable dry components)
+window.toggleSubmenu = function(id) {
+  const menu = document.getElementById('menu-' + id);
+  const submenu = document.getElementById('submenu-' + id);
+  if (menu && submenu) {
+    const isExpanded = menu.classList.contains('expanded');
+    menu.classList.toggle('expanded', !isExpanded);
+    submenu.classList.toggle('open', !isExpanded);
+  }
+};
+
 function injectAdminSidebar() {
   const sidebar = document.getElementById('admin-sidebar-container');
   if (!sidebar) return;
@@ -80,38 +90,212 @@ function injectAdminSidebar() {
 
   const activeCls = (file) => path.includes(file) ? 'active' : '';
   const activeTabCls = (tab) => (path.includes('settings.html') && currentTab === tab) ? 'active' : '';
+  const isProductsView = path.includes('products.html');
+  const isMediaView = path.includes('media.html');
+  const isSettingsView = path.includes('settings.html');
 
   sidebar.className = 'admin-sidebar';
   sidebar.innerHTML = `
     <div class="admin-logo">MAGIZHVAGAM</div>
     <ul class="admin-menu" style="overflow-y: auto; height: calc(100vh - 100px); padding-bottom: 40px; margin: 0; list-style: none;">
-      <li class="${activeCls('dashboard.html')}"><a href="/admin/dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
-      <li class="${activeCls('products.html')}"><a href="/admin/products.html"><i data-lucide="gift"></i> Products</a></li>
-      <li class="${activeCls('orders.html')}"><a href="/admin/orders.html"><i data-lucide="shopping-bag"></i> Orders</a></li>
-      <li class="${activeCls('invoices.html')}"><a href="/admin/invoices.html"><i data-lucide="file-text"></i> Invoices</a></li>
-      <li class="${activeCls('customers.html')}"><a href="/admin/customers.html"><i data-lucide="users"></i> Customers</a></li>
-      <li class="${activeCls('reports.html')}"><a href="/admin/reports.html"><i data-lucide="bar-chart-2"></i> Reports</a></li>
-      <li class="${activeCls('media.html')}"><a href="/admin/media.html"><i data-lucide="image"></i> Media Library</a></li>
+      <!-- Dashboard -->
+      <li class="admin-menu-item ${activeCls('dashboard.html')}">
+        <a href="/admin/dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+      </li>
+
+      <!-- Products Group -->
+      <li class="admin-menu-item has-submenu ${isProductsView ? 'expanded' : ''}" id="menu-products">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('products')">
+          <i data-lucide="gift"></i> Products 
+          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
+        </a>
+        <ul class="admin-menu-submenu ${isProductsView ? 'open' : ''}" id="submenu-products">
+          <li class="${isProductsView && !window.location.search ? 'active' : ''}"><a href="/admin/products.html">Product List</a></li>
+          <li><a href="/admin/products.html?action=add">Add Product</a></li>
+          <li class="${window.location.search.includes('view=categories') ? 'active' : ''}"><a href="/admin/products.html?view=categories">Categories</a></li>
+          <li class="${window.location.search.includes('view=inventory') ? 'active' : ''}"><a href="/admin/products.html?view=inventory">Inventory</a></li>
+          <li class="${window.location.search.includes('view=variants') ? 'active' : ''}"><a href="/admin/products.html?view=variants">Variants</a></li>
+        </ul>
+      </li>
+
+      <!-- Orders -->
+      <li class="admin-menu-item ${activeCls('orders.html')}">
+        <a href="/admin/orders.html"><i data-lucide="shopping-bag"></i> Orders</a>
+      </li>
+
+      <!-- Customers -->
+      <li class="admin-menu-item ${activeCls('customers.html')}">
+        <a href="/admin/customers.html"><i data-lucide="users"></i> Customers</a>
+      </li>
+
+      <!-- Media Library Group -->
+      <li class="admin-menu-item has-submenu ${isMediaView ? 'expanded' : ''}" id="menu-media">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('media')">
+          <i data-lucide="image"></i> Media Library 
+          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
+        </a>
+        <ul class="admin-menu-submenu ${isMediaView ? 'open' : ''}" id="submenu-media">
+          <li class="${isMediaView && !window.location.search.includes('tab=') ? 'active' : ''}"><a href="/admin/media.html">Gallery</a></li>
+          <li class="${window.location.search.includes('tab=compression') ? 'active' : ''}"><a href="/admin/media.html?tab=compression">Image Compression</a></li>
+          <li class="${window.location.search.includes('tab=limits') ? 'active' : ''}"><a href="/admin/media.html?tab=limits">Upload Limits</a></li>
+        </ul>
+      </li>
+
+      <!-- Reports -->
+      <li class="admin-menu-item ${activeCls('reports.html')}">
+        <a href="/admin/reports.html"><i data-lucide="bar-chart-2"></i> Reports</a>
+      </li>
       
       <!-- Reorganized Appearance Entries -->
-      <li style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Appearance</li>
+      <li style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Appearance Studio</li>
       
-      <li class="${activeTabCls('presets')}"><a href="/admin/settings.html?tab=presets"><i data-lucide="layout"></i> Theme Presets</a></li>
-      <li class="${activeTabCls('colors')}"><a href="/admin/settings.html?tab=colors"><i data-lucide="droplet"></i> Colors</a></li>
-      <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography"><i data-lucide="type"></i> Typography</a></li>
-      <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header"><i data-lucide="panel-top"></i> Header Settings</a></li>
-      <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer"><i data-lucide="panel-bottom"></i> Footer Settings</a></li>
-      <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage"><i data-lucide="home"></i> Homepage Elements</a></li>
-      <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials"><i data-lucide="message-square"></i> Testimonials</a></li>
-      <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page"><i data-lucide="info"></i> About Page</a></li>
-      <li class="${activeTabCls('buttons')}"><a href="/admin/settings.html?tab=buttons"><i data-lucide="mouse-pointer"></i> Buttons</a></li>
-      <li class="${activeTabCls('cards')}"><a href="/admin/settings.html?tab=cards"><i data-lucide="credit-card"></i> Cards</a></li>
-      <li class="${activeTabCls('product-pages')}"><a href="/admin/settings.html?tab=product-pages"><i data-lucide="package"></i> Product Pages</a></li>
-      <li class="${activeTabCls('category-pages')}"><a href="/admin/settings.html?tab=category-pages"><i data-lucide="layers"></i> Category Pages</a></li>
-      <li class="${activeTabCls('animations')}"><a href="/admin/settings.html?tab=animations"><i data-lucide="sparkles"></i> Animations</a></li>
-      <li class="${activeTabCls('custom-css')}"><a href="/admin/settings.html?tab=custom-css"><i data-lucide="code"></i> Custom CSS</a></li>
-      <li class="${activeTabCls('mobile-settings')}"><a href="/admin/settings.html?tab=mobile-settings"><i data-lucide="smartphone"></i> Mobile Settings</a></li>
-      <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings"><i data-lucide="settings"></i> Advanced Settings</a></li>
+      <!-- Appearance -->
+      <li class="admin-menu-item has-submenu ${isSettingsView && (currentTab === 'presets' || currentTab === 'colors') ? 'expanded' : ''}" id="menu-appearance">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('appearance')">
+          <i data-lucide="layout"></i> Appearance 
+          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
+        </a>
+        <ul class="admin-menu-submenu ${isSettingsView && (currentTab === 'presets' || currentTab === 'colors') ? 'open' : ''}" id="submenu-appearance">
+          <li class="${activeTabCls('presets')}"><a href="/admin/settings.html?tab=presets">Theme Presets</a></li>
+          <li class="${activeTabCls('colors')}"><a href="/admin/settings.html?tab=colors">Colors</a></li>
+        </ul>
+      </li>
+
+      <!-- Typography -->
+      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'typography' ? 'expanded' : ''}" id="menu-typography">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('typography')">
+          <i data-lucide="type"></i> Typography 
+          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
+        </a>
+        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'typography' ? 'open' : ''}" id="submenu-typography">
+          <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography">Font Family</a></li>
+          <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography">Font Weight</a></li>
+          <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography">Font Size</a></li>
+          <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography">Heading Styles</a></li>
+        </ul>
+      </li>
+
+      <!-- Header -->
+      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'header' ? 'expanded' : ''}" id="menu-header">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('header')">
+          <i data-lucide="panel-top"></i> Header 
+          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
+        </a>
+        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'header' ? 'open' : ''}" id="submenu-header">
+          <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header">Logo</a></li>
+          <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header">Announcement Bar</a></li>
+          <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header">Sticky Header</a></li>
+          <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header">Navigation</a></li>
+        </ul>
+      </li>
+
+      <!-- Homepage -->
+      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'homepage' ? 'expanded' : ''}" id="menu-homepage">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('homepage')">
+          <i data-lucide="home"></i> Homepage 
+          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
+        </a>
+        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'homepage' ? 'open' : ''}" id="submenu-homepage">
+          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Hero Section</a></li>
+          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Categories</a></li>
+          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Featured Collection</a></li>
+          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Infinite Product Loop</a></li>
+          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Flash Sale</a></li>
+          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Testimonials</a></li>
+          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Newsletter</a></li>
+          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Footer</a></li>
+        </ul>
+      </li>
+
+      <!-- Testimonials -->
+      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'testimonials' ? 'expanded' : ''}" id="menu-testimonials">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('testimonials')">
+          <i data-lucide="message-square"></i> Testimonials 
+          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
+        </a>
+        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'testimonials' ? 'open' : ''}" id="submenu-testimonials">
+          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials">Add Testimonial</a></li>
+          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials">Edit Testimonial</a></li>
+          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials">Delete Testimonial</a></li>
+          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials">Ratings</a></li>
+          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials">Customer Image</a></li>
+          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials">Sort Order</a></li>
+        </ul>
+      </li>
+
+      <!-- Footer -->
+      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'footer' ? 'expanded' : ''}" id="menu-footer">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('footer')">
+          <i data-lucide="panel-bottom"></i> Footer 
+          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
+        </a>
+        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'footer' ? 'open' : ''}" id="submenu-footer">
+          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Footer Description</a></li>
+          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Footer Columns</a></li>
+          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Social Links</a></li>
+          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Contact Details</a></li>
+          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Copyright</a></li>
+          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Newsletter</a></li>
+          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Colors</a></li>
+        </ul>
+      </li>
+
+      <!-- Pages -->
+      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'about-page' ? 'expanded' : ''}" id="menu-pages">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('pages')">
+          <i data-lucide="info"></i> Pages 
+          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
+        </a>
+        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'about-page' ? 'open' : ''}" id="submenu-pages">
+          <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page">About Page</a></li>
+          <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page">Contact Page</a></li>
+          <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page">Privacy Policy</a></li>
+          <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page">Terms of Service</a></li>
+        </ul>
+      </li>
+
+      <!-- Marketing -->
+      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'expanded' : ''}" id="menu-marketing">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('marketing')">
+          <i data-lucide="percent"></i> Marketing 
+          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
+        </a>
+        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'open' : ''}" id="submenu-marketing">
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Coupons</a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Flash Sales</a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Popup Banner</a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Announcement Bar</a></li>
+        </ul>
+      </li>
+
+      <!-- System -->
+      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'expanded' : ''}" id="menu-system">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('system')">
+          <i data-lucide="cpu"></i> System 
+          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
+        </a>
+        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'open' : ''}" id="submenu-system">
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Email Templates</a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">OTP Settings</a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Session Timeout</a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">WhatsApp Settings</a></li>
+        </ul>
+      </li>
+
+      <!-- Settings -->
+      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'expanded' : ''}" id="menu-settings">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('settings')">
+          <i data-lucide="settings"></i> Settings 
+          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
+        </a>
+        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'open' : ''}" id="submenu-settings">
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">General</a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Store Information</a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">SEO Settings</a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Analytics</a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Integrations</a></li>
+        </ul>
+      </li>
 
       <li style="margin-top:20px; border-top:1px solid var(--adm-border); padding-top:15px;">
         <a href="#" onclick="window.handleLogout(); return false;" style="color:#ef4444 !important;"><i data-lucide="log-out"></i> Sign Out</a>
@@ -601,6 +785,11 @@ function initProductsPageEvents() {
         }
       }
     });
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('action') === 'add') {
+    toggleModal('add-product-modal', true);
   }
 }
 

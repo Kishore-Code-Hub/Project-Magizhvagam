@@ -530,3 +530,45 @@ body:has(.admin-layout) {
   color: var(--adm-text) !important;
   border: 1px solid var(--adm-border) !important;
 }
+
+/* ─── Admin Sidebar Submenus (Accordion Hierarchy) ─── */
+.admin-menu-item.has-submenu {
+  display: flex;
+  flex-direction: column;
+}
+.admin-menu-submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0px 0 6px 0;
+  display: none; /* Collapsed by default */
+}
+.admin-menu-submenu.open {
+  display: block;
+}
+.admin-menu-submenu li a {
+  padding: 8px 12px 8px 42px !important;
+  font-size: 13px !important;
+  margin-bottom: 2px !important;
+  font-weight: 500 !important;
+  border-left: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+.admin-menu-submenu li.active a {
+  color: var(--adm-accent) !important;
+  background-color: rgba(106, 13, 173, 0.04) !important;
+  font-weight: 700 !important;
+}
+.submenu-toggle-icon {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+  width: 14px !important;
+  height: 14px !important;
+}
+.admin-menu-item.expanded .submenu-toggle-icon {
+  transform: rotate(90deg);
+}
+.admin-menu-item-link {
+  cursor: pointer;
+}

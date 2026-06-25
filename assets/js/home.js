@@ -10,24 +10,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initProductTicker() {
   const track = document.getElementById('infinite-ticker-track');
-  if (!track) return;
+  const g1 = document.getElementById('ticker-group-1');
+  const g2 = document.getElementById('ticker-group-2');
+  if (!track || !g1 || !g2) return;
   try {
-    const res = await fetch('/api/products?limit=15');
+    const res = await fetch('/api/products?limit=25');
     const data = await res.json();
     if (data.success && data.products && data.products.length > 0) {
       const list = data.products;
-      // Double the list to make scrolling seamless
-      const doubledList = [...list, ...list];
       
-      track.innerHTML = doubledList.map(p => `
+      // Ensure we have enough items to span a large width (at least 35 items per group)
+      let tickerList = [...list];
+      while (tickerList.length < 35) {
+        tickerList = [...tickerList, ...list];
+      }
+      
+      const html = tickerList.map(p => `
         <a href="/product-details.html?id=${p._id}" class="ticker-item glass" style="display: flex; align-items: center; gap: 12px; padding: 10px 18px; border-radius: 12px; text-decoration: none; min-width: 250px; flex-shrink: 0; box-sizing: border-box;">
-          <img src="${p.images[0] ? p.images[0].url : '/assets/images/default-product.webp'}" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover;" onerror="this.src='/assets/images/default-product.webp'">
+          <img src="${p.images[0] ? p.images[0].url : '/assets/images/default-product.webp'}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover;" onerror="this.src='/assets/images/default-product.webp'">
           <div style="display: flex; flex-direction: column; text-align: left;">
             <span style="font-family: 'Outfit'; font-size: 13px; font-weight: 600; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;">${p.name}</span>
             <span style="font-size: 11px; color: var(--color-brand-primary); font-weight: 700;">₹${p.price}</span>
           </div>
         </a>
       `).join('');
+      
+      g1.innerHTML = html;
+      g2.innerHTML = html;
     } else {
       const section = track.closest('.infinite-product-ticker-section');
       if (section) section.style.display = 'none';
@@ -386,11 +395,11 @@ async function renderCategoryHighlights(catIds) {
       }
 
       container.innerHTML = filtered.map(cat => `
-        <a href="/products.html?category=${cat.slug}" class="glass hover-lift category-card animated fadeInUp" style="border-radius:16px; overflow:hidden; display:block; padding:12px; text-align:center;">
-          <div style="height:150px; border-radius:12px; overflow:hidden; margin-bottom:12px;">
-            <img src="${cat.image || '/assets/images/default-category.webp'}" alt="${cat.name}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-category.webp'">
+        <a href="/products.html?category=${cat.slug}" class="glass-panel category-card hover-lift animated fadeInUp">
+          <div>
+            <img src="${cat.image || '/assets/images/default-category.webp'}" alt="${cat.name}" loading="lazy" onerror="this.src='/assets/images/default-category.webp'">
           </div>
-          <h4 style="font-family:'Outfit'; font-size:15px; font-weight:600; color:var(--text-color);">${cat.name}</h4>
+          <h4>${cat.name}</h4>
         </a>
       `).join('');
     }
