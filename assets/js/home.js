@@ -13,30 +13,78 @@ async function initProductTicker() {
   const g1 = document.getElementById('ticker-group-1');
   const g2 = document.getElementById('ticker-group-2');
   if (!track || !g1 || !g2) return;
+  
   try {
-    const res = await fetch('/api/products?limit=25');
+    const res = await fetch('/api/products?limit=30');
     const data = await res.json();
     if (data.success && data.products && data.products.length > 0) {
       const list = data.products;
       
-      // Ensure we have enough items to span a large width (at least 35 items per group)
+      // Calculate how many items needed to fill viewport width with buffer
+      const viewportWidth = window.innerWidth;
+      const itemWidth = viewportWidth <= 768 ? 216 : 256; // min-width + gap
+      const itemsNeededForScreen = Math.ceil(viewportWidth / itemWidth) + 2;
+      const minItems = Math.max(itemsNeededForScreen * 3, 30);
+      
+      // Duplicate products until we have enough for seamless infinite scroll
       let tickerList = [...list];
-      while (tickerList.length < 35) {
+      while (tickerList.length < minItems) {
         tickerList = [...tickerList, ...list];
       }
       
-      const html = tickerList.map(p => `
-        <a href="/product-details.html?id=${p._id}" class="ticker-item glass" style="display: flex; align-items: center; gap: 12px; padding: 10px 18px; border-radius: 12px; text-decoration: none; min-width: 250px; flex-shrink: 0; box-sizing: border-box;">
-          <img src="${p.images[0] ? p.images[0].url : '/assets/images/default-product.webp'}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover;" onerror="this.src='/assets/images/default-product.webp'">
-          <div style="display: flex; flex-direction: column; text-align: left;">
-            <span style="font-family: 'Outfit'; font-size: 13px; font-weight: 600; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;">${p.name}</span>
-            <span style="font-size: 11px; color: var(--color-brand-primary); font-weight: 700;">₹${p.price}</span>
+      const buildItemHTML = (p) => `
+        <a href="/product-details.html?id=${p._id}" class="ticker-item" aria-label="${p.name}">
+          <img src="${p.images && p.images[0] ? p.images[0].url : '/assets/images/default-product.webp'}" 
+               alt="${p.name}" width="44" height="44" 
+               style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;" 
+               loading="lazy"
+               onerror="this.src='/assets/images/default-product.webp'">
+          <div style="display:flex;flex-direction:column;text-align:left;overflow:hidden;">
+            <span style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--text-color,#F5F0E8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">${p.name}</span>
+            <span style="font-size:11px;color:var(--color-brand-primary,#C9913D);font-weight:700;">${window.formatPrice ? window.formatPrice(p.price) : '₹' + p.price}</span>
           </div>
-        </a>
-      `).join('');
+        </a>`;
+      
+      const html = tickerList.map(buildItemHTML).join('');
       
       g1.innerHTML = html;
       g2.innerHTML = html;
+      
+      // Dynamically set animation duration based on content width for smooth speed
+      requestAnimationFrame(() => {
+        const groupWidth = g1.scrollWidth;
+        if (groupWidth > 0) {
+          // Speed: ~50px per second for smooth scrolling
+          const duration = Math.max(groupWidth / 50, 20);
+          track.style.animationDuration = duration + 's';
+          track.style.animation = `ticker-scroll-infinite ${duration}s linear infinite`;
+        }
+      });
+      
+      // Touch support for mobile swipe
+      let touchStartX = 0;
+      let touchDelta = 0;
+      const section = track.closest('.infinite-product-ticker-section');
+      
+      if (section) {
+        section.addEventListener('touchstart', (e) => {
+          touchStartX = e.touches[0].clientX;
+          track.style.animationPlayState = 'paused';
+        }, { passive: true });
+        
+        section.addEventListener('touchmove', (e) => {
+          touchDelta = e.touches[0].clientX - touchStartX;
+        }, { passive: true });
+        
+        section.addEventListener('touchend', () => {
+          // Resume animation after touch
+          setTimeout(() => {
+            track.style.animationPlayState = 'running';
+          }, 1500);
+          touchDelta = 0;
+        }, { passive: true });
+      }
+      
     } else {
       const section = track.closest('.infinite-product-ticker-section');
       if (section) section.style.display = 'none';

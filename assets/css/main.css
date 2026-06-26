@@ -3963,7 +3963,7 @@ h6,
   display: flex;
   width: max-content;
   gap: 0 !important;
-  animation: ticker-scroll 35s linear infinite;
+  animation: ticker-scroll-infinite 40s linear infinite;
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -4003,7 +4003,7 @@ h6,
   border-color: var(--color-brand-primary) !important;
 }
 
-@keyframes ticker-scroll {
+@keyframes ticker-scroll-infinite {
   0% {
     transform: translate3d(0, 0, 0);
   }
