@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadAdminCustomers();
   } else if (path.includes('settings.html')) {
     loadHomepageBuilderSettings();
+    loadFeatureToggles();
   } else if (path.includes('reports.html')) {
     loadReportsPageData();
   }
@@ -172,42 +173,45 @@ function injectAdminSidebar() {
 
       <!-- MARKETING SECTION -->
       <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Marketing</li>
-      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'expanded' : ''}" id="menu-marketing">
+      <li class="admin-menu-item has-submenu ${isSettingsView && ['coupons', 'flash-sales', 'popup', 'newsletter'].includes(currentTab) ? 'expanded' : ''}" id="menu-marketing">
         <a class="admin-menu-item-link" onclick="toggleSubmenu('marketing')">
           <i data-lucide="percent"></i> <span>Marketing Tools</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
-        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'open' : ''}" id="submenu-marketing">
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings"><span>Coupons</span></a></li>
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings"><span>Flash Sales</span></a></li>
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings"><span>Popup Builder</span></a></li>
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings"><span>Newsletter</span></a></li>
+        <ul class="admin-menu-submenu ${isSettingsView && ['coupons', 'flash-sales', 'popup', 'newsletter'].includes(currentTab) ? 'open' : ''}" id="submenu-marketing">
+          <li class="${activeTabCls('coupons')}"><a href="/admin/settings.html?tab=coupons"><span>Coupons</span></a></li>
+          <li class="${activeTabCls('flash-sales')}"><a href="/admin/settings.html?tab=flash-sales"><span>Flash Sales</span></a></li>
+          <li class="${activeTabCls('popup')}"><a href="/admin/settings.html?tab=popup"><span>Popup Builder</span></a></li>
+          <li class="${activeTabCls('newsletter')}"><a href="/admin/settings.html?tab=newsletter"><span>Newsletter</span></a></li>
         </ul>
       </li>
 
       <!-- CONTENT SECTION -->
       <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Content</li>
-      <li class="admin-menu-item has-submenu ${isSettingsView && (currentTab === 'homepage' || currentTab === 'testimonials' || currentTab === 'about-page' || currentTab === 'header') ? 'expanded' : ''}" id="menu-content">
+      <li class="admin-menu-item has-submenu ${isSettingsView && ['homepage', 'testimonials', 'about-page', 'contact-page', 'privacy-page', 'terms-page', 'header'].includes(currentTab) ? 'expanded' : ''}" id="menu-content">
         <a class="admin-menu-item-link" onclick="toggleSubmenu('content')">
           <i data-lucide="edit-3"></i> <span>Content Editor</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
-        <ul class="admin-menu-submenu ${isSettingsView && (currentTab === 'homepage' || currentTab === 'testimonials' || currentTab === 'about-page' || currentTab === 'header') ? 'open' : ''}" id="submenu-content">
+        <ul class="admin-menu-submenu ${isSettingsView && ['homepage', 'testimonials', 'about-page', 'contact-page', 'privacy-page', 'terms-page', 'header'].includes(currentTab) ? 'open' : ''}" id="submenu-content">
           <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage"><span>Homepage Builder</span></a></li>
           <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials"><span>Testimonials</span></a></li>
-          <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page"><span>Pages Manager</span></a></li>
+          <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page"><span>About Page</span></a></li>
+          <li class="${activeTabCls('contact-page')}"><a href="/admin/settings.html?tab=contact-page"><span>Contact Page</span></a></li>
+          <li class="${activeTabCls('privacy-page')}"><a href="/admin/settings.html?tab=privacy-page"><span>Privacy Policy</span></a></li>
+          <li class="${activeTabCls('terms-page')}"><a href="/admin/settings.html?tab=terms-page"><span>Terms of Service</span></a></li>
           <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header"><span>Navigation Builder</span></a></li>
         </ul>
       </li>
 
       <!-- APPEARANCE STUDIO SECTION -->
       <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Appearance</li>
-      <li class="admin-menu-item has-submenu ${isSettingsView && (currentTab === 'presets' || currentTab === 'colors' || currentTab === 'typography' || currentTab === 'footer' || currentTab === 'buttons' || currentTab === 'cards' || currentTab === 'products' || currentTab === 'categories' || currentTab === 'mobile' || currentTab === 'animations' || currentTab === 'glass') ? 'expanded' : ''}" id="menu-appearance">
+      <li class="admin-menu-item has-submenu ${isSettingsView && ['presets', 'colors', 'typography', 'footer', 'buttons', 'cards', 'products', 'categories', 'mobile', 'animations', 'glass'].includes(currentTab) ? 'expanded' : ''}" id="menu-appearance">
         <a class="admin-menu-item-link" onclick="toggleSubmenu('appearance')">
           <i data-lucide="palette"></i> <span>Theme Studio</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
-        <ul class="admin-menu-submenu ${isSettingsView && (currentTab === 'presets' || currentTab === 'colors' || currentTab === 'typography' || currentTab === 'footer' || currentTab === 'buttons' || currentTab === 'cards' || currentTab === 'products' || currentTab === 'categories' || currentTab === 'mobile' || currentTab === 'animations' || currentTab === 'glass') ? 'open' : ''}" id="submenu-appearance">
+        <ul class="admin-menu-submenu ${isSettingsView && ['presets', 'colors', 'typography', 'footer', 'buttons', 'cards', 'products', 'categories', 'mobile', 'animations', 'glass'].includes(currentTab) ? 'open' : ''}" id="submenu-appearance">
           <li class="${activeTabCls('presets')}"><a href="/admin/settings.html?tab=presets"><span>Theme Presets</span></a></li>
           <li class="${activeTabCls('colors')}"><a href="/admin/settings.html?tab=colors"><span>Colors</span></a></li>
           <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography"><span>Typography</span></a></li>
@@ -219,6 +223,21 @@ function injectAdminSidebar() {
           <li class="${activeTabCls('mobile')}"><a href="/admin/settings.html?tab=mobile"><span>Mobile Settings</span></a></li>
           <li class="${activeTabCls('animations')}"><a href="/admin/settings.html?tab=animations"><span>Animations</span></a></li>
           <li class="${activeTabCls('glass')}"><a href="/admin/settings.html?tab=glass"><span>Glassmorphism</span></a></li>
+        </ul>
+      </li>
+
+      <!-- SYSTEM & SETTINGS SECTION -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Settings</li>
+      <li class="admin-menu-item has-submenu ${isSettingsView && ['general', 'seo', 'analytics', 'integrations'].includes(currentTab) ? 'expanded' : ''}" id="menu-settings">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('settings')">
+          <i data-lucide="settings"></i> <span>Store Settings</span>
+          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
+        </a>
+        <ul class="admin-menu-submenu ${isSettingsView && ['general', 'seo', 'analytics', 'integrations'].includes(currentTab) ? 'open' : ''}" id="submenu-settings">
+          <li class="${activeTabCls('general')}"><a href="/admin/settings.html?tab=general"><span>General</span></a></li>
+          <li class="${activeTabCls('seo')}"><a href="/admin/settings.html?tab=seo"><span>SEO Settings</span></a></li>
+          <li class="${activeTabCls('analytics')}"><a href="/admin/settings.html?tab=analytics"><span>Analytics</span></a></li>
+          <li class="${activeTabCls('integrations')}"><a href="/admin/settings.html?tab=integrations"><span>Integrations</span></a></li>
         </ul>
       </li>
 
@@ -2237,6 +2256,14 @@ function initInvoiceSearch() {
 }
 
 // ─── Feature Control Center Toggle Management ────────────────────────────────
+function formatDateTimeLocal(dateInput) {
+  if (!dateInput) return '';
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return '';
+  const pad = (num) => String(num).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 async function loadFeatureToggles() {
   try {
     const res = await adminFetch('/api/settings/feature-toggles');
@@ -2258,159 +2285,174 @@ async function loadFeatureToggles() {
       themeAccentColor: { type: 'color', input: 'toggle-themeAccentColor', status: 'toggle-status-themeAccentColor' }
     };
 
-    for (const [key, prop] of Object.entries(toggleMap)) {
-      if (prop.type === 'checkbox') {
-        const checkbox = document.getElementById(prop.checkbox);
-        const statusBadge = document.getElementById(prop.status);
-        const isEnabled = toggles[key] !== false;
+    for (const [key, config] of Object.entries(toggleMap)) {
+      const val = toggles[key];
+      if (config.type === 'checkbox') {
+        const cbMain = document.getElementById(config.checkbox);
+        if (cbMain) cbMain.checked = !!val;
+        const cbTab = document.getElementById(config.checkbox + '-tab');
+        if (cbTab) cbTab.checked = !!val;
 
-        if (checkbox) checkbox.checked = isEnabled;
-        if (statusBadge) {
-          statusBadge.textContent = isEnabled ? 'Active' : 'Disabled';
-          statusBadge.className = `feature-toggle-status ${isEnabled ? 'active' : 'inactive'}`;
-        }
-      } else if (prop.type === 'color') {
-        const input = document.getElementById(prop.input);
-        const statusBadge = document.getElementById(prop.status);
-        const colorVal = toggles[key] || '#6A0DAD';
-
-        if (input) input.value = colorVal;
-        if (statusBadge) {
-          statusBadge.textContent = colorVal;
-        }
+        // Update all status elements
+        document.querySelectorAll('#' + config.status).forEach(statusEl => {
+          statusEl.textContent = val ? 'Active' : 'Disabled';
+          statusEl.classList.toggle('active', !!val);
+          statusEl.classList.toggle('disabled', !val);
+        });
+      } else if (config.type === 'color') {
+        const inputEl = document.getElementById(config.input);
+        if (inputEl) inputEl.value = val || '#6A0DAD';
+        const statusEl = document.getElementById(config.status);
+        if (statusEl) statusEl.textContent = val || '#6A0DAD';
       }
     }
 
     // Load flash sale inputs
-    const fsTextInput = document.getElementById('input-flashSaleText');
-    const fsDateInput = document.getElementById('input-flashSaleTargetDate');
-    if (fsTextInput) fsTextInput.value = toggles.flashSaleText || '';
-    if (fsDateInput) {
-      if (toggles.flashSaleTargetDate) {
-        const d = new Date(toggles.flashSaleTargetDate);
-        const formattedDate = d.getFullYear() + '-' +
-          String(d.getMonth() + 1).padStart(2, '0') + '-' +
-          String(d.getDate()).padStart(2, '0') + 'T' +
-          String(d.getHours()).padStart(2, '0') + ':' +
-          String(d.getMinutes()).padStart(2, '0');
-        fsDateInput.value = formattedDate;
-      } else {
-        fsDateInput.value = '';
-      }
-    }
-  } catch (err) {
-    console.error('Failed to load feature toggles:', err);
-  }
-}
+    const fsTextVal = toggles.flashSaleText || '';
+    const fsTextMain = document.getElementById('input-flashSaleText');
+    if (fsTextMain) fsTextMain.value = fsTextVal;
+    const fsTextTab = document.getElementById('input-flashSaleText-tab');
+    if (fsTextTab) fsTextTab.value = fsTextVal;
 
-async function handleFeatureToggle(key, enabled) {
-  try {
-    const toggles = {};
-    toggles[key] = enabled;
-
-    const res = await adminFetch('/api/settings/feature-toggles', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toggles })
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      const statusMap = {
-        wishlistEnabled: 'toggle-status-wishlist',
-        couponsEnabled: 'toggle-status-coupon',
-        registrationEnabled: 'toggle-status-registration',
-        whatsappCheckoutEnabled: 'toggle-status-whatsapp',
-        codEnabled: 'toggle-status-cod',
-        reviewsEnabled: 'toggle-status-reviews',
-        promosEnabled: 'toggle-status-promos',
-        homepageLayoutFeatured: 'toggle-status-homepageLayoutFeatured',
-        customerLoginRequirement: 'toggle-status-customerLoginRequirement',
-        flashSaleActive: 'toggle-status-flashSaleActive',
-        themeAccentColor: 'toggle-status-themeAccentColor'
-      };
-      const labelMap = {
-        wishlistEnabled: 'Wishlist System',
-        couponsEnabled: 'Coupon Engine',
-        registrationEnabled: 'Registration Portal',
-        whatsappCheckoutEnabled: 'WhatsApp Checkout',
-        codEnabled: 'Cash on Delivery',
-        reviewsEnabled: 'Reviews & Ratings',
-        promosEnabled: 'Flash Sales & Banners',
-        homepageLayoutFeatured: 'Homepage Featured Curation',
-        customerLoginRequirement: 'Customer Login Requirement',
-        flashSaleActive: 'Flash Sale Countdown Banner',
-        themeAccentColor: 'Theme Accent Color'
-      };
-
-      const statusBadge = document.getElementById(statusMap[key]);
-      if (statusBadge) {
-        if (key === 'themeAccentColor') {
-          statusBadge.textContent = enabled;
-        } else {
-          statusBadge.textContent = enabled ? 'Active' : 'Disabled';
-          statusBadge.className = `feature-toggle-status ${enabled ? 'active' : 'inactive'}`;
-        }
-      }
-      showToast(`${labelMap[key] || key} updated successfully!`, 'success');
+    const fsDateVal = toggles.flashSaleTargetDate;
+    if (fsDateVal) {
+      const dateStr = formatDateTimeLocal(fsDateVal);
+      const fsDateMain = document.getElementById('input-flashSaleTargetDate');
+      if (fsDateMain) fsDateMain.value = dateStr;
+      const fsDateTab = document.getElementById('input-flashSaleTargetDate-tab');
+      if (fsDateTab) fsDateTab.value = dateStr;
     } else {
-      showToast(data.error || 'Failed to update toggle', 'error');
-      revertFeatureToggleUI(key, enabled);
+      const fsDateMain = document.getElementById('input-flashSaleTargetDate');
+      if (fsDateMain) fsDateMain.value = '';
+      const fsDateTab = document.getElementById('input-flashSaleTargetDate-tab');
+      if (fsDateTab) fsDateTab.value = '';
     }
   } catch (err) {
-    showToast('Connection error updating toggle', 'error');
-    revertFeatureToggleUI(key, enabled);
+    console.error('Failed to load feature toggles', err);
   }
 }
 
-function revertFeatureToggleUI(key, val) {
-  if (key === 'themeAccentColor') {
-    const input = document.getElementById('toggle-themeAccentColor');
-    if (input) input.value = '#6A0DAD';
-  } else {
-    const checkbox = document.getElementById(`toggle-${key}`);
-    if (checkbox) checkbox.checked = !val;
+function syncFeatureToggleUI(key, value) {
+  const toggleMap = {
+    wishlistEnabled: { type: 'checkbox', checkbox: 'toggle-wishlistEnabled', status: 'toggle-status-wishlist' },
+    couponsEnabled: { type: 'checkbox', checkbox: 'toggle-couponsEnabled', status: 'toggle-status-coupon' },
+    registrationEnabled: { type: 'checkbox', checkbox: 'toggle-registrationEnabled', status: 'toggle-status-registration' },
+    whatsappCheckoutEnabled: { type: 'checkbox', checkbox: 'toggle-whatsappCheckoutEnabled', status: 'toggle-status-whatsapp' },
+    codEnabled: { type: 'checkbox', checkbox: 'toggle-codEnabled', status: 'toggle-status-cod' },
+    reviewsEnabled: { type: 'checkbox', checkbox: 'toggle-reviewsEnabled', status: 'toggle-status-reviews' },
+    promosEnabled: { type: 'checkbox', checkbox: 'toggle-promosEnabled', status: 'toggle-status-promos' },
+    homepageLayoutFeatured: { type: 'checkbox', checkbox: 'toggle-homepageLayoutFeatured', status: 'toggle-status-homepageLayoutFeatured' },
+    customerLoginRequirement: { type: 'checkbox', checkbox: 'toggle-customerLoginRequirement', status: 'toggle-status-customerLoginRequirement' },
+    flashSaleActive: { type: 'checkbox', checkbox: 'toggle-flashSaleActive', status: 'toggle-status-flashSaleActive' },
+    themeAccentColor: { type: 'color', input: 'toggle-themeAccentColor', status: 'toggle-status-themeAccentColor' }
+  };
+
+  const config = toggleMap[key];
+  if (!config) return;
+
+  if (config.type === 'checkbox') {
+    const cbMain = document.getElementById(config.checkbox);
+    if (cbMain) cbMain.checked = !!value;
+    const cbTab = document.getElementById(config.checkbox + '-tab');
+    if (cbTab) cbTab.checked = !!value;
+
+    document.querySelectorAll('#' + config.status).forEach(statusEl => {
+      statusEl.textContent = value ? 'Active' : 'Disabled';
+      statusEl.classList.toggle('active', !!value);
+      statusEl.classList.toggle('disabled', !value);
+    });
+  } else if (config.type === 'color') {
+    const inputEl = document.getElementById(config.input);
+    if (inputEl) inputEl.value = value;
+    const statusEl = document.getElementById(config.status);
+    if (statusEl) statusEl.textContent = value;
   }
 }
 
-window.handleFeatureToggle = handleFeatureToggle;
-window.loadFeatureToggles = loadFeatureToggles;
-
-window.handleFlashSaleTextUpdate = async (val) => {
+async function handleFeatureToggle(key, value) {
   try {
+    syncFeatureToggleUI(key, value);
+    const payload = { toggles: { [key]: value } };
     const res = await adminFetch('/api/settings/feature-toggles', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toggles: { flashSaleText: val } })
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.success) {
+      showToast(data.error || 'Failed to update feature toggle', 'error');
+      syncFeatureToggleUI(key, !value);
+    } else {
+      showToast('Feature updated successfully!', 'success');
+      const iframe = document.getElementById('viewport-iframe');
+      if (iframe) iframe.contentWindow.location.reload();
+    }
+  } catch (err) {
+    console.error('Error updating feature toggle', err);
+    showToast('Failed to update feature toggle due to connection error', 'error');
+    syncFeatureToggleUI(key, !value);
+  }
+}
+
+async function handleFlashSaleTextUpdate(val) {
+  try {
+    const textMain = document.getElementById('input-flashSaleText');
+    if (textMain) textMain.value = val;
+    const textTab = document.getElementById('input-flashSaleText-tab');
+    if (textTab) textTab.value = val;
+
+    const payload = { toggles: { flashSaleText: val } };
+    const res = await adminFetch('/api/settings/feature-toggles', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
     const data = await res.json();
     if (data.success) {
-      showToast('Flash sale text updated!', 'success');
+      showToast('Flash sale promo text updated!', 'success');
+      const iframe = document.getElementById('viewport-iframe');
+      if (iframe) iframe.contentWindow.location.reload();
     } else {
       showToast(data.error || 'Failed to update flash sale text', 'error');
     }
   } catch (err) {
-    showToast('Connection error', 'error');
+    showToast('Failed to update flash sale text', 'error');
   }
-};
+}
 
-window.handleFlashSaleDateUpdate = async (val) => {
+async function handleFlashSaleDateUpdate(val) {
   try {
+    const dateMain = document.getElementById('input-flashSaleTargetDate');
+    if (dateMain) dateMain.value = val;
+    const dateTab = document.getElementById('input-flashSaleTargetDate-tab');
+    if (dateTab) dateTab.value = val;
+
+    const payload = { toggles: { flashSaleTargetDate: val ? new Date(val).toISOString() : null } };
     const res = await adminFetch('/api/settings/feature-toggles', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toggles: { flashSaleTargetDate: val ? new Date(val) : null } })
+      body: JSON.stringify(payload)
     });
     const data = await res.json();
     if (data.success) {
-      showToast('Flash sale target date updated!', 'success');
+      showToast('Flash sale target deadline updated!', 'success');
+      const iframe = document.getElementById('viewport-iframe');
+      if (iframe) iframe.contentWindow.location.reload();
     } else {
-      showToast(data.error || 'Failed to update target date', 'error');
+      showToast(data.error || 'Failed to update flash sale deadline', 'error');
     }
   } catch (err) {
-    showToast('Connection error', 'error');
+    showToast('Failed to update flash sale deadline', 'error');
   }
-};
+}
+
+window.loadFeatureToggles = loadFeatureToggles;
+window.handleFeatureToggle = handleFeatureToggle;
+window.handleFlashSaleTextUpdate = handleFlashSaleTextUpdate;
+window.handleFlashSaleDateUpdate = handleFlashSaleDateUpdate;
+
+
+
 
 window.viewCustomerDeepProfile = async (customerId) => {
   try {

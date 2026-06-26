@@ -699,3 +699,85 @@
   transition: opacity 0.2s;
 }
 .media-card.selectable:hover .media-select-btn { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   BRIGHT DESIGN SYSTEM OVERRIDES FOR THEME CUSTOMIZER LAYOUTS
+   ═══════════════════════════════════════════════════════════════════════════════ */
+.studio-container {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+}
+
+.studio-sidebar {
+  background-color: #F3F4F6 !important;
+  border-right: 3px solid #000000 !important;
+  box-shadow: none !important;
+}
+
+.studio-header {
+  background-color: #FFFFFF !important;
+  border-bottom: 3px solid #000000 !important;
+}
+
+.studio-header h1 {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+.studio-header p {
+  color: #111111 !important;
+  font-weight: 700 !important;
+}
+
+.studio-tabs {
+  background-color: #E5E7EB !important;
+  border-bottom: 2px solid #000000 !important;
+}
+
+.studio-content {
+  background-color: #FFFFFF !important;
+}
+
+.studio-viewport-panel {
+  background-color: #F9FAFB !important;
+}
+
+.viewport-toolbar {
+  background-color: #FFFFFF !important;
+  border-bottom: 3px solid #000000 !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+.viewport-toolbar label {
+  color: #000000 !important;
+}
+
+/* Device Toolbar buttons */
+.device-btn {
+  background-color: #FFFF00 !important; /* Neon Yellow */
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  font-weight: 800 !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  margin: 0 4px !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+}
+
+.device-btn.active {
+  background-color: #39FF14 !important; /* Neon Green */
+  box-shadow: 3px 3px 0px #000000 !important;
+}
+
+.device-btn:hover {
+  background-color: #00FFFF !important;
+}
+
+/* Actions footer */
+.studio-actions {
+  background-color: #FFFFFF !important;
+  border-top: 3px solid #000000 !important;
+  padding: 16px 24px !important;
+}
+

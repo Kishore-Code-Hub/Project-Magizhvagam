@@ -7,31 +7,148 @@
   <link rel="stylesheet" href="/assets/css/admin.css">
   <link rel="stylesheet" href="/assets/css/appearance-studio.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
+  <style>
+    /* Tabs Navigation Row Styling matching settings.html */
+    .studio-tabs {
+      display: flex;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--studio-border, #ddd);
+      background-color: rgba(0, 0, 0, 0.05);
+      padding: 0 10px;
+      margin-bottom: 20px;
+    }
+    .studio-tab-btn {
+      background: transparent;
+      border: none;
+      padding: 12px 20px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted, #666);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .studio-tab-btn:hover {
+      color: var(--text-color, #000000);
+    }
+    .studio-tab-btn.active {
+      color: var(--text-color, #000000);
+      border-bottom-color: var(--studio-gold, #C9972E);
+    }
+    /* Ensure high contrast for settings panel labels */
+    .control-group label {
+      color: #000000 !important;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body style="visibility:hidden">
   <div class="admin-layout">
     <aside id="admin-sidebar-container"></aside>
     <main class="admin-main">
-      <div class="admin-page-header">
-        <div>
-          <h1>Media Library</h1>
-          <p>Upload, preview, search, and reuse images across your storefront.</p>
+      
+      <!-- Tabs Row -->
+      <div class="studio-tabs">
+        <button type="button" class="studio-tab-btn active" onclick="switchMediaTab(event, 'tab-gallery')">Gallery</button>
+        <button type="button" class="studio-tab-btn" onclick="switchMediaTab(event, 'tab-compression')">Image Compression</button>
+        <button type="button" class="studio-tab-btn" onclick="switchMediaTab(event, 'tab-limits')">Upload Limits</button>
+      </div>
+
+      <!-- TAB PANEL: Gallery -->
+      <div id="tab-gallery" class="media-tab-panel active">
+        <div class="admin-page-header">
+          <div>
+            <h1>Media Library</h1>
+            <p>Upload, preview, search, and reuse images across your storefront.</p>
+          </div>
+          <label class="studio-btn studio-btn-primary">
+            Upload Images
+            <input type="file" id="media-library-upload" accept="image/*" multiple hidden>
+          </label>
         </div>
-        <label class="studio-btn studio-btn-primary">
-          Upload Images
-          <input type="file" id="media-library-upload" accept="image/*" multiple hidden>
-        </label>
+
+        <div class="media-library-toolbar">
+          <input type="search" id="media-library-search" class="studio-input" placeholder="Search by filename or tag...">
+        </div>
+
+        <div id="media-drop-zone" class="media-drop-zone">
+          <p>Drag and drop images here, or use the Upload button above.</p>
+        </div>
+
+        <div id="media-library-grid" class="media-grid media-grid-page"></div>
       </div>
 
-      <div class="media-library-toolbar">
-        <input type="search" id="media-library-search" class="studio-input" placeholder="Search by filename or tag...">
+      <!-- TAB PANEL: Image Compression -->
+      <div id="tab-compression" class="media-tab-panel" style="display: none; padding: 25px; background: var(--studio-card-bg, #fff); border: 1px solid var(--studio-border, #ddd); border-radius: 8px;">
+        <h3 style="font-family:'Outfit'; font-size:18px; margin-bottom:12px; color:var(--text-color, #000000);">Image Compression Settings</h3>
+        <p style="font-size:12px; color:var(--text-muted, #666); margin-bottom:20px;">Optimize store performance by automatically resizing and compressing uploaded assets.</p>
+        
+        <div style="display:flex; flex-direction:column; gap:20px; max-width:500px;">
+          <div class="control-group">
+            <label style="font-weight:600; display:block; margin-bottom:6px; color:#000000 !important;">Target WebP Quality (1-100)</label>
+            <div style="display:flex; align-items:center; gap:15px;">
+              <input type="range" id="media-webp-quality" min="10" max="100" value="80" class="range-slider" style="flex:1;" oninput="document.getElementById('webp-quality-val').textContent=this.value">
+              <span id="webp-quality-val" style="font-weight:700; width:30px; text-align:right; color:#000000 !important;">80</span>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label style="font-weight:600; display:block; margin-bottom:6px; color:#000000 !important;">Max Image Resize Width (px)</label>
+            <select id="media-max-width" class="studio-input" style="width:100%;">
+              <option value="1200">1200px (Highly Optimized)</option>
+              <option value="1920" selected>1920px (Recommended HD)</option>
+              <option value="2560">2560px (Ultra HD)</option>
+              <option value="0">Do Not Resize (Original Width)</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label style="font-weight:600; display:block; margin-bottom:6px; color:#000000 !important;">Output Format Conversion</label>
+            <select id="media-output-format" class="studio-input" style="width:100%;">
+              <option value="webp" selected>Convert to WebP (Recommended)</option>
+              <option value="original">Keep Original Format</option>
+            </select>
+          </div>
+
+          <button type="button" id="save-compression-btn" class="studio-btn studio-btn-primary" style="align-self:flex-start; padding:10px 20px;">Save Compression Settings</button>
+        </div>
       </div>
 
-      <div id="media-drop-zone" class="media-drop-zone">
-        <p>Drag and drop images here, or use the Upload button above.</p>
+      <!-- TAB PANEL: Upload Limits -->
+      <div id="tab-limits" class="media-tab-panel" style="display: none; padding: 25px; background: var(--studio-card-bg, #fff); border: 1px solid var(--studio-border, #ddd); border-radius: 8px;">
+        <h3 style="font-family:'Outfit'; font-size:18px; margin-bottom:12px; color:var(--text-color, #000000);">Upload Limits & Allowed Formats</h3>
+        <p style="font-size:12px; color:var(--text-muted, #666); margin-bottom:20px;">Restrict max file sizes and allowed format extensions to secure store uploads.</p>
+        
+        <div style="display:flex; flex-direction:column; gap:20px; max-width:500px;">
+          <div class="control-group">
+            <label style="font-weight:600; display:block; margin-bottom:6px; color:#000000 !important;">Maximum File Upload Size (MB)</label>
+            <input type="number" id="media-max-size" class="studio-input" style="width:100%;" min="1" max="50" value="10">
+          </div>
+
+          <div class="control-group">
+            <label style="font-weight:600; display:block; margin-bottom:6px; color:#000000 !important;">Allowed Image Formats</label>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+              <label style="display:flex; align-items:center; gap:8px; font-weight:500; color:#000000 !important; cursor:pointer;">
+                <input type="checkbox" id="limit-format-webp" checked> <span>WebP (.webp)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; font-weight:500; color:#000000 !important; cursor:pointer;">
+                <input type="checkbox" id="limit-format-jpeg" checked> <span>JPEG (.jpg, .jpeg)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; font-weight:500; color:#000000 !important; cursor:pointer;">
+                <input type="checkbox" id="limit-format-png" checked> <span>PNG (.png)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; font-weight:500; color:#000000 !important; cursor:pointer;">
+                <input type="checkbox" id="limit-format-gif"> <span>GIF (.gif)</span>
+              </label>
+            </div>
+          </div>
+
+          <button type="button" id="save-limits-btn" class="studio-btn studio-btn-primary" style="align-self:flex-start; padding:10px 20px;">Save Upload Limits</button>
+        </div>
       </div>
 
-      <div id="media-library-grid" class="media-grid media-grid-page"></div>
     </main>
   </div>
 
@@ -41,8 +158,110 @@
   <script src="/assets/js/admin.js"></script>
   <script src="/assets/js/media-library.js"></script>
   <script>
+    function switchMediaTab(event, tabId) {
+      document.querySelectorAll('.media-tab-panel').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('.studio-tab-btn').forEach(b => b.classList.remove('active'));
+      
+      const panel = document.getElementById(tabId);
+      if (panel) panel.style.display = 'block';
+      
+      if (event && event.target) {
+        event.target.classList.add('active');
+      } else {
+        const btns = Array.from(document.querySelectorAll('.studio-tab-btn'));
+        const btn = btns.find(b => b.getAttribute('onclick')?.includes(tabId));
+        if (btn) btn.classList.add('active');
+      }
+      
+      // Update browser URL query parameter tab
+      const url = new URL(window.location.href);
+      if (tabId === 'tab-gallery') {
+        url.searchParams.delete('tab');
+      } else {
+        url.searchParams.set('tab', tabId.replace('tab-', ''));
+      }
+      window.history.replaceState({}, '', url.toString());
+    }
+    window.switchMediaTab = switchMediaTab;
+
+    async function loadMediaSettings() {
+      try {
+        const res = await adminFetch('/api/settings/media');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.success && data.setting) {
+          const s = data.setting;
+          if (s.webpQuality !== undefined) {
+            document.getElementById('media-webp-quality').value = s.webpQuality;
+            document.getElementById('webp-quality-val').textContent = s.webpQuality;
+          }
+          if (s.maxWidth !== undefined) {
+            document.getElementById('media-max-width').value = s.maxWidth;
+          }
+          if (s.outputFormat !== undefined) {
+            document.getElementById('media-output-format').value = s.outputFormat;
+          }
+          if (s.maxSize !== undefined) {
+            document.getElementById('media-max-size').value = s.maxSize;
+          }
+          if (s.allowedFormats) {
+            document.getElementById('limit-format-webp').checked = !!s.allowedFormats.webp;
+            document.getElementById('limit-format-jpeg').checked = !!s.allowedFormats.jpeg;
+            document.getElementById('limit-format-png').checked = !!s.allowedFormats.png;
+            document.getElementById('limit-format-gif').checked = !!s.allowedFormats.gif;
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load media settings', err);
+      }
+    }
+
+    async function saveMediaSettings() {
+      const payload = {
+        webpQuality: Number(document.getElementById('media-webp-quality').value),
+        maxWidth: Number(document.getElementById('media-max-width').value),
+        outputFormat: document.getElementById('media-output-format').value,
+        maxSize: Number(document.getElementById('media-max-size').value),
+        allowedFormats: {
+          webp: document.getElementById('limit-format-webp').checked,
+          jpeg: document.getElementById('limit-format-jpeg').checked,
+          png: document.getElementById('limit-format-png').checked,
+          gif: document.getElementById('limit-format-gif').checked
+        }
+      };
+
+      try {
+        const res = await adminFetch('/api/settings/media', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value: payload })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Media settings saved successfully!', 'success');
+        } else {
+          showToast(data.error || 'Failed to save media settings', 'error');
+        }
+      } catch (err) {
+        showToast('Error saving media settings', 'error');
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       if (window.MZMediaLibrary) window.MZMediaLibrary.initMediaLibraryPage();
+      
+      loadMediaSettings();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam === 'compression') {
+        switchMediaTab(null, 'tab-compression');
+      } else if (tabParam === 'limits') {
+        switchMediaTab(null, 'tab-limits');
+      }
+
+      document.getElementById('save-compression-btn').addEventListener('click', saveMediaSettings);
+      document.getElementById('save-limits-btn').addEventListener('click', saveMediaSettings);
     });
   </script>
 </body>

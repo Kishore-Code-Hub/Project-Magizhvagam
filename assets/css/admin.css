@@ -1446,3 +1446,249 @@ body:has(.admin-layout) {
 .admin-layout.dark-mode .sticky-save-bar {
   background: rgba(21, 30, 51, 0.8) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   BRIGHT HIGH-CONTRAST NEON THEME OVERRIDES FOR OPTIONS AND FEATURES
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Global text contrast safety overrides for options/features container */
+.admin-layout, 
+.admin-layout *, 
+.studio-container, 
+.studio-container * {
+  color: #000000 !important;
+}
+
+/* Bright theme variables mapping */
+.admin-layout {
+  --adm-bg: #FFFFFF !important;
+  --adm-surface: #F3F4F6 !important;
+  --adm-card-bg: #FFFFFF !important;
+  --adm-border: #000000 !important;
+  --adm-text: #000000 !important;
+  --adm-text-muted: #111111 !important;
+  --adm-accent: #39FF14 !important; /* Neon Green */
+  --adm-accent-hover: #00FFFF !important; /* Neon Cyan */
+}
+
+/* Metric / dashboard cards */
+.metric-card, 
+.feature-control-panel, 
+.glass, 
+.glass-panel, 
+.card, 
+.preset-option-card, 
+.visual-editor-card, 
+.studio-accordion {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border: 3px solid #000000 !important;
+  border-radius: 12px !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+  color: #000000 !important;
+  padding: 16px !important;
+}
+
+.metric-number {
+  color: #000000 !important;
+  font-size: 32px !important;
+  font-weight: 900 !important;
+}
+
+/* Option Inputs & Form Controls */
+.admin-layout input[type="text"],
+.admin-layout input[type="email"],
+.admin-layout input[type="number"],
+.admin-layout input[type="password"],
+.admin-layout input[type="search"],
+.admin-layout input[type="url"],
+.admin-layout input[type="tel"],
+.admin-layout input[type="date"],
+.admin-layout input[type="datetime-local"],
+.admin-layout select,
+.admin-layout textarea,
+.studio-input,
+.form-control {
+  background-color: #FFFF00 !important; /* Vibrant Neon Yellow */
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  border-radius: 8px !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  padding: 10px 14px !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+}
+
+.admin-layout input:focus,
+.admin-layout select:focus,
+.admin-layout textarea:focus,
+.studio-input:focus,
+.form-control:focus {
+  background-color: #FFFF55 !important;
+  border-color: #000000 !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+  outline: none !important;
+}
+
+.admin-layout input::placeholder,
+.studio-input::placeholder,
+.form-control::placeholder {
+  color: #333333 !important;
+  opacity: 0.8 !important;
+}
+
+/* Tabs Buttons Override */
+.studio-tab-btn {
+  background-color: #FF9800 !important; /* Bright Orange */
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  border-radius: 6px !important;
+  font-weight: 800 !important;
+  margin: 4px !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+}
+
+.studio-tab-btn:hover {
+  background-color: #00FFFF !important; /* Neon Cyan */
+  color: #000000 !important;
+}
+
+.studio-tab-btn.active {
+  background-color: #39FF14 !important; /* Neon Green */
+  color: #000000 !important;
+  border-bottom: 2px solid #000000 !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+}
+
+/* Feature Toggle Center Row overrides */
+.feature-toggle-row {
+  border-bottom: 2px solid #000000 !important;
+  padding: 16px !important;
+  background-color: #E8F5E9 !important; /* Light bright green panel */
+  margin-bottom: 8px !important;
+  border-radius: 8px !important;
+}
+
+/* Toggles & Switch Sliders overrides */
+.admin-layout .toggle-slider {
+  background-color: #FF5722 !important; /* Bright Red/Orange for Off */
+  border: 2px solid #000000 !important;
+}
+
+.admin-layout .toggle-switch input:checked + .toggle-slider {
+  background-color: #39FF14 !important; /* Neon Green for On */
+}
+
+.admin-layout .toggle-slider::before {
+  background-color: #000000 !important;
+  border: 1px solid #FFFFFF !important;
+}
+
+/* Active preset option card hover overrides */
+.preset-option-card:hover {
+  background-color: #00FFFF !important;
+  border-color: #000000 !important;
+}
+.preset-option-card.active {
+  background-color: #39FF14 !important;
+  border-color: #000000 !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+}
+
+/* Accordion controls overrides */
+.studio-accordion-header {
+  background-color: #FF9800 !important; /* Bright Orange header */
+  color: #000000 !important;
+  border-bottom: 2px solid #000000 !important;
+}
+.studio-accordion-header:hover {
+  background-color: #FFA726 !important;
+}
+.studio-accordion-content {
+  background-color: #FFFFE0 !important; /* Light bright yellow content */
+  color: #000000 !important;
+  border-top: 2px solid #000000 !important;
+}
+
+/* Custom override buttons */
+.admin-layout .btn,
+.studio-btn,
+.studio-btn-primary,
+.studio-btn-secondary,
+.btn-primary,
+.btn-secondary {
+  background-color: #00FFFF !important; /* Vibrant Cyan */
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  border-radius: 8px !important;
+  font-weight: 900 !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+  padding: 10px 18px !important;
+  cursor: pointer !important;
+}
+
+.admin-layout .btn:hover,
+.studio-btn:hover,
+.studio-btn-primary:hover,
+.btn-primary:hover {
+  background-color: #39FF14 !important; /* Neon Green */
+  color: #000000 !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+}
+
+.admin-layout .btn-danger,
+.studio-btn-danger,
+.btn-danger {
+  background-color: #FF007F !important; /* Neon Pink/Magenta */
+  color: #000000 !important;
+}
+
+.admin-layout .btn-secondary,
+.studio-btn-secondary,
+.btn-secondary {
+  background-color: #FFFF00 !important; /* Vibrant Neon Yellow */
+  color: #000000 !important;
+}
+
+/* Sidebar navigation */
+.admin-menu li a {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+.admin-menu li a:hover,
+.admin-menu li.active a {
+  background-color: #39FF14 !important; /* Neon Green active link */
+  color: #000000 !important;
+  border-left: 6px solid #000000 !important;
+}
+
+/* Text and Headings high contrast black */
+.admin-main h1, 
+.admin-main h2, 
+.admin-main h3, 
+.admin-main h4, 
+.admin-main h5, 
+.admin-main h6,
+.studio-header h1,
+.studio-header p,
+.control-group label,
+.control-desc,
+.feature-toggle-label,
+.feature-toggle-desc,
+.admin-menu-submenu span,
+.menu-group-title {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+/* Diagnostics status text */
+.feature-toggle-status.active {
+  background-color: #39FF14 !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+}
+.feature-toggle-status.inactive {
+  background-color: #FF5722 !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+}
