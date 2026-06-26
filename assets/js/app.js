@@ -537,8 +537,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (toggles && toggles.wishlistEnabled === false) {
     const wishLink = document.getElementById('header-wishlist-link');
     if (wishLink) wishLink.style.display = 'none';
-
-    document.querySelectorAll('.wishlist-btn').forEach(btn => btn.style.display = 'none');
+    // Keep wishlist buttons on cards visible per user request
   }
 
   syncCartCounters();
@@ -1712,7 +1711,7 @@ window.openQuickViewModal = async (productId) => {
     }
     if (isDiscounted) {
       const saving = (price > 0) ? Math.round(((price - p.discountPrice) / price) * 100) : 0;
-      badgesHtml += `<span class="badge badge-new" style="margin-right:5px;">-${saving}% OFF</span>`;
+      badgesHtml += `<span class="badge badge-new" style="background:#FFFFFF !important; color:#000000 !important; border:1.5px solid #000000 !important; margin-right:5px; font-weight:700 !important;">-${saving}% OFF</span>`;
     }
     if (p.tags && (p.tags.includes('new') || p.tags.includes('new-arrival'))) {
       badgesHtml += `<span class="badge" style="background:#8b5cf6; color:white; margin-right:5px;">NEW ARRIVAL</span>`;
@@ -1815,7 +1814,7 @@ window.createProductCardHTML = (p) => {
     badgesHtml += `<span class="badge" style="background:#ef4444; color:white; font-size:9px;">SOLD OUT</span>`;
   }
   if (isDiscounted) {
-    badgesHtml += `<span class="badge badge-new" style="font-size:9px;">-${saving}% OFF</span>`;
+    badgesHtml += `<span class="badge badge-new" style="background:#FFFFFF !important; color:#000000 !important; border:1.5px solid #000000 !important; font-size:9px; font-weight:700 !important;">-${saving}% OFF</span>`;
   }
   const tags = p.tags || [];
   if (tags.includes('new') || tags.includes('new-arrival')) {
@@ -1837,7 +1836,7 @@ window.createProductCardHTML = (p) => {
         ${badgesHtml}
       </div>
       
-      <div class="image-zoom-container" style="aspect-ratio: 1 / 1; width: 100%; height: auto; max-height: 250px; background:#FAF9F6; display:flex; align-items:center; justify-content:center; position:relative; border-bottom:1px solid var(--card-border); overflow:hidden;">
+      <div class="image-zoom-container" style="aspect-ratio: 1 / 1; width: 100%; height: auto; max-height: 250px; background: rgba(var(--glass-bg-rgb, 255, 255, 255), calc(var(--glass-bg-opacity, 0.12) * 0.5)) !important; display:flex; align-items:center; justify-content:center; position:relative; border-bottom:1px solid rgba(var(--glass-border-rgb, 220, 220, 220), var(--glass-border-opacity, 0.15)) !important; overflow:hidden;">
         <a href="/product-details.html?id=${pId}" style="width:100%; height:100%; display:block; position:relative;">
           <img src="${imgUrl}" alt="${nameEscaped}" class="product-primary-img" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
           ${hasAltImage ? `<img src="${secondaryImgUrl}" alt="${nameEscaped}" class="product-secondary-img" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">` : ''}
@@ -1848,12 +1847,12 @@ window.createProductCardHTML = (p) => {
           Quick View
         </button>
 
-        ${(hideShopActions || (window.featureToggles && window.featureToggles.wishlistEnabled === false)) ? '' : `<button type="button" class="wishlist-btn" data-product-id="${pId}" data-product-name="${encodeURIComponent(name)}" data-product-price="${finalPrice}" data-product-image="${encodeURIComponent(imgUrl)}" style="position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.85); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; border:none; box-shadow:0 2px 5px rgba(0,0,0,0.1);" aria-label="Add to wishlist">
+        ${hideShopActions ? '' : `<button type="button" class="wishlist-btn" data-product-id="${pId}" data-product-name="${encodeURIComponent(name)}" data-product-price="${finalPrice}" data-product-image="${encodeURIComponent(imgUrl)}" style="position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.85); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; border:none; box-shadow:0 2px 5px rgba(0,0,0,0.1);" aria-label="Add to wishlist">
           <svg style="width:18px; height:18px; ${heartFill} stroke-width:2; pointer-events:none;" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
         </button>`}
       </div>
 
-      <div style="padding:20px; display:flex; flex-direction:column; flex-grow:1; justify-content:space-between;">
+      <div style="padding:20px; display:flex; flex-direction:column; flex-grow:1; justify-content:space-between; background: rgba(var(--glass-bg-rgb, 255, 255, 255), calc(var(--glass-bg-opacity, 0.12) * 1.5)) !important; backdrop-filter: blur(var(--glass-blur, 16px)) !important; -webkit-backdrop-filter: blur(var(--glass-blur, 16px)) !important; border-top: 1px solid rgba(var(--glass-border-rgb, 220, 220, 220), var(--glass-border-opacity, 0.15)) !important;">
         <div>
           <a href="/product-details.html?id=${pId}">
             <h4 style="font-size:15px; font-family:'Outfit'; font-weight:600; margin-bottom:8px; line-height:1.4; color:var(--text-color);">${nameEscaped}</h4>
