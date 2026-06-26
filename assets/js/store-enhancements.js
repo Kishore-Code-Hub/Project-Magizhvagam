@@ -161,19 +161,85 @@
       if (!container) return;
 
       const {
-        icon = '📦',
+        type = 'generic',
         title = 'Nothing here yet',
         message = 'Check back later for updates.',
         ctaLabel = '',
-        ctaHref = ''
+        ctaHref = '',
+        ctaOnClick = ''
       } = config;
 
+      // Select SVG based on type
+      let svgContent = '';
+      if (type === 'wishlist') {
+        svgContent = `
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="url(#goldGradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 4px 10px rgba(201,145,61,0.25)); margin-bottom: 16px;">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+        `;
+      } else if (type === 'search') {
+        svgContent = `
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="url(#goldGradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 4px 10px rgba(201,145,61,0.25)); margin-bottom: 16px;">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="11" y1="8" x2="11" y2="14" stroke-opacity="0.6"></line>
+            <line x1="8" y1="11" x2="14" y2="11" stroke-opacity="0.6"></line>
+          </svg>
+        `;
+      } else if (type === 'recently_viewed') {
+        svgContent = `
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="url(#goldGradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 4px 10px rgba(201,145,61,0.25)); margin-bottom: 16px;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+            <path d="M12 2a10 10 0 1 0 10 10" stroke-dasharray="3 3" stroke-opacity="0.5"></path>
+          </svg>
+        `;
+      } else if (type === 'category') {
+        svgContent = `
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="url(#goldGradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 4px 10px rgba(201,145,61,0.25)); margin-bottom: 16px;">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+            <line x1="7" y1="7" x2="7.01" y2="7" stroke-width="2" stroke-linecap="round"></line>
+          </svg>
+        `;
+      } else {
+        svgContent = `
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="url(#goldGradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 4px 10px rgba(201,145,61,0.25)); margin-bottom: 16px;">
+            <polyline points="21 8 21 21 3 21 3 8"></polyline>
+            <rect x="1" y="3" width="22" height="5" rx="1"></rect>
+            <line x1="12" y1="3" x2="12" y2="21"></line>
+            <path d="M12 3a3 3 0 0 0-3-3 3 3 0 0 0 3 3z"></path>
+            <path d="M12 3a3 3 0 0 1 3-3 3 3 0 0 1-3 3z"></path>
+          </svg>
+        `;
+      }
+
+      // Check if button onClick vs href is provided
+      let ctaHtml = '';
+      if (ctaLabel) {
+        if (ctaOnClick) {
+          const clickHandler = typeof ctaOnClick === 'function' ? `(${ctaOnClick.toString()})()` : ctaOnClick;
+          ctaHtml = `<button onclick="${clickHandler}" class="btn btn-primary hover-lift" style="border-radius:10px; margin-top: 10px; padding: 10px 24px; font-weight: 700; font-family: 'Outfit'; font-size: 13px;">${ctaLabel}</button>`;
+        } else if (ctaHref) {
+          ctaHtml = `<a href="${ctaHref}" class="btn btn-primary hover-lift" style="border-radius:10px; display: inline-block; text-decoration: none; margin-top: 10px; padding: 10px 24px; font-weight: 700; font-family: 'Outfit'; font-size: 13px;">${ctaLabel}</a>`;
+        }
+      }
+
       container.innerHTML = `
-        <div style="text-align:center;padding:60px 20px;max-width:400px;margin:0 auto;">
-          <div style="font-size:48px;margin-bottom:16px;opacity:0.6;">${icon}</div>
-          <h3 style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;color:var(--text-color,#F5F0E8);margin-bottom:8px;">${title}</h3>
-          <p style="font-size:14px;color:var(--text-muted,#7A6E8A);line-height:1.5;margin-bottom:20px;">${message}</p>
-          ${ctaLabel && ctaHref ? `<a href="${ctaHref}" class="btn btn-primary" style="border-radius:10px;">${ctaLabel}</a>` : ''}
+        <div class="glass animated scale-in" style="text-align:center; padding:50px 30px; max-width:480px; margin:20px auto; border-radius:16px; border:1px solid var(--card-border); background: var(--card-bg); box-shadow: var(--shadow-md);">
+          <div style="display:inline-block; position:relative;">
+            <svg style="position:absolute; width:0; height:0;">
+              <defs>
+                <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#C9913D" />
+                  <stop offset="100%" stop-color="#E0A84A" />
+                </linearGradient>
+              </defs>
+            </svg>
+            ${svgContent}
+          </div>
+          <h3 style="font-family:'Outfit',sans-serif; font-size:20px; font-weight:700; color:var(--text-color,#F5F0E8); margin-bottom:10px; margin-top: 10px;">${title}</h3>
+          <p style="font-family:'DM Sans',sans-serif; font-size:14px; color:var(--text-muted,#7A6E8A); line-height:1.6; margin-bottom:20px; max-width: 380px; margin-left: auto; margin-right: auto;">${message}</p>
+          ${ctaHtml}
         </div>
       `;
     },

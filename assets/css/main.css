@@ -2175,6 +2175,15 @@ body.inner-page {
   transform: scale(1.08);
 }
 
+.quickview-overlay-btn {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.product-card:hover .quickview-overlay-btn {
+  opacity: 1 !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+
 .wishlist-btn {
   transition: transform 0.2s ease, background 0.2s ease;
 }

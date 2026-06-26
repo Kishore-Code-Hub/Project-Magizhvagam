@@ -20,10 +20,23 @@ async function initCatalog() {
   const searchParam = getQueryParam('search');
   const catParam = getQueryParam('category');
   const sortParam = getQueryParam('sort');
+  const ratingParam = getQueryParam('rating');
+  const availParam = getQueryParam('availability');
+  const discParam = getQueryParam('discount');
+  const featParam = getQueryParam('isFeatured');
+  const newParam = getQueryParam('newArrivals');
 
   if (searchParam) document.getElementById('filter-search').value = searchParam;
   if (catParam) document.getElementById('filter-category').value = catParam;
   if (sortParam) document.getElementById('filter-sort').value = sortParam;
+  if (ratingParam) document.getElementById('filter-rating').value = ratingParam;
+  if (availParam) document.getElementById('filter-availability').value = availParam;
+  if (discParam === 'true') document.getElementById('filter-discount').checked = true;
+  if (featParam === 'true') document.getElementById('filter-featured').checked = true;
+  if (newParam === 'true') document.getElementById('filter-new-arrivals').checked = true;
+
+  // Initialize search autocomplete
+  initSearchSuggestions();
 
   // 3. Load catalog products
   await loadCatalogProducts();
@@ -215,8 +228,14 @@ const FALLBACK_PRODUCTS = [
 async function loadCatalogProducts() {
   const grid = document.getElementById('catalog-grid');
   if (!grid) return;
+  grid.style.display = '';
 
-  grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px;"><div class="spinner" style="margin:auto;"></div></div>';
+  // Add skeleton loaders for premium performance visual look
+  if (window.MZSkeleton && typeof window.MZSkeleton.productGrid === 'function') {
+    window.MZSkeleton.productGrid('catalog-grid', limit);
+  } else {
+    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px;"><div class="spinner" style="margin:auto;"></div></div>';
+  }
 
   // Gather values
   const search = document.getElementById('filter-search').value.trim();
@@ -227,6 +246,11 @@ async function loadCatalogProducts() {
   const color = document.getElementById('filter-color').value;
   const occasion = document.getElementById('filter-occasion').value;
   const sort = document.getElementById('filter-sort').value;
+  const rating = document.getElementById('filter-rating').value;
+  const availability = document.getElementById('filter-availability').value;
+  const discount = document.getElementById('filter-discount').checked ? 'true' : '';
+  const featured = document.getElementById('filter-featured').checked ? 'true' : '';
+  const newArrivals = document.getElementById('filter-new-arrivals').checked ? 'true' : '';
 
   // Build Query
   let url = `/api/products?page=${currentPage}&limit=${limit}`;
@@ -238,8 +262,13 @@ async function loadCatalogProducts() {
   if (color) url += `&color=${encodeURIComponent(color)}`;
   if (occasion) url += `&occasion=${encodeURIComponent(occasion)}`;
   if (sort) url += `&sort=${sort}`;
+  if (rating) url += `&rating=${rating}`;
+  if (availability) url += `&availability=${availability}`;
+  if (discount) url += `&discount=${discount}`;
+  if (featured) url += `&isFeatured=${featured}`;
+  if (newArrivals) url += `&newArrivals=${newArrivals}`;
 
-  const isFilteredSearch = !!(search || category || minPrice || maxPrice || material || color || occasion);
+  const isFilteredSearch = !!(search || category || minPrice || maxPrice || material || color || occasion || rating || availability || discount || featured || newArrivals);
 
   try {
     const res = await fetch(url);
@@ -255,12 +284,26 @@ async function loadCatalogProducts() {
 
     if (!data.success || !data.products || data.products.length === 0) {
       if (isFilteredSearch) {
-        grid.innerHTML = `
-          <div style="grid-column: 1/-1; text-align:center; padding:60px 20px;">
-            <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:8px;">No Gifts Match Your Search</h3>
-            <p style="color:var(--text-muted); font-size:14px;">Try clearing filters or adjusting your price limits.</p>
-          </div>
-        `;
+        if (window.MZError && typeof window.MZError.showEmptyState === 'function') {
+          const categoryName = category ? document.getElementById('filter-category').options[document.getElementById('filter-category').selectedIndex]?.text : '';
+          window.MZError.showEmptyState('catalog-grid', {
+            type: category ? 'category' : 'search',
+            title: category ? `No Gifts in "${categoryName}"` : 'No Gifts Match Your Search',
+            message: category 
+              ? `We don't have any gifts listed under the "${categoryName}" category matching your current filters.`
+              : 'Try clearing some search terms or adjusting price range filters to find matching premium gifts.',
+            ctaLabel: 'Reset Filters',
+            ctaOnClick: 'clearAllFilters'
+          });
+          grid.style.display = 'block';
+        } else {
+          grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align:center; padding:60px 20px;">
+              <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:8px;">No Gifts Match Your Search</h3>
+              <p style="color:var(--text-muted); font-size:14px;">Try clearing filters or adjusting your price limits.</p>
+            </div>
+          `;
+        }
         renderPagination(1, 1);
         return;
       } else {
@@ -328,9 +371,216 @@ window.clearAllFilters = () => {
   document.getElementById('filter-material').value = '';
   document.getElementById('filter-color').value = '';
   document.getElementById('filter-occasion').value = '';
+  document.getElementById('filter-rating').value = '';
+  document.getElementById('filter-availability').value = '';
+  document.getElementById('filter-discount').checked = false;
+  document.getElementById('filter-featured').checked = false;
+  document.getElementById('filter-new-arrivals').checked = false;
   document.getElementById('filter-sort').value = 'newest';
   
   currentPage = 1;
   loadCatalogProducts();
-  showToast('Filters cleared!', 'success');
+  if (typeof showToast === 'function') {
+    showToast('Filters cleared!', 'success');
+  }
 };
+
+// Search Autocomplete, Recent Searches and Popular Tags System
+function initSearchSuggestions() {
+  const input = document.getElementById('filter-search');
+  const box = document.getElementById('search-suggestions-box');
+  if (!input || !box) return;
+
+  let debounceTimeout = null;
+  let activeIndex = -1;
+
+  const getRecentSearches = () => {
+    try {
+      return JSON.parse(localStorage.getItem('mz_recent_searches') || '[]');
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const addRecentSearch = (term) => {
+    if (!term) return;
+    try {
+      let list = getRecentSearches();
+      list = list.filter(item => item !== term);
+      list.unshift(term);
+      localStorage.setItem('mz_recent_searches', JSON.stringify(list.slice(0, 5)));
+    } catch (e) {}
+  };
+
+  const POPULAR_SEARCHES = ['Vilakku', 'Jute Bag', 'Brass Plate', 'Gift Hamper', 'Terracotta'];
+
+  const renderSuggestions = (suggestions = []) => {
+    const recents = getRecentSearches();
+    let html = '';
+    const query = input.value.trim();
+
+    if (suggestions.length > 0) {
+      html += `
+        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px; letter-spacing:0.5px; border-bottom:1px solid var(--card-border); padding-bottom:4px;">Product Matches</div>
+        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;">
+          ${suggestions.map((s, idx) => `
+            <div class="suggestion-item" data-val="${s.name.replace(/"/g, '&quot;')}" style="padding:6px 10px; border-radius:6px; font-size:13px; cursor:pointer; color:var(--text-color); transition:background 0.2s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" onmouseenter="setSuggestionActive(${idx})">${s.name}</div>
+          `).join('')}
+        </div>
+      `;
+    } else if (query) {
+      html += `
+        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px; letter-spacing:0.5px; border-bottom:1px solid var(--card-border); padding-bottom:4px;">Product Matches</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px; padding:6px 10px; font-style:italic;">No exact matches found for "${query}"</div>
+      `;
+    }
+
+    if (recents.length > 0) {
+      html += `
+        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px; letter-spacing:0.5px; border-bottom:1px solid var(--card-border); padding-bottom:4px;">Recent Searches</div>
+        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;">
+          ${recents.map((r, idx) => `
+            <div class="suggestion-item" data-val="${r.replace(/"/g, '&quot;')}" style="padding:6px 10px; border-radius:6px; font-size:13px; cursor:pointer; color:var(--text-color); display:flex; justify-content:space-between; align-items:center; transition:background 0.2s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              <span>🕒 ${r}</span>
+              <button onclick="removeRecentSearchEvent(event, '${encodeURIComponent(r)}')" style="background:transparent; border:none; cursor:pointer; color:var(--text-muted); font-size:12px; padding:0 4px;">✕</button>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    html += `
+      <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px; letter-spacing:0.5px; border-bottom:1px solid var(--card-border); padding-bottom:4px;">Popular Searches</div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
+        ${POPULAR_SEARCHES.map(p => `
+          <button type="button" class="popular-tag" data-val="${p}" style="padding:4px 10px; border-radius:20px; font-size:12px; border:1px solid var(--card-border); background:rgba(0,0,0,0.02); color:var(--text-muted); cursor:pointer; transition:all 0.2s;">${p}</button>
+        `).join('')}
+      </div>
+    `;
+
+    box.innerHTML = html;
+    box.style.display = 'block';
+
+    // Hook clicks
+    box.querySelectorAll('.suggestion-item, .popular-tag').forEach(el => {
+      el.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') return; // ignore delete click
+        const val = el.getAttribute('data-val');
+        if (val) {
+          input.value = val;
+          box.style.display = 'none';
+          addRecentSearch(val);
+          currentPage = 1;
+          loadCatalogProducts();
+        }
+      });
+    });
+  };
+
+  input.addEventListener('input', () => {
+    const val = input.value.trim();
+    activeIndex = -1;
+    clearTimeout(debounceTimeout);
+
+    if (!val) {
+      renderSuggestions();
+      return;
+    }
+
+    // Show suggestion search loader indicator
+    box.innerHTML = `
+      <div style="text-align:center; padding:12px; color:var(--text-muted); font-size:12px;">
+        <span class="spinner" style="width:14px; height:14px; border-width:2px; display:inline-block; vertical-align:middle; margin-right:8px;"></span> Loading matching products...
+      </div>
+    `;
+    box.style.display = 'block';
+
+    debounceTimeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/products?search=${encodeURIComponent(val)}&limit=5`);
+        const data = await res.json();
+        if (data.success && data.products) {
+          renderSuggestions(data.products);
+        } else {
+          renderSuggestions();
+        }
+      } catch (err) {
+        renderSuggestions();
+      }
+    }, 300);
+  });
+
+  input.addEventListener('focus', () => {
+    renderSuggestions();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#filter-search') && !e.target.closest('#search-suggestions-box')) {
+      box.style.display = 'none';
+    }
+  });
+
+  // Keyboard Navigation Support
+  input.addEventListener('keydown', (e) => {
+    const items = box.querySelectorAll('.suggestion-item');
+    if (box.style.display === 'none') return;
+
+    if (e.key === 'ArrowDown') {
+      if (items.length === 0) return;
+      e.preventDefault();
+      activeIndex = (activeIndex + 1) % items.length;
+      updateActiveItem(items);
+    } else if (e.key === 'ArrowUp') {
+      if (items.length === 0) return;
+      e.preventDefault();
+      activeIndex = (activeIndex - 1 + items.length) % items.length;
+      updateActiveItem(items);
+    } else if (e.key === 'Enter') {
+      if (activeIndex >= 0 && items[activeIndex]) {
+        e.preventDefault();
+        const val = items[activeIndex].getAttribute('data-val');
+        input.value = val;
+        box.style.display = 'none';
+        addRecentSearch(val);
+        currentPage = 1;
+        loadCatalogProducts();
+      }
+    } else if (e.key === 'Escape') {
+      box.style.display = 'none';
+      input.blur();
+    }
+  });
+
+  window.setSuggestionActive = (idx) => {
+    activeIndex = idx;
+    const items = box.querySelectorAll('.suggestion-item');
+    updateActiveItem(items);
+  };
+
+  window.removeRecentSearchEvent = (e, encodedTerm) => {
+    e.stopPropagation();
+    const term = decodeURIComponent(encodedTerm);
+    let list = getRecentSearches();
+    list = list.filter(item => item !== term);
+    localStorage.setItem('mz_recent_searches', JSON.stringify(list));
+    renderSuggestions();
+  };
+
+  function updateActiveItem(items) {
+    items.forEach((item, idx) => {
+      if (idx === activeIndex) {
+        item.style.background = 'rgba(0,0,0,0.06)';
+        item.style.fontWeight = '700';
+      } else {
+        item.style.background = 'transparent';
+        item.style.fontWeight = '400';
+      }
+    });
+  }
+
+  // Hook submit action to record successful queries
+  document.getElementById('filter-form').addEventListener('submit', () => {
+    const val = input.value.trim();
+    if (val) addRecentSearch(val);
+  });
+}

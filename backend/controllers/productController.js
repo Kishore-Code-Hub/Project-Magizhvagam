@@ -58,7 +58,7 @@ exports.getProducts = async (req, res) => {
     const { 
       search, category, minPrice, maxPrice, 
       material, color, occasion, sort, page = 1, limit = 12,
-      ids, select, isFeatured
+      ids, select, isFeatured, rating, availability, discount, newArrivals
     } = req.query;
 
     const query = {};
@@ -76,11 +76,40 @@ exports.getProducts = async (req, res) => {
     const idsVal = cleanString(ids);
     const selectVal = cleanString(select);
     const isFeaturedVal = cleanString(isFeatured);
+    const ratingVal = cleanString(rating);
+    const availabilityVal = cleanString(availability);
+    const discountVal = cleanString(discount);
+    const newArrivalsVal = cleanString(newArrivals);
 
     if (isFeaturedVal === 'true') {
       query.isFeatured = true;
     } else if (isFeaturedVal === 'false') {
       query.isFeatured = false;
+    }
+
+    // Rating filter (averageRating >= rating)
+    if (ratingVal) {
+      const numRating = Number(ratingVal);
+      if (Number.isFinite(numRating)) {
+        query.averageRating = { $gte: numRating };
+      }
+    }
+
+    // Availability filter
+    if (availabilityVal === 'inStock') {
+      query.stock = { $gt: 0 };
+    } else if (availabilityVal === 'outOfStock') {
+      query.stock = 0;
+    }
+
+    // Discount filter
+    if (discountVal === 'true') {
+      query.discountPrice = { $ne: null, $gt: 0 };
+    }
+
+    // New Arrivals filter (new tag or recent)
+    if (newArrivalsVal === 'true') {
+      query.tags = { $in: ['new', 'new-arrival'] };
     }
 
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -145,12 +174,20 @@ exports.getProducts = async (req, res) => {
         case 'priceHighLow':
           sortQuery = { price: -1 };
           break;
+        case 'oldest':
+          sortQuery = { createdAt: 1 };
+          break;
+        case 'highestRated':
+          sortQuery = { averageRating: -1 };
+          break;
         case 'bestSelling':
-          // Sort by bestseller flag first, then reviews
           sortQuery = { totalReviews: -1, averageRating: -1 };
           break;
         case 'mostPopular':
           sortQuery = { averageRating: -1, totalReviews: -1 };
+          break;
+        case 'alphabetical':
+          sortQuery = { name: 1 };
           break;
         case 'newest':
         default:
@@ -202,10 +239,21 @@ exports.getProductById = async (req, res) => {
 
     let related = [];
     if (product.category && product.category._id) {
-      related = await Product.find({
+      // Fetch up to 8 products in same category
+      const catMatches = await Product.find({
         category: product.category._id,
         _id: { $ne: product._id }
-      }).limit(4);
+      }).limit(8);
+
+      let tagMatches = [];
+      if (product.tags && product.tags.length > 0) {
+        // Fetch products sharing tags that are not already in category matches
+        tagMatches = await Product.find({
+          tags: { $in: product.tags },
+          _id: { $ne: product._id, $nin: catMatches.map(p => p._id) }
+        }).limit(8 - catMatches.length);
+      }
+      related = [...catMatches, ...tagMatches];
     }
 
     // Fetch product reviews

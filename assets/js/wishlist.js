@@ -47,13 +47,23 @@ function renderWishlist() {
   const wishlist = getWishlist();
 
   if (wishlist.length === 0) {
-    container.innerHTML = `
-      <div style="grid-column: 1/-1; text-align:center; padding:50px 20px;">
-        <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:12px;">Your Wishlist is Empty</h3>
-        <p style="color:var(--text-muted); font-size:14px; margin-bottom:24px;">Save return gifts to purchase later.</p>
-        <a href="/products.html" class="btn btn-primary">Browse Catalog</a>
-      </div>
-    `;
+    if (window.MZError && typeof window.MZError.showEmptyState === 'function') {
+      window.MZError.showEmptyState('wishlist-grid-container', {
+        type: 'wishlist',
+        title: 'Your Wishlist is Empty',
+        message: 'Save premium return gifts to purchase or share later.',
+        ctaLabel: 'Browse Catalog',
+        ctaHref: '/products.html'
+      });
+    } else {
+      container.innerHTML = `
+        <div style="grid-column: 1/-1; text-align:center; padding:50px 20px;">
+          <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:12px;">Your Wishlist is Empty</h3>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:24px;">Save return gifts to purchase later.</p>
+          <a href="/products.html" class="btn btn-primary">Browse Catalog</a>
+        </div>
+      `;
+    }
     return;
   }
 
@@ -64,8 +74,8 @@ function renderWishlist() {
         <svg style="width:18px; height:18px; fill:#ef4444; pointer-events:none;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
       </button>
 
-      <div style="height:220px; background:#FAF9F6; display:flex; align-items:center; justify-content:center; border-bottom:1px solid var(--card-border);">
-        <a href="/product-details.html?id=${item.productId}" style="width:100%; height:100%;">
+      <div style="aspect-ratio: 1 / 1; width: 100%; height: auto; max-height: 250px; background:#FAF9F6; display:flex; align-items:center; justify-content:center; border-bottom:1px solid var(--card-border); position:relative; overflow:hidden;">
+        <a href="/product-details.html?id=${item.productId}" style="width:100%; height:100%; display:block;">
           <img src="${item.image || '/assets/images/default-product.webp'}" alt="${item.name}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
         </a>
       </div>

@@ -1837,14 +1837,14 @@ window.createProductCardHTML = (p) => {
         ${badgesHtml}
       </div>
       
-      <div class="image-zoom-container" style="height:220px; aspect-ratio: 16 / 10; background:#FAF9F6; display:flex; align-items:center; justify-content:center; position:relative; border-bottom:1px solid var(--card-border); overflow:hidden;">
+      <div class="image-zoom-container" style="aspect-ratio: 1 / 1; width: 100%; height: auto; max-height: 250px; background:#FAF9F6; display:flex; align-items:center; justify-content:center; position:relative; border-bottom:1px solid var(--card-border); overflow:hidden;">
         <a href="/product-details.html?id=${pId}" style="width:100%; height:100%; display:block; position:relative;">
           <img src="${imgUrl}" alt="${nameEscaped}" class="product-primary-img" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
           ${hasAltImage ? `<img src="${secondaryImgUrl}" alt="${nameEscaped}" class="product-secondary-img" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">` : ''}
         </a>
         
         <!-- Quick View Overlay Button -->
-        <button class="quickview-overlay-btn" onclick="window.openQuickViewModal('${pId}')" style="position:absolute; bottom:12px; left:50%; transform:translateX(-50%); padding:6px 14px; font-size:12px; font-weight:700; font-family:'Outfit'; border-radius:20px; background:rgba(255,255,255,0.9); border:1px solid var(--card-border); color:var(--text-color); cursor:pointer; opacity:0; transition:all 0.3s ease; box-shadow:0 4px 10px rgba(0,0,0,0.1); z-index:11;">
+        <button class="quickview-overlay-btn" onclick="window.openQuickViewModal('${pId}')" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -20%) scale(0.9); padding:8px 18px; font-size:12px; font-weight:700; font-family:'Outfit'; border-radius:20px; background:rgba(255,255,255,0.95); border:1px solid var(--card-border); color:var(--text-color); cursor:pointer; opacity:0; z-index:11; box-shadow:0 8px 24px rgba(0,0,0,0.15); border:none;">
           Quick View
         </button>
 
