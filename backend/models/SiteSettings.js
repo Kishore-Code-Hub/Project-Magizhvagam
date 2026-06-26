@@ -321,6 +321,24 @@ const DEEP_VELVET_DEFAULTS = {
     toggle_active_bg: '#C9913D',
     toggle_inactive_bg: '#3A2E4A',
     settings_tab_active: '#C9913D'
+  },
+  glass: {
+    enabled: true,
+    blur: '12',
+    bg_opacity: '0.12',
+    border_opacity: '0.15',
+    shadow_intensity: '1.0',
+    border_radius: '16',
+    brightness: '1.0',
+    contrast: '1.0',
+    hover_intensity: '1.1',
+    header_enabled: true,
+    product_card_enabled: true,
+    modal_enabled: true,
+    sidebar_enabled: true,
+    footer_enabled: true,
+    form_enabled: true,
+    hero_enabled: true
   }
 };
 
@@ -347,7 +365,8 @@ const SiteSettingsSchema = new mongoose.Schema({
     cd: { type: mongoose.Schema.Types.Mixed, default: () => ({ ...DEEP_VELVET_DEFAULTS.cd }) },
     acc: { type: mongoose.Schema.Types.Mixed, default: () => ({ ...DEEP_VELVET_DEFAULTS.acc }) },
     st: { type: mongoose.Schema.Types.Mixed, default: () => ({ ...DEEP_VELVET_DEFAULTS.st }) },
-    adm: { type: mongoose.Schema.Types.Mixed, default: () => ({ ...DEEP_VELVET_DEFAULTS.adm }) }
+    adm: { type: mongoose.Schema.Types.Mixed, default: () => ({ ...DEEP_VELVET_DEFAULTS.adm }) },
+    glass: { type: mongoose.Schema.Types.Mixed, default: () => ({ ...DEEP_VELVET_DEFAULTS.glass }) }
   },
   typography: {
     display:  { family: { type: String, default: 'Cormorant Garamond' }, weights: { type: [Number], default: [400, 600, 700] }, fallback: { type: String, default: 'Georgia, serif' } },

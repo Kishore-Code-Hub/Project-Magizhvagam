@@ -113,6 +113,7 @@
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-about')">About Page</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-mobile')">Mobile Settings</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-animations')">Animations</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-glass')">Glassmorphism</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-css')">Custom CSS</button>
           </div>
 
@@ -717,7 +718,116 @@
                 </div>
               </div>
 
-              <!-- TAB 14: Custom CSS -->
+              <!-- TAB 14: Glassmorphism Settings -->
+              <div class="studio-tab-panel" id="tab-glass">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Glassmorphism Design Studio</h3>
+                
+                <div class="control-group">
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" id="glass-global-toggle" checked onchange="syncLivePreview()">
+                    <span style="font-weight: 700;">Global Glass Effect Enable</span>
+                  </label>
+                </div>
+
+                <div class="control-group">
+                  <label>Blur Intensity (px)</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-blur-field" min="0" max="24" step="1" class="range-slider" oninput="document.getElementById('glass-blur-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-blur-val" class="range-value">12</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Background Opacity</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-bg-opacity-field" min="0" max="1" step="0.05" class="range-slider" oninput="document.getElementById('glass-bg-opacity-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-bg-opacity-val" class="range-value">0.12</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Border Opacity</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-border-opacity-field" min="0" max="1" step="0.05" class="range-slider" oninput="document.getElementById('glass-border-opacity-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-border-opacity-val" class="range-value">0.15</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Shadow Intensity</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-shadow-intensity-field" min="0" max="3" step="0.1" class="range-slider" oninput="document.getElementById('glass-shadow-intensity-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-shadow-intensity-val" class="range-value">1.0</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Border Radius (px)</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-border-radius-field" min="0" max="32" step="1" class="range-slider" oninput="document.getElementById('glass-border-radius-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-border-radius-val" class="range-value">16</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Glass Brightness</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-brightness-field" min="0.5" max="1.5" step="0.05" class="range-slider" oninput="document.getElementById('glass-brightness-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-brightness-val" class="range-value">1.0</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Glass Contrast</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-contrast-field" min="0.5" max="1.5" step="0.05" class="range-slider" oninput="document.getElementById('glass-contrast-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-contrast-val" class="range-value">1.0</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Hover Intensity</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-hover-intensity-field" min="1" max="2" step="0.05" class="range-slider" oninput="document.getElementById('glass-hover-intensity-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-hover-intensity-val" class="range-value">1.1</span>
+                  </div>
+                </div>
+
+                <h4 style="font-family:'Outfit'; font-size:14px; margin-top:20px; margin-bottom:10px; color:var(--studio-gold); border-bottom:1px solid var(--studio-border); padding-bottom:5px;">Section Specific Glassmorphism</h4>
+
+                <div class="control-group">
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-header-toggle" checked onchange="syncLivePreview()">
+                    <span>Header Glass</span>
+                  </label>
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-product-toggle" checked onchange="syncLivePreview()">
+                    <span>Product Card Glass</span>
+                  </label>
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-modal-toggle" checked onchange="syncLivePreview()">
+                    <span>Modal Glass</span>
+                  </label>
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-sidebar-toggle" checked onchange="syncLivePreview()">
+                    <span>Sidebar Glass</span>
+                  </label>
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-footer-toggle" checked onchange="syncLivePreview()">
+                    <span>Footer Glass</span>
+                  </label>
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-form-toggle" checked onchange="syncLivePreview()">
+                    <span>Form Glass</span>
+                  </label>
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-hero-toggle" checked onchange="syncLivePreview()">
+                    <span>Hero Glass</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- TAB 15: Custom CSS -->
               <div class="studio-tab-panel" id="tab-css">
                 <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Custom CSS Editor</h3>
                 <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Inject custom styling directly. Style blocks are validated before render.</p>
@@ -1133,12 +1243,56 @@
       }
     }
 
-    // Variable sync inside Iframe
     function syncLivePreview() {
       const iframe = document.getElementById('viewport-iframe');
       if (!iframe || !iframe.contentWindow) return;
       const doc = iframe.contentDocument || iframe.contentWindow.document;
       if (!doc || !doc.documentElement) return;
+
+      // Glass variables live sync
+      const glassGlobal = document.getElementById('glass-global-toggle').checked;
+      doc.documentElement.style.setProperty('--glass-enabled', glassGlobal ? '1' : '0');
+      doc.documentElement.style.setProperty('--glass-blur', document.getElementById('glass-blur-field').value + 'px');
+      doc.documentElement.style.setProperty('--glass-bg-opacity', document.getElementById('glass-bg-opacity-field').value);
+      doc.documentElement.style.setProperty('--glass-border-opacity', document.getElementById('glass-border-opacity-field').value);
+      doc.documentElement.style.setProperty('--glass-shadow-intensity', document.getElementById('glass-shadow-intensity-field').value);
+      doc.documentElement.style.setProperty('--glass-border-radius', document.getElementById('glass-border-radius-field').value + 'px');
+      doc.documentElement.style.setProperty('--glass-brightness', document.getElementById('glass-brightness-field').value);
+      doc.documentElement.style.setProperty('--glass-contrast', document.getElementById('glass-contrast-field').value);
+      doc.documentElement.style.setProperty('--glass-hover-intensity', document.getElementById('glass-hover-intensity-field').value);
+
+      const headerG = document.getElementById('glass-header-toggle').checked;
+      const productG = document.getElementById('glass-product-toggle').checked;
+      const modalG = document.getElementById('glass-modal-toggle').checked;
+      const sidebarG = document.getElementById('glass-sidebar-toggle').checked;
+      const footerG = document.getElementById('glass-footer-toggle').checked;
+      const formG = document.getElementById('glass-form-toggle').checked;
+      const heroG = document.getElementById('glass-hero-toggle').checked;
+
+      // Handle class list live toggling in the preview iframe
+      doc.documentElement.classList.toggle('glass-enabled', glassGlobal);
+      doc.documentElement.classList.toggle('glass-disabled', !glassGlobal);
+
+      doc.documentElement.classList.toggle('glass-header-enabled', headerG);
+      doc.documentElement.classList.toggle('glass-header-disabled', !headerG);
+
+      doc.documentElement.classList.toggle('glass-product_card-enabled', productG);
+      doc.documentElement.classList.toggle('glass-product_card-disabled', !productG);
+
+      doc.documentElement.classList.toggle('glass-modal-enabled', modalG);
+      doc.documentElement.classList.toggle('glass-modal-disabled', !modalG);
+
+      doc.documentElement.classList.toggle('glass-sidebar-enabled', sidebarG);
+      doc.documentElement.classList.toggle('glass-sidebar-disabled', !sidebarG);
+
+      doc.documentElement.classList.toggle('glass-footer-enabled', footerG);
+      doc.documentElement.classList.toggle('glass-footer-disabled', !footerG);
+
+      doc.documentElement.classList.toggle('glass-form-enabled', formG);
+      doc.documentElement.classList.toggle('glass-form-disabled', !formG);
+
+      doc.documentElement.classList.toggle('glass-hero-enabled', heroG);
+      doc.documentElement.classList.toggle('glass-hero-disabled', !heroG);
       
       // Core styling overrides
       doc.documentElement.style.setProperty('--bg-main', document.getElementById('palette-bg-main').value);

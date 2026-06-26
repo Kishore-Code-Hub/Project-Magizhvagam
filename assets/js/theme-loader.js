@@ -341,7 +341,25 @@
     'theme.adm.action_btn_delete_color': '--adm-action-btn-delete-color',
     'theme.adm.toggle_active_bg': '--adm-toggle-active-bg',
     'theme.adm.toggle_inactive_bg': '--adm-toggle-inactive-bg',
-    'theme.adm.settings_tab_active': '--adm-settings-tab-active'
+    'theme.adm.settings_tab_active': '--adm-settings-tab-active',
+
+    // GROUP 17 — GLASSMORPHISM
+    'theme.glass.enabled': '--glass-enabled',
+    'theme.glass.blur': '--glass-blur',
+    'theme.glass.bg_opacity': '--glass-bg-opacity',
+    'theme.glass.border_opacity': '--glass-border-opacity',
+    'theme.glass.shadow_intensity': '--glass-shadow-intensity',
+    'theme.glass.border_radius': '--glass-border-radius',
+    'theme.glass.brightness': '--glass-brightness',
+    'theme.glass.contrast': '--glass-contrast',
+    'theme.glass.hover_intensity': '--glass-hover-intensity',
+    'theme.glass.header_enabled': '--glass-header-enabled',
+    'theme.glass.product_card_enabled': '--glass-product-card-enabled',
+    'theme.glass.modal_enabled': '--glass-modal-enabled',
+    'theme.glass.sidebar_enabled': '--glass-sidebar-enabled',
+    'theme.glass.footer_enabled': '--glass-footer-enabled',
+    'theme.glass.form_enabled': '--glass-form-enabled',
+    'theme.glass.hero_enabled': '--glass-hero-enabled'
   };
 
   // Layout config keys → CSS variables
@@ -372,7 +390,8 @@
     '--layout-section-padding-x', '--layout-grid-gap',
     '--layout-card-radius', '--layout-btn-radius',
     '--layout-input-radius', '--layout-border-width',
-    '--layout-glass-blur', '--mod-backdrop-blur'
+    '--layout-glass-blur', '--mod-backdrop-blur',
+    '--glass-blur', '--glass-border-radius'
   ]);
 
   /**
@@ -530,6 +549,19 @@
       document.head.appendChild(customCssEl);
     }
     customCssEl.textContent = data.customCss || '';
+
+    // Toggle global glass mode class names
+    const glassEnabled = getNestedValue(data, 'theme.glass.enabled') !== false;
+    document.documentElement.classList.toggle('glass-enabled', glassEnabled);
+    document.documentElement.classList.toggle('glass-disabled', !glassEnabled);
+
+    // Component-level toggles
+    const comps = ['header', 'product_card', 'modal', 'sidebar', 'footer', 'form', 'hero'];
+    comps.forEach(comp => {
+      const isEnabled = getNestedValue(data, `theme.glass.${comp}_enabled`) !== false;
+      document.documentElement.classList.toggle(`glass-${comp}-enabled`, isEnabled);
+      document.documentElement.classList.toggle(`glass-${comp}-disabled`, !isEnabled);
+    });
   }
 
   // Synchronously load from localStorage cache and apply to avoid paint flash

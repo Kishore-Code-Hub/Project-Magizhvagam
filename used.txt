@@ -1,0 +1,309 @@
+Phase 1 — Complete Mobile UI & Layout Fixes (Only)
+You are now in IMPLEMENTATION MODE.
+
+Do not generate plans.
+Do not generate reports.
+Do not analyse the repository again.
+Do not explain what you will do.
+
+Implement only the tasks listed below.
+
+Objective:
+Make the website fully responsive and visually correct on mobile devices without changing the existing structure or backend.
+
+Tasks:
+
+• Review every page in mobile view.
+• Fix all alignment issues.
+• Fix padding and margin inconsistencies.
+• Fix overflowing elements.
+• Fix horizontal scrolling.
+• Fix incorrect font scaling.
+• Fix button alignment.
+• Fix navigation spacing.
+• Fix footer spacing.
+• Fix product card sizing.
+• Fix hero responsiveness.
+• Fix Featured Collection alignment.
+• Fix Shop by Category alignment.
+• Fix search bar positioning.
+• Fix image scaling.
+• Fix responsive grids.
+• Fix tablet responsiveness.
+• Preserve desktop layout.
+
+After implementation:
+
+List only:
+- Files modified
+- Bugs fixed
+
+Do not continue to another feature.
+Phase 2 — Glassmorphism Enhancement
+Implement only the Glassmorphism system.
+
+Do not redesign the website.
+
+Enhance the existing UI.
+
+Apply premium glassmorphism to:
+
+• Header
+• Navigation
+• Search
+• Hero cards
+• Product cards
+• Product quick view
+• Login
+• Register
+• Cart summary
+• Checkout summary
+• Newsletter
+• Testimonials
+• Footer cards
+• Admin dashboard cards
+• Admin settings panels
+• Modals
+• Dialog boxes
+
+Ensure:
+
+• No readability issues.
+• No layout shifts.
+• No responsiveness issues.
+• No performance degradation.
+
+Do not touch any other feature.
+
+After implementation list modified files only.
+Phase 3 — Infinite Product Carousel
+Implement only the Infinite Product Carousel.
+
+The current implementation is broken.
+
+Replace it with a true seamless infinite carousel.
+
+Requirements:
+
+• Continuous horizontal scrolling.
+• Infinite loop.
+• No beginning.
+• No ending.
+• Duplicate products dynamically.
+• Hardware acceleration.
+• Touch friendly.
+• Responsive.
+• Pause on hover.
+• Resume automatically.
+• Adapt to any number of products.
+• Fill entire width.
+• No flickering.
+• No jumping.
+• No empty spaces.
+
+Do not modify any other section.
+
+List modified files only.
+Phase 4 — Footer & Header Polish
+
+Only improve:
+
+Footer
+Header
+Search
+Navigation
+
+Nothing else.
+
+Phase 5 — Product Experience
+
+Only:
+
+Product page
+Wishlist
+Cart
+Related Products
+Recently Viewed
+Product Sharing
+Product Gallery
+Image Zoom
+
+COMPLETE STORE FEATURES
+
+Review every customer-facing page.
+
+Complete every missing feature.
+
+This includes:
+
+Advanced search
+Product filters
+Product sorting
+Related products
+Recently viewed
+Frequently bought together
+Better wishlist
+Better cart
+Better checkout
+Order tracking
+Empty states
+Skeleton loading
+Toast notifications
+Error handling
+Product sharing
+Product comparison
+Save for later
+Continue shopping
+Order again
+Better customer reviews
+FAQ improvements
+Better newsletter
+Contact improvements
+Brand story
+Delivery information
+Trust badges
+
+Do not duplicate features.
+
+Extend existing functionality.
+
+Phase 6 — Authentication & Profile
+
+Only:
+
+Login
+Register
+OTP
+Session
+Profile
+Address
+Orders
+Phase 7 — Admin Panel Completion
+
+Only:
+
+Admin Dashboard
+Appearance Studio
+Homepage Builder
+Testimonial Manager
+Product Manager
+Phase 8 — Marketing Features
+
+Only:
+
+Coupons
+Flash Sale
+Announcement Bar
+Newsletter
+SEO
+Popup
+
+APPEARANCE STUDIO
+
+Expand the Appearance Studio into a complete visual builder.
+
+Support configuration of:
+
+Theme
+
+Typography
+
+Colors
+
+Header
+
+Homepage
+
+Hero
+
+Featured Collections
+
+Product Cards
+
+Category Cards
+
+Buttons
+
+Animations
+
+Glassmorphism
+
+Shadows
+
+Borders
+
+Spacing
+
+Footer
+
+Testimonials
+
+Newsletter
+
+Custom CSS
+
+Mobile Settings
+
+Desktop Settings
+
+Each section should support live preview.
+
+Phase 9 — Performance
+
+Maintain excellent performance.
+
+Implement:
+
+Lazy loading
+
+Skeleton loading
+
+Caching
+
+Optimized rendering
+
+Reusable components
+
+Minimal DOM updates
+
+Code splitting where appropriate
+
+Avoid unnecessary dependencies.
+Only:
+
+Skeleton loading
+Lazy loading
+Error handling
+Caching
+Toasts
+Phase 10 — Final QA
+
+Only:
+
+Fix remaining bugs
+Remove console errors
+Improve accessibility
+Verify responsiveness
+Verify theme consistency
+
+
+QUALITY ASSURANCE
+
+After every completed feature:
+
+Verify:
+
+Desktop
+Tablet
+Mobile
+
+Check:
+
+Alignment
+Typography
+Responsiveness
+Accessibility
+Performance
+Theme consistency
+Console errors
+

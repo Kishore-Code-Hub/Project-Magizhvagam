@@ -403,6 +403,53 @@
         if (animSpeedVal) animSpeedVal.textContent = animSpeed;
         setVal('anim-hover-style-field', t.pc?.hover_style || 'lift');
 
+        // Glassmorphism settings
+        const gl = t.glass || {};
+        const glEnabled = gl.enabled !== false;
+        const glGlobalT = document.getElementById('glass-global-toggle');
+        if (glGlobalT) glGlobalT.checked = glEnabled;
+
+        setVal('glass-blur-field', gl.blur || '12');
+        const glassBlurVal = document.getElementById('glass-blur-val');
+        if (glassBlurVal) glassBlurVal.textContent = gl.blur || '12';
+
+        setVal('glass-bg-opacity-field', gl.bg_opacity || '0.12');
+        const glassBgVal = document.getElementById('glass-bg-opacity-val');
+        if (glassBgVal) glassBgVal.textContent = gl.bg_opacity || '0.12';
+
+        setVal('glass-border-opacity-field', gl.border_opacity || '0.15');
+        const glassBorderVal = document.getElementById('glass-border-opacity-val');
+        if (glassBorderVal) glassBorderVal.textContent = gl.border_opacity || '0.15';
+
+        setVal('glass-shadow-intensity-field', gl.shadow_intensity || '1.0');
+        const glassShadowVal = document.getElementById('glass-shadow-intensity-val');
+        if (glassShadowVal) glassShadowVal.textContent = gl.shadow_intensity || '1.0';
+
+        setVal('glass-border-radius-field', gl.border_radius || '16');
+        const glassRadiusVal = document.getElementById('glass-border-radius-val');
+        if (glassRadiusVal) glassRadiusVal.textContent = gl.border_radius || '16';
+
+        setVal('glass-brightness-field', gl.brightness || '1.0');
+        const glassBrightnessVal = document.getElementById('glass-brightness-val');
+        if (glassBrightnessVal) glassBrightnessVal.textContent = gl.brightness || '1.0';
+
+        setVal('glass-contrast-field', gl.contrast || '1.0');
+        const glassContrastVal = document.getElementById('glass-contrast-val');
+        if (glassContrastVal) glassContrastVal.textContent = gl.contrast || '1.0';
+
+        setVal('glass-hover-intensity-field', gl.hover_intensity || '1.1');
+        const glassHoverVal = document.getElementById('glass-hover-intensity-val');
+        if (glassHoverVal) glassHoverVal.textContent = gl.hover_intensity || '1.1';
+
+        const setChecked = (id, val) => { const el = document.getElementById(id); if (el) el.checked = val !== false; };
+        setChecked('glass-header-toggle', gl.header_enabled);
+        setChecked('glass-product-toggle', gl.product_card_enabled);
+        setChecked('glass-modal-toggle', gl.modal_enabled);
+        setChecked('glass-sidebar-toggle', gl.sidebar_enabled);
+        setChecked('glass-footer-toggle', gl.footer_enabled);
+        setChecked('glass-form-toggle', gl.form_enabled);
+        setChecked('glass-hero-toggle', gl.hero_enabled);
+
         // Custom CSS
         setVal('custom-css-field', themeV4.customCss || '');
         if (typeof window.validateCustomCSS === 'function') {
@@ -726,6 +773,24 @@
             primary_hover_bg: document.getElementById('palette-color-secondary').value,
             font_weight: document.getElementById('button-weight-field').value,
             primary_shadow: document.getElementById('button-shadow-field').value === 'pronounced'
+          },
+          glass: {
+            enabled: document.getElementById('glass-global-toggle').checked,
+            blur: document.getElementById('glass-blur-field').value,
+            bg_opacity: document.getElementById('glass-bg-opacity-field').value,
+            border_opacity: document.getElementById('glass-border-opacity-field').value,
+            shadow_intensity: document.getElementById('glass-shadow-intensity-field').value,
+            border_radius: document.getElementById('glass-border-radius-field').value,
+            brightness: document.getElementById('glass-brightness-field').value,
+            contrast: document.getElementById('glass-contrast-field').value,
+            hover_intensity: document.getElementById('glass-hover-intensity-field').value,
+            header_enabled: document.getElementById('glass-header-toggle').checked,
+            product_card_enabled: document.getElementById('glass-product-toggle').checked,
+            modal_enabled: document.getElementById('glass-modal-toggle').checked,
+            sidebar_enabled: document.getElementById('glass-sidebar-toggle').checked,
+            footer_enabled: document.getElementById('glass-footer-toggle').checked,
+            form_enabled: document.getElementById('glass-form-toggle').checked,
+            hero_enabled: document.getElementById('glass-hero-toggle').checked
           }
         }
       };
