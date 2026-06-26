@@ -45,7 +45,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   applyAdminBranding();
   injectAdminSidebar();
-
+  injectAdminTopbar();
+  injectOverlays();
+  initSidebarResizer();
+  initOverlaysEvents();
 
   // Route to page-specific loads
   const path = window.location.pathname;
@@ -81,6 +84,25 @@ window.toggleSubmenu = function(id) {
 };
 
 function injectAdminSidebar() {
+  const layout = document.querySelector('.admin-layout');
+  if (layout) {
+    // Theme setup
+    const savedTheme = localStorage.getItem('admin-theme');
+    if (savedTheme === 'dark') {
+      layout.classList.add('dark-mode');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
+    if (localStorage.getItem('sidebar-collapsed') === 'true') {
+      layout.classList.add('sidebar-collapsed');
+    } else {
+      const savedWidth = localStorage.getItem('sidebar-width');
+      if (savedWidth) {
+        layout.style.setProperty('--sidebar-width', savedWidth + 'px');
+      }
+    }
+  }
+
   const sidebar = document.getElementById('admin-sidebar-container');
   if (!sidebar) return;
 
@@ -96,217 +118,732 @@ function injectAdminSidebar() {
 
   sidebar.className = 'admin-sidebar';
   sidebar.innerHTML = `
-    <div class="admin-logo">MAGIZHVAGAM</div>
+    <div class="admin-logo">
+      <span>MAGIZHVAGAM</span>
+      <button type="button" id="sidebar-toggle-btn" style="background:transparent; border:none; color:var(--adm-text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:4px;">
+        <i data-lucide="menu"></i>
+      </button>
+    </div>
     <ul class="admin-menu" style="overflow-y: auto; height: calc(100vh - 100px); padding-bottom: 40px; margin: 0; list-style: none;">
-      <!-- Dashboard -->
+      <!-- GENERAL SECTION -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em;">General</li>
       <li class="admin-menu-item ${activeCls('dashboard.html')}">
-        <a href="/admin/dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="/admin/dashboard.html"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a>
       </li>
 
-      <!-- Products Group -->
+      <!-- CATALOG SECTION -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Catalog</li>
       <li class="admin-menu-item has-submenu ${isProductsView ? 'expanded' : ''}" id="menu-products">
         <a class="admin-menu-item-link" onclick="toggleSubmenu('products')">
-          <i data-lucide="gift"></i> Products 
+          <i data-lucide="gift"></i> <span>Products</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
         <ul class="admin-menu-submenu ${isProductsView ? 'open' : ''}" id="submenu-products">
-          <li class="${isProductsView && !window.location.search ? 'active' : ''}"><a href="/admin/products.html">Product List</a></li>
-          <li><a href="/admin/products.html?action=add">Add Product</a></li>
-          <li class="${window.location.search.includes('view=categories') ? 'active' : ''}"><a href="/admin/products.html?view=categories">Categories</a></li>
-          <li class="${window.location.search.includes('view=inventory') ? 'active' : ''}"><a href="/admin/products.html?view=inventory">Inventory</a></li>
-          <li class="${window.location.search.includes('view=variants') ? 'active' : ''}"><a href="/admin/products.html?view=variants">Variants</a></li>
+          <li class="${isProductsView && !window.location.search ? 'active' : ''}"><a href="/admin/products.html"><span>Product List</span></a></li>
+          <li><a href="/admin/products.html?action=add"><span>Add Product</span></a></li>
+          <li class="${window.location.search.includes('view=categories') ? 'active' : ''}"><a href="/admin/products.html?view=categories"><span>Categories</span></a></li>
+          <li class="${window.location.search.includes('view=inventory') ? 'active' : ''}"><a href="/admin/products.html?view=inventory"><span>Inventory</span></a></li>
+          <li class="${window.location.search.includes('view=variants') ? 'active' : ''}"><a href="/admin/products.html?view=variants"><span>Variants</span></a></li>
         </ul>
       </li>
-
-      <!-- Orders -->
-      <li class="admin-menu-item ${activeCls('orders.html')}">
-        <a href="/admin/orders.html"><i data-lucide="shopping-bag"></i> Orders</a>
-      </li>
-
-      <!-- Customers -->
-      <li class="admin-menu-item ${activeCls('customers.html')}">
-        <a href="/admin/customers.html"><i data-lucide="users"></i> Customers</a>
-      </li>
-
-      <!-- Media Library Group -->
       <li class="admin-menu-item has-submenu ${isMediaView ? 'expanded' : ''}" id="menu-media">
         <a class="admin-menu-item-link" onclick="toggleSubmenu('media')">
-          <i data-lucide="image"></i> Media Library 
+          <i data-lucide="image"></i> <span>Media Library</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
         <ul class="admin-menu-submenu ${isMediaView ? 'open' : ''}" id="submenu-media">
-          <li class="${isMediaView && !window.location.search.includes('tab=') ? 'active' : ''}"><a href="/admin/media.html">Gallery</a></li>
-          <li class="${window.location.search.includes('tab=compression') ? 'active' : ''}"><a href="/admin/media.html?tab=compression">Image Compression</a></li>
-          <li class="${window.location.search.includes('tab=limits') ? 'active' : ''}"><a href="/admin/media.html?tab=limits">Upload Limits</a></li>
+          <li class="${isMediaView && !window.location.search.includes('tab=') ? 'active' : ''}"><a href="/admin/media.html"><span>Gallery</span></a></li>
+          <li class="${window.location.search.includes('tab=compression') ? 'active' : ''}"><a href="/admin/media.html?tab=compression"><span>Image Compression</span></a></li>
+          <li class="${window.location.search.includes('tab=limits') ? 'active' : ''}"><a href="/admin/media.html?tab=limits"><span>Upload Limits</span></a></li>
         </ul>
       </li>
 
-      <!-- Reports -->
-      <li class="admin-menu-item ${activeCls('reports.html')}">
-        <a href="/admin/reports.html"><i data-lucide="bar-chart-2"></i> Reports</a>
+      <!-- SALES SECTION -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Sales</li>
+      <li class="admin-menu-item ${activeCls('orders.html')}">
+        <a href="/admin/orders.html"><i data-lucide="shopping-bag"></i> <span>Orders</span></a>
       </li>
-      
-      <!-- Reorganized Appearance Entries -->
-      <li style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Appearance Studio</li>
-      
-      <!-- Appearance -->
-      <li class="admin-menu-item has-submenu ${isSettingsView && (currentTab === 'presets' || currentTab === 'colors') ? 'expanded' : ''}" id="menu-appearance">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('appearance')">
-          <i data-lucide="layout"></i> Appearance 
-          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
-        </a>
-        <ul class="admin-menu-submenu ${isSettingsView && (currentTab === 'presets' || currentTab === 'colors') ? 'open' : ''}" id="submenu-appearance">
-          <li class="${activeTabCls('presets')}"><a href="/admin/settings.html?tab=presets">Theme Presets</a></li>
-          <li class="${activeTabCls('colors')}"><a href="/admin/settings.html?tab=colors">Colors</a></li>
-        </ul>
+      <li class="admin-menu-item ${activeCls('customers.html')}">
+        <a href="/admin/customers.html"><i data-lucide="users"></i> <span>Customers</span></a>
+      </li>
+      <li class="admin-menu-item ${activeCls('invoices.html')}">
+        <a href="/admin/invoices.html"><i data-lucide="file-text"></i> <span>Invoice Hub</span></a>
       </li>
 
-      <!-- Typography -->
-      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'typography' ? 'expanded' : ''}" id="menu-typography">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('typography')">
-          <i data-lucide="type"></i> Typography 
-          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
-        </a>
-        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'typography' ? 'open' : ''}" id="submenu-typography">
-          <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography">Font Family</a></li>
-          <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography">Font Weight</a></li>
-          <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography">Font Size</a></li>
-          <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography">Heading Styles</a></li>
-        </ul>
-      </li>
-
-      <!-- Header -->
-      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'header' ? 'expanded' : ''}" id="menu-header">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('header')">
-          <i data-lucide="panel-top"></i> Header 
-          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
-        </a>
-        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'header' ? 'open' : ''}" id="submenu-header">
-          <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header">Logo</a></li>
-          <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header">Announcement Bar</a></li>
-          <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header">Sticky Header</a></li>
-          <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header">Navigation</a></li>
-        </ul>
-      </li>
-
-      <!-- Homepage -->
-      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'homepage' ? 'expanded' : ''}" id="menu-homepage">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('homepage')">
-          <i data-lucide="home"></i> Homepage 
-          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
-        </a>
-        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'homepage' ? 'open' : ''}" id="submenu-homepage">
-          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Hero Section</a></li>
-          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Categories</a></li>
-          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Featured Collection</a></li>
-          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Infinite Product Loop</a></li>
-          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Flash Sale</a></li>
-          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Testimonials</a></li>
-          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Newsletter</a></li>
-          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage">Footer</a></li>
-        </ul>
-      </li>
-
-      <!-- Testimonials -->
-      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'testimonials' ? 'expanded' : ''}" id="menu-testimonials">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('testimonials')">
-          <i data-lucide="message-square"></i> Testimonials 
-          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
-        </a>
-        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'testimonials' ? 'open' : ''}" id="submenu-testimonials">
-          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials">Add Testimonial</a></li>
-          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials">Edit Testimonial</a></li>
-          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials">Delete Testimonial</a></li>
-          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials">Ratings</a></li>
-          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials">Customer Image</a></li>
-          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials">Sort Order</a></li>
-        </ul>
-      </li>
-
-      <!-- Footer -->
-      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'footer' ? 'expanded' : ''}" id="menu-footer">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('footer')">
-          <i data-lucide="panel-bottom"></i> Footer 
-          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
-        </a>
-        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'footer' ? 'open' : ''}" id="submenu-footer">
-          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Footer Description</a></li>
-          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Footer Columns</a></li>
-          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Social Links</a></li>
-          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Contact Details</a></li>
-          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Copyright</a></li>
-          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Newsletter</a></li>
-          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer">Colors</a></li>
-        </ul>
-      </li>
-
-      <!-- Pages -->
-      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'about-page' ? 'expanded' : ''}" id="menu-pages">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('pages')">
-          <i data-lucide="info"></i> Pages 
-          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
-        </a>
-        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'about-page' ? 'open' : ''}" id="submenu-pages">
-          <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page">About Page</a></li>
-          <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page">Contact Page</a></li>
-          <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page">Privacy Policy</a></li>
-          <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page">Terms of Service</a></li>
-        </ul>
-      </li>
-
-      <!-- Marketing -->
+      <!-- MARKETING SECTION -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Marketing</li>
       <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'expanded' : ''}" id="menu-marketing">
         <a class="admin-menu-item-link" onclick="toggleSubmenu('marketing')">
-          <i data-lucide="percent"></i> Marketing 
+          <i data-lucide="percent"></i> <span>Marketing Tools</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
         <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'open' : ''}" id="submenu-marketing">
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Coupons</a></li>
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Flash Sales</a></li>
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Popup Banner</a></li>
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Announcement Bar</a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings"><span>Coupons</span></a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings"><span>Flash Sales</span></a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings"><span>Popup Builder</span></a></li>
+          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings"><span>Newsletter</span></a></li>
         </ul>
       </li>
 
-      <!-- System -->
-      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'expanded' : ''}" id="menu-system">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('system')">
-          <i data-lucide="cpu"></i> System 
+      <!-- CONTENT SECTION -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Content</li>
+      <li class="admin-menu-item has-submenu ${isSettingsView && (currentTab === 'homepage' || currentTab === 'testimonials' || currentTab === 'about-page' || currentTab === 'header') ? 'expanded' : ''}" id="menu-content">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('content')">
+          <i data-lucide="edit-3"></i> <span>Content Editor</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
-        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'open' : ''}" id="submenu-system">
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Email Templates</a></li>
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">OTP Settings</a></li>
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Session Timeout</a></li>
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">WhatsApp Settings</a></li>
+        <ul class="admin-menu-submenu ${isSettingsView && (currentTab === 'homepage' || currentTab === 'testimonials' || currentTab === 'about-page' || currentTab === 'header') ? 'open' : ''}" id="submenu-content">
+          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage"><span>Homepage Builder</span></a></li>
+          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials"><span>Testimonials</span></a></li>
+          <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page"><span>Pages Manager</span></a></li>
+          <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header"><span>Navigation Builder</span></a></li>
         </ul>
       </li>
 
-      <!-- Settings -->
-      <li class="admin-menu-item has-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'expanded' : ''}" id="menu-settings">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('settings')">
-          <i data-lucide="settings"></i> Settings 
+      <!-- APPEARANCE STUDIO SECTION -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Appearance</li>
+      <li class="admin-menu-item has-submenu ${isSettingsView && (currentTab === 'presets' || currentTab === 'colors' || currentTab === 'typography' || currentTab === 'footer' || currentTab === 'buttons' || currentTab === 'cards' || currentTab === 'products' || currentTab === 'categories' || currentTab === 'mobile' || currentTab === 'animations' || currentTab === 'glass') ? 'expanded' : ''}" id="menu-appearance">
+        <a class="admin-menu-item-link" onclick="toggleSubmenu('appearance')">
+          <i data-lucide="palette"></i> <span>Theme Studio</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
-        <ul class="admin-menu-submenu ${isSettingsView && currentTab === 'advanced-settings' ? 'open' : ''}" id="submenu-settings">
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">General</a></li>
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Store Information</a></li>
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">SEO Settings</a></li>
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Analytics</a></li>
-          <li class="${activeTabCls('advanced-settings')}"><a href="/admin/settings.html?tab=advanced-settings">Integrations</a></li>
+        <ul class="admin-menu-submenu ${isSettingsView && (currentTab === 'presets' || currentTab === 'colors' || currentTab === 'typography' || currentTab === 'footer' || currentTab === 'buttons' || currentTab === 'cards' || currentTab === 'products' || currentTab === 'categories' || currentTab === 'mobile' || currentTab === 'animations' || currentTab === 'glass') ? 'open' : ''}" id="submenu-appearance">
+          <li class="${activeTabCls('presets')}"><a href="/admin/settings.html?tab=presets"><span>Theme Presets</span></a></li>
+          <li class="${activeTabCls('colors')}"><a href="/admin/settings.html?tab=colors"><span>Colors</span></a></li>
+          <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography"><span>Typography</span></a></li>
+          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer"><span>Footer Settings</span></a></li>
+          <li class="${activeTabCls('buttons')}"><a href="/admin/settings.html?tab=buttons"><span>Buttons Layout</span></a></li>
+          <li class="${activeTabCls('cards')}"><a href="/admin/settings.html?tab=cards"><span>Cards Layout</span></a></li>
+          <li class="${activeTabCls('products')}"><a href="/admin/settings.html?tab=products"><span>Product Pages</span></a></li>
+          <li class="${activeTabCls('categories')}"><a href="/admin/settings.html?tab=categories"><span>Category Pages</span></a></li>
+          <li class="${activeTabCls('mobile')}"><a href="/admin/settings.html?tab=mobile"><span>Mobile Settings</span></a></li>
+          <li class="${activeTabCls('animations')}"><a href="/admin/settings.html?tab=animations"><span>Animations</span></a></li>
+          <li class="${activeTabCls('glass')}"><a href="/admin/settings.html?tab=glass"><span>Glassmorphism</span></a></li>
         </ul>
+      </li>
+
+      <!-- SYSTEM & PERFORMANCE SECTION -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">System & Tools</li>
+      <li class="admin-menu-item ${activeCls('reports.html')}">
+        <a href="/admin/reports.html"><i data-lucide="bar-chart-2"></i> <span>Sales Reports</span></a>
+      </li>
+      <li class="admin-menu-item ${activeCls('security-logs.html')}">
+        <a href="/admin/security-logs.html"><i data-lucide="shield-alert"></i> <span>Security Logs</span></a>
+      </li>
+      <li class="admin-menu-item ${activeCls('system-diagnostics.html')}">
+        <a href="/admin/system-diagnostics.html"><i data-lucide="cpu"></i> <span>Diagnostics</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('css')}">
+        <a href="/admin/settings.html?tab=css"><i data-lucide="code"></i> <span>Custom CSS</span></a>
       </li>
 
       <li style="margin-top:20px; border-top:1px solid var(--adm-border); padding-top:15px;">
-        <a href="#" onclick="window.handleLogout(); return false;" style="color:#ef4444 !important;"><i data-lucide="log-out"></i> Sign Out</a>
+        <a href="#" onclick="window.handleLogout(); return false;" style="color:#ef4444 !important;"><i data-lucide="log-out"></i> <span>Sign Out</span></a>
       </li>
     </ul>
   `;
   window.renderIcons();
+
+  // Attach toggle button listeners
+  const btn = document.getElementById('sidebar-toggle-btn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const layout = document.querySelector('.admin-layout');
+      if (layout) {
+        layout.classList.toggle('sidebar-collapsed');
+        const isCollapsed = layout.classList.contains('sidebar-collapsed');
+        localStorage.setItem('sidebar-collapsed', isCollapsed ? 'true' : 'false');
+        
+        // If collapsed, remove custom width
+        if (isCollapsed) {
+          layout.style.removeProperty('--sidebar-width');
+        } else {
+          const savedWidth = localStorage.getItem('sidebar-width');
+          if (savedWidth) {
+            layout.style.setProperty('--sidebar-width', savedWidth + 'px');
+          }
+        }
+      }
+    });
+  }
+}
+
+/* ─── Sidebar Drag-to-Resize Logic ─── */
+function initSidebarResizer() {
+  const sidebar = document.querySelector('.admin-sidebar');
+  if (!sidebar) return;
+
+  // Check if resizer handle exists, otherwise append it
+  let resizer = sidebar.querySelector('.sidebar-resizer');
+  if (!resizer) {
+    resizer = document.createElement('div');
+    resizer.className = 'sidebar-resizer';
+    sidebar.appendChild(resizer);
+  }
+
+  // Load custom width from localStorage
+  const savedWidth = localStorage.getItem('sidebar-width');
+  const layout = document.querySelector('.admin-layout');
+  if (savedWidth && layout && !layout.classList.contains('sidebar-collapsed')) {
+    layout.style.setProperty('--sidebar-width', savedWidth + 'px');
+  }
+
+  // Mouse drag logic
+  let startX, startWidth;
+
+  resizer.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    const layout = document.querySelector('.admin-layout');
+    if (layout && layout.classList.contains('sidebar-collapsed')) return; // Disable resizer when collapsed
+
+    startX = e.clientX;
+    startWidth = parseInt(getComputedStyle(sidebar).width, 10);
+    
+    if (layout) layout.classList.add('resizing');
+    resizer.classList.add('dragging');
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  });
+
+  function handleMouseMove(e) {
+    const width = startWidth + (e.clientX - startX);
+    if (width >= 180 && width <= 400) { // Limit resizing boundaries
+      const layout = document.querySelector('.admin-layout');
+      if (layout) {
+        layout.style.setProperty('--sidebar-width', width + 'px');
+        localStorage.setItem('sidebar-width', width);
+      }
+    }
+  }
+
+  function handleMouseUp() {
+    const layout = document.querySelector('.admin-layout');
+    if (layout) layout.classList.remove('resizing');
+    resizer.classList.remove('dragging');
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+  }
+}
+
+/* ─── Sticky Top Navigation Bar ─── */
+function injectAdminTopbar() {
+  const mainPanel = document.querySelector('.admin-main');
+  if (!mainPanel) return;
+
+  // Determine current page and section for breadcrumbs
+  const path = window.location.pathname;
+  let section = 'Admin';
+  let pageName = 'Dashboard';
+
+  if (path.includes('dashboard.html')) {
+    section = 'General';
+    pageName = 'Dashboard';
+  } else if (path.includes('products.html')) {
+    section = 'Catalog';
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('action') === 'add') {
+      pageName = 'Add Product';
+    } else if (params.get('view') === 'categories') {
+      pageName = 'Categories';
+    } else if (params.get('view') === 'inventory') {
+      pageName = 'Inventory Manager';
+    } else if (params.get('view') === 'variants') {
+      pageName = 'Variants Config';
+    } else {
+      pageName = 'Products List';
+    }
+  } else if (path.includes('orders.html')) {
+    section = 'Sales';
+    pageName = 'Orders';
+  } else if (path.includes('customers.html')) {
+    section = 'Sales';
+    pageName = 'Customers';
+  } else if (path.includes('invoices.html')) {
+    section = 'Sales';
+    pageName = 'Invoice Hub';
+  } else if (path.includes('media.html')) {
+    section = 'Catalog';
+    pageName = 'Media Library';
+  } else if (path.includes('reports.html')) {
+    section = 'System & Tools';
+    pageName = 'Sales Reports';
+  } else if (path.includes('system-diagnostics.html')) {
+    section = 'System & Tools';
+    pageName = 'Diagnostics';
+  } else if (path.includes('settings.html')) {
+    section = 'Content & Appearance';
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab') || 'presets';
+    pageName = tab.charAt(0).toUpperCase() + tab.slice(1) + ' Settings';
+  }
+
+  const topbar = document.createElement('header');
+  topbar.className = 'admin-topbar';
+  
+  // Set up user profile initials and theme details
+  let userInitials = 'AD';
+  let userName = 'Administrator';
+  let userEmail = 'admin@magizhvagam.com';
+  
+  try {
+    const adminAuth = JSON.parse(localStorage.getItem('adminAuth') || '{}');
+    if (adminAuth && adminAuth.user) {
+      userName = adminAuth.user.name || userName;
+      userEmail = adminAuth.user.email || userEmail;
+      userInitials = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
+  } catch (e) {}
+
+  let themeIcon = 'moon';
+  let themeText = 'Dark Mode';
+  if (localStorage.getItem('admin-theme') === 'dark') {
+    themeIcon = 'sun';
+    themeText = 'Light Mode';
+  }
+
+  topbar.innerHTML = `
+    <div class="admin-topbar-left">
+      <button type="button" class="topbar-action-btn mobile-sidebar-toggle" id="mobile-sidebar-toggle-btn" style="display:none; margin-right:8px;" aria-label="Toggle sidebar">
+        <i data-lucide="menu"></i>
+      </button>
+      <div class="admin-breadcrumbs">
+        <a href="/admin/dashboard.html">Admin</a>
+        <span class="separator">/</span>
+        <span class="separator">${section}</span>
+        <span class="separator">/</span>
+        <span class="current">${pageName}</span>
+      </div>
+    </div>
+
+    <div class="admin-topbar-right">
+      <!-- Search Palette Trigger -->
+      <div class="admin-search-trigger" id="global-search-trigger">
+        <i data-lucide="search"></i>
+        <span>Search admin...</span>
+        <kbd>⌘K</kbd>
+      </div>
+
+      <!-- Notifications -->
+      <button type="button" class="topbar-action-btn" id="notifications-trigger-btn" aria-label="View notifications">
+        <i data-lucide="bell"></i>
+        <span class="notification-badge" id="admin-notif-badge">3</span>
+      </button>
+
+      <!-- Profile Menu -->
+      <div class="admin-profile-menu">
+        <div class="admin-profile-trigger" id="profile-menu-trigger">
+          <div class="admin-avatar">${userInitials}</div>
+          <div class="admin-profile-info">
+            <span class="admin-profile-name">${userName}</span>
+            <span class="admin-profile-role">Admin Owner</span>
+          </div>
+          <i data-lucide="chevron-down" style="width: 14px; height: 14px; color: var(--adm-text-muted);"></i>
+        </div>
+
+        <!-- Profile Popover -->
+        <div class="profile-popover" id="admin-profile-popover">
+          <div class="profile-popover-header">
+            <div style="font-weight: 700; font-size: 13px; color: var(--adm-text);">${userName}</div>
+            <div class="profile-popover-email">${userEmail}</div>
+          </div>
+          <a href="/admin/settings.html?tab=advanced-settings" class="profile-popover-item">
+            <i data-lucide="user"></i> Account Profile
+          </a>
+          <a href="/admin/settings.html?tab=presets" class="profile-popover-item">
+            <i data-lucide="settings"></i> System Settings
+          </a>
+          <a href="#" onclick="window.toggleAdminTheme(); return false;" class="profile-popover-item" id="theme-toggle-popover-btn">
+            <i data-lucide="${themeIcon}"></i> <span>${themeText}</span>
+          </a>
+          <a href="/index.html" target="_blank" class="profile-popover-item">
+            <i data-lucide="external-link"></i> View Storefront
+          </a>
+          <div style="border-top: 1px solid var(--adm-border); margin: 6px 0;"></div>
+          <a href="#" onclick="window.handleLogout(); return false;" class="profile-popover-item" style="color: var(--adm-danger) !important;">
+            <i data-lucide="log-out" style="color: var(--adm-danger);"></i> Sign Out
+          </a>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Prepend to main panel
+  mainPanel.insertBefore(topbar, mainPanel.firstChild);
+  window.renderIcons();
+}
+
+/* ─── Inject Navigation overlays (Command Palette & Notification Drawer) ─── */
+function injectOverlays() {
+  if (document.getElementById('command-palette-overlay')) return;
+
+  // 1. Inject Command Palette
+  const paletteOverlay = document.createElement('div');
+  paletteOverlay.className = 'command-palette-overlay';
+  paletteOverlay.id = 'command-palette-overlay';
+  paletteOverlay.innerHTML = `
+    <div class="command-palette-modal">
+      <div class="command-palette-header">
+        <i data-lucide="search"></i>
+        <input type="text" class="command-palette-input" id="command-palette-search-input" placeholder="Type a command, page name, or search catalog..." autocomplete="off">
+        <kbd style="font-size:10px; color:var(--adm-text-muted); background:var(--adm-bg); border:1px solid var(--adm-border); padding:2px 6px; border-radius:4px;">ESC</kbd>
+      </div>
+      <div class="command-palette-body" id="command-palette-results">
+        <!-- Results will be loaded here dynamically -->
+      </div>
+    </div>
+  `;
+  document.body.appendChild(paletteOverlay);
+
+  // 2. Inject Notification Drawer
+  const notifOverlay = document.createElement('div');
+  notifOverlay.className = 'notification-drawer-overlay';
+  notifOverlay.id = 'notification-drawer-overlay';
+  
+  const notifDrawer = document.createElement('div');
+  notifDrawer.className = 'notification-drawer';
+  notifDrawer.id = 'notification-drawer';
+  notifDrawer.innerHTML = `
+    <div class="notification-drawer-header">
+      <h3 class="notification-drawer-title">Notifications</h3>
+      <button type="button" class="notification-drawer-close" id="notification-drawer-close-btn" aria-label="Close">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="notification-drawer-content">
+      <div class="notification-item" onclick="window.location.href='/admin/orders.html'">
+        <div class="notification-icon-wrapper order">
+          <i data-lucide="shopping-bag"></i>
+        </div>
+        <div class="notification-item-body">
+          <span class="notification-item-text">New Order #1204 placed by S. Ramanathan (₹4,850.00)</span>
+          <span class="notification-item-time">5 mins ago</span>
+        </div>
+      </div>
+      <div class="notification-item" onclick="window.location.href='/admin/products.html?view=inventory'">
+        <div class="notification-icon-wrapper stock">
+          <i data-lucide="alert-triangle"></i>
+        </div>
+        <div class="notification-item-body">
+          <span class="notification-item-text">Low stock warning: 'Brass Vilakku (Medium)' is down to 2 units</span>
+          <span class="notification-item-time">42 mins ago</span>
+        </div>
+      </div>
+      <div class="notification-item" onclick="window.location.href='/admin/settings.html?tab=testimonials'">
+        <div class="notification-icon-wrapper review">
+          <i data-lucide="star"></i>
+        </div>
+        <div class="notification-item-body">
+          <span class="notification-item-text">Customer message pending review: Inquiry about custom corporate gifts</span>
+          <span class="notification-item-time">2 hours ago</span>
+        </div>
+      </div>
+      <div class="notification-item" onclick="window.location.href='/admin/system-diagnostics.html'">
+        <div class="notification-icon-wrapper system">
+          <i data-lucide="check-circle"></i>
+        </div>
+        <div class="notification-item-body">
+          <span class="notification-item-text">Database auto-backup completed successfully</span>
+          <span class="notification-item-time">12 hours ago</span>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(notifOverlay);
+  document.body.appendChild(notifDrawer);
+  window.renderIcons();
+}
+
+/* ─── Command Palette & Overlay Listeners ─── */
+function initOverlaysEvents() {
+  const searchTrigger = document.getElementById('global-search-trigger');
+  const paletteOverlay = document.getElementById('command-palette-overlay');
+  const paletteInput = document.getElementById('command-palette-search-input');
+  
+  const notifTrigger = document.getElementById('notifications-trigger-btn');
+  const notifOverlay = document.getElementById('notification-drawer-overlay');
+  const notifDrawer = document.getElementById('notification-drawer');
+  const notifClose = document.getElementById('notification-drawer-close-btn');
+
+  const profileTrigger = document.getElementById('profile-menu-trigger');
+  const profilePopover = document.getElementById('admin-profile-popover');
+
+  // Toggle Profile Menu
+  if (profileTrigger && profilePopover) {
+    profileTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profilePopover.classList.toggle('open');
+    });
+    // Click outside to close profile popover
+    document.addEventListener('click', () => {
+      profilePopover.classList.remove('open');
+    });
+  }
+
+  // Toggle Mobile responsive sidebar
+  const mobileToggle = document.getElementById('mobile-sidebar-toggle-btn');
+  if (mobileToggle) {
+    mobileToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const layout = document.querySelector('.admin-layout');
+      if (layout) {
+        layout.classList.toggle('sidebar-open');
+      }
+    });
+  }
+
+  // Click on main panel closes mobile sidebar if open
+  const mainPanel = document.querySelector('.admin-main');
+  if (mainPanel) {
+    mainPanel.addEventListener('click', () => {
+      const layout = document.querySelector('.admin-layout');
+      if (layout && layout.classList.contains('sidebar-open')) {
+        layout.classList.remove('sidebar-open');
+      }
+    });
+  }
+
+  // Theme switcher function
+  window.toggleAdminTheme = function() {
+    const layout = document.querySelector('.admin-layout');
+    const btn = document.getElementById('theme-toggle-popover-btn');
+    if (!layout) return;
+
+    const isDark = layout.classList.toggle('dark-mode');
+    localStorage.setItem('admin-theme', isDark ? 'dark' : 'light');
+
+    if (isDark) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+
+    if (btn) {
+      btn.innerHTML = `
+        <i data-lucide="${isDark ? 'sun' : 'moon'}"></i>
+        <span>${isDark ? 'Light Mode' : 'Dark Mode'}</span>
+      `;
+    }
+    window.renderIcons();
+  };
+
+  // Toggle Command Palette
+  function openPalette() {
+    if (paletteOverlay) {
+      paletteOverlay.style.display = 'flex';
+      if (paletteInput) {
+        paletteInput.value = '';
+        setTimeout(() => paletteInput.focus(), 50);
+      }
+      renderCommandPaletteResults('');
+    }
+  }
+
+  function closePalette() {
+    if (paletteOverlay) paletteOverlay.style.display = 'none';
+  }
+
+  if (searchTrigger) {
+    searchTrigger.addEventListener('click', openPalette);
+  }
+
+  if (paletteOverlay) {
+    paletteOverlay.addEventListener('click', (e) => {
+      if (e.target === paletteOverlay) closePalette();
+    });
+  }
+
+  // Toggle Notification Drawer
+  function openNotifications() {
+    if (notifOverlay && notifDrawer) {
+      notifOverlay.style.display = 'block';
+      setTimeout(() => notifDrawer.classList.add('open'), 10);
+      
+      // Remove badge count indicator on click
+      const badge = document.getElementById('admin-notif-badge');
+      if (badge) badge.style.display = 'none';
+    }
+  }
+
+  // Close Notification Drawer
+  function closeNotifications() {
+    if (notifOverlay && notifDrawer) {
+      notifDrawer.classList.remove('open');
+      setTimeout(() => notifOverlay.style.display = 'none', 300);
+    }
+  }
+
+  if (notifTrigger) {
+    notifTrigger.addEventListener('click', openNotifications);
+  }
+  if (notifClose) {
+    notifClose.addEventListener('click', closeNotifications);
+  }
+  if (notifOverlay) {
+    notifOverlay.addEventListener('click', closeNotifications);
+  }
+
+  // Keyboard listeners: Cmd+K / Ctrl+K opens search, Esc closes overlays
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      openPalette();
+    }
+    if (e.key === 'Escape') {
+      closePalette();
+      closeNotifications();
+    }
+  });
+
+  // Search input change listener
+  if (paletteInput) {
+    paletteInput.addEventListener('input', (e) => {
+      renderCommandPaletteResults(e.target.value);
+    });
+  }
+}
+
+/* ─── Command Palette Navigation Items ─── */
+const COMMAND_PAGES = [
+  { name: 'Go to Dashboard', path: '/admin/dashboard.html', icon: 'layout-dashboard', group: 'Navigation' },
+  { name: 'Products List', path: '/admin/products.html', icon: 'gift', group: 'Catalog' },
+  { name: 'Add Product Form', path: '/admin/products.html?action=add', icon: 'plus-circle', group: 'Catalog' },
+  { name: 'Category Configuration', path: '/admin/products.html?view=categories', icon: 'tags', group: 'Catalog' },
+  { name: 'Inventory Manager', path: '/admin/products.html?view=inventory', icon: 'archive', group: 'Catalog' },
+  { name: 'Media Library Gallery', path: '/admin/media.html', icon: 'image', group: 'Catalog' },
+  { name: 'Order Management', path: '/admin/orders.html', icon: 'shopping-bag', group: 'Sales' },
+  { name: 'Customer Database', path: '/admin/customers.html', icon: 'users', group: 'Sales' },
+  { name: 'Invoice Hub', path: '/admin/invoices.html', icon: 'file-text', group: 'Sales' },
+  { name: 'Theme Presets Settings', path: '/admin/settings.html?tab=presets', icon: 'palette', group: 'Appearance' },
+  { name: 'Color Theme Configurator', path: '/admin/settings.html?tab=colors', icon: 'droplet', group: 'Appearance' },
+  { name: 'Typography Customizer', path: '/admin/settings.html?tab=typography', icon: 'type', group: 'Appearance' },
+  { name: 'Footer Settings Panel', path: '/admin/settings.html?tab=footer', icon: 'layout', group: 'Appearance' },
+  { name: 'Glassmorphism Layout Presets', path: '/admin/settings.html?tab=glass', icon: 'sparkles', group: 'Appearance' },
+  { name: 'Sales Reports & Graphs', path: '/admin/reports.html', icon: 'bar-chart-2', group: 'System' },
+  { name: 'Diagnostics console', path: '/admin/system-diagnostics.html', icon: 'cpu', group: 'System' }
+];
+
+async function renderCommandPaletteResults(query) {
+  const container = document.getElementById('command-palette-results');
+  if (!container) return;
+
+  const normalized = query.trim().toLowerCase();
+
+  // If query is empty, show default quick actions
+  if (!normalized) {
+    const itemsHtml = COMMAND_PAGES.slice(0, 6).map((item, idx) => `
+      <a href="${item.path}" class="command-palette-item ${idx === 0 ? 'selected' : ''}">
+        <div class="command-palette-item-left">
+          <i data-lucide="${item.icon}"></i>
+          <span>${item.name}</span>
+        </div>
+        <span class="command-palette-item-shortcut">↵ Enter</span>
+      </a>
+    `).join('');
+
+    container.innerHTML = `
+      <div class="command-palette-group-title">Quick Navigation Shortcuts</div>
+      ${itemsHtml}
+    `;
+    window.renderIcons();
+    return;
+  }
+
+  // Filter static pages
+  const matchedPages = COMMAND_PAGES.filter(p => 
+    p.name.toLowerCase().includes(normalized) || 
+    p.group.toLowerCase().includes(normalized)
+  );
+
+  let resultsHtml = '';
+  
+  if (matchedPages.length > 0) {
+    resultsHtml += `<div class="command-palette-group-title">Matching Control Panels</div>`;
+    resultsHtml += matchedPages.map((item, idx) => `
+      <a href="${item.path}" class="command-palette-item ${idx === 0 ? 'selected' : ''}">
+        <div class="command-palette-item-left">
+          <i data-lucide="${item.icon}"></i>
+          <span>${item.name} <small style="color:var(--adm-text-muted); margin-left: 5px;">in ${item.group}</small></span>
+        </div>
+        <span class="command-palette-item-shortcut">↵ Enter</span>
+      </a>
+    `).join('');
+  }
+
+  // Dynamic Catalog Search
+  if (normalized.length >= 2) {
+    try {
+      const res = await adminFetch('/api/products?limit=10');
+      const data = await res.json();
+      if (data.success && data.products) {
+        const matchedProducts = data.products.filter(p => 
+          p.name.toLowerCase().includes(normalized) ||
+          (p.category && p.category.name.toLowerCase().includes(normalized))
+        );
+
+        if (matchedProducts.length > 0) {
+          resultsHtml += `<div class="command-palette-group-title">Matching Products Catalog</div>`;
+          resultsHtml += matchedProducts.map(p => `
+            <a href="/admin/products.html" class="command-palette-item" onclick="localStorage.setItem('edit-product-id', '${p._id}');">
+              <div class="command-palette-item-left">
+                <i data-lucide="gift"></i>
+                <span>${p.name} <small style="color:var(--adm-text-muted); margin-left:5px;">(₹${p.price} - ${p.stock} units)</small></span>
+              </div>
+              <span class="command-palette-item-shortcut">View Product</span>
+            </a>
+          `).join('');
+        }
+      }
+    } catch (e) {
+      // Fail silently
+    }
+  }
+
+  if (!resultsHtml) {
+    container.innerHTML = `
+      <div style="padding: 30px 20px; text-align: center; color: var(--adm-text-muted); font-size: 13px;">
+        No matches found for "<strong>${query}</strong>"
+      </div>
+    `;
+  } else {
+    container.innerHTML = resultsHtml;
+    window.renderIcons();
+  }
 }
 
 // 1. Dashboard metrics loader
 async function loadDashboardData() {
+  // Set skeleton states first
+  const revEl = document.getElementById('metric-revenue');
+  if (revEl) revEl.innerHTML = '<div class="skeleton" style="height:28px; width:120px; margin-top:8px;"></div>';
+  const ordersEl = document.getElementById('metric-orders');
+  if (ordersEl) ordersEl.innerHTML = '<div class="skeleton" style="height:28px; width:60px; margin-top:8px;"></div>';
+  const customersEl = document.getElementById('metric-customers');
+  if (customersEl) customersEl.innerHTML = '<div class="skeleton" style="height:28px; width:60px; margin-top:8px;"></div>';
+  const productsEl = document.getElementById('metric-products');
+  if (productsEl) productsEl.innerHTML = '<div class="skeleton" style="height:28px; width:60px; margin-top:8px;"></div>';
+  
+  const chartBox = document.getElementById('dashboard-chart-box');
+  if (chartBox) {
+    chartBox.innerHTML = `
+      <h4 style="font-family:'Outfit'; font-size:16px; margin-bottom:16px;">Sales Revenue Trend (₹)</h4>
+      <div class="skeleton" style="height:180px; width:100%; border-radius:8px;"></div>
+    `;
+  }
+  
+  const tbody = document.getElementById('recent-orders-tbody');
+  if (tbody) {
+    tbody.innerHTML = Array(4).fill(0).map(() => `
+      <tr>
+        <td><div class="skeleton" style="height:14px; width:50px;"></div></td>
+        <td><div class="skeleton" style="height:14px; width:100px;"></div></td>
+        <td><div class="skeleton" style="height:14px; width:80px;"></div></td>
+        <td><div class="skeleton" style="height:14px; width:60px;"></div></td>
+        <td><div class="skeleton" style="height:14px; width:70px;"></div></td>
+      </tr>
+    `).join('');
+  }
+
   try {
     const res = await adminFetch('/api/reports/dashboard');
     const data = await res.json();
@@ -322,22 +859,22 @@ async function loadDashboardData() {
     const totalProducts = Number(stats.totalProducts) || 0;
 
     // Set metrics
-    const revEl = document.getElementById('metric-revenue');
-    if (revEl) revEl.textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
-    const ordersEl = document.getElementById('metric-orders');
-    if (ordersEl) ordersEl.textContent = totalOrders;
-    const customersEl = document.getElementById('metric-customers');
-    if (customersEl) customersEl.textContent = totalCustomers;
-    const productsEl = document.getElementById('metric-products');
-    if (productsEl) productsEl.textContent = totalProducts;
+    const revEl2 = document.getElementById('metric-revenue');
+    if (revEl2) revEl2.textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
+    const ordersEl2 = document.getElementById('metric-orders');
+    if (ordersEl2) ordersEl2.textContent = totalOrders;
+    const customersEl2 = document.getElementById('metric-customers');
+    if (customersEl2) customersEl2.textContent = totalCustomers;
+    const productsEl2 = document.getElementById('metric-products');
+    if (productsEl2) productsEl2.textContent = totalProducts;
 
     // Render Recent orders list
-    const tbody = document.getElementById('recent-orders-tbody');
-    if (tbody) {
+    const tbody2 = document.getElementById('recent-orders-tbody');
+    if (tbody2) {
       if (data.recentOrders && data.recentOrders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No orders yet.</td></tr>';
+        tbody2.innerHTML = '<tr><td colspan="5" style="text-align:center;">No orders yet.</td></tr>';
       } else {
-        tbody.innerHTML = data.recentOrders.map(o => {
+        tbody2.innerHTML = data.recentOrders.map(o => {
           const customerName = o.userId ? (o.userId.name || 'Customer') : (o.guestDetails ? (o.guestDetails.fullName || 'Guest') : 'Guest');
           const orderTotal = (o.summary && o.summary.total != null) ? o.summary.total : 0;
           const orderStatus = o.status || 'Pending';
@@ -388,14 +925,14 @@ function renderSvgTrendChart(chartData) {
       
       <!-- Node Dots -->
       ${chartData.map((d, i) => {
-    const x = (i * (width / (chartData.length - 1))) + 30;
-    const y = height - (d.revenue / maxVal * (height - 40)) - 20;
-    return `
+        const x = (i * (width / (chartData.length - 1))) + 30;
+        const y = height - (d.revenue / maxVal * (height - 40)) - 20;
+        return `
           <circle cx="${x}" cy="${y}" r="5" fill="var(--primary-gold)" stroke="hsl(var(--primary-purple))" stroke-width="2"/>
           <text x="${x}" y="${y - 10}" font-size="10" font-weight="700" text-anchor="middle" fill="var(--text-color)">₹${Math.round(d.revenue)}</text>
           <text x="${x}" y="${height}" font-size="9" text-anchor="middle" fill="var(--text-muted)">${d.label}</text>
         `;
-  }).join('')}
+      }).join('')}
     </svg>
   `;
 }
@@ -419,38 +956,172 @@ async function loadAdminProducts() {
       return;
     }
 
-    tbody.innerHTML = data.products.map(p => `
-      <tr>
-        <td>
-          <input type="checkbox" class="product-select-checkbox" data-id="${p._id}" style="cursor:pointer;" onchange="updateBulkSelectionState()">
-        </td>
-        <td>
-          <div style="width:40px; height:40px; border-radius:4px; overflow:hidden;">
-            <img src="${p.images[0] ? p.images[0].url : '/assets/images/default-product.webp'}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/images/default-product.webp'">
-          </div>
-        </td>
-        <td><strong>${p.name}</strong></td>
-        <td>${p.category ? p.category.name : 'Uncategorized'}</td>
-        <td>₹${p.price}</td>
-        <td>${p.stock} pcs</td>
-        <td>
-          <input type="checkbox" style="cursor:pointer;" ${p.isFeatured ? 'checked' : ''} onchange="window.toggleProductFeatured('${p._id}', this.checked)">
-        </td>
-        <td>
-          <button onclick="openProductEditModal('${p._id}')" class="btn btn-secondary" style="padding:4px 10px; font-size:11px; border-radius:4px; border-width:1px; margin-right:6px;">Edit</button>
-          <button onclick="duplicateProductById('${p._id}')" class="btn btn-secondary" style="padding:4px 10px; font-size:11px; border-radius:4px; border-width:1px; margin-right:6px;">Clone</button>
-          <button onclick="deleteProductById('${p._id}', '${p.name.replace(/'/g, "\\'")}')" class="btn" style="padding:4px 10px; font-size:11px; border-radius:4px; background:#ef4444; color:white;">Delete</button>
-        </td>
-      </tr>
-    `).join('');
+    // Save list globally for local search and filtering
+    window.allAdminProducts = data.products || [];
+    injectProductsToolbar();
+    populateCategoryFilterDropdown(data.products);
+    filterAndRenderProducts();
 
     // Pre-populate category dropdowns in Add/Edit forms
     loadCategoriesDropdown();
+
+    // Check for dynamic edit trigger from command palette
+    const editId = localStorage.getItem('edit-product-id');
+    if (editId) {
+      localStorage.removeItem('edit-product-id');
+      setTimeout(() => {
+        if (typeof openProductEditModal === 'function') {
+          openProductEditModal(editId);
+        }
+      }, 200);
+    }
 
   } catch (err) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Failed to load products list.</td></tr>';
     showToast('Failed to fetch products', 'error');
   }
+}
+
+function injectProductsToolbar() {
+  const tableResp = document.querySelector('.table-responsive');
+  if (!tableResp || document.getElementById('product-search-input') || !window.location.pathname.includes('products.html')) return;
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'table-toolbar';
+  toolbar.innerHTML = `
+    <div class="toolbar-search">
+      <i data-lucide="search"></i>
+      <input type="text" id="product-search-input" class="admin-form-control" placeholder="Search by name, category, tags...">
+    </div>
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <select id="product-category-filter" class="admin-form-control" style="width:160px; margin:0;">
+        <option value="">All Categories</option>
+      </select>
+      <select id="product-stock-filter" class="admin-form-control" style="width:160px; margin:0;">
+        <option value="">All Stock Levels</option>
+        <option value="in-stock">In Stock (>0)</option>
+        <option value="low-stock">Low Stock (≤10)</option>
+        <option value="out-of-stock">Out of Stock (=0)</option>
+      </select>
+      <select id="product-sort-by" class="admin-form-control" style="width:160px; margin:0;">
+        <option value="">Sort: Default</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+        <option value="stock-asc">Stock: Low to High</option>
+        <option value="stock-desc">Stock: High to Low</option>
+      </select>
+    </div>
+  `;
+  tableResp.parentNode.insertBefore(toolbar, tableResp);
+  window.renderIcons();
+
+  // Attach listeners for local search/filter
+  document.getElementById('product-search-input').addEventListener('input', filterAndRenderProducts);
+  document.getElementById('product-category-filter').addEventListener('change', filterAndRenderProducts);
+  document.getElementById('product-stock-filter').addEventListener('change', filterAndRenderProducts);
+  document.getElementById('product-sort-by').addEventListener('change', filterAndRenderProducts);
+}
+
+function populateCategoryFilterDropdown(products) {
+  const select = document.getElementById('product-category-filter');
+  if (!select || select.children.length > 1) return; // Already populated
+  
+  const categories = [...new Set(products.map(p => p.category ? p.category.name : 'Uncategorized').filter(Boolean))];
+  categories.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    select.appendChild(opt);
+  });
+}
+
+function filterAndRenderProducts() {
+  const tbody = document.getElementById('admin-products-tbody');
+  if (!tbody || !window.allAdminProducts) return;
+
+  const searchVal = document.getElementById('product-search-input')?.value.toLowerCase().trim() || '';
+  const catVal = document.getElementById('product-category-filter')?.value || '';
+  const stockVal = document.getElementById('product-stock-filter')?.value || '';
+  const sortVal = document.getElementById('product-sort-by')?.value || '';
+
+  let filtered = [...window.allAdminProducts];
+
+  // Apply search
+  if (searchVal) {
+    filtered = filtered.filter(p => 
+      p.name.toLowerCase().includes(searchVal) ||
+      (p.category && p.category.name.toLowerCase().includes(searchVal)) ||
+      (p.tags && p.tags.some(t => t.toLowerCase().includes(searchVal)))
+    );
+  }
+
+  // Apply category filter
+  if (catVal) {
+    filtered = filtered.filter(p => {
+      const pCat = p.category ? p.category.name : 'Uncategorized';
+      return pCat === catVal;
+    });
+  }
+
+  // Apply stock filter
+  if (stockVal) {
+    if (stockVal === 'in-stock') {
+      filtered = filtered.filter(p => p.stock > 0);
+    } else if (stockVal === 'low-stock') {
+      filtered = filtered.filter(p => p.stock > 0 && p.stock <= 10);
+    } else if (stockVal === 'out-of-stock') {
+      filtered = filtered.filter(p => p.stock === 0);
+    }
+  }
+
+  // Apply sort
+  if (sortVal) {
+    if (sortVal === 'price-asc') {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (sortVal === 'price-desc') {
+      filtered.sort((a, b) => b.price - a.price);
+    } else if (sortVal === 'stock-asc') {
+      filtered.sort((a, b) => a.stock - b.stock);
+    } else if (sortVal === 'stock-desc') {
+      filtered.sort((a, b) => b.stock - a.stock);
+    }
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 40px !important; color: var(--adm-text-muted);">No products found matching your active search/filter criteria.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(p => `
+    <tr>
+      <td>
+        <input type="checkbox" class="product-select-checkbox" data-id="${p._id}" style="cursor:pointer;" onchange="updateBulkSelectionState()">
+      </td>
+      <td>
+        <div style="width:40px; height:40px; border-radius:6px; overflow:hidden; border:1px solid var(--adm-border);">
+          <img src="${p.images[0] ? p.images[0].url : '/assets/images/default-product.webp'}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/images/default-product.webp'">
+        </div>
+      </td>
+      <td><strong>${p.name}</strong></td>
+      <td>
+        <span class="badge" style="background: rgba(106, 13, 173, 0.05); color: var(--adm-accent); border: 1px solid rgba(106, 13, 173, 0.1);">${p.category ? p.category.name : 'Uncategorized'}</span>
+      </td>
+      <td><strong>₹${p.price.toLocaleString('en-IN')}</strong></td>
+      <td>
+        <span class="badge ${p.stock > 10 ? 'badge-success' : p.stock > 0 ? 'badge-warning' : 'badge-danger'}">
+          ${p.stock} units
+        </span>
+      </td>
+      <td>
+        <input type="checkbox" style="cursor:pointer;" ${p.isFeatured ? 'checked' : ''} onchange="window.toggleProductFeatured('${p._id}', this.checked)">
+      </td>
+      <td>
+        <button onclick="openProductEditModal('${p._id}')" class="btn btn-secondary" style="padding:6px 12px; font-size:11px; border-radius:6px; margin-right:6px;">Edit</button>
+        <button onclick="duplicateProductById('${p._id}')" class="btn btn-secondary" style="padding:6px 12px; font-size:11px; border-radius:6px; margin-right:6px;">Clone</button>
+        <button onclick="deleteProductById('${p._id}', '${p.name.replace(/'/g, "\\'")}')" class="btn" style="padding:6px 12px; font-size:11px; border-radius:6px; background:#ef4444; color:white;">Delete</button>
+      </td>
+    </tr>
+  `).join('');
 }
 
 async function loadCategoriesDropdown() {
@@ -808,44 +1479,126 @@ async function loadAdminOrders() {
       return;
     }
 
-    const rows = [];
-    for (const o of data.orders) {
-      try {
-        if (!o || (!o._id && !o.orderId)) continue;
-        const displayOrderId = o.orderId || o._id || 'PENDING-ID';
-        const clientName = o.userId ? (o.userId.name || 'Customer') : (o.guestDetails ? (o.guestDetails.fullName || 'Guest') : 'Guest');
-        const formattedDate = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : 'N/A';
-        const totalAmount = o.summary ? o.summary.total : 0;
+    // Save orders globally and run search/filter views
+    window.allAdminOrders = data.orders || [];
+    injectOrdersToolbar();
+    filterAndRenderOrders();
 
-        rows.push(`
-          <tr>
-            <td><strong style="color:var(--text-color); font-size:13px;">#${displayOrderId}</strong></td>
-            <td>${clientName}</td>
-            <td>${formattedDate}</td>
-            <td>${formatPrice(totalAmount)}</td>
-            <td>
-              <select onchange="updateOrderStatus('${o._id || o.orderId}', this.value)" style="padding:6px; border-radius:4px; font-size:12px; background:var(--card-bg); color:var(--text-color); border:1px solid var(--card-border); font-weight:600; cursor:pointer;">
-                <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
-                <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
-                <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-              </select>
-            </td>
-            <td>
-              <a href="/api/orders/${o._id || o.orderId}/invoice" target="_blank" class="btn btn-secondary" style="padding:4px 10px; font-size:11px; border-radius:4px; border-width:1px;">Invoice</a>
-            </td>
-          </tr>
-        `);
-      } catch (rowErr) {
-        console.error('Failed to map order row:', rowErr, o);
-      }
-    }
-    tbody.innerHTML = rows.join('');
   } catch (err) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to load orders list.</td></tr>';
     showToast('Failed to fetch orders list', 'error');
   }
+}
+
+function injectOrdersToolbar() {
+  const tableResp = document.querySelector('.table-responsive');
+  if (!tableResp || document.getElementById('order-search-input') || !window.location.pathname.includes('orders.html')) return;
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'table-toolbar';
+  toolbar.innerHTML = `
+    <div class="toolbar-search">
+      <i data-lucide="search"></i>
+      <input type="text" id="order-search-input" class="admin-form-control" placeholder="Search orders by ID, customer name...">
+    </div>
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <select id="order-status-filter" class="admin-form-control" style="width:160px; margin:0;">
+        <option value="">All Statuses</option>
+        <option value="Pending">Pending</option>
+        <option value="Processing">Processing</option>
+        <option value="Shipped">Shipped</option>
+        <option value="Delivered">Delivered</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+      <select id="order-sort-by" class="admin-form-control" style="width:160px; margin:0;">
+        <option value="">Sort: Date (Newest)</option>
+        <option value="date-oldest">Date (Oldest)</option>
+        <option value="amount-desc">Total: High to Low</option>
+        <option value="amount-asc">Total: Low to High</option>
+      </select>
+    </div>
+  `;
+  tableResp.parentNode.insertBefore(toolbar, tableResp);
+  window.renderIcons();
+
+  document.getElementById('order-search-input').addEventListener('input', filterAndRenderOrders);
+  document.getElementById('order-status-filter').addEventListener('change', filterAndRenderOrders);
+  document.getElementById('order-sort-by').addEventListener('change', filterAndRenderOrders);
+}
+
+function filterAndRenderOrders() {
+  const tbody = document.getElementById('admin-orders-tbody');
+  if (!tbody || !window.allAdminOrders) return;
+
+  const searchVal = document.getElementById('order-search-input')?.value.toLowerCase().trim() || '';
+  const statusVal = document.getElementById('order-status-filter')?.value || '';
+  const sortVal = document.getElementById('order-sort-by')?.value || '';
+
+  let filtered = [...window.allAdminOrders];
+
+  if (searchVal) {
+    filtered = filtered.filter(o => {
+      const clientName = o.userId ? (o.userId.name || '') : (o.guestDetails ? (o.guestDetails.fullName || '') : '');
+      const orderIdStr = (o.orderId || o._id || '').toLowerCase();
+      return orderIdStr.includes(searchVal) || clientName.toLowerCase().includes(searchVal);
+    });
+  }
+
+  if (statusVal) {
+    filtered = filtered.filter(o => o.status === statusVal);
+  }
+
+  if (sortVal) {
+    if (sortVal === 'date-oldest') {
+      filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    } else if (sortVal === 'amount-desc') {
+      filtered.sort((a, b) => (b.summary?.total || 0) - (a.summary?.total || 0));
+    } else if (sortVal === 'amount-asc') {
+      filtered.sort((a, b) => (a.summary?.total || 0) - (b.summary?.total || 0));
+    }
+  } else {
+    // Default: Newest first
+    filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px !important; color:var(--adm-text-muted);">No orders match your active search/filter criteria.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(o => {
+    try {
+      if (!o || (!o._id && !o.orderId)) return '';
+      const displayOrderId = o.orderId || o._id || 'PENDING-ID';
+      const clientName = o.userId ? (o.userId.name || 'Customer') : (o.guestDetails ? (o.guestDetails.fullName || 'Guest') : 'Guest');
+      const formattedDate = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : 'N/A';
+      const totalAmount = o.summary ? o.summary.total : 0;
+
+      return `
+        <tr>
+          <td><strong style="color:var(--adm-text); font-size:13px;">#${displayOrderId}</strong></td>
+          <td>${clientName}</td>
+          <td>${formattedDate}</td>
+          <td><strong>₹${totalAmount.toLocaleString('en-IN')}</strong></td>
+          <td>
+            <select onchange="updateOrderStatus('${o._id || o.orderId}', this.value)" style="padding:6px 12px; border-radius:6px; font-size:12px; background:var(--adm-bg); color:var(--adm-text); border:1px solid var(--adm-border); font-weight:600; cursor:pointer;">
+              <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+              <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
+              <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+              <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+              <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+            </select>
+          </td>
+          <td>
+            <a href="/api/orders/${o._id || o.orderId}/invoice" target="_blank" class="btn btn-secondary" style="padding:6px 12px; font-size:11px; border-radius:6px;">Invoice</a>
+          </td>
+        </tr>
+      `;
+    } catch (rowErr) {
+      console.error('Failed to map order row:', rowErr, o);
+      return '';
+    }
+  }).join('');
 }
 
 async function updateOrderStatus(orderId, status) {
@@ -882,42 +1635,119 @@ async function loadAdminCustomers() {
       return;
     }
 
-    tbody.innerHTML = data.customers.map(c => {
-      const isLocked = c.lockUntil && new Date(c.lockUntil) > new Date();
-      const lockStatusHTML = isLocked 
-        ? `<span class="badge badge-danger" style="padding:4px 8px; font-weight:700;">Locked</span>` 
-        : `<span class="badge badge-success" style="padding:4px 8px; font-weight:700;">Active</span>`;
-      
-      const verificationStatusHTML = c.emailVerified 
-        ? `<span style="color:#28a745; font-weight:700;">✓ Verified</span>` 
-        : `<span style="color:#dc3545; font-weight:700;">✗ Unverified</span>`;
+    // Save customers globally and filter
+    window.allAdminCustomers = data.customers || [];
+    injectCustomersToolbar();
+    filterAndRenderCustomers();
 
-      return `
-      <tr>
-        <td><strong>${c.name}</strong></td>
-        <td>${c.email}</td>
-        <td style="text-transform: capitalize;">${c.role}</td>
-        <td>${verificationStatusHTML}</td>
-        <td>${lockStatusHTML}</td>
-        <td>${c.orderCount} orders</td>
-        <td><strong>₹${c.totalSpent.toLocaleString('en-IN')}</strong></td>
-        <td>
-          <button onclick="viewCustomerDeepProfile('${c._id}')" class="btn btn-secondary" style="padding:6px 12px; font-size:12px; border-radius:6px; cursor:pointer;">👁️ Profile</button>
-          
-          <select onchange="handleAdminCustomerAction('${c._id}', this.value); this.value='';" style="padding:6px; font-size:12px; border-radius:6px; cursor:pointer; background:var(--card-bg); color:var(--text-color); border:1px solid var(--card-border); font-weight:600; margin-left:6px;">
-            <option value="">Actions</option>
-            <option value="toggle-role">Toggle Permissions (Customer ↔ Staff)</option>
-            <option value="force-reset">Force Account Password Reset</option>
-            <option value="unlock">Unlock Account / Clear Login Attempts</option>
-          </select>
-        </td>
-      </tr>
-    `;
-    }).join('');
   } catch (err) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:red;">Failed to load customers list.</td></tr>';
     showToast('Failed to load customers list', 'error');
   }
+}
+
+function injectCustomersToolbar() {
+  const tableResp = document.querySelector('.table-responsive');
+  if (!tableResp || document.getElementById('customer-search-input') || !window.location.pathname.includes('customers.html')) return;
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'table-toolbar';
+  toolbar.innerHTML = `
+    <div class="toolbar-search">
+      <i data-lucide="search"></i>
+      <input type="text" id="customer-search-input" class="admin-form-control" placeholder="Search by name, email, role...">
+    </div>
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <select id="customer-status-filter" class="admin-form-control" style="width:160px; margin:0;">
+        <option value="">All Statuses</option>
+        <option value="Active">Active</option>
+        <option value="Locked">Locked</option>
+      </select>
+      <select id="customer-sort-by" class="admin-form-control" style="width:160px; margin:0;">
+        <option value="">Sort: Default</option>
+        <option value="orders-desc">Orders: High to Low</option>
+        <option value="spent-desc">Spent: High to Low</option>
+      </select>
+    </div>
+  `;
+  tableResp.parentNode.insertBefore(toolbar, tableResp);
+  window.renderIcons();
+
+  document.getElementById('customer-search-input').addEventListener('input', filterAndRenderCustomers);
+  document.getElementById('customer-status-filter').addEventListener('change', filterAndRenderCustomers);
+  document.getElementById('customer-sort-by').addEventListener('change', filterAndRenderCustomers);
+}
+
+function filterAndRenderCustomers() {
+  const tbody = document.getElementById('admin-customers-tbody');
+  if (!tbody || !window.allAdminCustomers) return;
+
+  const searchVal = document.getElementById('customer-search-input')?.value.toLowerCase().trim() || '';
+  const statusVal = document.getElementById('customer-status-filter')?.value || '';
+  const sortVal = document.getElementById('customer-sort-by')?.value || '';
+
+  let filtered = [...window.allAdminCustomers];
+
+  if (searchVal) {
+    filtered = filtered.filter(c => 
+      (c.name && c.name.toLowerCase().includes(searchVal)) ||
+      (c.email && c.email.toLowerCase().includes(searchVal)) ||
+      (c.role && c.role.toLowerCase().includes(searchVal))
+    );
+  }
+
+  if (statusVal) {
+    filtered = filtered.filter(c => {
+      const isLocked = c.lockUntil && new Date(c.lockUntil) > new Date();
+      return statusVal === 'Locked' ? isLocked : !isLocked;
+    });
+  }
+
+  if (sortVal) {
+    if (sortVal === 'orders-desc') {
+      filtered.sort((a, b) => (b.orderCount || 0) - (a.orderCount || 0));
+    } else if (sortVal === 'spent-desc') {
+      filtered.sort((a, b) => (b.totalSpent || 0) - (a.totalSpent || 0));
+    }
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 40px !important; color:var(--adm-text-muted);">No customers match your active search/filter criteria.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(c => {
+    const isLocked = c.lockUntil && new Date(c.lockUntil) > new Date();
+    const lockStatusHTML = isLocked 
+      ? `<span class="badge badge-danger">Locked</span>` 
+      : `<span class="badge badge-success">Active</span>`;
+    
+    const verificationStatusHTML = c.emailVerified 
+      ? `<span style="color:#10b981; font-weight:700;">✓ Verified</span>` 
+      : `<span style="color:#ef4444; font-weight:700;">✗ Unverified</span>`;
+
+    return `
+    <tr>
+      <td><strong>${c.name}</strong></td>
+      <td>${c.email}</td>
+      <td style="text-transform: capitalize;">${c.role}</td>
+      <td>${verificationStatusHTML}</td>
+      <td>${lockStatusHTML}</td>
+      <td>${c.orderCount} orders</td>
+      <td><strong>₹${c.totalSpent.toLocaleString('en-IN')}</strong></td>
+      <td>
+        <button onclick="viewCustomerDeepProfile('${c._id}')" class="btn btn-secondary" style="padding:6px 12px; font-size:12px; border-radius:6px; cursor:pointer;">👁️ Profile</button>
+        
+        <select onchange="handleAdminCustomerAction('${c._id}', this.value); this.value='';" style="padding:6px; font-size:12px; border-radius:6px; cursor:pointer; background:var(--adm-bg); color:var(--adm-text); border:1px solid var(--adm-border); font-weight:600; margin-left:6px;">
+          <option value="">Actions</option>
+          <option value="toggle-role">Toggle Permissions</option>
+          <option value="force-reset">Force PW Reset</option>
+          <option value="unlock">Unlock Account</option>
+        </select>
+      </td>
+    </tr>
+  `;
+  }).join('');
 }
 
 // Handler for custom admin controls on users
