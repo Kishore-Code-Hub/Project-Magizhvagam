@@ -1641,20 +1641,20 @@ window.showLoginRegisterModal = (context = 'action') => {
 
   const allowSignup = !(window.featureToggles && window.featureToggles.allowSignup === false);
   modal.innerHTML = `
-    <div class="modal-content glass scale-in" style="max-width: 420px; padding: 30px; text-align: center; border-radius: 16px; position:relative; background:#FAF9F6; border:1px solid var(--card-border); color:var(--text-color);">
-      <button id="close-guest-modal-btn" style="position:absolute; top:15px; right:15px; background:transparent; font-size:18px; font-weight:bold; color:var(--text-muted); cursor:pointer; border:none;">✕</button>
+    <div class="modal-content glass scale-in" style="max-width: 420px; padding: 30px; text-align: center; border-radius: 16px; position:relative; background:#FAF9F6; border:1px solid var(--card-border); color:#000000;">
+      <button id="close-guest-modal-btn" style="position:absolute; top:15px; right:15px; background:transparent; font-size:18px; font-weight:bold; color:#000000; cursor:pointer; border:none;">✕</button>
       <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
-        <svg style="width: 48px; height: 48px; fill: none; stroke: hsl(var(--primary-purple)); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transform: translate3d(0,0,0); backface-visibility: hidden;" viewBox="0 0 24 24">
+        <svg style="width: 48px; height: 48px; fill: none; stroke: #000000; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transform: translate3d(0,0,0); backface-visibility: hidden;" viewBox="0 0 24 24">
           <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
           <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
         </svg>
       </div>
-      <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:10px; color:var(--text-color);">Login Required</h3>
-      <p style="font-size:14px; color:var(--text-muted); line-height:1.6; margin-bottom:24px;">${reasonText}</p>
+      <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:10px; color:#000000;">Login Required</h3>
+      <p style="font-size:14px; color:#000000; line-height:1.6; margin-bottom:24px;">${reasonText}</p>
       <div style="display:flex; flex-direction:column; gap:10px;">
         <a href="/login.html?redirect=${redirectPath}" class="btn btn-primary" style="padding:10px; border-radius:8px; font-weight:600; text-decoration:none; text-align:center; display:block;">Sign In / Login</a>
-        ${allowSignup ? `<a href="/register.html?redirect=${redirectPath}" class="btn btn-secondary" style="padding:10px; border-radius:8px; border-width:1px; font-weight:600; text-decoration:none; text-align:center; display:block; border-color:hsl(var(--primary-purple)); color:hsl(var(--primary-purple));">Create An Account</a>` : ''}
-        <button id="cancel-guest-modal-btn" class="btn" style="background:transparent; color:var(--text-muted); font-size:13px; font-weight:600; cursor:pointer; border:none; margin-top:5px;">Cancel</button>
+        ${allowSignup ? `<a href="/register.html?redirect=${redirectPath}" class="btn btn-secondary" style="padding:10px; border-radius:8px; border-width:1px; font-weight:600; text-decoration:none; text-align:center; display:block; border-color:#000000; color:#000000;">Create An Account</a>` : ''}
+        <button id="cancel-guest-modal-btn" class="btn" style="background:transparent; color:#000000; font-size:13px; font-weight:600; cursor:pointer; border:none; margin-top:5px;">Cancel</button>
       </div>
     </div>
   `;
