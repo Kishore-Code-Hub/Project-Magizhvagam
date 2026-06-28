@@ -1,1795 +1,424 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Appearance Studio | MAGIZHVAGAM</title>
+  <title>System Settings | MAGIZHVAGAM</title>
 
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="stylesheet" href="/assets/css/admin.css">
-  <link rel="stylesheet" href="/assets/css/appearance-studio.css">
   <link rel="stylesheet" href="/assets/css/animations.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
-
   <style>
-    /* Full Screen Workspace Layout Override */
-    .admin-main {
-      padding: 0 !important;
-      height: 100vh;
-      overflow: hidden;
-      background-color: var(--studio-bg) !important;
-    }
-    
-    /* Preset Card Hover Styling */
-    .preset-option-card {
-      transition: all 0.2s ease;
-      border: 1px solid var(--studio-border);
-      background: rgba(255, 255, 255, 0.02);
-    }
-    .preset-option-card:hover {
-      border-color: var(--studio-gold);
-      background: rgba(255, 255, 255, 0.04);
-      transform: translateY(-2px);
-    }
-    .preset-option-card.active {
-      border-color: var(--studio-gold);
-      background: rgba(201, 145, 61, 0.08);
-      box-shadow: 0 0 10px rgba(201, 145, 61, 0.2);
-    }
-    
-    /* Scrollable panels */
     .scroll-panel {
       overflow-y: auto;
       max-height: calc(100vh - 200px);
-      padding-right: 6px;
+      padding: 10px;
     }
-    .scroll-panel::-webkit-scrollbar {
-      width: 6px;
-    }
-    .scroll-panel::-webkit-scrollbar-thumb {
-      background: var(--studio-border);
-      border-radius: 3px;
-    }
-    
-    /* Form groups spacing */
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-bottom: 15px;
-    }
-
-    /* Scrollable Tabs */
     .studio-tabs {
       display: flex;
-      overflow-x: auto;
-      border-bottom: 1px solid var(--studio-border);
-      scrollbar-width: thin;
-      background-color: rgba(0, 0, 0, 0.2);
-      padding: 0 10px;
+      gap: 10px;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 10px;
     }
-    .studio-tabs::-webkit-scrollbar {
-      height: 4px;
+    .studio-tab-panel {
+      display: none;
     }
-    .studio-tabs::-webkit-scrollbar-thumb {
-      background: var(--studio-border);
-      border-radius: 2px;
+    .studio-tab-panel.active {
+      display: block;
+    }
+    pre {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+      max-height: 250px;
+      overflow: auto;
+      font-family: monospace;
+      font-size: 12px;
+      border: 1px solid var(--card-border);
+      color: var(--text-color);
     }
   </style>
 </head>
-
 <body style="visibility:hidden">
-
   <div class="admin-layout">
-
     <!-- Sidebar navigation placeholder -->
     <aside id="admin-sidebar-container"></aside>
-    <!-- Main Appearance Studio Container -->
-    <main class="admin-main">
-      <div class="studio-container">
+
+    <!-- Main Content -->
+    <main class="admin-main" style="padding: 24px !important;">
+      <h1 style="font-family:'Outfit'; font-size:32px; color:var(--text-color); margin-bottom:10px;">System Settings</h1>
+      <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Manage general store options, SEO metadata, tracking codes, payment integrations, mobile scaling, and SMTP server diagnostics.</p>
+
+      <!-- Sub tabs row -->
+      <div class="studio-tabs">
+        <button type="button" class="studio-tab-btn active" id="btn-tab-general" onclick="switchTab('tab-general')">General</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-seo" onclick="switchTab('tab-seo')">SEO Tags</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-analytics" onclick="switchTab('tab-analytics')">Analytics</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-integrations" onclick="switchTab('tab-integrations')">Integrations</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-mobile-settings" onclick="switchTab('tab-mobile-settings')">Mobile Offset</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-diagnostics" onclick="switchTab('tab-diagnostics')">Diagnostics</button>
+      </div>
+
+      <div class="scroll-panel">
         
-        <!-- Left: Theme Editor Panel -->
-        <div class="studio-sidebar">
-          <div class="studio-header">
-            <h1>Appearance Studio</h1>
-            <p>Design your store look, feel, and colors live.</p>
+        <!-- Tab 1: General Settings -->
+        <div class="studio-tab-panel active" id="tab-general">
+          <div class="glass" style="padding:25px; border-radius:12px; max-width:650px; margin:0 auto;">
+            <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">⚙️ Store Profile Settings</h3>
+            <form id="general-settings-form">
+              <div class="admin-form-group">
+                <label>Store Name</label>
+                <input type="text" id="general-store-name" class="admin-form-control" placeholder="MAGIZHVAGAM" required>
+              </div>
+              <div class="admin-form-group">
+                <label>Store Tagline</label>
+                <input type="text" id="general-store-tagline" class="admin-form-control" placeholder="PREMIUM RETURN GIFTS" required>
+              </div>
+              <div class="admin-form-group">
+                <label>Currency Symbol</label>
+                <input type="text" id="general-currency" class="admin-form-control" placeholder="₹" required>
+              </div>
+              <div class="admin-form-group">
+                <label>Customer Support Email</label>
+                <input type="email" id="general-support-email" class="admin-form-control" placeholder="contact@magizhvagam.com" required>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:10px;">Save General Settings</button>
+            </form>
           </div>
-
-          <!-- Tabs Navigation Scrollable Row -->
-          <div class="studio-tabs">
-            <button type="button" class="studio-tab-btn active" onclick="switchStudioTab(event, 'tab-presets')">Presets</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-colors')">Colors</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-typography')">Fonts</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-header')">Header</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-homepage')">Homepage</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-testimonials')">Testimonials</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-footer')">Footer</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-buttons')">Buttons</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-cards')">Cards</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-products')">Product Pages</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-coupons')">Coupons</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-flash-sales')">Flash Sales</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-newsletter')">Newsletter</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-popup')">Popup Builder</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-about')">About Page</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-contact')">Contact Page</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-privacy')">Privacy Policy</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-terms')">Terms of Service</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-general')">General Settings</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-seo')">SEO Settings</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-analytics')">Analytics</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-integrations')">Integrations</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-mobile')">Mobile Settings</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-animations')">Animations</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-glass')">Glassmorphism</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-css')">Custom CSS</button>
-          </div>
-
-          <!-- Main Configuration Form -->
-          <form id="homepage-builder-form" style="display:flex; flex-direction:column; flex-grow:1; overflow:hidden;">
-            <div class="studio-content scroll-panel">
-
-              <!-- TAB 1: Theme Presets -->
-              <div class="studio-tab-panel active" id="tab-presets">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Theme Presets</h3>
-                <p style="font-size:12px; color:var(--studio-text-muted); margin-bottom:20px;">Instantly swap your color theme with one of our curated premium presets.</p>
-                
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                  <!-- Preset Velvet -->
-                  <div class="preset-option-card active" id="preset-velvet" onclick="applyThemePreset('velvet')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                      <strong style="font-size:14px;">Deep Velvet Night</strong>
-                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Premium purple and gold theme</div>
-                    </div>
-                    <div style="display:flex; gap:6px;">
-                      <span style="width:14px; height:14px; border-radius:50%; background:#0B0618; border:1px solid rgba(255,255,255,0.2);"></span>
-                      <span style="width:14px; height:14px; border-radius:50%; background:#171027; border:1px solid rgba(255,255,255,0.2);"></span>
-                      <span style="width:14px; height:14px; border-radius:50%; background:#D4A03A; border:1px solid rgba(255,255,255,0.2);"></span>
-                    </div>
-                  </div>
-                  
-                  <!-- Preset Gold -->
-                  <div class="preset-option-card" id="preset-royal" onclick="applyThemePreset('royal')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                      <strong style="font-size:14px;">Royal Gold</strong>
-                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Elegant dark grey gold theme</div>
-                    </div>
-                    <div style="display:flex; gap:6px;">
-                      <span style="width:14px; height:14px; border-radius:50%; background:#121212; border:1px solid rgba(255,255,255,0.2);"></span>
-                      <span style="width:14px; height:14px; border-radius:50%; background:#1E1E1E; border:1px solid rgba(255,255,255,0.2);"></span>
-                      <span style="width:14px; height:14px; border-radius:50%; background:#D4A03A; border:1px solid rgba(255,255,255,0.2);"></span>
-                    </div>
-                  </div>
-
-                  <!-- Preset Ivory -->
-                  <div class="preset-option-card" id="preset-ivory" onclick="applyThemePreset('ivory')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                      <strong style="font-size:14px;">Luxury Ivory</strong>
-                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Sophisticated warm cream light theme</div>
-                    </div>
-                    <div style="display:flex; gap:6px;">
-                      <span style="width:14px; height:14px; border-radius:50%; background:#F7F4EE; border:1px solid rgba(0,0,0,0.1);"></span>
-                      <span style="width:14px; height:14px; border-radius:50%; background:#FFFFFF; border:1px solid rgba(0,0,0,0.1);"></span>
-                      <span style="width:14px; height:14px; border-radius:50%; background:#C9972E; border:1px solid rgba(0,0,0,0.1);"></span>
-                    </div>
-                  </div>
-
-                  <!-- Preset Emerald -->
-                  <div class="preset-option-card" id="preset-emerald" onclick="applyThemePreset('emerald')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                      <strong style="font-size:14px;">Emerald Premium</strong>
-                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Rich cultural forest green theme</div>
-                    </div>
-                    <div style="display:flex; gap:6px;">
-                      <span style="width:14px; height:14px; border-radius:50%; background:#081C15; border:1px solid rgba(255,255,255,0.2);"></span>
-                      <span style="width:14px; height:14px; border-radius:50%; background:#102820; border:1px solid rgba(255,255,255,0.2);"></span>
-                      <span style="width:14px; height:14px; border-radius:50%; background:#2ECC71; border:1px solid rgba(255,255,255,0.2);"></span>
-                    </div>
-                  </div>
-
-                  <!-- Preset Corporate -->
-                  <div class="preset-option-card" id="preset-corporate" onclick="applyThemePreset('corporate')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                      <strong style="font-size:14px;">Modern Corporate</strong>
-                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Professional slate blue accent theme</div>
-                    </div>
-                    <div style="display:flex; gap:6px;">
-                      <span style="width:14px; height:14px; border-radius:50%; background:#0F172A; border:1px solid rgba(255,255,255,0.2);"></span>
-                      <span style="width:14px; height:14px; border-radius:50%; background:#1E293B; border:1px solid rgba(255,255,255,0.2);"></span>
-                      <span style="width:14px; height:14px; border-radius:50%; background:#38BDF8; border:1px solid rgba(255,255,255,0.2);"></span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB 2: Colors -->
-              <div class="studio-tab-panel" id="tab-colors">
-                <div id="contrast-lock-indicator" style="padding:14px 20px; border-radius:10px; font-size:13px; font-weight:700; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; transition:all 0.3s ease;">
-                  <span>Contrast Compliance Check:</span>
-                  <strong id="contrast-score-val">0.0:1</strong>
-                </div>
-
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Global Branding Colors</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content">
-                    <div class="control-group">
-                      <label>Primary Brand Color</label>
-                      <div class="color-picker-wrapper">
-                        <div class="color-input-preview"><input type="color" id="primary-color-field" onchange="syncLivePreview()"></div>
-                        <input type="text" class="studio-input" oninput="document.getElementById('primary-color-field').value=this.value; syncLivePreview()">
-                      </div>
-                    </div>
-                    <div class="control-group">
-                      <label>Secondary Brand Color</label>
-                      <div class="color-picker-wrapper">
-                        <div class="color-input-preview"><input type="color" id="secondary-color-field" onchange="syncLivePreview()"></div>
-                        <input type="text" class="studio-input" oninput="document.getElementById('secondary-color-field').value=this.value; syncLivePreview()">
-                      </div>
-                    </div>
-                    <div class="control-group">
-                      <label>Accent Highlights Color</label>
-                      <div class="color-picker-wrapper">
-                        <div class="color-input-preview"><input type="color" id="accent-color-field" onchange="syncLivePreview()"></div>
-                        <input type="text" class="studio-input" oninput="document.getElementById('accent-color-field').value=this.value; syncLivePreview()">
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Identity Canvas Palette</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content">
-                    <div class="control-group">
-                      <label>Main Background Color</label>
-                      <div class="color-picker-wrapper">
-                        <div class="color-input-preview"><input type="color" id="palette-bg-main" onchange="handleBgMainChange()"></div>
-                        <input type="text" class="studio-input" oninput="document.getElementById('palette-bg-main').value=this.value; handleBgMainChange()">
-                      </div>
-                    </div>
-                    <div class="control-group">
-                      <label>Card Background Color</label>
-                      <div class="color-picker-wrapper">
-                        <div class="color-input-preview"><input type="color" id="palette-bg-surface" onchange="syncLivePreview()"></div>
-                        <input type="text" class="studio-input" oninput="document.getElementById('palette-bg-surface').value=this.value; syncLivePreview()">
-                      </div>
-                    </div>
-                    <div class="control-group">
-                      <label>Main Body Text</label>
-                      <div class="color-picker-wrapper">
-                        <div class="color-input-preview"><input type="color" id="palette-text-main" onchange="syncLivePreview()"></div>
-                        <input type="text" class="studio-input" oninput="document.getElementById('palette-text-main').value=this.value; syncLivePreview()">
-                      </div>
-                    </div>
-                    <div class="control-group">
-                      <label>Muted Secondary Text</label>
-                      <div class="color-picker-wrapper">
-                        <div class="color-input-preview"><input type="color" id="palette-text-muted" onchange="syncLivePreview()"></div>
-                        <input type="text" class="studio-input" oninput="document.getElementById('palette-text-muted').value=this.value; syncLivePreview()">
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="studio-accordion">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>State & Action Accents</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content">
-                    <div class="control-group">
-                      <label>Main Button Color (CTA)</label>
-                      <div class="color-picker-wrapper">
-                        <div class="color-input-preview"><input type="color" id="palette-color-primary" onchange="syncLivePreview()"></div>
-                        <input type="text" class="studio-input" oninput="document.getElementById('palette-color-primary').value=this.value; syncLivePreview()">
-                      </div>
-                    </div>
-                    <div class="control-group">
-                      <label>Secondary Accent (Hover)</label>
-                      <div class="color-picker-wrapper">
-                        <div class="color-input-preview"><input type="color" id="palette-color-secondary" onchange="syncLivePreview()"></div>
-                        <input type="text" class="studio-input" oninput="document.getElementById('palette-color-secondary').value=this.value; syncLivePreview()">
-                      </div>
-                    </div>
-                    <div class="control-group">
-                      <label>Success Accent (In Stock)</label>
-                      <div class="color-picker-wrapper">
-                        <div class="color-input-preview"><input type="color" id="palette-color-success" onchange="syncLivePreview()"></div>
-                        <input type="text" class="studio-input" oninput="document.getElementById('palette-color-success').value=this.value; syncLivePreview()">
-                      </div>
-                    </div>
-                    <div class="control-group">
-                      <label>Error Accent (Alerts)</label>
-                      <div class="color-picker-wrapper">
-                        <div class="color-input-preview"><input type="color" id="palette-color-error" onchange="syncLivePreview()"></div>
-                        <input type="text" class="studio-input" oninput="document.getElementById('palette-color-error').value=this.value; syncLivePreview()">
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB 3: Typography -->
-              <div class="studio-tab-panel" id="tab-typography">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Typography</h3>
-                <div class="control-group">
-                  <label>Font Family</label>
-                  <select id="font-family-field" class="studio-input" onchange="syncLivePreview()">
-                    <option value="Outfit">Outfit (Luxury, Modern)</option>
-                    <option value="Inter">Inter (Sleek Clean)</option>
-                    <option value="Plus Jakarta Sans">Plus Jakarta Sans (Corporate)</option>
-                    <option value="Playfair Display">Playfair Display (Serif Traditional)</option>
-                  </select>
-                </div>
-                <div class="control-group">
-                  <label>Font Scale Multiplier</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="font-scale-field" min="0.9" max="1.15" step="0.01" class="range-slider" oninput="document.getElementById('font-scale-val').textContent=this.value; syncLivePreview()">
-                    <span id="font-scale-val" class="range-value">1.0</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB 4: Header -->
-              <div class="studio-tab-panel" id="tab-header">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Header Settings</h3>
-                <div class="control-group">
-                  <label>Brand Name</label>
-                  <input type="text" id="brand-name-field" class="studio-input" placeholder="e.g. MAGIZHVAGAM" required>
-                </div>
-                
-                <div class="control-group">
-                  <label>Logo Image</label>
-                  <input type="hidden" id="logo-field">
-                  <div id="logo-preview-box" style="margin-bottom:8px; border:1px dashed var(--studio-border); border-radius:8px; padding:8px; display:flex; justify-content:center; align-items:center; min-height:80px; background:var(--studio-input-bg); overflow:hidden;">
-                    <span style="color:var(--studio-text-muted); font-size:12px;">No Logo Selected</span>
-                  </div>
-                  <div style="display:flex; gap:10px;">
-                    <button type="button" class="studio-btn studio-btn-primary" id="logo-select-btn" style="flex:1; font-size:12px; padding:10px;">Choose Logo</button>
-                    <button type="button" class="studio-btn studio-btn-danger" id="logo-remove-btn" style="font-size:12px; padding:10px 14px;">Remove Logo</button>
-                  </div>
-                </div>
-
-                <div class="control-group">
-                  <label>WhatsApp Contact</label>
-                  <input type="text" id="whatsapp-contact-field" class="studio-input" placeholder="Phone Number (e.g. 919876543210)" required>
-                </div>
-
-                <div class="control-group">
-                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-                    <input type="checkbox" id="hdr-sticky-toggle" onchange="syncLivePreview()">
-                    <span>Enable Sticky Header</span>
-                  </label>
-                </div>
-
-                <div class="control-group">
-                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-                    <input type="checkbox" id="hdr-announcement-toggle" onchange="syncLivePreview()">
-                    <span>Show Announcement Bar</span>
-                  </label>
-                </div>
-
-                <div class="control-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                  <div class="control-group">
-                    <label>Announcement Bar Bg</label>
-                    <div class="color-picker-wrapper">
-                      <div class="color-input-preview"><input type="color" id="hdr-announcement-bg" onchange="syncLivePreview()"></div>
-                      <input type="text" class="studio-input" oninput="document.getElementById('hdr-announcement-bg').value=this.value; syncLivePreview()">
-                    </div>
-                  </div>
-                  <div class="control-group">
-                    <label>Announcement Text Color</label>
-                    <div class="color-picker-wrapper">
-                      <div class="color-input-preview"><input type="color" id="hdr-announcement-text" onchange="syncLivePreview()"></div>
-                      <input type="text" class="studio-input" oninput="document.getElementById('hdr-announcement-text').value=this.value; syncLivePreview()">
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB 5: Homepage -->
-              <div class="studio-tab-panel" id="tab-homepage">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Homepage Sections</h3>
-                <p style="font-size:12px; color:var(--studio-text-muted); margin-bottom:16px;">Reorder and toggle homepage dynamic modules.</p>
-                <div id="homepage-sections-manager" class="section-manager-list" style="margin-bottom:24px;"></div>
-
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Hero Carousel Banners</h3>
-                <div id="hero-banners-visual" style="margin-bottom:24px;"></div>
-
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Collections Spotlight Banners</h3>
-                <div id="promo-banners-visual" style="margin-bottom:24px;"></div>
-
-                <textarea id="hero-banners-json" hidden aria-hidden="true"></textarea>
-                <textarea id="promo-banners-json" hidden aria-hidden="true"></textarea>
-                <textarea id="testimonials-json" hidden aria-hidden="true"></textarea>
-              </div>
-
-              <!-- TAB 5.5: Testimonials -->
-              <div class="studio-tab-panel" id="tab-testimonials">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Customer Testimonials</h3>
-                <p style="font-size:12px; color:var(--studio-text-muted); margin-bottom:16px;">Add, edit, and manage customer testimonials displayed in the 'What Our Clients Say' section on the homepage.</p>
-                <div id="testimonials-visual"></div>
-              </div>
-
-              <!-- TAB 6: Footer -->
-              <div class="studio-tab-panel" id="tab-footer">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Footer</h3>
-                <div class="control-group">
-                  <label>Footer Description</label>
-                  <textarea id="footer-content-field" class="studio-input" rows="3" placeholder="Tagline or store description" required></textarea>
-                </div>
-                <div class="control-group">
-                  <label>Copyright licensing text</label>
-                  <input type="text" id="footer-copyright-field" class="studio-input" placeholder="e.g. © 2026 MAGIZHVAGAM. All rights reserved.">
-                </div>
-
-                <h4 style="font-size:13px; margin:20px 0 10px; color:var(--studio-gold);">Social Links</h4>
-                <div class="control-group">
-                  <label>Instagram URL</label>
-                  <input type="text" id="footer-instagram-field" class="studio-input" placeholder="https://instagram.com/yourbrand">
-                </div>
-                <div class="control-group">
-                  <label>Facebook URL</label>
-                  <input type="text" id="footer-facebook-field" class="studio-input" placeholder="https://facebook.com/yourbrand">
-                </div>
-                <div class="control-group">
-                  <label>Twitter URL</label>
-                  <input type="text" id="footer-twitter-field" class="studio-input" placeholder="https://twitter.com/yourbrand">
-                </div>
-                <div class="control-group">
-                  <label>WhatsApp URL</label>
-                  <input type="text" id="footer-whatsapp-field" class="studio-input" placeholder="https://wa.me/919876543210">
-                </div>
-              </div>
-
-              <!-- TAB 7: Buttons -->
-              <div class="studio-tab-panel" id="tab-buttons">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Buttons Style</h3>
-                <div class="control-group">
-                  <label>Border Radius Style</label>
-                  <select id="button-style-field" class="studio-input" onchange="syncLivePreview()">
-                    <option value="rounded">Rounded Corners (8px)</option>
-                    <option value="pill">Pill Shape (30px)</option>
-                    <option value="sharp">Sharp (0px)</option>
-                  </select>
-                </div>
-                <div class="control-group">
-                  <label>Shadow Strength</label>
-                  <select id="button-shadow-field" class="studio-input" onchange="syncLivePreview()">
-                    <option value="none">None</option>
-                    <option value="soft">Soft Shadow</option>
-                    <option value="pronounced">Pronounced</option>
-                  </select>
-                </div>
-                <div class="control-group">
-                  <label>Font Weight</label>
-                  <select id="button-weight-field" class="studio-input" onchange="syncLivePreview()">
-                    <option value="500">Medium</option>
-                    <option value="600">Semi-Bold</option>
-                    <option value="700">Bold</option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- TAB 8: Cards -->
-              <div class="studio-tab-panel" id="tab-cards">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Collection & Product Cards</h3>
-                <div class="control-group">
-                  <label>Card Border Radius (px)</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="card-radius-field" min="0" max="32" class="range-slider" oninput="document.getElementById('card-radius-val').textContent=this.value; syncLivePreview()">
-                    <span id="card-radius-val" class="range-value">14</span>
-                  </div>
-                </div>
-                <div class="control-group">
-                  <label>Card Shadow Strength</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="card-shadow-field" min="0" max="3" step="0.5" class="range-slider" oninput="document.getElementById('card-shadow-val').textContent=this.value; syncLivePreview()">
-                    <span id="card-shadow-val" class="range-value">1</span>
-                  </div>
-                </div>
-                <div class="control-group">
-                  <label>Hover Translate Y (px)</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="card-hover-y-field" min="0" max="15" class="range-slider" oninput="document.getElementById('card-hover-y-val').textContent=this.value; syncLivePreview()">
-                    <span id="card-hover-y-val" class="range-value">6</span>
-                  </div>
-                </div>
-                <div class="control-group">
-                  <label>Card Image Background</label>
-                  <div class="color-picker-wrapper">
-                    <div class="color-input-preview"><input type="color" id="card-image-bg-field" onchange="syncLivePreview()"></div>
-                    <input type="text" class="studio-input" oninput="document.getElementById('card-image-bg-field').value=this.value; syncLivePreview()">
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB 9: Product Pages -->
-              <div class="studio-tab-panel" id="tab-products">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Product Highlights</h3>
-                <div class="control-group">
-                  <label>Featured Products IDs (Comma Separated)</label>
-                  <input type="text" id="featured-product-ids" class="studio-input" placeholder="ID1, ID2, ID3">
-                </div>
-                <div class="control-group">
-                  <label>Best Sellers IDs (Comma Separated)</label>
-                  <input type="text" id="bestseller-product-ids" class="studio-input" placeholder="ID1, ID2, ID3">
-                </div>
-                <div class="control-group">
-                  <label>New Arrivals IDs (Comma Separated)</label>
-                  <input type="text" id="newarrival-product-ids" class="studio-input" placeholder="ID1, ID2, ID3">
-                </div>
-
-                <h4 style="font-size:13px; margin:20px 0 10px; color:var(--studio-gold);">Details & Gallery</h4>
-                <div class="control-group">
-                  <label>Thumbnail Active Border</label>
-                  <div class="color-picker-wrapper">
-                    <div class="color-input-preview"><input type="color" id="pdp-gallery-border-field" onchange="syncLivePreview()"></div>
-                    <input type="text" class="studio-input" oninput="document.getElementById('pdp-gallery-border-field').value=this.value; syncLivePreview()">
-                  </div>
-                </div>
-                <div class="control-group">
-                  <label>Specifications Heading Color</label>
-                  <div class="color-picker-wrapper">
-                    <div class="color-input-preview"><input type="color" id="pdp-spec-heading-field" onchange="syncLivePreview()"></div>
-                    <input type="text" class="studio-input" oninput="document.getElementById('pdp-spec-heading-field').value=this.value; syncLivePreview()">
-                  </div>
-                </div>
-                <div class="control-group">
-                  <label>Active Tab Accent Color</label>
-                  <div class="color-picker-wrapper">
-                    <div class="color-input-preview"><input type="color" id="pdp-tab-active-field" onchange="syncLivePreview()"></div>
-                    <input type="text" class="studio-input" oninput="document.getElementById('pdp-tab-active-field').value=this.value; syncLivePreview()">
-                  </div>
-                </div>
-              </div>
-
-              <!-- STANDALONE TABS & CHANNELS -->
-
-              <!-- TAB: Coupons -->
-              <div class="studio-tab-panel" id="tab-coupons">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Coupons & Discounts Manager</h3>
-                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Create and track promo codes for customers to apply at checkout.</p>
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Coupon Creator</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content">
-                    <div id="add-coupon-form" style="margin-bottom:15px; border-bottom:1px dashed var(--studio-border); padding-bottom:12px;">
-                      <div class="control-group">
-                        <label>Code (Uppercase)</label>
-                        <input type="text" id="cp-code" class="studio-input" placeholder="WELCOME10" style="text-transform:uppercase;">
-                      </div>
-                      <div class="control-group">
-                        <label>Discount Type</label>
-                        <select id="cp-type" class="studio-input">
-                          <option value="Percentage">Percentage (%)</option>
-                          <option value="FixedAmount">Fixed Amount (₹)</option>
-                        </select>
-                      </div>
-                      <div class="control-row">
-                        <div class="control-group">
-                          <label>Discount Value</label>
-                          <input type="number" id="cp-value" class="studio-input" min="1">
-                        </div>
-                        <div class="control-group">
-                          <label>Min Order (₹)</label>
-                          <input type="number" id="cp-min-value" class="studio-input" value="0" min="0">
-                        </div>
-                      </div>
-                      <div class="control-group" style="margin-top:8px;">
-                        <label>Expiry Date</label>
-                        <input type="date" id="cp-expiry" class="studio-input">
-                      </div>
-                      <button type="button" onclick="createNewCouponSubmit()" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px; margin-top:8px;">Create Coupon</button>
-                    </div>
-                    <h4 style="font-size:12px; margin-bottom:8px; font-weight:700;">Active Coupons</h4>
-                    <div id="coupons-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:160px; overflow-y:auto;"></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB: Flash Sales -->
-              <div class="studio-tab-panel" id="tab-flash-sales">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">⚡ Flash Sale Settings</h3>
-                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Configure active storefront flash sales and countdown deadlines.</p>
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Configure Flash Sale</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content">
-                    <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:15px;">
-                      <input type="checkbox" id="toggle-flashSaleActive-tab" onchange="handleFeatureToggle('flashSaleActive', this.checked)">
-                      <span style="font-weight: 700;">Flash Sale Active Status</span>
-                    </label>
-                    <div class="control-group">
-                      <label>Promotional Banner Text</label>
-                      <input type="text" id="input-flashSaleText-tab" class="studio-input" placeholder="Mega Flash Sale! Get 20% off all return gifts!" onchange="handleFlashSaleTextUpdate(this.value)">
-                    </div>
-                    <div class="control-group">
-                      <label>Target Deadline Date & Time</label>
-                      <input type="datetime-local" id="input-flashSaleTargetDate-tab" class="studio-input" onchange="handleFlashSaleDateUpdate(this.value)">
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB: Newsletter -->
-              <div class="studio-tab-panel" id="tab-newsletter">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">📰 Newsletter Subscribers</h3>
-                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Manage mailing list configuration and view registered subscribers.</p>
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Newsletter Settings</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content">
-                    <div class="control-group">
-                      <label>Mailing List Title</label>
-                      <input type="text" id="newsletter-title-field" class="studio-input" placeholder="Stay in the Loop">
-                    </div>
-                    <div class="control-group">
-                      <label>Incentive Text</label>
-                      <input type="text" id="newsletter-incentive-field" class="studio-input" placeholder="Stay Updated!">
-                    </div>
-                    <button type="button" onclick="saveNewsletterSettings()" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Save Settings</button>
-                  </div>
-                </div>
-                <h4 style="font-size:12px; margin-bottom:8px; font-weight:700;">Subscribers List</h4>
-                <div id="newsletter-subscribers-container" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto;">
-                  <div class="glass-panel" style="padding:15px; border-radius:6px; text-align:center; color:var(--studio-text-muted); border:1px solid var(--studio-border);">
-                    No subscribers found (Newsletter feature active on storefront)
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB: Popup Builder -->
-              <div class="studio-tab-panel" id="tab-popup">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">🖼️ Promotional Popup Builder</h3>
-                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Configure newsletter subscription or offer popups for first-time visitors.</p>
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Popup Layout & Content</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:12px;">
-                    <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-                      <input type="checkbox" id="popup-active">
-                      <span style="font-weight: 700;">Enable Popup Promo</span>
-                    </label>
-                    <div class="control-group">
-                      <label>Popup Headline</label>
-                      <input type="text" id="popup-title" class="studio-input" placeholder="Get 10% Off Your First Order!">
-                    </div>
-                    <div class="control-group">
-                      <label>Popup Description</label>
-                      <textarea id="popup-desc" class="studio-input" rows="2" placeholder="Subscribe to our newsletter to receive the discount code instantly."></textarea>
-                    </div>
-                    <div class="control-group">
-                      <label>Display Delay (Seconds)</label>
-                      <input type="number" id="popup-delay" class="studio-input" value="5" min="1">
-                    </div>
-                    <div class="control-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                      <div class="control-group">
-                        <label>CTA Button Label</label>
-                        <input type="text" id="popup-cta-text" class="studio-input" placeholder="Claim Offer">
-                      </div>
-                      <div class="control-group">
-                        <label>CTA Redirect Link</label>
-                        <input type="text" id="popup-cta-link" class="studio-input" placeholder="/products.html">
-                      </div>
-                    </div>
-                    <button type="button" onclick="savePopupSettings()" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Save Popup Config</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB: Contact Page -->
-              <div class="studio-tab-panel" id="tab-contact">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">📞 Contact Page Content</h3>
-                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Customize your storefront contact form options and general business details.</p>
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Contact Information</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:12px;">
-                    <div class="control-group">
-                      <label>Support Phone</label>
-                      <input type="text" id="contact-phone" class="studio-input" placeholder="+91 98765 43210">
-                    </div>
-                    <div class="control-group">
-                      <label>Support Email</label>
-                      <input type="email" id="contact-email" class="studio-input" placeholder="support@magizhvagam.com">
-                    </div>
-                    <div class="control-group">
-                      <label>Store Office Address</label>
-                      <textarea id="contact-address" class="studio-input" rows="3" placeholder="No. 12, Premium Gifts Street, Chennai"></textarea>
-                    </div>
-                    <div class="control-group">
-                      <label>Operating Hours</label>
-                      <input type="text" id="contact-hours" class="studio-input" placeholder="Mon - Sat: 9:00 AM - 7:00 PM">
-                    </div>
-                    <div class="control-group">
-                      <label>Google Map Embed Source (Iframe src)</label>
-                      <input type="text" id="contact-map" class="studio-input" placeholder="https://www.google.com/maps/embed/...">
-                    </div>
-                    <button type="button" onclick="saveContactSettings()" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Save Contact Details</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB: Privacy Policy -->
-              <div class="studio-tab-panel" id="tab-privacy">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">🔒 Privacy Policy Editor</h3>
-                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Modify storefront Privacy Policy guidelines and legal copy.</p>
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Document Copy</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:12px;">
-                    <div class="control-group">
-                      <label>Last Updated</label>
-                      <input type="text" id="privacy-date" class="studio-input" placeholder="June 2026">
-                    </div>
-                    <div class="control-group">
-                      <label>Privacy Text (Markdown/HTML supported)</label>
-                      <textarea id="privacy-text" class="studio-input" rows="12" placeholder="Enter your privacy policy information..."></textarea>
-                    </div>
-                    <button type="button" onclick="savePrivacySettings()" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Save Privacy Policy</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB: Terms of Service -->
-              <div class="studio-tab-panel" id="tab-terms">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">⚖️ Terms of Service Editor</h3>
-                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Update storefront terms, conditions, and user requirements.</p>
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Document Copy</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:12px;">
-                    <div class="control-group">
-                      <label>Last Updated</label>
-                      <input type="text" id="terms-date" class="studio-input" placeholder="June 2026">
-                    </div>
-                    <div class="control-group">
-                      <label>Terms Text (Markdown/HTML supported)</label>
-                      <textarea id="terms-text" class="studio-input" rows="12" placeholder="Enter terms of service details..."></textarea>
-                    </div>
-                    <button type="button" onclick="saveTermsSettings()" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Save Terms of Service</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB: General Settings -->
-              <div class="studio-tab-panel" id="tab-general">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">⚙️ General Store Settings</h3>
-                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Configure generic settings and information details for the application storefront.</p>
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Store Configuration</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:12px;">
-                    <div class="control-group">
-                      <label>Store Name</label>
-                      <input type="text" id="general-store-name" class="studio-input" placeholder="MAGIZHVAGAM">
-                    </div>
-                    <div class="control-group">
-                      <label>Store Tagline</label>
-                      <input type="text" id="general-store-tagline" class="studio-input" placeholder="PREMIUM RETURN GIFTS">
-                    </div>
-                    <div class="control-group">
-                      <label>Currency Symbol</label>
-                      <input type="text" id="general-currency" class="studio-input" placeholder="₹">
-                    </div>
-                    <div class="control-group">
-                      <label>Support Email Address</label>
-                      <input type="email" id="general-support-email" class="studio-input" placeholder="contact@magizhvagam.com">
-                    </div>
-                    <button type="button" onclick="saveGeneralSettings()" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Save General Config</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB: SEO Settings -->
-              <div class="studio-tab-panel" id="tab-seo">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">🔍 Search Engine Optimization</h3>
-                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Manage indexing descriptors, search meta tags, and robots configuration.</p>
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Meta SEO Options</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:12px;">
-                    <div class="control-group">
-                      <label>Default Page Meta Title</label>
-                      <input type="text" id="seo-title" class="studio-input" placeholder="Magizhvagam | Premium Return Gifts Chennai">
-                    </div>
-                    <div class="control-group">
-                      <label>Default Meta Description</label>
-                      <textarea id="seo-desc" class="studio-input" rows="3" placeholder="Explore handcrafted luxury gift items, category spotlights, and custom curated return presents for special occasions."></textarea>
-                    </div>
-                    <div class="control-group">
-                      <label>Meta Keywords (Comma separated)</label>
-                      <input type="text" id="seo-keywords" class="studio-input" placeholder="return gifts, wedding presents, chennai store, luxury gifts">
-                    </div>
-                    <button type="button" onclick="saveSeoSettings()" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Save SEO Settings</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB: Analytics Settings -->
-              <div class="studio-tab-panel" id="tab-analytics">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">📊 Analytics & Tracking</h3>
-                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Configure tracking tags to monitor storefront user actions and conversions.</p>
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Analytics Keys</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:12px;">
-                    <div class="control-group">
-                      <label>Google Analytics Tag ID (G-XXXXXX)</label>
-                      <input type="text" id="analytics-ga" class="studio-input" placeholder="G-ABC123XYZ">
-                    </div>
-                    <div class="control-group">
-                      <label>Facebook Pixel ID</label>
-                      <input type="text" id="analytics-pixel" class="studio-input" placeholder="1234567890">
-                    </div>
-                    <button type="button" onclick="saveAnalyticsSettings()" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Save Tracking IDs</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB: Integrations Settings -->
-              <div class="studio-tab-panel" id="tab-integrations">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">🔌 External API Integrations</h3>
-                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Manage API connections, external services, and payment gateway rules.</p>
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Integrations Keys</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content" style="display:flex; flex-direction:column; gap:12px;">
-                    <div class="control-group">
-                      <label>Payment Gateway Mode</label>
-                      <select id="integration-payment-mode" class="studio-input">
-                        <option value="Sandbox">Sandbox (Test Mode)</option>
-                        <option value="Production">Production (Live Payments)</option>
-                      </select>
-                    </div>
-                    <div class="control-group">
-                      <label>Shipping Provider Hook URL</label>
-                      <input type="text" id="integration-shipping-url" class="studio-input" placeholder="https://api.shipping.com/v1/callback">
-                    </div>
-                    <button type="button" onclick="saveIntegrationSettings()" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Save Integrations</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB 11: About Page Link -->
-              <div class="studio-tab-panel" id="tab-about">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">About Storefront Copy</h3>
-                <div id="about-page-settings" style="display:flex; flex-direction:column; gap:10px;">
-                  <div class="control-group">
-                    <label>Story Heading</label>
-                    <input type="text" id="about-story-heading-field" class="studio-input">
-                  </div>
-                  <div class="control-group">
-                    <label>Story Intro Text</label>
-                    <textarea id="about-story-intro-field" class="studio-input" rows="3"></textarea>
-                  </div>
-                  <div class="control-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <div class="control-group">
-                      <label>Left Section Heading</label>
-                      <input type="text" id="about-left-heading-field" class="studio-input">
-                    </div>
-                    <div class="control-group">
-                      <label>About Image</label>
-                      <input type="hidden" id="about-image-field">
-                      <div id="about-image-preview" style="height:80px; border:1px dashed var(--studio-border); border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:var(--studio-input-bg);">
-                        <span style="color:var(--studio-text-muted);">No image selected</span>
-                      </div>
-                      <div style="display:flex; gap:8px; margin-top:8px;">
-                        <button type="button" class="studio-btn studio-btn-primary" id="about-pick-image" style="font-size:11px; padding:6px 10px;">Choose Image</button>
-                        <button type="button" class="studio-btn studio-btn-secondary" id="about-clear-image" style="font-size:11px; padding:6px 10px;">Remove</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="control-group">
-                    <label>Story Paragraph 1</label>
-                    <textarea id="about-left-p1-field" class="studio-input" rows="3"></textarea>
-                  </div>
-                  <div class="control-group">
-                    <label>Story Paragraph 2</label>
-                    <textarea id="about-left-p2-field" class="studio-input" rows="3"></textarea>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB 12: Mobile Settings -->
-              <div class="studio-tab-panel" id="tab-mobile">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Mobile Responsiveness</h3>
-                <div class="control-group">
-                  <label>Mobile Font Scaling Offset</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="mobile-font-scale-field" min="0.8" max="1.0" step="0.05" class="range-slider" oninput="document.getElementById('mobile-font-scale-val').textContent=this.value; syncLivePreview()">
-                    <span id="mobile-font-scale-val" class="range-value">0.9</span>
-                  </div>
-                </div>
-                <div class="control-group">
-                  <label>Mobile Header Height (px)</label>
-                  <input type="number" id="mobile-header-height-field" class="studio-input" min="50" max="90" value="64" onchange="syncLivePreview()">
-                </div>
-                <div class="control-group">
-                  <label>Mobile Drawer Menu Background</label>
-                  <div class="color-picker-wrapper">
-                    <div class="color-input-preview"><input type="color" id="mobile-nav-bg-field" onchange="syncLivePreview()"></div>
-                    <input type="text" class="studio-input" oninput="document.getElementById('mobile-nav-bg-field').value=this.value; syncLivePreview()">
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB 13: Animation Settings -->
-              <div class="studio-tab-panel" id="tab-animations">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Animation Settings</h3>
-                <div class="control-group">
-                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-                    <input type="checkbox" id="anim-enable-toggle" checked onchange="syncLivePreview()">
-                    <span>Enable Global Animations</span>
-                  </label>
-                </div>
-                <div class="control-group">
-                  <label>Animation Transition Speed (s)</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="anim-speed-field" min="0.1" max="1.5" step="0.05" class="range-slider" oninput="document.getElementById('anim-speed-val').textContent=this.value; syncLivePreview()">
-                    <span id="anim-speed-val" class="range-value">0.3</span>
-                  </div>
-                </div>
-                <div class="control-group">
-                  <label>Product Card Hover Effect</label>
-                  <select id="anim-hover-style-field" class="studio-input" onchange="syncLivePreview()">
-                    <option value="lift" selected>Card Lift & Glow</option>
-                    <option value="zoom">Image Zoom Only</option>
-                    <option value="none">Disabled</option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- TAB 14: Glassmorphism Settings -->
-              <div class="studio-tab-panel" id="tab-glass">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Glassmorphism Design Studio</h3>
-                
-                <div class="control-group">
-                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-                    <input type="checkbox" id="glass-global-toggle" checked onchange="syncLivePreview()">
-                    <span style="font-weight: 700;">Global Glass Effect Enable</span>
-                  </label>
-                </div>
-
-                <div class="control-group">
-                  <label>Blur Intensity (px)</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="glass-blur-field" min="0" max="24" step="1" class="range-slider" oninput="document.getElementById('glass-blur-val').textContent=this.value; syncLivePreview()">
-                    <span id="glass-blur-val" class="range-value">12</span>
-                  </div>
-                </div>
-
-                <div class="control-group">
-                  <label>Background Opacity</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="glass-bg-opacity-field" min="0" max="1" step="0.05" class="range-slider" oninput="document.getElementById('glass-bg-opacity-val').textContent=this.value; syncLivePreview()">
-                    <span id="glass-bg-opacity-val" class="range-value">0.12</span>
-                  </div>
-                </div>
-
-                <div class="control-group">
-                  <label>Border Opacity</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="glass-border-opacity-field" min="0" max="1" step="0.05" class="range-slider" oninput="document.getElementById('glass-border-opacity-val').textContent=this.value; syncLivePreview()">
-                    <span id="glass-border-opacity-val" class="range-value">0.15</span>
-                  </div>
-                </div>
-
-                <div class="control-group">
-                  <label>Shadow Intensity</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="glass-shadow-intensity-field" min="0" max="3" step="0.1" class="range-slider" oninput="document.getElementById('glass-shadow-intensity-val').textContent=this.value; syncLivePreview()">
-                    <span id="glass-shadow-intensity-val" class="range-value">1.0</span>
-                  </div>
-                </div>
-
-                <div class="control-group">
-                  <label>Border Radius (px)</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="glass-border-radius-field" min="0" max="32" step="1" class="range-slider" oninput="document.getElementById('glass-border-radius-val').textContent=this.value; syncLivePreview()">
-                    <span id="glass-border-radius-val" class="range-value">16</span>
-                  </div>
-                </div>
-
-                <div class="control-group">
-                  <label>Glass Brightness</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="glass-brightness-field" min="0.5" max="1.5" step="0.05" class="range-slider" oninput="document.getElementById('glass-brightness-val').textContent=this.value; syncLivePreview()">
-                    <span id="glass-brightness-val" class="range-value">1.0</span>
-                  </div>
-                </div>
-
-                <div class="control-group">
-                  <label>Glass Contrast</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="glass-contrast-field" min="0.5" max="1.5" step="0.05" class="range-slider" oninput="document.getElementById('glass-contrast-val').textContent=this.value; syncLivePreview()">
-                    <span id="glass-contrast-val" class="range-value">1.0</span>
-                  </div>
-                </div>
-
-                <div class="control-group">
-                  <label>Hover Intensity</label>
-                  <div class="range-slider-wrapper">
-                    <input type="range" id="glass-hover-intensity-field" min="1" max="2" step="0.05" class="range-slider" oninput="document.getElementById('glass-hover-intensity-val').textContent=this.value; syncLivePreview()">
-                    <span id="glass-hover-intensity-val" class="range-value">1.1</span>
-                  </div>
-                </div>
-
-                <h4 style="font-family:'Outfit'; font-size:14px; margin-top:20px; margin-bottom:10px; color:var(--studio-gold); border-bottom:1px solid var(--studio-border); padding-bottom:5px;">Section Specific Glassmorphism</h4>
-
-                <div class="control-group">
-                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
-                    <input type="checkbox" id="glass-header-toggle" checked onchange="syncLivePreview()">
-                    <span>Header Glass</span>
-                  </label>
-                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
-                    <input type="checkbox" id="glass-product-toggle" checked onchange="syncLivePreview()">
-                    <span>Product Card Glass</span>
-                  </label>
-                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
-                    <input type="checkbox" id="glass-modal-toggle" checked onchange="syncLivePreview()">
-                    <span>Modal Glass</span>
-                  </label>
-                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
-                    <input type="checkbox" id="glass-sidebar-toggle" checked onchange="syncLivePreview()">
-                    <span>Sidebar Glass</span>
-                  </label>
-                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
-                    <input type="checkbox" id="glass-footer-toggle" checked onchange="syncLivePreview()">
-                    <span>Footer Glass</span>
-                  </label>
-                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
-                    <input type="checkbox" id="glass-form-toggle" checked onchange="syncLivePreview()">
-                    <span>Form Glass</span>
-                  </label>
-                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
-                    <input type="checkbox" id="glass-hero-toggle" checked onchange="syncLivePreview()">
-                    <span>Hero Glass</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- TAB 15: Custom CSS -->
-              <div class="studio-tab-panel" id="tab-css">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Custom CSS Editor</h3>
-                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Inject custom styling directly. Style blocks are validated before render.</p>
-                <div class="control-group">
-                  <textarea id="custom-css-field" class="studio-input" rows="15" placeholder="/* Enter raw CSS visual overrides here */&#10;.product-card {&#10;  border-color: gold;&#10;}" style="font-family:monospace; font-size:12px; line-height:1.5; color:#a5e844; background:#070509; border-color:#2a1c35;" oninput="validateCustomCSS(this.value)"></textarea>
-                </div>
-                <div id="css-validation-status" style="font-size:11px; font-weight:700; color:var(--studio-success);">✓ Syntax Valid</div>
-              </div>
-
-            </div>
-
-            <!-- Editor Action Bar -->
-            <div class="studio-actions">
-              <span id="studio-unsaved-indicator" style="display:none; font-size:11px; color:var(--studio-gold); margin-right:auto;">Unsaved changes</span>
-              <div id="studio-save-status" class="studio-save-status" style="display:none;"></div>
-              <button type="button" class="studio-btn studio-btn-secondary" onclick="restoreLastSavedTheme()" style="padding: 10px 14px; font-size: 11px;">Restore Last Saved</button>
-              <button type="button" class="studio-btn studio-btn-danger" onclick="resetToDefaultTheme()" style="padding: 10px 14px; font-size: 11px;">Reset Defaults</button>
-              <button type="submit" id="save-settings-submit-btn" class="studio-btn studio-btn-primary" style="padding: 10px 18px; font-size: 12px; font-weight: 700;">Save All Settings</button>
-            </div>
-          </form>
         </div>
 
-        <!-- Right: Viewport Live Preview Iframe -->
-        <div class="studio-viewport-panel">
-          <div class="viewport-toolbar">
-            <div class="viewport-device-toggles">
-              <button type="button" class="device-btn active" id="btn-device-desktop" onclick="setViewportDevice('desktop')">🖥️ Desktop</button>
-              <button type="button" class="device-btn" id="btn-device-tablet" onclick="setViewportDevice('tablet')">📟 Tablet</button>
-              <button type="button" class="device-btn" id="btn-device-mobile" onclick="setViewportDevice('mobile')">📱 Mobile</button>
-            </div>
-            
-            <div class="viewport-route-selector">
-              <label>Preview Page:</label>
-              <select class="viewport-route-select" onchange="changeViewportRoute(this.value)">
-                <option value="/index.html">Homepage</option>
-                <option value="/products.html">Catalog</option>
-                <option value="/about.html">About Us</option>
-                <option value="/contact.html">Contact Us</option>
-              </select>
-            </div>
+        <!-- Tab 2: SEO Settings -->
+        <div class="studio-tab-panel" id="tab-seo">
+          <div class="glass" style="padding:25px; border-radius:12px; max-width:650px; margin:0 auto;">
+            <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">🔍 Search Engine Index Tags</h3>
+            <form id="seo-settings-form">
+              <div class="admin-form-group">
+                <label>Default Page Meta Title</label>
+                <input type="text" id="seo-title" class="admin-form-control" placeholder="Magizhvagam | Premium Return Gifts Chennai" required>
+              </div>
+              <div class="admin-form-group">
+                <label>Default Meta Description</label>
+                <textarea id="seo-desc" class="admin-form-control" rows="4" placeholder="Explore handcrafted luxury gift items..." required></textarea>
+              </div>
+              <div class="admin-form-group">
+                <label>Meta Keywords (Comma separated list)</label>
+                <input type="text" id="seo-keywords" class="admin-form-control" placeholder="return gifts, wedding presents, luxury gifts" required>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:10px;">Save SEO Options</button>
+            </form>
           </div>
-          
-          <div class="viewport-frame-container">
-            <iframe id="viewport-iframe" class="viewport-iframe desktop" src="/index.html"></iframe>
+        </div>
+
+        <!-- Tab 3: Analytics -->
+        <div class="studio-tab-panel" id="tab-analytics">
+          <div class="glass" style="padding:25px; border-radius:12px; max-width:650px; margin:0 auto;">
+            <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">📊 Analytics Tracking IDs</h3>
+            <form id="analytics-settings-form">
+              <div class="admin-form-group">
+                <label>Google Analytics Measurement ID (G-XXXXXX)</label>
+                <input type="text" id="analytics-ga" class="admin-form-control" placeholder="G-ABC123XYZ">
+              </div>
+              <div class="admin-form-group">
+                <label>Facebook Pixel ID</label>
+                <input type="text" id="analytics-pixel" class="admin-form-control" placeholder="1234567890">
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:10px;">Save Analytics Integration</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tab 4: Integrations -->
+        <div class="studio-tab-panel" id="tab-integrations">
+          <div class="glass" style="padding:25px; border-radius:12px; max-width:650px; margin:0 auto;">
+            <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">🔌 External Integrations</h3>
+            <form id="integrations-settings-form">
+              <div class="admin-form-group">
+                <label>Payment Gateway Transaction Mode</label>
+                <select id="integration-payment-mode" class="admin-form-control">
+                  <option value="Sandbox">Sandbox (Test Environment)</option>
+                  <option value="Production">Production (Live Transactions)</option>
+                </select>
+              </div>
+              <div class="admin-form-group">
+                <label>Shipping Provider Webhook URL</label>
+                <input type="text" id="integration-shipping-url" class="admin-form-control" placeholder="https://api.shipping.com/v1/callback">
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:10px;">Save Integrations</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tab 5: Mobile Settings -->
+        <div class="studio-tab-panel" id="tab-mobile-settings">
+          <div class="glass" style="padding:25px; border-radius:12px; max-width:650px; margin:0 auto;">
+            <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">📱 Mobile View Offset</h3>
+            <form id="mobile-settings-form">
+              <div class="admin-form-group">
+                <label>Mobile Font Scaling Offset (multiplier)</label>
+                <input type="number" id="mobile-font-scale-field" class="admin-form-control" min="0.5" max="1.5" step="0.05" value="0.9" required>
+              </div>
+              <div class="admin-form-group">
+                <label>Mobile Header Height Offset (px)</label>
+                <input type="number" id="mobile-header-height-field" class="admin-form-control" min="30" max="120" value="64" required>
+              </div>
+              <div class="admin-form-group">
+                <label>Mobile Navigation Drawer Background</label>
+                <input type="color" id="mobile-nav-bg-field" value="#0b0618" style="cursor:pointer; width:60px; height:36px; padding:2px; border-radius:6px; border:1px solid var(--card-border);" required>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:10px;">Save Mobile Configuration</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tab 6: Diagnostics -->
+        <div class="studio-tab-panel" id="tab-diagnostics">
+          <div class="glass" style="padding:25px; border-radius:12px; max-width:650px; margin:0 auto;">
+            <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">💻 SMTP Connection diagnostics</h3>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">Test mail servers connectivity and dispatch test emails.</p>
+            
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+              <button id="refresh-diag" class="btn btn-secondary" style="border-radius:8px;">Check SMTP Server Connection</button>
+            </div>
+            <pre id="diag-output">Diagnostics logs will output here...</pre>
+
+            <div style="margin-top:25px; border-top:1px dashed var(--card-border); padding-top:20px;">
+              <h4 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--text-color);">Send Test Email</h4>
+              <div class="admin-form-group">
+                <label>Recipient Address</label>
+                <input id="test-recipient" type="email" placeholder="admin@example.com" class="admin-form-control" style="width:100%;">
+              </div>
+              <button id="send-test" class="btn btn-primary" style="border-radius:8px; width:100%;">Dispatch Test Email</button>
+              <pre id="send-output" style="margin-top:10px;">Dispatch response logs will output here...</pre>
+            </div>
           </div>
         </div>
 
       </div>
     </main>
-
   </div>
 
   <!-- Scripts -->
   <script src="/assets/js/admin-guard.js"></script>
-  <script src="/assets/js/contrast-engine.js"></script>
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/admin-api.js"></script>
-  <script src="/assets/js/media-library.js"></script>
-  <script src="/assets/js/appearance-studio.js"></script>
   <script src="/assets/js/admin.js"></script>
   <script>
-    // Update Logo visual thumbnail preview
-    window.updateLogoPreview = function (url) {
-      const previewBox = document.getElementById('logo-preview-box');
-      if (!previewBox) return;
-      if (url) {
-        previewBox.innerHTML = `<img src="${url}" alt="Logo Preview" style="max-height: 64px; object-fit: contain;">`;
-      } else {
-        previewBox.innerHTML = `<span style="color:var(--studio-text-muted); font-size:12px;">No Logo Selected</span>`;
-      }
-    // Update logo preview helper
-
-    document.addEventListener('DOMContentLoaded', () => {
-      loadCouponsList();
-      loadCategoriesList();
-      
-      // Inject preview variable sync on iframe load
-      const iframe = document.getElementById('viewport-iframe');
-      if (iframe) {
-        iframe.addEventListener('load', syncLivePreview);
-      }
-      
-      
-      // Initial color inputs check
-      setTimeout(() => {
-        updateContrastLock();
-      }, 1200);
-
-      // Generic Settings Load Helpers
-      async function loadGenericSetting(key, defaults, mapping) {
-        try {
-          const res = await adminFetch(`/api/settings/${key}`);
-          if (!res.ok) return;
-          const data = await res.ok ? await res.json() : null;
-          const values = (data && data.success && data.setting) ? data.setting : defaults;
-          for (const [fieldId, valKey] of Object.entries(mapping)) {
-            const el = document.getElementById(fieldId);
-            if (el) {
-              if (el.type === 'checkbox') {
-                el.checked = !!values[valKey];
-              } else {
-                el.value = values[valKey] || '';
-              }
-            }
-          }
-        } catch (err) {
-          console.warn(`Failed loading generic setting: ${key}`, err);
-        }
-      }
-
-      // Load generic settings panels
-      loadGenericSetting('newsletter', { title: 'Stay in the Loop', incentive: 'Stay Updated!' }, { 'newsletter-title-field': 'title', 'newsletter-incentive-field': 'incentive' });
-      loadGenericSetting('popup', { active: false, title: '', desc: '', delay: 5, ctaText: '', ctaLink: '' }, {
-        'popup-active': 'active', 'popup-title': 'title', 'popup-desc': 'desc', 'popup-delay': 'delay', 'popup-cta-text': 'ctaText', 'popup-cta-link': 'ctaLink'
-      });
-      loadGenericSetting('contact', { phone: '', email: '', address: '', hours: '', map: '' }, {
-        'contact-phone': 'phone', 'contact-email': 'email', 'contact-address': 'address', 'contact-hours': 'hours', 'contact-map': 'map'
-      });
-      loadGenericSetting('privacy', { date: '', text: '' }, { 'privacy-date': 'date', 'privacy-text': 'text' });
-      loadGenericSetting('terms', { date: '', text: '' }, { 'terms-date': 'date', 'terms-text': 'text' });
-      loadGenericSetting('general', { name: 'MAGIZHVAGAM', tagline: 'PREMIUM RETURN GIFTS', currency: '₹', email: 'contact@magizhvagam.com' }, {
-        'general-store-name': 'name', 'general-store-tagline': 'tagline', 'general-currency': 'currency', 'general-support-email': 'email'
-      });
-      loadGenericSetting('seo', { title: '', desc: '', keywords: '' }, { 'seo-title': 'title', 'seo-desc': 'desc', 'seo-keywords': 'keywords' });
-      loadGenericSetting('analytics', { ga: '', pixel: '' }, { 'analytics-ga': 'ga', 'analytics-pixel': 'pixel' });
-      loadGenericSetting('integrations', { paymentMode: 'Sandbox', shippingUrl: '' }, { 'integration-payment-mode': 'paymentMode', 'integration-shipping-url': 'shippingUrl' });
-
-      // Tab switching based on URL parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const tabParam = urlParams.get('tab');
-      if (tabParam) {
-        let targetTabId = 'tab-presets';
-        const tabMapping = {
-          'presets': 'tab-presets',
-          'colors': 'tab-colors',
-          'typography': 'tab-typography',
-          'header': 'tab-header',
-          'footer': 'tab-footer',
-          'homepage': 'tab-homepage',
-          'testimonials': 'tab-testimonials',
-          'about-page': 'tab-about',
-          'contact-page': 'tab-contact',
-          'privacy-page': 'tab-privacy',
-          'terms-page': 'tab-terms',
-          'general': 'tab-general',
-          'seo': 'tab-seo',
-          'analytics': 'tab-analytics',
-          'integrations': 'tab-integrations',
-          'coupons': 'tab-coupons',
-          'flash-sales': 'tab-flash-sales',
-          'newsletter': 'tab-newsletter',
-          'popup': 'tab-popup',
-          'buttons': 'tab-buttons',
-          'cards': 'tab-cards',
-          'product-pages': 'tab-products',
-          'glass': 'tab-glass',
-          'animations': 'tab-animations',
-          'custom-css': 'tab-css',
-          'mobile-settings': 'tab-mobile',
-          'advanced-settings': 'tab-css'
-        };
-        if (tabMapping[tabParam]) {
-          targetTabId = tabMapping[tabParam];
-        }
-        setTimeout(() => {
-          switchStudioTab(null, targetTabId);
-        }, 300);
-      }
-
-      // Logo Select Events
-      const logoSelectBtn = document.getElementById('logo-select-btn');
-      const logoRemoveBtn = document.getElementById('logo-remove-btn');
-      const logoField = document.getElementById('logo-field');
-
-      if (logoSelectBtn) {
-        logoSelectBtn.addEventListener('click', () => {
-          if (window.MZMediaLibrary && window.MZMediaLibrary.openPicker) {
-            window.MZMediaLibrary.openPicker((asset) => {
-              if (logoField) {
-                logoField.value = asset.url;
-                if (window.MZAppearanceStudio) window.MZAppearanceStudio.markDirty();
-                window.updateLogoPreview(asset.url);
-                syncLivePreview();
-              }
-            });
-          }
-        });
-      }
-
-      if (logoRemoveBtn) {
-        logoRemoveBtn.addEventListener('click', () => {
-          if (logoField) {
-            logoField.value = '';
-            if (window.MZAppearanceStudio) window.MZAppearanceStudio.markDirty();
-            window.updateLogoPreview('');
-            syncLivePreview();
-          }
-        });
-      }
-
-    });
-
-    // Theme Customizer Switch tab logic
-    function switchStudioTab(event, tabId) {
+    // Tab switching
+    function switchTab(tabId) {
       document.querySelectorAll('.studio-tab-panel').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.studio-tab-btn').forEach(b => b.classList.remove('active'));
+      
       const panel = document.getElementById(tabId);
       if (panel) panel.classList.add('active');
-      if (event && event.target) {
-        event.target.classList.add('active');
-      } else {
-        const btn = Array.from(document.querySelectorAll('.studio-tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
-        if (btn) btn.classList.add('active');
-      }
+      
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) btn.classList.add('active');
 
-      // Update URL query parameter
-      const url = new URL(window.location.href);
-      const rawTab = tabId.replace('tab-', '');
-      const reverseMapping = {
-        'about': 'about-page',
-        'contact': 'contact-page',
-        'privacy': 'privacy-page',
-        'terms': 'terms-page',
-        'css': 'custom-css',
-        'mobile': 'mobile-settings'
-      };
-      const queryVal = reverseMapping[rawTab] || rawTab;
-      url.searchParams.set('tab', queryVal);
-      window.history.replaceState({}, '', url.toString());
+      const tabName = tabId.replace('tab-', '');
+      window.history.pushState(null, '', `/admin/settings.html?tab=${tabName}`);
     }
 
-    // Generic Settings Save Helper
-    async function saveGenericSetting(key, mapping) {
-      const payload = {};
-      for (const [fieldId, valKey] of Object.entries(mapping)) {
-        const el = document.getElementById(fieldId);
-        if (el) {
-          payload[valKey] = el.type === 'checkbox' ? el.checked : el.value;
+    // Load helpers
+    async function loadSettingField(key, defaults, mapping) {
+      try {
+        const res = await adminFetch(`/api/settings/${key}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const values = (data && data.success && data.setting) ? data.setting : defaults;
+        for (const [fieldId, valKey] of Object.entries(mapping)) {
+          const el = document.getElementById(fieldId);
+          if (el) {
+            if (el.type === 'checkbox') {
+              el.checked = !!values[valKey];
+            } else {
+              el.value = values[valKey] || '';
+            }
+          }
         }
+      } catch (err) {
+        console.warn(`Failed loading generic setting: ${key}`, err);
       }
+    }
+
+    // Save helper
+    async function saveSettingField(key, payloadData, successMsg) {
       try {
         const res = await adminFetch(`/api/settings/${key}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ value: payload })
+          body: JSON.stringify({ value: payloadData })
         });
         const data = await res.json();
         if (data.success) {
-          showToast('Settings saved successfully!', 'success');
-          // Reload preview frame to display new styles/settings
-          const iframe = document.getElementById('viewport-iframe');
-          if (iframe) iframe.contentWindow.location.reload();
+          showToast(successMsg, 'success');
         } else {
-          showToast(data.error || 'Failed to save settings', 'error');
+          showToast(data.error || 'Failed to save configuration', 'error');
         }
       } catch (err) {
-        showToast('Error saving settings', 'error');
+        showToast('Error syncing system configurations', 'error');
       }
     }
 
-    window.saveNewsletterSettings = () => saveGenericSetting('newsletter', { 'newsletter-title-field': 'title', 'newsletter-incentive-field': 'incentive' });
-    window.savePopupSettings = () => saveGenericSetting('popup', {
-      'popup-active': 'active', 'popup-title': 'title', 'popup-desc': 'desc', 'popup-delay': 'delay', 'popup-cta-text': 'ctaText', 'popup-cta-link': 'ctaLink'
-    });
-    window.saveContactSettings = () => saveGenericSetting('contact', {
-      'contact-phone': 'phone', 'contact-email': 'email', 'contact-address': 'address', 'contact-hours': 'hours', 'contact-map': 'map'
-    });
-    window.savePrivacySettings = () => saveGenericSetting('privacy', { 'privacy-date': 'date', 'privacy-text': 'text' });
-    window.saveTermsSettings = () => saveGenericSetting('terms', { 'terms-date': 'date', 'terms-text': 'text' });
-    window.saveGeneralSettings = () => saveGenericSetting('general', {
-      'general-store-name': 'name', 'general-store-tagline': 'tagline', 'general-currency': 'currency', 'general-support-email': 'email'
-    });
-    window.saveSeoSettings = () => saveGenericSetting('seo', { 'seo-title': 'title', 'seo-desc': 'desc', 'seo-keywords': 'keywords' });
-    window.saveAnalyticsSettings = () => saveGenericSetting('analytics', { 'analytics-ga': 'ga', 'analytics-pixel': 'pixel' });
-    window.saveIntegrationSettings = () => saveGenericSetting('integrations', { 'integration-payment-mode': 'paymentMode', 'integration-shipping-url': 'shippingUrl' });
-
-    // Viewport resizing toggle logic
-    function setViewportDevice(device) {
-      const iframe = document.getElementById('viewport-iframe');
-      if (!iframe) return;
-      
-      iframe.className = 'viewport-iframe ' + device;
-      
-      document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('btn-device-' + device).classList.add('active');
-    }
-
-    // Viewport preview page selection logic
-    function changeViewportRoute(route) {
-      const iframe = document.getElementById('viewport-iframe');
-      if (iframe) {
-        iframe.src = route;
-      }
-    }
-
-    // CSS syntax verification helper
-    function validateCustomCSS(css) {
-      const statusEl = document.getElementById('css-validation-status');
-      if (!statusEl) return;
-      if (!css.trim()) {
-        statusEl.textContent = '✓ Empty style block';
-        statusEl.style.color = 'var(--studio-success)';
-        return;
-      }
-      
-      // Simple parser check for matching brackets
-      let openBrackets = 0;
-      for (let char of css) {
-        if (char === '{') openBrackets++;
-        if (char === '}') openBrackets--;
-      }
-      if (openBrackets !== 0) {
-        statusEl.textContent = '✗ Unmatched brackets { }';
-        statusEl.style.color = 'var(--studio-danger)';
-      } else {
-        statusEl.textContent = '✓ CSS Syntax Valid';
-        statusEl.style.color = 'var(--studio-success)';
-      }
-    }
-
-    // WCAG contrast score checker logic
-    function getLuminance(hex) {
-      hex = hex.replace(/^#/, '');
-      if (hex.length === 3) {
-        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-      }
-      let r = parseInt(hex.substr(0, 2), 16) / 255;
-      let g = parseInt(hex.substr(2, 2), 16) / 255;
-      let b = parseInt(hex.substr(4, 2), 16) / 255;
-      
-      const a = [r, g, b].map(v => {
-        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    // Load settings values
+    async function loadAllSystemSettings() {
+      await loadSettingField('general', { name: 'MAGIZHVAGAM', tagline: 'PREMIUM RETURN GIFTS', currency: '₹', email: 'contact@magizhvagam.com' }, {
+        'general-store-name': 'name', 'general-store-tagline': 'tagline', 'general-currency': 'currency', 'general-support-email': 'email'
       });
-      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
-    }
-
-    function getContrastRatio(hex1, hex2) {
-      const l1 = getLuminance(hex1);
-      const l2 = getLuminance(hex2);
-      return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
-    }
-    window.getContrastRatio = getContrastRatio;
-
-    function updateContrastLock() {
-      const bgHex = document.getElementById('palette-bg-main').value;
-      const textHex = document.getElementById('palette-text-main').value;
-      
-      const ratio = getContrastRatio(bgHex, textHex);
-      const scoreEl = document.getElementById('contrast-score-val');
-      const indicator = document.getElementById('contrast-lock-indicator');
-      const saveBtn = document.getElementById('save-settings-submit-btn');
-      
-      const formatted = ratio.toFixed(1) + ':1';
-      scoreEl.textContent = formatted;
-      
-      if (ratio < 3.0) {
-        indicator.style.backgroundColor = '#fff3cd';
-        indicator.style.color = '#856404';
-        scoreEl.textContent += ' (Warning - Low Contrast)';
-        saveBtn.disabled = false;
-        saveBtn.style.opacity = '1';
-        saveBtn.style.cursor = 'pointer';
-        saveBtn.title = 'Warning: contrast ratio is below standard. Saving is still allowed.';
-      } else {
-        indicator.style.backgroundColor = '#def7ec';
-        indicator.style.color = '#03543f';
-        scoreEl.textContent += ' (PASS - WCAG Compliant)';
-        saveBtn.disabled = false;
-        saveBtn.style.opacity = '1';
-        saveBtn.style.cursor = 'pointer';
-        saveBtn.title = 'Contrast compliant! Save allowed';
-      }
-    }
-
-    // Auto Contrast Engine
-    function handleBgMainChange() {
-      const bgHex = document.getElementById('palette-bg-main').value;
-      const textInput = document.getElementById('palette-text-main');
-      const textMutedInput = document.getElementById('palette-text-muted');
-      
-      const luminance = getLuminance(bgHex);
-      
-      if (luminance < 0.5) {
-        // Dark background -> auto change text to white/grey
-        textInput.value = '#FFFFFF';
-        textMutedInput.value = '#B0B0B0';
-      } else {
-        // Light background -> auto change text to dark
-        textInput.value = '#111111';
-        textMutedInput.value = '#5A506A';
-      }
-      
-      // Update color preview boxes
-      textInput.parentElement.querySelector('input[type="color"]').value = textInput.value;
-      textMutedInput.parentElement.querySelector('input[type="color"]').value = textMutedInput.value;
-      
-      syncLivePreview();
-      updateContrastLock();
-    }
-
-    // Theme presets applying logic
-    const THEME_PRESETS = {
-      velvet: {
-        primaryColor: '#D4A03A', secondaryColor: '#E0A84A', accentColor: '#D4A03A',
-        paletteBgMain: '#0B0618', paletteBgSurface: '#171027',
-        paletteTextMain: '#FFFFFF', paletteTextMuted: '#D8D8D8',
-        paletteColorPrimary: '#D4A03A', paletteColorSecondary: '#211638',
-        paletteColorSuccess: '#2ECC71', paletteColorError: '#E74C3C'
-      },
-      royal: {
-        primaryColor: '#D4A03A', secondaryColor: '#E0A84A', accentColor: '#D4A03A',
-        paletteBgMain: '#121212', paletteBgSurface: '#1E1E1E',
-        paletteTextMain: '#FFFFFF', paletteTextMuted: '#D8D8D8',
-        paletteColorPrimary: '#D4A03A', paletteColorSecondary: '#2B2B2B',
-        paletteColorSuccess: '#2ECC71', paletteColorError: '#E74C3C'
-      },
-      ivory: {
-        primaryColor: '#C9972E', secondaryColor: '#D4A03A', accentColor: '#C9972E',
-        paletteBgMain: '#F7F4EE', paletteBgSurface: '#FFFFFF',
-        paletteTextMain: '#111111', paletteTextMuted: '#444444',
-        paletteColorPrimary: '#C9972E', paletteColorSecondary: '#FFFFFF',
-        paletteColorSuccess: '#2ECC71', paletteColorError: '#E74C3C'
-      },
-      emerald: {
-        primaryColor: '#2ECC71', secondaryColor: '#27AE60', accentColor: '#2ECC71',
-        paletteBgMain: '#081C15', paletteBgSurface: '#102820',
-        paletteTextMain: '#FFFFFF', paletteTextMuted: '#D8D8D8',
-        paletteColorPrimary: '#2ECC71', paletteColorSecondary: '#16352C',
-        paletteColorSuccess: '#2ECC71', paletteColorError: '#E74C3C'
-      },
-      corporate: {
-        primaryColor: '#38BDF8', secondaryColor: '#0284C7', accentColor: '#38BDF8',
-        paletteBgMain: '#0F172A', paletteBgSurface: '#1E293B',
-        paletteTextMain: '#FFFFFF', paletteTextMuted: '#D8D8D8',
-        paletteColorPrimary: '#38BDF8', paletteColorSecondary: '#334155',
-        paletteColorSuccess: '#2ECC71', paletteColorError: '#E74C3C'
-      }
-    };
-
-    function applyThemePreset(presetKey) {
-      const preset = THEME_PRESETS[presetKey];
-      if (!preset) return;
-      
-      // Update form fields
-      document.getElementById('primary-color-field').value = preset.primaryColor;
-      document.getElementById('secondary-color-field').value = preset.secondaryColor;
-      document.getElementById('accent-color-field').value = preset.accentColor;
-      
-      document.getElementById('palette-bg-main').value = preset.paletteBgMain;
-      document.getElementById('palette-bg-surface').value = preset.paletteBgSurface;
-      document.getElementById('palette-text-main').value = preset.paletteTextMain;
-      document.getElementById('palette-text-muted').value = preset.paletteTextMuted;
-      document.getElementById('palette-color-primary').value = preset.paletteColorPrimary;
-      document.getElementById('palette-color-secondary').value = preset.paletteColorSecondary;
-      document.getElementById('palette-color-success').value = preset.paletteColorSuccess;
-      document.getElementById('palette-color-error').value = preset.paletteColorError;
-      
-      // Sync hex text inputs under pickers
-      document.querySelectorAll('.color-picker-wrapper').forEach(wrapper => {
-        const picker = wrapper.querySelector('input[type="color"]');
-        const textInput = wrapper.querySelector('input[type="text"]');
-        if (picker && textInput) textInput.value = picker.value.toUpperCase();
+      await loadSettingField('seo', { title: '', desc: '', keywords: '' }, {
+        'seo-title': 'title', 'seo-desc': 'desc', 'seo-keywords': 'keywords'
+      });
+      await loadSettingField('analytics', { ga: '', pixel: '' }, {
+        'analytics-ga': 'ga', 'analytics-pixel': 'pixel'
+      });
+      await loadSettingField('integrations', { paymentMode: 'Sandbox', shippingUrl: '' }, {
+        'integration-payment-mode': 'paymentMode', 'integration-shipping-url': 'shippingUrl'
       });
       
-      // Set preset card active
-      document.querySelectorAll('.preset-option-card').forEach(card => card.classList.remove('active'));
-      document.getElementById('preset-' + presetKey).classList.add('active');
-      
-      syncLivePreview();
-      updateContrastLock();
-      if (window.MZAppearanceStudio && typeof window.MZAppearanceStudio.markDirty === 'function') {
-        window.MZAppearanceStudio.markDirty();
-      }
-      showToast(presetKey.charAt(0).toUpperCase() + presetKey.slice(1) + ' theme preset loaded!', 'info');
-    }
-
-    // Safety lock: restore last saved theme from database
-    function restoreLastSavedTheme() {
-      if (confirm('Revert all unsaved changes and restore the theme settings saved in database?')) {
-        loadHomepageBuilderSettings();
-        showToast('Restored last saved database settings!', 'success');
+      // Load mobile scaling from SiteSettings V4 Theme document
+      try {
+        const res = await adminFetch('/api/site-settings/theme');
+        const themeData = await res.json();
+        if (themeData.success && themeData.data) {
+          const t = themeData.data;
+          document.getElementById('mobile-font-scale-field').value = t.layout?.mobileFontScale || 0.9;
+          document.getElementById('mobile-header-height-field').value = t.theme?.hdr?.mobile_height || 64;
+          document.getElementById('mobile-nav-bg-field').value = t.theme?.nav?.mobile_bg || '#0b0618';
+        }
+      } catch (err) {
+        console.warn('Failed loading mobile customizer attributes', err);
       }
     }
 
-    // Reset default styling
-    function resetToDefaultTheme() {
-      if (confirm('Reset all theme settings to Luxury Ivory Light defaults? This cannot be undone.')) {
-        window.resetSettingsToDefault();
-      }
-    }
+    // Submit actions
+    document.getElementById('general-settings-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('general-store-name').value.trim(),
+        tagline: document.getElementById('general-store-tagline').value.trim(),
+        currency: document.getElementById('general-currency').value.trim(),
+        email: document.getElementById('general-support-email').value.trim()
+      };
+      await saveSettingField('general', payload, 'General profile settings updated!');
+    });
 
-    function syncLivePreview() {
-      const iframe = document.getElementById('viewport-iframe');
-      if (!iframe || !iframe.contentWindow) return;
-      const doc = iframe.contentDocument || iframe.contentWindow.document;
-      if (!doc || !doc.documentElement) return;
+    document.getElementById('seo-settings-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        title: document.getElementById('seo-title').value.trim(),
+        desc: document.getElementById('seo-desc').value.trim(),
+        keywords: document.getElementById('seo-keywords').value.trim()
+      };
+      await saveSettingField('seo', payload, 'SEO metadata indexing updated!');
+    });
 
-      // Glass variables live sync
-      const glassGlobal = document.getElementById('glass-global-toggle').checked;
-      doc.documentElement.style.setProperty('--glass-enabled', glassGlobal ? '1' : '0');
-      doc.documentElement.style.setProperty('--glass-blur', document.getElementById('glass-blur-field').value + 'px');
-      doc.documentElement.style.setProperty('--glass-bg-opacity', document.getElementById('glass-bg-opacity-field').value);
-      doc.documentElement.style.setProperty('--glass-border-opacity', document.getElementById('glass-border-opacity-field').value);
-      doc.documentElement.style.setProperty('--glass-shadow-intensity', document.getElementById('glass-shadow-intensity-field').value);
-      doc.documentElement.style.setProperty('--glass-border-radius', document.getElementById('glass-border-radius-field').value + 'px');
-      doc.documentElement.style.setProperty('--glass-brightness', document.getElementById('glass-brightness-field').value);
-      doc.documentElement.style.setProperty('--glass-contrast', document.getElementById('glass-contrast-field').value);
-      doc.documentElement.style.setProperty('--glass-hover-intensity', document.getElementById('glass-hover-intensity-field').value);
+    document.getElementById('analytics-settings-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        ga: document.getElementById('analytics-ga').value.trim(),
+        pixel: document.getElementById('analytics-pixel').value.trim()
+      };
+      await saveSettingField('analytics', payload, 'Analytics tracking codes updated!');
+    });
 
-      const headerG = document.getElementById('glass-header-toggle').checked;
-      const productG = document.getElementById('glass-product-toggle').checked;
-      const modalG = document.getElementById('glass-modal-toggle').checked;
-      const sidebarG = document.getElementById('glass-sidebar-toggle').checked;
-      const footerG = document.getElementById('glass-footer-toggle').checked;
-      const formG = document.getElementById('glass-form-toggle').checked;
-      const heroG = document.getElementById('glass-hero-toggle').checked;
+    document.getElementById('integrations-settings-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        paymentMode: document.getElementById('integration-payment-mode').value,
+        shippingUrl: document.getElementById('integration-shipping-url').value.trim()
+      };
+      await saveSettingField('integrations', payload, 'External API settings saved!');
+    });
 
-      // Handle class list live toggling in the preview iframe
-      doc.documentElement.classList.toggle('glass-enabled', glassGlobal);
-      doc.documentElement.classList.toggle('glass-disabled', !glassGlobal);
-
-      doc.documentElement.classList.toggle('glass-header-enabled', headerG);
-      doc.documentElement.classList.toggle('glass-header-disabled', !headerG);
-
-      doc.documentElement.classList.toggle('glass-product_card-enabled', productG);
-      doc.documentElement.classList.toggle('glass-product_card-disabled', !productG);
-
-      doc.documentElement.classList.toggle('glass-modal-enabled', modalG);
-      doc.documentElement.classList.toggle('glass-modal-disabled', !modalG);
-
-      doc.documentElement.classList.toggle('glass-sidebar-enabled', sidebarG);
-      doc.documentElement.classList.toggle('glass-sidebar-disabled', !sidebarG);
-
-      doc.documentElement.classList.toggle('glass-footer-enabled', footerG);
-      doc.documentElement.classList.toggle('glass-footer-disabled', !footerG);
-
-      doc.documentElement.classList.toggle('glass-form-enabled', formG);
-      doc.documentElement.classList.toggle('glass-form-disabled', !formG);
-
-      doc.documentElement.classList.toggle('glass-hero-enabled', heroG);
-      doc.documentElement.classList.toggle('glass-hero-disabled', !heroG);
-      
-      // Core styling overrides
-      doc.documentElement.style.setProperty('--bg-main', document.getElementById('palette-bg-main').value);
-      doc.documentElement.style.setProperty('--bg-color', document.getElementById('palette-bg-main').value);
-      
-      doc.documentElement.style.setProperty('--bg-surface', document.getElementById('palette-bg-surface').value);
-      doc.documentElement.style.setProperty('--card-bg', document.getElementById('palette-bg-surface').value);
-      
-      doc.documentElement.style.setProperty('--text-main', document.getElementById('palette-text-main').value);
-      doc.documentElement.style.setProperty('--text-color', document.getElementById('palette-text-main').value);
-      
-      doc.documentElement.style.setProperty('--text-muted', document.getElementById('palette-text-muted').value);
-      
-      doc.documentElement.style.setProperty('--primary-color', document.getElementById('primary-color-field').value);
-      doc.documentElement.style.setProperty('--primary-purple', document.getElementById('primary-color-field').value);
-      
-      doc.documentElement.style.setProperty('--secondary-color', document.getElementById('secondary-color-field').value);
-      doc.documentElement.style.setProperty('--rose-pink', document.getElementById('secondary-color-field').value);
-      
-      doc.documentElement.style.setProperty('--accent-color', document.getElementById('accent-color-field').value);
-      doc.documentElement.style.setProperty('--primary-gold', document.getElementById('accent-color-field').value);
-      
-      doc.documentElement.style.setProperty('--color-primary', document.getElementById('palette-color-primary').value);
-      doc.documentElement.style.setProperty('--color-secondary', document.getElementById('palette-color-secondary').value);
-      doc.documentElement.style.setProperty('--color-success', document.getElementById('palette-color-success').value);
-      doc.documentElement.style.setProperty('--color-error', document.getElementById('palette-color-error').value);
-
-      // 8 core semantic variables sync
-      doc.documentElement.style.setProperty('--bg', document.getElementById('palette-bg-main').value);
-      doc.documentElement.style.setProperty('--surface', document.getElementById('palette-bg-surface').value);
-      doc.documentElement.style.setProperty('--card', document.getElementById('palette-bg-surface').value);
-      doc.documentElement.style.setProperty('--text-primary', document.getElementById('palette-text-main').value);
-      doc.documentElement.style.setProperty('--text-secondary', document.getElementById('palette-text-main').value);
-      doc.documentElement.style.setProperty('--text-muted', document.getElementById('palette-text-muted').value);
-      doc.documentElement.style.setProperty('--border', document.getElementById('palette-color-primary').value);
-      doc.documentElement.style.setProperty('--accent', document.getElementById('palette-color-primary').value);
-      
-      doc.documentElement.style.setProperty('--font-family-base', `'${document.getElementById('font-family-field').value}', 'Inter', sans-serif`);
-      
-      const btnStyle = document.getElementById('button-style-field').value;
-      let btnRadius = '8px';
-      if (btnStyle === 'sharp') btnRadius = '0px';
-      if (btnStyle === 'pill') btnRadius = '30px';
-      doc.documentElement.style.setProperty('--layout-btn-radius', btnRadius);
-
-      // Custom CSS live injection in iframe
-      let iframeCustomCss = doc.getElementById('mz-custom-css');
-      if (!iframeCustomCss) {
-        iframeCustomCss = doc.createElement('style');
-        iframeCustomCss.id = 'mz-custom-css';
-        doc.head.appendChild(iframeCustomCss);
-      }
-      iframeCustomCss.textContent = document.getElementById('custom-css-field').value;
-      
-      // Re-trigger contrast check on controls page
-      updateContrastLock();
-    }
-
-    // Category lists and coupon helper endpoints
-    async function loadCouponsList() {
-      const container = document.getElementById('coupons-list-container');
-      if (!container) return;
+    document.getElementById('mobile-settings-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const mobileFontScale = parseFloat(document.getElementById('mobile-font-scale-field').value) || 0.9;
+      const mobile_height = parseInt(document.getElementById('mobile-header-height-field').value, 10) || 64;
+      const mobile_bg = document.getElementById('mobile-nav-bg-field').value;
 
       try {
-        const res = await adminFetch('/api/settings/coupons/all');
+        // Fetch current theme first to merge cleanly
+        const themeRes = await adminFetch('/api/site-settings/theme');
+        const themeData = await themeRes.json();
+        if (themeData.success && themeData.data) {
+          const t = themeData.data;
+          t.layout = t.layout || {};
+          t.layout.mobileFontScale = mobileFontScale;
+          t.theme = t.theme || {};
+          t.theme.hdr = t.theme.hdr || {};
+          t.theme.hdr.mobile_height = mobile_height;
+          t.theme.nav = t.theme.nav || {};
+          t.theme.nav.mobile_bg = mobile_bg;
+
+          const saveRes = await adminFetch('/api/site-settings/theme', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(t)
+          });
+          const saveData = await saveRes.json();
+          if (saveData.success) {
+            showToast('Mobile offsets saved successfully!', 'success');
+          } else {
+            showToast(saveData.error || 'Failed to update mobile offsets', 'error');
+          }
+        }
+      } catch (err) {
+        showToast('Error saving mobile layout parameters', 'error');
+      }
+    });
+
+    // SMTP Diagnostics Actions
+    document.getElementById('refresh-diag').addEventListener('click', async () => {
+      const output = document.getElementById('diag-output');
+      output.textContent = 'Checking server connectivity...';
+      try {
+        const res = await adminFetch('/api/admin/system/smtp-test');
         const data = await res.json();
-
-        if (!data.success || data.coupons.length === 0) {
-          container.innerHTML = '<p style="color:var(--studio-text-muted); font-size:11px; font-style:italic;">No coupons active.</p>';
-          return;
-        }
-
-        container.innerHTML = data.coupons.map(c => `
-          <div class="glass-panel" style="padding:10px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; font-size:11px; border:1px solid var(--studio-border);">
-            <div>
-              <strong>${c.code}</strong> (${c.discountType === 'Percentage' ? `${c.discountValue}%` : `₹${c.discountValue}`})<br>
-              <span style="color:var(--studio-text-muted); font-size:9px;">Min: ₹${c.minOrderValue} | Exp: ${new Date(c.expiresAt).toLocaleDateString('en-IN')}</span>
-            </div>
-            <button onclick="deleteCouponById('${c._id}')" style="background:transparent; cursor:pointer; border:none;" title="Delete Coupon">
-              <svg style="width:14px; height:14px; fill:#ef4444;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 8,19V7H6V19Z"/></svg>
-            </button>
-          </div>
-        `).join('');
-
+        output.textContent = JSON.stringify(data, null, 2);
       } catch (err) {
-        container.innerHTML = '<p style="color:#ef4444; font-size:11px;">Error loading coupons.</p>';
+        output.textContent = `Connection error testing SMTP diagnostics: ${err.message}`;
       }
-    }
+    });
 
-    async function createNewCouponSubmit() {
-      const code = document.getElementById('cp-code').value.toUpperCase().trim();
-      const discountType = document.getElementById('cp-type').value;
-      const discountValue = document.getElementById('cp-value').value;
-      const minOrderValue = document.getElementById('cp-min-value').value;
-      const expiresAt = document.getElementById('cp-expiry').value;
-
-      if (!code || !discountValue || !expiresAt) {
-        showToast('Please fill in coupon fields', 'warning');
+    document.getElementById('send-test').addEventListener('click', async () => {
+      const email = document.getElementById('test-recipient').value.trim();
+      const output = document.getElementById('send-output');
+      if (!email) {
+        showToast('Recipient address required', 'warning');
         return;
       }
-
+      output.textContent = `Queueing test mail to ${email}...`;
       try {
-        const res = await adminFetch('/api/settings/coupons/new', {
+        const res = await adminFetch('/api/admin/system/smtp-send-test', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, discountType, discountValue, minOrderValue, expiresAt })
+          body: JSON.stringify({ to: email })
         });
         const data = await res.json();
-        if (data.success) {
-          showToast('Coupon created!', 'success');
-          document.getElementById('cp-code').value = '';
-          document.getElementById('cp-value').value = '';
-          document.getElementById('cp-min-value').value = '0';
-          document.getElementById('cp-expiry').value = '';
-          loadCouponsList();
-        } else {
-          showToast(data.error || 'Failed to create coupon', 'error');
-        }
+        output.textContent = JSON.stringify(data, null, 2);
       } catch (err) {
-        showToast('Error sending coupon', 'error');
+        output.textContent = `Failed sending test mail: ${err.message}`;
       }
+    });
+
+    // Init
+    function initSettingsPage() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab') || 'general';
+      switchTab('tab-' + tabParam);
+
+      loadAllSystemSettings();
     }
+    window.initSettingsPage = initSettingsPage;
 
-    async function deleteCouponById(id) {
-      if (!confirm('Are you sure you want to delete this coupon?')) return;
-      try {
-        const res = await adminFetch(`/api/settings/coupons/${id}`, { method: 'DELETE' });
-        const data = await res.json();
-        if (data.success) {
-          showToast('Coupon deleted!', 'success');
-          loadCouponsList();
-        } else {
-          showToast(data.error || 'Failed to delete coupon', 'error');
-        }
-      } catch (err) {
-        showToast('Connection error during deletion', 'error');
-      }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSettingsPage);
+    } else {
+      initSettingsPage();
     }
-
-    async function uploadSettingAsset(fileInputId, textFieldId) {
-      const input = document.getElementById(fileInputId);
-      const file = input.files[0];
-      if (!file) return;
-
-      const formData = new FormData();
-      formData.append('image', file);
-
-      try {
-        showToast('Uploading image asset...', 'info');
-        const res = await adminFetch('/api/settings/upload', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (data.success) {
-          document.getElementById(textFieldId).value = data.url;
-          showToast('Asset uploaded successfully!', 'success');
-          syncLivePreview();
-        } else {
-          showToast(data.error || 'Upload failed', 'error');
-        }
-      } catch (err) {
-        showToast('Error uploading asset image', 'error');
-      } finally {
-        input.value = '';
-      }
-    }
-
   </script>
 </body>
-
 </html>

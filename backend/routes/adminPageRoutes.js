@@ -15,7 +15,10 @@ const ALLOWED_ADMIN_PAGES = new Set([
   'reports.html',
   'invoices.html',
   'system-diagnostics.html',
-  'security-logs.html'
+  'security-logs.html',
+  'appearance.html',
+  'marketing.html',
+  'content.html'
 ]);
 
 // Authenticate helper for HTML pages (redirect-based instead of JSON error responses)

@@ -3,6 +3,43 @@
  * Manages dashboard metrics, products CRUD, order statuses, and homepage setting updates
  */
 
+async function initAdminRouterPage() {
+  const path = window.location.pathname;
+  if (path.includes('dashboard.html')) {
+    loadDashboardData();
+    loadFeatureToggles();
+    initDashboardEvents();
+  } else if (path.includes('products.html')) {
+    loadAdminProducts();
+    initProductsPageEvents();
+  } else if (path.includes('orders.html')) {
+    loadAdminOrders();
+  } else if (path.includes('invoices.html')) {
+    initInvoiceSearch();
+  } else if (path.includes('customers.html')) {
+    loadAdminCustomers();
+  } else if (path.includes('settings.html')) {
+    if (typeof window.initSettingsPage === 'function') {
+      window.initSettingsPage();
+    }
+  } else if (path.includes('appearance.html')) {
+    if (window.MZAppearanceStudio && typeof window.MZAppearanceStudio.init === 'function') {
+      window.MZAppearanceStudio.init();
+    }
+  } else if (path.includes('marketing.html')) {
+    if (typeof window.initMarketingPage === 'function') {
+      window.initMarketingPage();
+    }
+  } else if (path.includes('content.html')) {
+    if (typeof window.initContentPage === 'function') {
+      window.initContentPage();
+    }
+  } else if (path.includes('reports.html')) {
+    loadReportsPageData();
+  }
+}
+window.initAdminRouterPage = initAdminRouterPage;
+
 document.addEventListener('DOMContentLoaded', async () => {
   if (document.body) {
     document.body.style.visibility = 'hidden';
@@ -50,27 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSidebarResizer();
   initOverlaysEvents();
 
-  // Route to page-specific loads
-  const path = window.location.pathname;
-  if (path.includes('dashboard.html')) {
-    loadDashboardData();
-    loadFeatureToggles();
-    initDashboardEvents();
-  } else if (path.includes('products.html')) {
-    loadAdminProducts();
-    initProductsPageEvents();
-  } else if (path.includes('orders.html')) {
-    loadAdminOrders();
-  } else if (path.includes('invoices.html')) {
-    initInvoiceSearch();
-  } else if (path.includes('customers.html')) {
-    loadAdminCustomers();
-  } else if (path.includes('settings.html')) {
-    loadHomepageBuilderSettings();
-    loadFeatureToggles();
-  } else if (path.includes('reports.html')) {
-    loadReportsPageData();
-  }
+  await initAdminRouterPage();
 });
 
 // Sidebar injection (reusable dry components)
@@ -112,7 +129,7 @@ function injectAdminSidebar() {
   const currentTab = urlParams.get('tab') || 'presets';
 
   const activeCls = (file) => path.includes(file) ? 'active' : '';
-  const activeTabCls = (tab) => (path.includes('settings.html') && currentTab === tab) ? 'active' : '';
+  const activeTabCls = (file, tab) => (path.includes(file) && currentTab === tab) ? 'active' : '';
   const activeProductTabCls = (tab) => {
     if (!path.includes('products.html')) return '';
     const viewTab = urlParams.get('tab') || 'products';
@@ -120,6 +137,9 @@ function injectAdminSidebar() {
   };
   const isProductsView = path.includes('products.html');
   const isMediaView = path.includes('media.html');
+  const isMarketingView = path.includes('marketing.html');
+  const isContentView = path.includes('content.html');
+  const isAppearanceView = path.includes('appearance.html');
   const isSettingsView = path.includes('settings.html');
 
   sidebar.className = 'admin-sidebar';
@@ -170,70 +190,71 @@ function injectAdminSidebar() {
 
       <!-- MARKETING SECTION -->
       <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Marketing</li>
-      <li class="admin-menu-item has-submenu ${isSettingsView && ['coupons', 'flash-sales', 'popup', 'newsletter'].includes(currentTab) ? 'expanded' : ''}" id="menu-marketing">
+      <li class="admin-menu-item has-submenu ${isMarketingView ? 'expanded' : ''}" id="menu-marketing">
         <a class="admin-menu-item-link" onclick="toggleSubmenu('marketing')">
           <i data-lucide="percent"></i> <span>Marketing Tools</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
-        <ul class="admin-menu-submenu ${isSettingsView && ['coupons', 'flash-sales', 'popup', 'newsletter'].includes(currentTab) ? 'open' : ''}" id="submenu-marketing">
-          <li class="${activeTabCls('coupons')}"><a href="/admin/settings.html?tab=coupons"><span>Coupons</span></a></li>
-          <li class="${activeTabCls('flash-sales')}"><a href="/admin/settings.html?tab=flash-sales"><span>Flash Sales</span></a></li>
-          <li class="${activeTabCls('popup')}"><a href="/admin/settings.html?tab=popup"><span>Popup Builder</span></a></li>
-          <li class="${activeTabCls('newsletter')}"><a href="/admin/settings.html?tab=newsletter"><span>Newsletter</span></a></li>
+        <ul class="admin-menu-submenu ${isMarketingView ? 'open' : ''}" id="submenu-marketing">
+          <li class="${activeTabCls('marketing.html', 'coupons')}"><a href="/admin/marketing.html?tab=coupons"><span>Coupons</span></a></li>
+          <li class="${activeTabCls('marketing.html', 'flash-sales')}"><a href="/admin/marketing.html?tab=flash-sales"><span>Flash Sales</span></a></li>
+          <li class="${activeTabCls('marketing.html', 'popup')}"><a href="/admin/marketing.html?tab=popup"><span>Popup Builder</span></a></li>
+          <li class="${activeTabCls('marketing.html', 'newsletter')}"><a href="/admin/marketing.html?tab=newsletter"><span>Newsletter</span></a></li>
         </ul>
       </li>
 
       <!-- CONTENT SECTION -->
       <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Content</li>
-      <li class="admin-menu-item has-submenu ${isSettingsView && ['homepage', 'testimonials', 'about-page', 'contact-page', 'privacy-page', 'terms-page', 'header'].includes(currentTab) ? 'expanded' : ''}" id="menu-content">
+      <li class="admin-menu-item has-submenu ${isContentView ? 'expanded' : ''}" id="menu-content">
         <a class="admin-menu-item-link" onclick="toggleSubmenu('content')">
           <i data-lucide="edit-3"></i> <span>Content Editor</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
-        <ul class="admin-menu-submenu ${isSettingsView && ['homepage', 'testimonials', 'about-page', 'contact-page', 'privacy-page', 'terms-page', 'header'].includes(currentTab) ? 'open' : ''}" id="submenu-content">
-          <li class="${activeTabCls('homepage')}"><a href="/admin/settings.html?tab=homepage"><span>Homepage Builder</span></a></li>
-          <li class="${activeTabCls('testimonials')}"><a href="/admin/settings.html?tab=testimonials"><span>Testimonials</span></a></li>
-          <li class="${activeTabCls('about-page')}"><a href="/admin/settings.html?tab=about-page"><span>About Page</span></a></li>
-          <li class="${activeTabCls('contact-page')}"><a href="/admin/settings.html?tab=contact-page"><span>Contact Page</span></a></li>
-          <li class="${activeTabCls('privacy-page')}"><a href="/admin/settings.html?tab=privacy-page"><span>Privacy Policy</span></a></li>
-          <li class="${activeTabCls('terms-page')}"><a href="/admin/settings.html?tab=terms-page"><span>Terms of Service</span></a></li>
-          <li class="${activeTabCls('header')}"><a href="/admin/settings.html?tab=header"><span>Navigation Builder</span></a></li>
+        <ul class="admin-menu-submenu ${isContentView ? 'open' : ''}" id="submenu-content">
+          <li class="${activeTabCls('content.html', 'homepage')}"><a href="/admin/content.html?tab=homepage"><span>Homepage Builder</span></a></li>
+          <li class="${activeTabCls('content.html', 'testimonials')}"><a href="/admin/content.html?tab=testimonials"><span>Testimonials</span></a></li>
+          <li class="${activeTabCls('content.html', 'about-page')}"><a href="/admin/content.html?tab=about-page"><span>About Page</span></a></li>
+          <li class="${activeTabCls('content.html', 'contact-page')}"><a href="/admin/content.html?tab=contact-page"><span>Contact Page</span></a></li>
+          <li class="${activeTabCls('content.html', 'privacy-page')}"><a href="/admin/content.html?tab=privacy-page"><span>Privacy Policy</span></a></li>
+          <li class="${activeTabCls('content.html', 'terms-page')}"><a href="/admin/content.html?tab=terms-page"><span>Terms of Service</span></a></li>
+          <li class="${activeTabCls('content.html', 'header')}"><a href="/admin/content.html?tab=header"><span>Navigation Builder</span></a></li>
         </ul>
       </li>
 
       <!-- APPEARANCE STUDIO SECTION -->
       <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Appearance</li>
-      <li class="admin-menu-item has-submenu ${isSettingsView && ['presets', 'colors', 'typography', 'footer', 'buttons', 'cards', 'mobile-settings', 'animations', 'glass', 'custom-css'].includes(currentTab) ? 'expanded' : ''}" id="menu-appearance">
+      <li class="admin-menu-item has-submenu ${isAppearanceView ? 'expanded' : ''}" id="menu-appearance">
         <a class="admin-menu-item-link" onclick="toggleSubmenu('appearance')">
           <i data-lucide="palette"></i> <span>Appearance Studio</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
-        <ul class="admin-menu-submenu ${isSettingsView && ['presets', 'colors', 'typography', 'footer', 'buttons', 'cards', 'mobile-settings', 'animations', 'glass', 'custom-css'].includes(currentTab) ? 'open' : ''}" id="submenu-appearance">
-          <li class="${activeTabCls('presets')}"><a href="/admin/settings.html?tab=presets"><span>Theme Presets</span></a></li>
-          <li class="${activeTabCls('colors')}"><a href="/admin/settings.html?tab=colors"><span>Colors</span></a></li>
-          <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography"><span>Typography</span></a></li>
-          <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer"><span>Footer Settings</span></a></li>
-          <li class="${activeTabCls('buttons')}"><a href="/admin/settings.html?tab=buttons"><span>Buttons Layout</span></a></li>
-          <li class="${activeTabCls('cards')}"><a href="/admin/settings.html?tab=cards"><span>Cards Layout</span></a></li>
-          <li class="${activeTabCls('animations')}"><a href="/admin/settings.html?tab=animations"><span>Animations</span></a></li>
-          <li class="${activeTabCls('glass')}"><a href="/admin/settings.html?tab=glass"><span>Glassmorphism</span></a></li>
-          <li class="${activeTabCls('custom-css')}"><a href="/admin/settings.html?tab=custom-css"><span>Custom CSS</span></a></li>
+        <ul class="admin-menu-submenu ${isAppearanceView ? 'open' : ''}" id="submenu-appearance">
+          <li class="${activeTabCls('appearance.html', 'presets')}"><a href="/admin/appearance.html?tab=presets"><span>Theme Presets</span></a></li>
+          <li class="${activeTabCls('appearance.html', 'colors')}"><a href="/admin/appearance.html?tab=colors"><span>Colors</span></a></li>
+          <li class="${activeTabCls('appearance.html', 'typography')}"><a href="/admin/appearance.html?tab=typography"><span>Typography</span></a></li>
+          <li class="${activeTabCls('appearance.html', 'footer')}"><a href="/admin/appearance.html?tab=footer"><span>Footer Settings</span></a></li>
+          <li class="${activeTabCls('appearance.html', 'buttons')}"><a href="/admin/appearance.html?tab=buttons"><span>Buttons Layout</span></a></li>
+          <li class="${activeTabCls('appearance.html', 'cards')}"><a href="/admin/appearance.html?tab=cards"><span>Cards Layout</span></a></li>
+          <li class="${activeTabCls('appearance.html', 'animations')}"><a href="/admin/appearance.html?tab=animations"><span>Animations</span></a></li>
+          <li class="${activeTabCls('appearance.html', 'glass')}"><a href="/admin/appearance.html?tab=glass"><span>Glassmorphism</span></a></li>
+          <li class="${activeTabCls('appearance.html', 'custom-css')}"><a href="/admin/appearance.html?tab=custom-css"><span>Custom CSS</span></a></li>
         </ul>
       </li>
 
       <!-- SYSTEM & SETTINGS SECTION -->
       <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Settings</li>
-      <li class="admin-menu-item has-submenu ${isSettingsView && ['general', 'seo', 'analytics', 'integrations', 'mobile-settings'].includes(currentTab) ? 'expanded' : ''}" id="menu-settings">
+      <li class="admin-menu-item has-submenu ${isSettingsView ? 'expanded' : ''}" id="menu-settings">
         <a class="admin-menu-item-link" onclick="toggleSubmenu('settings')">
           <i data-lucide="settings"></i> <span>Store Settings</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
-        <ul class="admin-menu-submenu ${isSettingsView && ['general', 'seo', 'analytics', 'integrations', 'mobile-settings'].includes(currentTab) ? 'open' : ''}" id="submenu-settings">
-          <li class="${activeTabCls('general')}"><a href="/admin/settings.html?tab=general"><span>General</span></a></li>
-          <li class="${activeTabCls('seo')}"><a href="/admin/settings.html?tab=seo"><span>SEO Settings</span></a></li>
-          <li class="${activeTabCls('analytics')}"><a href="/admin/settings.html?tab=analytics"><span>Analytics</span></a></li>
-          <li class="${activeTabCls('integrations')}"><a href="/admin/settings.html?tab=integrations"><span>Integrations</span></a></li>
-          <li class="${activeTabCls('mobile-settings')}"><a href="/admin/settings.html?tab=mobile-settings"><span>Mobile Settings</span></a></li>
+        <ul class="admin-menu-submenu ${isSettingsView ? 'open' : ''}" id="submenu-settings">
+          <li class="${activeTabCls('settings.html', 'general')}"><a href="/admin/settings.html?tab=general"><span>General</span></a></li>
+          <li class="${activeTabCls('settings.html', 'seo')}"><a href="/admin/settings.html?tab=seo"><span>SEO Settings</span></a></li>
+          <li class="${activeTabCls('settings.html', 'analytics')}"><a href="/admin/settings.html?tab=analytics"><span>Analytics</span></a></li>
+          <li class="${activeTabCls('settings.html', 'integrations')}"><a href="/admin/settings.html?tab=integrations"><span>Integrations</span></a></li>
+          <li class="${activeTabCls('settings.html', 'mobile-settings')}"><a href="/admin/settings.html?tab=mobile-settings"><span>Mobile Settings</span></a></li>
+          <li class="${activeTabCls('settings.html', 'diagnostics')}"><a href="/admin/settings.html?tab=diagnostics"><span>Diagnostics</span></a></li>
         </ul>
       </li>
 
@@ -245,8 +266,8 @@ function injectAdminSidebar() {
       <li class="admin-menu-item ${activeCls('security-logs.html')}">
         <a href="/admin/security-logs.html"><i data-lucide="shield"></i> <span>Security Logs</span></a>
       </li>
-      <li class="admin-menu-item ${activeCls('system-diagnostics.html')}">
-        <a href="/admin/system-diagnostics.html"><i data-lucide="cpu"></i> <span>Diagnostics</span></a>
+      <li class="admin-menu-item ${activeCls('settings.html') && currentTab === 'diagnostics' ? 'active' : ''}">
+        <a href="/admin/settings.html?tab=diagnostics"><i data-lucide="cpu"></i> <span>Diagnostics</span></a>
       </li>
 
       <li style="margin-top:20px; border-top:1px solid var(--adm-border); padding-top:15px;">
@@ -2621,4 +2642,14 @@ async function applyAdminBranding() {
     console.error('Failed to load dynamic admin branding', err);
   }
 }
+
+// Auto-load and bootstrap client-side SPA router
+(function() {
+  if (!document.querySelector('script[src*="admin-spa.js"]')) {
+    const s = document.createElement('script');
+    s.src = '/assets/js/admin-spa.js';
+    s.defer = true;
+    document.body.appendChild(s);
+  }
+})();
 

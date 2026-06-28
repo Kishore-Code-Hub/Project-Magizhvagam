@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Editor | MAGIZHVAGAM</title>
+
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/appearance-studio.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+  <style>
+    .scroll-panel {
+      overflow-y: auto;
+      max-height: calc(100vh - 200px);
+      padding: 10px;
+    }
+    .studio-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 10px;
+    }
+    .studio-tab-panel {
+      display: none;
+    }
+    .studio-tab-panel.active {
+      display: block;
+    }
+  </style>
+</head>
+<body style="visibility:hidden">
+  <div class="admin-layout">
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content -->
+    <main class="admin-main" style="padding: 24px !important;">
+      <h1 style="font-family:'Outfit'; font-size:32px; color:var(--text-color); margin-bottom:10px;">Content Management</h1>
+      <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Reorder home sections, create hero sliders, add customer testimonials, edit static pages, and configure header menus.</p>
+
+      <!-- Sub tabs row -->
+      <div class="studio-tabs">
+        <button type="button" class="studio-tab-btn active" id="btn-tab-homepage" onclick="switchTab('tab-homepage')">Homepage Sections</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-testimonials" onclick="switchTab('tab-testimonials')">Testimonials</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-about" onclick="switchTab('tab-about')">About Page</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-contact" onclick="switchTab('tab-contact')">Contact Page</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-policies" onclick="switchTab('tab-policies')">Legal Policies</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-navigation" onclick="switchTab('tab-navigation')">Navigation Menus</button>
+      </div>
+
+      <div class="scroll-panel">
+        
+        <!-- Tab 1: Homepage Sections -->
+        <div class="studio-tab-panel active" id="tab-homepage">
+          <div class="grid grid-2" style="gap:30px; align-items:start;">
+            <!-- Sections Manager -->
+            <div class="glass" style="padding:25px; border-radius:12px;">
+              <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">Sections Sorting</h3>
+              <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Reorder and toggle homepage dynamic modules.</p>
+              <div id="homepage-sections-manager" class="section-manager-list"></div>
+              <button onclick="saveHomepageSectionsOrder()" class="btn btn-primary" style="width:100%; margin-top:20px; border-radius:8px;">Save Layout Order</button>
+            </div>
+
+            <!-- Banners Visual Builder -->
+            <div class="glass" style="padding:25px; border-radius:12px;">
+              <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">Hero Carousel Banners</h3>
+              <div id="hero-banners-visual" style="display:flex; flex-direction:column; gap:12px;"></div>
+              <button onclick="saveHeroBanners()" class="btn btn-primary" style="width:100%; margin-top:20px; border-radius:8px;">Save Carousel Slides</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Testimonials -->
+        <div class="studio-tab-panel" id="tab-testimonials">
+          <div class="glass" style="padding:25px; border-radius:12px; max-width:650px; margin:0 auto;">
+            <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">Customer Reviews Curation</h3>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Manage testimonials sliders shown on storefront.</p>
+            <div id="testimonials-visual" style="display:flex; flex-direction:column; gap:12px;"></div>
+            <button onclick="saveTestimonials()" class="btn btn-primary" style="width:100%; margin-top:20px; border-radius:8px;">Save Testimonials</button>
+          </div>
+        </div>
+
+        <!-- Tab 3: About Page -->
+        <div class="studio-tab-panel" id="tab-about">
+          <div class="glass" style="padding:25px; border-radius:12px; max-width:700px; margin:0 auto;">
+            <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">About Page Copy</h3>
+            <form id="about-page-form">
+              <div class="admin-form-group">
+                <label>Story Main Heading</label>
+                <input type="text" id="about-story-heading-field" class="admin-form-control">
+              </div>
+              <div class="admin-form-group">
+                <label>Story Intro Subtitle</label>
+                <textarea id="about-story-intro-field" class="admin-form-control" rows="3"></textarea>
+              </div>
+              <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap:20px;">
+                <div class="admin-form-group">
+                  <label>Left Section Heading</label>
+                  <input type="text" id="about-left-heading-field" class="admin-form-control">
+                </div>
+                <div class="admin-form-group">
+                  <label>About Accent Image</label>
+                  <input type="hidden" id="about-image-field">
+                  <div id="about-image-preview" style="height:80px; border:1px dashed var(--card-border); border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.02);">
+                    <span style="color:var(--text-muted); font-size:12px;">No image selected</span>
+                  </div>
+                  <div style="display:flex; gap:8px; margin-top:8px;">
+                    <button type="button" class="btn btn-secondary" id="about-pick-image" style="flex:1; font-size:11px; padding:6px 10px;">Choose Image</button>
+                    <button type="button" class="btn btn-secondary" id="about-clear-image" style="font-size:11px; padding:6px 10px; background:#ef4444; color:white;">Remove</button>
+                  </div>
+                </div>
+              </div>
+              <div class="admin-form-group">
+                <label>Story Paragraph 1</label>
+                <textarea id="about-left-p1-field" class="admin-form-control" rows="3"></textarea>
+              </div>
+              <div class="admin-form-group">
+                <label>Story Paragraph 2</label>
+                <textarea id="about-left-p2-field" class="admin-form-control" rows="3"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:10px;">Save About Details</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tab 4: Contact Page -->
+        <div class="studio-tab-panel" id="tab-contact">
+          <div class="glass" style="padding:25px; border-radius:12px; max-width:650px; margin:0 auto;">
+            <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">Contact Page Details</h3>
+            <form id="contact-page-form">
+              <div class="admin-form-group">
+                <label>Support Phone</label>
+                <input type="text" id="contact-phone" class="admin-form-control" placeholder="+91 98765 43210">
+              </div>
+              <div class="admin-form-group">
+                <label>Support Email</label>
+                <input type="email" id="contact-email" class="admin-form-control" placeholder="support@magizhvagam.com">
+              </div>
+              <div class="admin-form-group">
+                <label>Office Address</label>
+                <textarea id="contact-address" class="admin-form-control" rows="3" placeholder="No. 12, Premium Gifts Street, Chennai"></textarea>
+              </div>
+              <div class="admin-form-group">
+                <label>Operating Hours</label>
+                <input type="text" id="contact-hours" class="admin-form-control" placeholder="Mon - Sat: 9:00 AM - 7:00 PM">
+              </div>
+              <div class="admin-form-group">
+                <label>Google Map Embed Source (Iframe src link)</label>
+                <input type="text" id="contact-map" class="admin-form-control" placeholder="https://www.google.com/maps/embed/...">
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:10px;">Save Contact Details</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tab 5: Policies -->
+        <div class="studio-tab-panel" id="tab-policies">
+          <div class="grid grid-2" style="gap:30px; align-items:start;">
+            <!-- Privacy Policy -->
+            <div class="glass" style="padding:25px; border-radius:12px;">
+              <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">🔒 Privacy Policy</h3>
+              <form id="privacy-policy-form">
+                <div class="admin-form-group">
+                  <label>Last Updated</label>
+                  <input type="text" id="privacy-date" class="admin-form-control" placeholder="June 2026">
+                </div>
+                <div class="admin-form-group">
+                  <label>Document Body (Markdown supported)</label>
+                  <textarea id="privacy-text" class="admin-form-control" rows="12" placeholder="Privacy guidelines details..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px;">Save Privacy Policy</button>
+              </form>
+            </div>
+
+            <!-- Terms of Service -->
+            <div class="glass" style="padding:25px; border-radius:12px;">
+              <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">⚖️ Terms of Service</h3>
+              <form id="terms-service-form">
+                <div class="admin-form-group">
+                  <label>Last Updated</label>
+                  <input type="text" id="terms-date" class="admin-form-control" placeholder="June 2026">
+                </div>
+                <div class="admin-form-group">
+                  <label>Document Body (Markdown supported)</label>
+                  <textarea id="terms-text" class="admin-form-control" rows="12" placeholder="Terms of service details..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px;">Save Terms of Service</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 6: Navigation Builder -->
+        <div class="studio-tab-panel" id="tab-navigation">
+          <div class="glass" style="padding:25px; border-radius:12px; max-width:650px; margin:0 auto;">
+            <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">Navigation Menu Items</h3>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Configure links inside the storefront header menu bar.</p>
+            <div id="navigation-items-visual" style="display:flex; flex-direction:column; gap:12px;"></div>
+            <button onclick="saveNavigationItems()" class="btn btn-primary" style="width:100%; margin-top:20px; border-radius:8px;">Save Navigation Menu</button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/js/media-library.js"></script>
+  <script src="/assets/js/admin.js"></script>
+  <script>
+    // Tab switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.studio-tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.studio-tab-btn').forEach(b => b.classList.remove('active'));
+      
+      const panel = document.getElementById(tabId);
+      if (panel) panel.classList.add('active');
+      
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) btn.classList.add('active');
+
+      const tabName = tabId.replace('tab-', '');
+      window.history.pushState(null, '', `/admin/content.html?tab=${tabName}`);
+    }
+
+    let homepageV4 = null;
+    let heroItems = [];
+    let promoItems = [];
+    let testimonialItems = [];
+    let navItems = [];
+
+    // Helper escape html
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // List Editor visual component helper
+    function renderListEditor(containerId, items, fields, onUpdate) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      
+      container.innerHTML = items.map((item, index) => `
+        <div class="visual-editor-card" style="padding:15px; border:1px solid var(--card-border); border-radius:10px; margin-bottom:12px; background:rgba(255,255,255,0.01);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <strong>Slide ${index + 1}</strong>
+            <div style="display:flex; gap:5px;">
+              ${index > 0 ? `<button type="button" class="btn btn-secondary ve-up" data-i="${index}" style="padding:4px 8px; font-size:11px;">↑</button>` : ''}
+              ${index < items.length - 1 ? `<button type="button" class="btn btn-secondary ve-down" data-i="${index}" style="padding:4px 8px; font-size:11px;">↓</button>` : ''}
+              <button type="button" class="btn btn-secondary ve-remove" data-i="${index}" style="padding:4px 8px; font-size:11px; background:#ef4444; color:white;">Remove</button>
+            </div>
+          </div>
+          <div class="visual-editor-preview">
+            ${item.image ? `
+              <div style="position:relative; margin-bottom:8px;">
+                <img src="${item.image}" style="width:100%; max-height:120px; object-fit:cover; border-radius:8px;">
+                <div style="display:flex; gap:6px; margin-top:6px;">
+                  <button type="button" class="btn btn-secondary ve-pick-img" data-i="${index}" style="flex:1; padding:6px 10px; font-size:11px;">Replace Image</button>
+                  <button type="button" class="btn btn-secondary ve-remove-img" data-i="${index}" style="padding:6px 10px; font-size:11px; background:#ef4444; color:white;">Remove Image</button>
+                </div>
+              </div>
+            ` : `
+              <div style="border:1px dashed var(--card-border); border-radius:8px; padding:20px; text-align:center; font-size:12px; color:var(--text-muted); margin-bottom:8px;">No image selected</div>
+              <button type="button" class="btn btn-secondary ve-pick-img" data-i="${index}" style="width:100%; padding:6px; font-size:11px;">Select Image</button>
+            `}
+          </div>
+          ${fields.map(f => `
+            <div class="admin-form-group" style="margin-top:8px;">
+              <label style="font-size:11px; font-weight:700; margin-bottom:4px; display:block;">${f.label}</label>
+              <input type="text" class="admin-form-control ve-field" data-i="${index}" data-field="${f.key}" value="${escapeHtml(item[f.key] || '')}" style="margin:0; padding:6px 10px;">
+            </div>
+          `).join('')}
+        </div>
+      `).join('') + `<button type="button" class="btn btn-secondary ve-add-item" style="width:100%; margin-top:8px;">+ Add Slide</button>`;
+
+      container.querySelector('.ve-add-item')?.addEventListener('click', () => {
+        items.push(fields.reduce((acc, f) => ({ ...acc, [f.key]: '' }), { image: '' }));
+        onUpdate(items);
+      });
+
+      container.querySelectorAll('.ve-remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          items.splice(parseInt(btn.dataset.i, 10), 1);
+          onUpdate(items);
+        });
+      });
+
+      container.querySelectorAll('.ve-up').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const i = parseInt(btn.dataset.i, 10);
+          [items[i - 1], items[i]] = [items[i], items[i - 1]];
+          onUpdate(items);
+        });
+      });
+
+      container.querySelectorAll('.ve-down').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const i = parseInt(btn.dataset.i, 10);
+          [items[i], items[i + 1]] = [items[i + 1], items[i]];
+          onUpdate(items);
+        });
+      });
+
+      container.querySelectorAll('.ve-pick-img').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const i = parseInt(btn.dataset.i, 10);
+          pickImage((asset) => {
+            items[i].image = asset.url;
+            onUpdate(items);
+          });
+        });
+      });
+
+      container.querySelectorAll('.ve-remove-img').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const i = parseInt(btn.dataset.i, 10);
+          items[i].image = '';
+          onUpdate(items);
+        });
+      });
+
+      container.querySelectorAll('.ve-field').forEach(input => {
+        input.addEventListener('input', () => {
+          const i = parseInt(input.dataset.i, 10);
+          items[i][input.dataset.field] = input.value;
+        });
+      });
+    }
+
+    // Media Library integration helper
+    function pickImage(callback) {
+      if (window.MZMediaLibrary && typeof window.MZMediaLibrary.openPicker === 'function') {
+        window.MZMediaLibrary.openPicker(callback);
+      } else {
+        alert('Media Library is loading, please try again.');
+      }
+    }
+
+    // Homepage layout loading
+    async function loadHomepageContentData() {
+      try {
+        const res = await adminFetch('/api/site-settings/homepage');
+        const data = await res.json();
+        if (data.success && data.data) {
+          homepageV4 = data.data;
+          
+          // Render section reordering manager
+          renderSectionManager(homepageV4.sections);
+
+          // Hero images
+          const heroSec = homepageV4.sections.find(s => s.id === 'hero');
+          heroItems = (heroSec && heroSec.config && heroSec.config.banners) ? heroSec.config.banners : [];
+          
+          // Testimonials
+          const testSec = homepageV4.sections.find(s => s.id === 'testimonials');
+          testimonialItems = (testSec && testSec.config && testSec.config.testimonials) ? testSec.config.testimonials : [];
+
+          renderHeroSliders();
+          renderTestimonialsList();
+        }
+      } catch (err) {
+        console.warn('Failed loading homepage contents', err);
+      }
+    }
+
+    function renderSectionManager(sections) {
+      const container = document.getElementById('homepage-sections-manager');
+      if (!container) return;
+      const sorted = [...sections].sort((a, b) => a.order - b.order);
+      
+      container.innerHTML = sorted.map((sec, idx) => `
+        <div class="glass-panel" style="padding:12px; border-radius:8px; border:1px solid var(--card-border); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong style="text-transform:capitalize;">${sec.id.replace('_', ' ')}</strong>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Sort Order: ${sec.order}</div>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <label class="toggle-switch" style="transform:scale(0.85);">
+              <input type="checkbox" class="sec-toggle" data-id="${sec.id}" ${sec.enabled ? 'checked' : ''}>
+              <span class="toggle-slider"></span>
+            </label>
+            ${idx > 0 ? `<button onclick="moveSection('${sec.id}', -1)" class="btn btn-secondary" style="padding:2px 8px; font-size:11px;">↑</button>` : ''}
+            ${idx < sorted.length - 1 ? `<button onclick="moveSection('${sec.id}', 1)" class="btn btn-secondary" style="padding:2px 8px; font-size:11px;">↓</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.moveSection = function(id, direction) {
+      if (!homepageV4) return;
+      const sections = homepageV4.sections;
+      const itemIdx = sections.findIndex(s => s.id === id);
+      if (itemIdx === -1) return;
+      
+      const sorted = [...sections].sort((a, b) => a.order - b.order);
+      const sortedIdx = sorted.findIndex(s => s.id === id);
+      const targetIdx = sortedIdx + direction;
+      if (targetIdx < 0 || targetIdx >= sorted.length) return;
+      
+      const currentItem = sorted[sortedIdx];
+      const targetItem = sorted[targetIdx];
+      
+      // Swap order attributes
+      const temp = currentItem.order;
+      currentItem.order = targetItem.order;
+      targetItem.order = temp;
+      
+      renderSectionManager(sections);
+    }
+
+    async function saveHomepageSectionsOrder() {
+      if (!homepageV4) return;
+      // Get enabled states from toggle checkboxes
+      document.querySelectorAll('.sec-toggle').forEach(chk => {
+        const sec = homepageV4.sections.find(s => s.id === chk.dataset.id);
+        if (sec) sec.enabled = chk.checked;
+      });
+
+      try {
+        const res = await adminFetch('/api/site-settings/homepage', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(homepageV4)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Homepage layout order saved!', 'success');
+        } else {
+          showToast(data.error || 'Failed to save order', 'error');
+        }
+      } catch (err) {
+        showToast('Connection error saving homepage layout', 'error');
+      }
+    }
+
+    function renderHeroSliders() {
+      renderListEditor('hero-banners-visual', heroItems, [
+        { key: 'title', label: 'Headline Title' },
+        { key: 'subtitle', label: 'Promo Subtitle' },
+        { key: 'link', label: 'Link URL' }
+      ], (updated) => {
+        heroItems = updated;
+        renderHeroSliders();
+      });
+    }
+
+    async function saveHeroBanners() {
+      if (!homepageV4) return;
+      const heroSec = homepageV4.sections.find(s => s.id === 'hero');
+      if (heroSec) {
+        heroSec.config = heroSec.config || {};
+        heroSec.config.banners = heroItems;
+      }
+      try {
+        const res = await adminFetch('/api/site-settings/homepage', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(homepageV4)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Hero sliders saved successfully!', 'success');
+        } else {
+          showToast(data.error || 'Failed to save hero banners', 'error');
+        }
+      } catch (err) {
+        showToast('Error saving carousel slides', 'error');
+      }
+    }
+
+    // Testimonials visual list builder
+    function renderTestimonialsList() {
+      const container = document.getElementById('testimonials-visual');
+      if (!container) return;
+      
+      container.innerHTML = testimonialItems.map((item, index) => `
+        <div class="visual-editor-card" style="padding:15px; border:1px solid var(--card-border); border-radius:10px; margin-bottom:12px; background:rgba(255,255,255,0.01);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <strong>Review ${index + 1}</strong>
+            <button onclick="removeTestimonial(${index})" class="btn btn-secondary" style="padding:4px 8px; font-size:11px; background:#ef4444; color:white;">Remove</button>
+          </div>
+          <div class="admin-form-group">
+            <label style="font-size:11px; font-weight:700; margin-bottom:4px; display:block;">Client Name</label>
+            <input type="text" class="admin-form-control test-field" data-i="${index}" data-field="name" value="${escapeHtml(item.name || '')}">
+          </div>
+          <div class="admin-form-group">
+            <label style="font-size:11px; font-weight:700; margin-bottom:4px; display:block;">Review Quote</label>
+            <textarea class="admin-form-control test-field" data-i="${index}" data-field="text" rows="3">${escapeHtml(item.text || '')}</textarea>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+            <div class="admin-form-group">
+              <label style="font-size:11px; font-weight:700; margin-bottom:4px; display:block;">Rating (1-5)</label>
+              <input type="number" min="1" max="5" class="admin-form-control test-field" data-i="${index}" data-field="rating" value="${item.rating || 5}">
+            </div>
+            <div class="admin-form-group">
+              <label style="font-size:11px; font-weight:700; margin-bottom:4px; display:block;">Occasion / Location</label>
+              <input type="text" class="admin-form-control test-field" data-i="${index}" data-field="location" value="${escapeHtml(item.location || item.occasion || '')}">
+            </div>
+          </div>
+        </div>
+      `).join('') + `<button onclick="addTestimonial()" class="btn btn-secondary" style="width:100%; font-size:12px;">+ Add Testimonial</button>`;
+
+      container.querySelectorAll('.test-field').forEach(input => {
+        input.addEventListener('input', () => {
+          const i = parseInt(input.dataset.i, 10);
+          testimonialItems[i][input.dataset.field] = input.value;
+        });
+      });
+    }
+
+    window.addTestimonial = function() {
+      testimonialItems.push({ name: '', text: '', rating: 5, verified: true });
+      renderTestimonialsList();
+    }
+
+    window.removeTestimonial = function(idx) {
+      testimonialItems.splice(idx, 1);
+      renderTestimonialsList();
+    }
+
+    async function saveTestimonials() {
+      if (!homepageV4) return;
+      const testSec = homepageV4.sections.find(s => s.id === 'testimonials');
+      if (testSec) {
+        testSec.config = testSec.config || {};
+        testSec.config.testimonials = testimonialItems;
+      }
+      try {
+        const res = await adminFetch('/api/site-settings/homepage', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(homepageV4)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Customer testimonials list updated!', 'success');
+        } else {
+          showToast(data.error || 'Failed to save reviews', 'error');
+        }
+      } catch (err) {
+        showToast('Error syncing reviews', 'error');
+      }
+    }
+
+    // Static Pages Markdown Editor
+    async function loadStaticPagesData() {
+      // Load About page
+      try {
+        const res = await adminFetch('/api/about-page');
+        const json = await res.json();
+        if (json.success && json.data) {
+          const d = json.data;
+          document.getElementById('about-story-heading-field').value = d.storyHeading || '';
+          document.getElementById('about-story-intro-field').value = d.storyIntro || '';
+          document.getElementById('about-left-heading-field').value = d.leftHeading || '';
+          document.getElementById('about-left-p1-field').value = d.leftParagraph1 || '';
+          document.getElementById('about-left-p2-field').value = d.leftParagraph2 || '';
+          document.getElementById('about-image-field').value = d.image || '';
+          
+          const preview = document.getElementById('about-image-preview');
+          if (d.image) preview.innerHTML = `<img src="${d.image}" style="width:100%; height:100%; object-fit:cover;">`;
+        }
+      } catch (err) {
+        console.warn('Failed loading about page text', err);
+      }
+
+      // Load Contact
+      try {
+        const res = await adminFetch('/api/settings/contact');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.setting) {
+            const val = data.setting;
+            document.getElementById('contact-phone').value = val.phone || '';
+            document.getElementById('contact-email').value = val.email || '';
+            document.getElementById('contact-address').value = val.address || '';
+            document.getElementById('contact-hours').value = val.hours || '';
+            document.getElementById('contact-map').value = val.map || '';
+          }
+        }
+      } catch (err) {
+        console.warn('Failed loading contact details', err);
+      }
+
+      // Load Policies
+      try {
+        const privRes = await adminFetch('/api/settings/privacy');
+        if (privRes.ok) {
+          const data = await privRes.json();
+          if (data.success && data.setting) {
+            document.getElementById('privacy-date').value = data.setting.date || '';
+            document.getElementById('privacy-text').value = data.setting.text || '';
+          }
+        }
+        
+        const termsRes = await adminFetch('/api/settings/terms');
+        if (termsRes.ok) {
+          const data = await termsRes.json();
+          if (data.success && data.setting) {
+            document.getElementById('terms-date').value = data.setting.date || '';
+            document.getElementById('terms-text').value = data.setting.text || '';
+          }
+        }
+      } catch (err) {
+        console.warn('Failed loading policy text data', err);
+      }
+    }
+
+    document.getElementById('about-page-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const aboutPayload = {
+        storyHeading: document.getElementById('about-story-heading-field').value.trim(),
+        storyIntro: document.getElementById('about-story-intro-field').value.trim(),
+        leftHeading: document.getElementById('about-left-heading-field').value.trim(),
+        leftParagraph1: document.getElementById('about-left-p1-field').value.trim(),
+        leftParagraph2: document.getElementById('about-left-p2-field').value.trim(),
+        image: document.getElementById('about-image-field').value.trim()
+      };
+      try {
+        const res = await adminFetch('/api/about-page', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(aboutPayload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('About Page details saved!', 'success');
+        } else {
+          showToast(data.error || 'Failed to save about content', 'error');
+        }
+      } catch (err) {
+        showToast('Error syncing about details', 'error');
+      }
+    });
+
+    document.getElementById('contact-page-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const contactPayload = {
+        phone: document.getElementById('contact-phone').value.trim(),
+        email: document.getElementById('contact-email').value.trim(),
+        address: document.getElementById('contact-address').value.trim(),
+        hours: document.getElementById('contact-hours').value.trim(),
+        map: document.getElementById('contact-map').value.trim()
+      };
+      try {
+        const res = await adminFetch('/api/settings/contact', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value: contactPayload })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Contact Page details saved!', 'success');
+        } else {
+          showToast(data.error || 'Failed to save contact settings', 'error');
+        }
+      } catch (err) {
+        showToast('Connection error updating contact data', 'error');
+      }
+    });
+
+    document.getElementById('privacy-policy-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const date = document.getElementById('privacy-date').value.trim();
+      const text = document.getElementById('privacy-text').value.trim();
+      try {
+        const res = await adminFetch('/api/settings/privacy', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value: { date, text } })
+        });
+        const data = await res.json();
+        if (data.success) showToast('Privacy Policy updated!', 'success');
+        else showToast(data.error || 'Error saving privacy text', 'error');
+      } catch (err) {
+        showToast('Connection error saving policy text', 'error');
+      }
+    });
+
+    document.getElementById('terms-service-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const date = document.getElementById('terms-date').value.trim();
+      const text = document.getElementById('terms-text').value.trim();
+      try {
+        const res = await adminFetch('/api/settings/terms', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value: { date, text } })
+        });
+        const data = await res.json();
+        if (data.success) showToast('Terms of Service updated!', 'success');
+        else showToast(data.error || 'Error saving terms text', 'error');
+      } catch (err) {
+        showToast('Connection error saving terms', 'error');
+      }
+    });
+
+    // Navigation Builder
+    async function loadNavigationMenu() {
+      try {
+        const res = await adminFetch('/api/site-settings/navigation');
+        const data = await res.json();
+        if (data.success && data.data) {
+          navItems = data.data.items || [];
+          renderNavigationBuilder();
+        }
+      } catch (err) {
+        console.warn('Failed loading navigation settings', err);
+      }
+    }
+
+    function renderNavigationBuilder() {
+      const container = document.getElementById('navigation-items-visual');
+      if (!container) return;
+
+      container.innerHTML = navItems.map((item, index) => `
+        <div class="visual-editor-card" style="padding:15px; border:1px solid var(--card-border); border-radius:10px; margin-bottom:12px; background:rgba(255,255,255,0.01);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <strong>Link Item ${index + 1}</strong>
+            <div style="display:flex; gap:5px;">
+              ${index > 0 ? `<button onclick="moveNavLink(${index}, -1)" class="btn btn-secondary" style="padding:2px 8px; font-size:11px;">↑</button>` : ''}
+              ${index < navItems.length - 1 ? `<button onclick="moveNavLink(${index}, 1)" class="btn btn-secondary" style="padding:2px 8px; font-size:11px;">↓</button>` : ''}
+              <button onclick="removeNavLink(${index})" class="btn btn-secondary" style="padding:2px 8px; font-size:11px; background:#ef4444; color:white;">Remove</button>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+            <div class="admin-form-group">
+              <label style="font-size:11px;">Link Label Text</label>
+              <input type="text" class="admin-form-control nav-field" data-i="${index}" data-field="label" value="${escapeHtml(item.label || '')}">
+            </div>
+            <div class="admin-form-group">
+              <label style="font-size:11px;">Destination URL</label>
+              <input type="text" class="admin-form-control nav-field" data-i="${index}" data-field="url" value="${escapeHtml(item.url || '')}">
+            </div>
+          </div>
+        </div>
+      `).join('') + `<button onclick="addNavLink()" class="btn btn-secondary" style="width:100%; font-size:12px;">+ Add Menu Item</button>`;
+
+      container.querySelectorAll('.nav-field').forEach(input => {
+        input.addEventListener('input', () => {
+          const i = parseInt(input.dataset.i, 10);
+          navItems[i][input.dataset.field] = input.value;
+        });
+      });
+    }
+
+    window.addNavLink = function() {
+      navItems.push({ label: '', url: '' });
+      renderNavigationBuilder();
+    }
+
+    window.removeNavLink = function(idx) {
+      navItems.splice(idx, 1);
+      renderNavigationBuilder();
+    }
+
+    window.moveNavLink = function(idx, direction) {
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= navItems.length) return;
+      [navItems[idx], navItems[targetIdx]] = [navItems[targetIdx], navItems[idx]];
+      renderNavigationBuilder();
+    }
+
+    async function saveNavigationItems() {
+      try {
+        const res = await adminFetch('/api/site-settings/navigation', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: navItems })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Navigation header menu saved!', 'success');
+        } else {
+          showToast(data.error || 'Failed to save navigation menu', 'error');
+        }
+      } catch (err) {
+        showToast('Error syncing navigation menu data', 'error');
+      }
+    }
+
+    // Image pickers bindings
+    document.getElementById('about-pick-image').addEventListener('click', () => {
+      pickImage((asset) => {
+        document.getElementById('about-image-field').value = asset.url || '';
+        const preview = document.getElementById('about-image-preview');
+        if (preview) preview.innerHTML = `<img src="${asset.url}" style="width:100%; height:100%; object-fit:cover;">`;
+      });
+    });
+
+    document.getElementById('about-clear-image').addEventListener('click', () => {
+      document.getElementById('about-image-field').value = '';
+      document.getElementById('about-image-preview').innerHTML = `<span style="color:var(--text-muted); font-size:12px;">No image selected</span>`;
+    });
+
+    // Init
+    function initContentPage() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab') || 'homepage';
+      switchTab('tab-' + tabParam);
+
+      loadHomepageContentData();
+      loadStaticPagesData();
+      loadNavigationMenu();
+    }
+    window.initContentPage = initContentPage;
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initContentPage);
+    } else {
+      initContentPage();
+    }
+  </script>
+</body>
+</html>

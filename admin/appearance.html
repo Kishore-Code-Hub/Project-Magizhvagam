@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appearance Studio | MAGIZHVAGAM</title>
+
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/appearance-studio.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+
+  <style>
+    .admin-main {
+      padding: 0 !important;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--studio-bg) !important;
+    }
+    .preset-option-card {
+      transition: all 0.2s ease;
+      border: 1px solid var(--studio-border);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .preset-option-card:hover {
+      border-color: var(--studio-gold);
+      background: rgba(255, 255, 255, 0.04);
+      transform: translateY(-2px);
+    }
+    .preset-option-card.active {
+      border-color: var(--studio-gold);
+      background: rgba(201, 145, 61, 0.08);
+      box-shadow: 0 0 10px rgba(201, 145, 61, 0.2);
+    }
+    .scroll-panel {
+      overflow-y: auto;
+      max-height: calc(100vh - 200px);
+      padding-right: 6px;
+    }
+    .scroll-panel::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scroll-panel::-webkit-scrollbar-thumb {
+      background: var(--studio-border);
+      border-radius: 3px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .studio-tabs {
+      display: flex;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--studio-border);
+      scrollbar-width: thin;
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 0 10px;
+    }
+    .studio-tabs::-webkit-scrollbar {
+      height: 4px;
+    }
+    .studio-tabs::-webkit-scrollbar-thumb {
+      background: var(--studio-border);
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body style="visibility:hidden">
+  <div class="admin-layout">
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Appearance Studio Container -->
+    <main class="admin-main">
+      <div class="studio-container">
+        
+        <!-- Left: Theme Editor Panel -->
+        <div class="studio-sidebar">
+          <div class="studio-header">
+            <h1>Appearance Studio</h1>
+            <p>Design your store look, feel, and colors live.</p>
+          </div>
+
+          <!-- Tabs Navigation Scrollable Row -->
+          <div class="studio-tabs">
+            <button type="button" class="studio-tab-btn active" onclick="switchStudioTab(event, 'tab-presets')">Presets</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-colors')">Colors</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-typography')">Fonts</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-header')">Header</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-footer')">Footer Settings</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-buttons')">Buttons</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-cards')">Cards</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-products')">Product Pages</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-mobile')">Mobile Settings</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-animations')">Animations</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-glass')">Glassmorphism</button>
+            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-css')">Custom CSS</button>
+          </div>
+
+          <!-- Main Configuration Form -->
+          <form id="homepage-builder-form" style="display:flex; flex-direction:column; flex-grow:1; overflow:hidden;">
+            <div class="studio-content scroll-panel">
+
+              <!-- TAB 1: Theme Presets -->
+              <div class="studio-tab-panel active" id="tab-presets">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Theme Presets</h3>
+                <p style="font-size:12px; color:var(--studio-text-muted); margin-bottom:20px;">Instantly swap your color theme with one of our curated premium presets.</p>
+                
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                  <!-- Preset Velvet -->
+                  <div class="preset-option-card active" id="preset-velvet" onclick="applyThemePreset('velvet')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:14px;">Deep Velvet Night</strong>
+                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Premium purple and gold theme</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                      <span style="width:14px; height:14px; border-radius:50%; background:#0B0618; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#171027; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#D4A03A; border:1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                  </div>
+                  
+                  <!-- Preset Gold -->
+                  <div class="preset-option-card" id="preset-royal" onclick="applyThemePreset('royal')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:14px;">Royal Gold</strong>
+                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Elegant dark grey gold theme</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                      <span style="width:14px; height:14px; border-radius:50%; background:#121212; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#1E1E1E; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#D4A03A; border:1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                  </div>
+
+                  <!-- Preset Ivory -->
+                  <div class="preset-option-card" id="preset-ivory" onclick="applyThemePreset('ivory')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:14px;">Luxury Ivory</strong>
+                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Sophisticated warm cream light theme</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                      <span style="width:14px; height:14px; border-radius:50%; background:#F7F4EE; border:1px solid rgba(0,0,0,0.1);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#FFFFFF; border:1px solid rgba(0,0,0,0.1);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#C9972E; border:1px solid rgba(0,0,0,0.1);"></span>
+                    </div>
+                  </div>
+
+                  <!-- Preset Emerald -->
+                  <div class="preset-option-card" id="preset-emerald" onclick="applyThemePreset('emerald')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:14px;">Emerald Premium</strong>
+                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Rich cultural forest green theme</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                      <span style="width:14px; height:14px; border-radius:50%; background:#081C15; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#102820; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#2ECC71; border:1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                  </div>
+
+                  <!-- Preset Corporate -->
+                  <div class="preset-option-card" id="preset-corporate" onclick="applyThemePreset('corporate')" style="padding:16px; border-radius:10px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:14px;">Modern Corporate</strong>
+                      <div style="font-size:11px; color:var(--studio-text-muted); margin-top:2px;">Professional slate blue accent theme</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                      <span style="width:14px; height:14px; border-radius:50%; background:#0F172A; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#1E293B; border:1px solid rgba(255,255,255,0.2);"></span>
+                      <span style="width:14px; height:14px; border-radius:50%; background:#38BDF8; border:1px solid rgba(255,255,255,0.2);"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 2: Colors -->
+              <div class="studio-tab-panel" id="tab-colors">
+                <div id="contrast-lock-indicator" style="padding:14px 20px; border-radius:10px; font-size:13px; font-weight:700; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; transition:all 0.3s ease;">
+                  <span>Contrast Compliance Check:</span>
+                  <strong id="contrast-score-val">0.0:1</strong>
+                </div>
+
+                <div class="studio-accordion open">
+                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                    <h3>Global Branding Colors</h3>
+                    <span class="studio-accordion-icon">▼</span>
+                  </div>
+                  <div class="studio-accordion-content">
+                    <div class="control-group">
+                      <label>Primary Brand Color</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="primary-color-field" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('primary-color-field').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Secondary Brand Color</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="secondary-color-field" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('secondary-color-field').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Accent Highlights Color</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="accent-color-field" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('accent-color-field').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="studio-accordion open">
+                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                    <h3>Identity Canvas Palette</h3>
+                    <span class="studio-accordion-icon">▼</span>
+                  </div>
+                  <div class="studio-accordion-content">
+                    <div class="control-group">
+                      <label>Main Background Color</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-bg-main" onchange="handleBgMainChange()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-bg-main').value=this.value; handleBgMainChange()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Card Background Color</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-bg-surface" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-bg-surface').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Main Body Text</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-text-main" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-text-main').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Muted Secondary Text</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-text-muted" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-text-muted').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="studio-accordion">
+                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+                    <h3>State & Action Accents</h3>
+                    <span class="studio-accordion-icon">▼</span>
+                  </div>
+                  <div class="studio-accordion-content">
+                    <div class="control-group">
+                      <label>Main Button Color (CTA)</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-color-primary" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-color-primary').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Secondary Accent (Hover)</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-color-secondary" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-color-secondary').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Success Accent (In Stock)</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-color-success" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-color-success').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                    <div class="control-group">
+                      <label>Error Accent (Alerts)</label>
+                      <div class="color-picker-wrapper">
+                        <div class="color-input-preview"><input type="color" id="palette-color-error" onchange="syncLivePreview()"></div>
+                        <input type="text" class="studio-input" oninput="document.getElementById('palette-color-error').value=this.value; syncLivePreview()">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 3: Typography -->
+              <div class="studio-tab-panel" id="tab-typography">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Typography</h3>
+                <div class="control-group">
+                  <label>Font Family</label>
+                  <select id="font-family-field" class="studio-input" onchange="syncLivePreview()">
+                    <option value="Outfit">Outfit (Luxury, Modern)</option>
+                    <option value="Inter">Inter (Sleek Clean)</option>
+                    <option value="Plus Jakarta Sans">Plus Jakarta Sans (Corporate)</option>
+                    <option value="Playfair Display">Playfair Display (Serif Traditional)</option>
+                  </select>
+                </div>
+                <div class="control-group">
+                  <label>Font Scale Multiplier</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="font-scale-field" min="0.9" max="1.15" step="0.01" class="range-slider" oninput="document.getElementById('font-scale-val').textContent=this.value; syncLivePreview()">
+                    <span id="font-scale-val" class="range-value">1.0</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 4: Header -->
+              <div class="studio-tab-panel" id="tab-header">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Header Settings</h3>
+                <div class="control-group">
+                  <label>Brand Name</label>
+                  <input type="text" id="brand-name-field" class="studio-input" placeholder="e.g. MAGIZHVAGAM" required>
+                </div>
+                
+                <div class="control-group">
+                  <label>Logo Image</label>
+                  <input type="hidden" id="logo-field">
+                  <div id="logo-preview-box" style="margin-bottom:8px; border:1px dashed var(--studio-border); border-radius:8px; padding:8px; display:flex; justify-content:center; align-items:center; min-height:80px; background:var(--studio-input-bg); overflow:hidden;">
+                    <span style="color:var(--studio-text-muted); font-size:12px;">No Logo Selected</span>
+                  </div>
+                  <div style="display:flex; gap:10px;">
+                    <button type="button" class="studio-btn studio-btn-primary" id="logo-select-btn" style="flex:1; font-size:12px; padding:10px;">Choose Logo</button>
+                    <button type="button" class="studio-btn studio-btn-danger" id="logo-remove-btn" style="font-size:12px; padding:10px 14px;">Remove Logo</button>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>WhatsApp Contact</label>
+                  <input type="text" id="whatsapp-contact-field" class="studio-input" placeholder="Phone Number (e.g. 919876543210)" required>
+                </div>
+
+                <div class="control-group">
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" id="hdr-sticky-toggle" onchange="syncLivePreview()">
+                    <span>Enable Sticky Header</span>
+                  </label>
+                </div>
+
+                <div class="control-group">
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" id="hdr-announcement-toggle" onchange="syncLivePreview()">
+                    <span>Show Announcement Bar</span>
+                  </label>
+                </div>
+
+                <div class="control-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  <div class="control-group">
+                    <label>Announcement Bar Bg</label>
+                    <div class="color-picker-wrapper">
+                      <div class="color-input-preview"><input type="color" id="hdr-announcement-bg" onchange="syncLivePreview()"></div>
+                      <input type="text" class="studio-input" oninput="document.getElementById('hdr-announcement-bg').value=this.value; syncLivePreview()">
+                    </div>
+                  </div>
+                  <div class="control-group">
+                    <label>Announcement Text Color</label>
+                    <div class="color-picker-wrapper">
+                      <div class="color-input-preview"><input type="color" id="hdr-announcement-text" onchange="syncLivePreview()"></div>
+                      <input type="text" class="studio-input" oninput="document.getElementById('hdr-announcement-text').value=this.value; syncLivePreview()">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 5: Footer -->
+              <div class="studio-tab-panel" id="tab-footer">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Footer</h3>
+                <div class="control-group">
+                  <label>Footer Description</label>
+                  <textarea id="footer-content-field" class="studio-input" rows="3" placeholder="Tagline or store description" required></textarea>
+                </div>
+                <div class="control-group">
+                  <label>Copyright licensing text</label>
+                  <input type="text" id="footer-copyright-field" class="studio-input" placeholder="e.g. © 2026 MAGIZHVAGAM. All rights reserved.">
+                </div>
+
+                <h4 style="font-size:13px; margin:20px 0 10px; color:var(--studio-gold);">Social Links</h4>
+                <div class="control-group">
+                  <label>Instagram URL</label>
+                  <input type="text" id="footer-instagram-field" class="studio-input" placeholder="https://instagram.com/yourbrand">
+                </div>
+                <div class="control-group">
+                  <label>Facebook URL</label>
+                  <input type="text" id="footer-facebook-field" class="studio-input" placeholder="https://facebook.com/yourbrand">
+                </div>
+                <div class="control-group">
+                  <label>Twitter URL</label>
+                  <input type="text" id="footer-twitter-field" class="studio-input" placeholder="https://twitter.com/yourbrand">
+                </div>
+                <div class="control-group">
+                  <label>WhatsApp URL</label>
+                  <input type="text" id="footer-whatsapp-field" class="studio-input" placeholder="https://wa.me/919876543210">
+                </div>
+              </div>
+
+              <!-- TAB 6: Buttons -->
+              <div class="studio-tab-panel" id="tab-buttons">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Buttons Style</h3>
+                <div class="control-group">
+                  <label>Border Radius Style</label>
+                  <select id="button-style-field" class="studio-input" onchange="syncLivePreview()">
+                    <option value="rounded">Rounded Corners (8px)</option>
+                    <option value="pill">Pill Shape (30px)</option>
+                    <option value="sharp">Sharp (0px)</option>
+                  </select>
+                </div>
+                <div class="control-group">
+                  <label>Shadow Strength</label>
+                  <select id="button-shadow-field" class="studio-input" onchange="syncLivePreview()">
+                    <option value="none">None</option>
+                    <option value="soft">Soft Shadow</option>
+                    <option value="pronounced">Pronounced</option>
+                  </select>
+                </div>
+                <div class="control-group">
+                  <label>Font Weight</label>
+                  <select id="button-weight-field" class="studio-input" onchange="syncLivePreview()">
+                    <option value="500">Medium</option>
+                    <option value="600">Semi-Bold</option>
+                    <option value="700">Bold</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- TAB 7: Cards -->
+              <div class="studio-tab-panel" id="tab-cards">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Collection & Product Cards</h3>
+                <div class="control-group">
+                  <label>Card Border Radius (px)</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="card-radius-field" min="0" max="32" class="range-slider" oninput="document.getElementById('card-radius-val').textContent=this.value; syncLivePreview()">
+                    <span id="card-radius-val" class="range-value">14</span>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label>Card Shadow Strength</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="card-shadow-field" min="0" max="3" step="0.5" class="range-slider" oninput="document.getElementById('card-shadow-val').textContent=this.value; syncLivePreview()">
+                    <span id="card-shadow-val" class="range-value">1</span>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label>Hover Translate Y (px)</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="card-hover-y-field" min="0" max="15" class="range-slider" oninput="document.getElementById('card-hover-y-val').textContent=this.value; syncLivePreview()">
+                    <span id="card-hover-y-val" class="range-value">6</span>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label>Card Image Background</label>
+                  <div class="color-picker-wrapper">
+                    <div class="color-input-preview"><input type="color" id="card-image-bg-field" onchange="syncLivePreview()"></div>
+                    <input type="text" class="studio-input" oninput="document.getElementById('card-image-bg-field').value=this.value; syncLivePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 8: Product Pages -->
+              <div class="studio-tab-panel" id="tab-products">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Product Highlights</h3>
+                <div class="control-group" style="display:none;">
+                  <input type="hidden" id="featured-product-ids">
+                  <input type="hidden" id="bestseller-product-ids">
+                  <input type="hidden" id="newarrival-product-ids">
+                </div>
+
+                <h4 style="font-size:13px; margin:10px 0; color:var(--studio-gold);">Details & Gallery</h4>
+                <div class="control-group">
+                  <label>Thumbnail Active Border</label>
+                  <div class="color-picker-wrapper">
+                    <div class="color-input-preview"><input type="color" id="pdp-gallery-border-field" onchange="syncLivePreview()"></div>
+                    <input type="text" class="studio-input" oninput="document.getElementById('pdp-gallery-border-field').value=this.value; syncLivePreview()">
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label>Specifications Heading Color</label>
+                  <div class="color-picker-wrapper">
+                    <div class="color-input-preview"><input type="color" id="pdp-spec-heading-field" onchange="syncLivePreview()"></div>
+                    <input type="text" class="studio-input" oninput="document.getElementById('pdp-spec-heading-field').value=this.value; syncLivePreview()">
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label>Active Tab Accent Color</label>
+                  <div class="color-picker-wrapper">
+                    <div class="color-input-preview"><input type="color" id="pdp-tab-active-field" onchange="syncLivePreview()"></div>
+                    <input type="text" class="studio-input" oninput="document.getElementById('pdp-tab-active-field').value=this.value; syncLivePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 9: Mobile Settings -->
+              <div class="studio-tab-panel" id="tab-mobile">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Mobile Responsiveness</h3>
+                <div class="control-group">
+                  <label>Mobile Font Scaling Offset</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="mobile-font-scale-field" min="0.8" max="1.0" step="0.05" class="range-slider" oninput="document.getElementById('mobile-font-scale-val').textContent=this.value; syncLivePreview()">
+                    <span id="mobile-font-scale-val" class="range-value">0.9</span>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label>Mobile Header Height (px)</label>
+                  <input type="number" id="mobile-header-height-field" class="studio-input" min="50" max="90" value="64" onchange="syncLivePreview()">
+                </div>
+                <div class="control-group">
+                  <label>Mobile Drawer Menu Background</label>
+                  <div class="color-picker-wrapper">
+                    <div class="color-input-preview"><input type="color" id="mobile-nav-bg-field" onchange="syncLivePreview()"></div>
+                    <input type="text" class="studio-input" oninput="document.getElementById('mobile-nav-bg-field').value=this.value; syncLivePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 10: Animations -->
+              <div class="studio-tab-panel" id="tab-animations">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Animation Settings</h3>
+                <div class="control-group">
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" id="anim-enable-toggle" checked onchange="syncLivePreview()">
+                    <span>Enable Global Animations</span>
+                  </label>
+                </div>
+                <div class="control-group">
+                  <label>Animation Transition Speed (s)</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="anim-speed-field" min="0.1" max="1.5" step="0.05" class="range-slider" oninput="document.getElementById('anim-speed-val').textContent=this.value; syncLivePreview()">
+                    <span id="anim-speed-val" class="range-value">0.3</span>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label>Product Card Hover Effect</label>
+                  <select id="anim-hover-style-field" class="studio-input" onchange="syncLivePreview()">
+                    <option value="lift" selected>Card Lift & Glow</option>
+                    <option value="zoom">Image Zoom Only</option>
+                    <option value="none">Disabled</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- TAB 11: Glassmorphism -->
+              <div class="studio-tab-panel" id="tab-glass">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Glassmorphism Design Studio</h3>
+                
+                <div class="control-group">
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" id="glass-global-toggle" checked onchange="syncLivePreview()">
+                    <span style="font-weight: 700;">Global Glass Effect Enable</span>
+                  </label>
+                </div>
+
+                <div class="control-group">
+                  <label>Blur Intensity (px)</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-blur-field" min="0" max="24" step="1" class="range-slider" oninput="document.getElementById('glass-blur-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-blur-val" class="range-value">12</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Background Opacity</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-bg-opacity-field" min="0" max="1" step="0.05" class="range-slider" oninput="document.getElementById('glass-bg-opacity-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-bg-opacity-val" class="range-value">0.12</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Border Opacity</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-border-opacity-field" min="0" max="1" step="0.05" class="range-slider" oninput="document.getElementById('glass-border-opacity-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-border-opacity-val" class="range-value">0.15</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Shadow Intensity</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-shadow-intensity-field" min="0" max="3" step="0.1" class="range-slider" oninput="document.getElementById('glass-shadow-intensity-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-shadow-intensity-val" class="range-value">1.0</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Border Radius (px)</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-border-radius-field" min="0" max="32" step="1" class="range-slider" oninput="document.getElementById('glass-border-radius-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-border-radius-val" class="range-value">16</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Glass Brightness</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-brightness-field" min="0.5" max="1.5" step="0.05" class="range-slider" oninput="document.getElementById('glass-brightness-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-brightness-val" class="range-value">1.0</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Glass Contrast</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-contrast-field" min="0.5" max="1.5" step="0.05" class="range-slider" oninput="document.getElementById('glass-contrast-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-contrast-val" class="range-value">1.0</span>
+                  </div>
+                </div>
+
+                <div class="control-group">
+                  <label>Hover Intensity</label>
+                  <div class="range-slider-wrapper">
+                    <input type="range" id="glass-hover-intensity-field" min="1" max="2" step="0.05" class="range-slider" oninput="document.getElementById('glass-hover-intensity-val').textContent=this.value; syncLivePreview()">
+                    <span id="glass-hover-intensity-val" class="range-value">1.1</span>
+                  </div>
+                </div>
+
+                <h4 style="font-family:'Outfit'; font-size:14px; margin-top:20px; margin-bottom:10px; color:var(--studio-gold); border-bottom:1px solid var(--studio-border); padding-bottom:5px;">Section Specific Glassmorphism</h4>
+
+                <div class="control-group">
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-header-toggle" checked onchange="syncLivePreview()">
+                    <span>Header Glass</span>
+                  </label>
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-product-toggle" checked onchange="syncLivePreview()">
+                    <span>Product Card Glass</span>
+                  </label>
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-modal-toggle" checked onchange="syncLivePreview()">
+                    <span>Modal Glass</span>
+                  </label>
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-sidebar-toggle" checked onchange="syncLivePreview()">
+                    <span>Sidebar Glass</span>
+                  </label>
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-footer-toggle" checked onchange="syncLivePreview()">
+                    <span>Footer Glass</span>
+                  </label>
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-form-toggle" checked onchange="syncLivePreview()">
+                    <span>Form Glass</span>
+                  </label>
+                  <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+                    <input type="checkbox" id="glass-hero-toggle" checked onchange="syncLivePreview()">
+                    <span>Hero Glass</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- TAB 12: Custom CSS -->
+              <div class="studio-tab-panel" id="tab-css">
+                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Custom CSS Editor</h3>
+                <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:15px;">Inject custom styling directly. Style blocks are validated before render.</p>
+                <div class="control-group">
+                  <textarea id="custom-css-field" class="studio-input" rows="15" placeholder="/* Enter raw CSS visual overrides here */" style="font-family:monospace; font-size:12px; line-height:1.5; color:#a5e844; background:#070509; border-color:#2a1c35;" oninput="validateCustomCSS(this.value)"></textarea>
+                </div>
+                <div id="css-validation-status" style="font-size:11px; font-weight:700; color:var(--studio-success);">✓ Syntax Valid</div>
+              </div>
+
+            </div>
+
+            <!-- Editor Action Bar -->
+            <div class="studio-actions">
+              <span id="studio-unsaved-indicator" style="display:none; font-size:11px; color:var(--studio-gold); margin-right:auto;">Unsaved changes</span>
+              <div id="studio-save-status" class="studio-save-status" style="display:none;"></div>
+              <button type="button" class="studio-btn studio-btn-secondary" onclick="restoreLastSavedTheme()" style="padding: 10px 14px; font-size: 11px;">Restore Last Saved</button>
+              <button type="button" class="studio-btn studio-btn-danger" onclick="resetToDefaultTheme()" style="padding: 10px 14px; font-size: 11px;">Reset Defaults</button>
+              <button type="submit" id="save-settings-submit-btn" class="studio-btn studio-btn-primary" style="padding: 10px 18px; font-size: 12px; font-weight: 700;">Save Theme Settings</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right: Viewport Live Preview Iframe -->
+        <div class="studio-viewport-panel">
+          <div class="viewport-toolbar">
+            <div class="viewport-device-toggles">
+              <button type="button" class="device-btn active" id="btn-device-desktop" onclick="setViewportDevice('desktop')">🖥️ Desktop</button>
+              <button type="button" class="device-btn" id="btn-device-tablet" onclick="setViewportDevice('tablet')">📟 Tablet</button>
+              <button type="button" class="device-btn" id="btn-device-mobile" onclick="setViewportDevice('mobile')">📱 Mobile</button>
+            </div>
+            
+            <div class="viewport-route-selector">
+              <label>Preview Page:</label>
+              <select class="viewport-route-select" onchange="changeViewportRoute(this.value)">
+                <option value="/index.html">Homepage</option>
+                <option value="/products.html">Catalog</option>
+                <option value="/about.html">About Us</option>
+                <option value="/contact.html">Contact Us</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="viewport-frame-container">
+            <iframe id="viewport-iframe" class="viewport-iframe desktop" src="/index.html"></iframe>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/contrast-engine.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/js/media-library.js"></script>
+  <script src="/assets/js/modules/appearance.js"></script>
+  <script src="/assets/js/admin.js"></script>
+</body>
+</html>
