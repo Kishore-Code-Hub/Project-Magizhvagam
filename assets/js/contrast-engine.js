@@ -48,7 +48,7 @@
     if (lum < 0.45) {
       return { primary: '#F5F0E8', muted: '#B8B0C8', inverse: '#0D0A14' };
     }
-    return { primary: '#1A1523', muted: '#5A506A', inverse: '#F5F0E8' };
+    return { primary: '#1A1523', muted: 'A', inverse: '#F5F0E8' };
   }
 
   function ensureReadablePair(bgHex, textHex, minRatio) {

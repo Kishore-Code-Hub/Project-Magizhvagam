@@ -108,7 +108,6 @@
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-buttons')">Buttons</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-cards')">Cards</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-products')">Product Pages</button>
-            <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-categories')">Category Pages</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-coupons')">Coupons</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-flash-sales')">Flash Sales</button>
             <button type="button" class="studio-tab-btn" onclick="switchStudioTab(event, 'tab-newsletter')">Newsletter</button>
@@ -547,54 +546,6 @@
                   <div class="color-picker-wrapper">
                     <div class="color-input-preview"><input type="color" id="pdp-tab-active-field" onchange="syncLivePreview()"></div>
                     <input type="text" class="studio-input" oninput="document.getElementById('pdp-tab-active-field').value=this.value; syncLivePreview()">
-                  </div>
-                </div>
-              </div>
-
-              <!-- TAB 10: Category Pages -->
-              <div class="studio-tab-panel" id="tab-categories">
-                <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:15px; color:var(--studio-gold);">Category Pages</h3>
-                <div class="control-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
-                  <div class="control-group">
-                    <label>Catalog Grid Gap (px)</label>
-                    <input type="number" id="category-grid-gap-field" class="studio-input" min="8" max="48" value="24" onchange="syncLivePreview()">
-                  </div>
-                  <div class="control-group">
-                    <label>Grid Columns Density</label>
-                    <select id="category-grid-density-field" class="studio-input" onchange="syncLivePreview()">
-                      <option value="2">2 Columns</option>
-                      <option value="3" selected>3 Columns</option>
-                      <option value="4">4 Columns</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="studio-accordion open">
-                  <div class="studio-accordion-header" onclick="this.parentElement.classList.toggle('open')">
-                    <h3>Category Manager</h3>
-                    <span class="studio-accordion-icon">▼</span>
-                  </div>
-                  <div class="studio-accordion-content">
-                    <div id="add-category-form" style="margin-bottom:15px; border-bottom:1px dashed var(--studio-border); padding-bottom:12px;">
-                      <div class="control-group">
-                        <label>Category Name</label>
-                        <input type="text" id="cat-name-field" class="studio-input" placeholder="e.g. Eco-Friendly Gifts">
-                      </div>
-                      <div class="control-group">
-                        <label>Category Image</label>
-                        <input type="hidden" id="cat-image-field">
-                        <div id="cat-preview-box" style="margin-bottom:8px; border:1px dashed var(--studio-border); border-radius:8px; padding:8px; display:flex; justify-content:center; align-items:center; min-height:80px; background:var(--studio-input-bg); overflow:hidden;">
-                          <span style="color:var(--studio-text-muted); font-size:11px;">No Image Selected</span>
-                        </div>
-                        <div style="display:flex; gap:6px;">
-                          <button type="button" class="studio-btn studio-btn-primary" id="cat-select-btn" style="flex:1; font-size:11px; padding:8px 10px;">Choose Image</button>
-                          <button type="button" class="studio-btn studio-btn-danger" id="cat-remove-btn" style="font-size:11px; padding:8px 10px;">Remove</button>
-                        </div>
-                      </div>
-                      <button type="button" onclick="createNewCategorySubmit()" class="studio-btn studio-btn-primary" style="width:100%; font-size:12px; padding:8px;">Add Category</button>
-                    </div>
-                    <h4 style="font-size:12px; margin-bottom:8px; font-weight:700;">Existing Categories</h4>
-                    <div id="categories-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto;"></div>
                   </div>
                 </div>
               </div>
@@ -1199,18 +1150,7 @@
       } else {
         previewBox.innerHTML = `<span style="color:var(--studio-text-muted); font-size:12px;">No Logo Selected</span>`;
       }
-    };
-
-    // Update Category visual thumbnail preview
-    window.updateCatPreview = function (url) {
-      const previewBox = document.getElementById('cat-preview-box');
-      if (!previewBox) return;
-      if (url) {
-        previewBox.innerHTML = `<img src="${url}" alt="Category Preview" style="max-height: 64px; object-fit: contain;">`;
-      } else {
-        previewBox.innerHTML = `<span style="color:var(--studio-text-muted); font-size:11px;">No Image Selected</span>`;
-      }
-    };
+    // Update logo preview helper
 
     document.addEventListener('DOMContentLoaded', () => {
       loadCouponsList();
@@ -1295,7 +1235,7 @@
           'buttons': 'tab-buttons',
           'cards': 'tab-cards',
           'product-pages': 'tab-products',
-          'category-pages': 'tab-categories',
+          'glass': 'tab-glass',
           'animations': 'tab-animations',
           'custom-css': 'tab-css',
           'mobile-settings': 'tab-mobile',
@@ -1340,32 +1280,6 @@
         });
       }
 
-      // Category Select Events
-      const catSelectBtn = document.getElementById('cat-select-btn');
-      const catRemoveBtn = document.getElementById('cat-remove-btn');
-      const catImageField = document.getElementById('cat-image-field');
-
-      if (catSelectBtn) {
-        catSelectBtn.addEventListener('click', () => {
-          if (window.MZMediaLibrary && window.MZMediaLibrary.openPicker) {
-            window.MZMediaLibrary.openPicker((asset) => {
-              if (catImageField) {
-                catImageField.value = asset.url;
-                window.updateCatPreview(asset.url);
-              }
-            });
-          }
-        });
-      }
-
-      if (catRemoveBtn) {
-        catRemoveBtn.addEventListener('click', () => {
-          if (catImageField) {
-            catImageField.value = '';
-            window.updateCatPreview('');
-          }
-        });
-      }
     });
 
     // Theme Customizer Switch tab logic
@@ -1875,140 +1789,6 @@
       }
     }
 
-    async function loadCategoriesList() {
-      const container = document.getElementById('categories-list-container');
-      if (!container) return;
-
-      try {
-        const res = await adminFetch('/api/products/categories');
-        const data = await res.json();
-        if (!data.success || data.categories.length === 0) {
-          container.innerHTML = '<p style="color:var(--studio-text-muted); font-size:11px; font-style:italic;">No categories created.</p>';
-          return;
-        }
-
-        container.innerHTML = data.categories.map(c => `
-          <div class="glass-panel" style="padding:8px; border-radius:6px; display:flex; flex-direction:column; gap:6px; font-size:11px; border:1px solid var(--studio-border); margin-bottom:4px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <img src="${c.image || '/assets/images/default-category.webp'}" style="width:28px; height:28px; object-fit:cover; border-radius:4px;" onerror="this.src='/assets/images/default-category.webp'">
-                <div>
-                  <strong style="font-size:12px;">${c.name}</strong>
-                </div>
-              </div>
-              <button onclick="deleteCategoryById('${c._id}')" style="background:transparent; cursor:pointer; border:none; padding:4px;" title="Delete Category">
-                <svg style="width:14px; height:14px; fill:#ef4444;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
-              </button>
-            </div>
-            <div style="display:flex; gap:6px;">
-              <button type="button" class="studio-btn studio-btn-secondary" style="font-size:10px; padding:4px 8px; flex:1;" onclick="replaceCategoryImage('${c._id}', '${c.name.replace(/'/g, "\\'")}')">Replace Image</button>
-              <button type="button" class="studio-btn studio-btn-danger" style="font-size:10px; padding:4px 8px;" onclick="removeCategoryImage('${c._id}', '${c.name.replace(/'/g, "\\'")}')">Remove Image</button>
-            </div>
-          </div>
-        `).join('');
-      } catch (err) {
-        container.innerHTML = '<p style="color:#ef4444; font-size:11px;">Error loading categories.</p>';
-      }
-    }
-
-    async function replaceCategoryImage(id, name) {
-      if (window.MZMediaLibrary && window.MZMediaLibrary.openPicker) {
-        window.MZMediaLibrary.openPicker(async (asset) => {
-          try {
-            showToast('Updating category image...', 'info');
-            const res = await adminFetch(`/api/products/categories/${id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name, image: asset.url })
-            });
-            const data = await res.json();
-            if (data.success) {
-              showToast('Category image updated successfully!', 'success');
-              loadCategoriesList();
-              const iframe = document.getElementById('viewport-iframe');
-              if (iframe) iframe.contentWindow.location.reload();
-            } else {
-              showToast(data.error || 'Failed to update category image', 'error');
-            }
-          } catch (err) {
-            showToast('Error updating category image', 'error');
-          }
-        });
-      }
-    }
-
-    async function removeCategoryImage(id, name) {
-      if (!confirm('Are you sure you want to remove this category image?')) return;
-      try {
-        showToast('Removing category image...', 'info');
-        const res = await adminFetch(`/api/products/categories/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, image: '' })
-        });
-        const data = await res.json();
-        if (data.success) {
-          showToast('Category image removed successfully!', 'success');
-          loadCategoriesList();
-          const iframe = document.getElementById('viewport-iframe');
-          if (iframe) iframe.contentWindow.location.reload();
-        } else {
-          showToast(data.error || 'Failed to remove category image', 'error');
-        }
-      } catch (err) {
-        showToast('Error removing category image', 'error');
-      }
-    }
-
-    async function createNewCategorySubmit() {
-      const name = document.getElementById('cat-name-field').value.trim();
-      const image = document.getElementById('cat-image-field').value.trim();
-
-      if (!name) {
-        showToast('Please specify category name', 'warning');
-        return;
-      }
-
-      try {
-        const res = await adminFetch('/api/products/categories', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, image })
-        });
-        const data = await res.json();
-        if (data.success) {
-          showToast('Category created successfully!', 'success');
-          document.getElementById('cat-name-field').value = '';
-          document.getElementById('cat-image-field').value = '';
-          if (typeof window.updateCatPreview === 'function') {
-            window.updateCatPreview('');
-          }
-          loadCategoriesList();
-        } else {
-          showToast(data.error || 'Failed to create category', 'error');
-        }
-      } catch (err) {
-        showToast('Error creating category', 'error');
-      }
-    }
-
-    async function deleteCategoryById(id) {
-      if (!confirm('Are you sure you want to delete this category? Products in this category will become uncategorized.')) return;
-      try {
-        const res = await adminFetch(`/api/products/categories/${id}`, {
-          method: 'DELETE'
-        });
-        const data = await res.json();
-        if (data.success) {
-          showToast('Category deleted successfully', 'success');
-          loadCategoriesList();
-        } else {
-          showToast(data.error || 'Failed to delete category', 'error');
-        }
-      } catch (err) {
-        showToast('Connection error deleting category', 'error');
-      }
-    }
   </script>
 </body>
 

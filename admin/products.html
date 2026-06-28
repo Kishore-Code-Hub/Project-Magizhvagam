@@ -8,6 +8,7 @@
   
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/appearance-studio.css">
   <link rel="stylesheet" href="/assets/css/animations.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
 </head>
@@ -19,68 +20,179 @@
     <aside id="admin-sidebar-container"></aside>
 
     <!-- Main Products Panel -->
-    <main class="admin-main">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap:wrap; gap:15px;">
-        <h1 style="font-family:'Outfit'; font-size:32px; color:var(--text-color);">Products Catalogue</h1>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button onclick="exportProductsCSV()" class="btn btn-secondary" style="border-radius:8px; display:flex; align-items:center; gap:5px;"><i data-lucide="download"></i> Export CSV</button>
-          <button onclick="document.getElementById('csv-import-file').click()" class="btn btn-secondary" style="border-radius:8px; display:flex; align-items:center; gap:5px;"><i data-lucide="upload"></i> Import CSV</button>
-          <input type="file" id="csv-import-file" accept=".csv" style="display:none;" onchange="importProductsCSV(event)">
-          <button onclick="toggleModal('add-product-modal', true)" class="btn btn-primary" style="border-radius:8px;">Add New Product</button>
-        </div>
+    <main class="admin-main" style="padding: 24px !important;">
+      <!-- Tabs Row -->
+      <div class="studio-tabs" style="margin-bottom: 25px;">
+        <button type="button" class="studio-tab-btn active" id="btn-tab-products" onclick="switchProductsTab(event, 'tab-products')">Products List</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-categories" onclick="switchProductsTab(event, 'tab-categories')">Categories</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-inventory" onclick="switchProductsTab(event, 'tab-inventory')">Inventory</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-variants" onclick="switchProductsTab(event, 'tab-variants')">Variants</button>
+        <button type="button" class="studio-tab-btn" id="btn-tab-collections" onclick="switchProductsTab(event, 'tab-collections')">Collections</button>
       </div>
 
-      <!-- Bulk actions panel -->
-      <div class="glass" id="bulk-actions-panel" style="display:none; padding:15px; margin-bottom:20px; border-radius:12px; align-items:center; gap:15px; flex-wrap:wrap;">
-        <span style="font-size:14px; font-weight:600; color:var(--primary-color);" id="bulk-selected-count">0 products selected</span>
-        
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <select id="bulk-action-select" class="admin-form-control" style="width:200px; padding:6px; margin:0;">
-            <option value="">Choose Bulk Action...</option>
-            <option value="delete">Delete Selected</option>
-            <option value="update-stock">Update Stock Level</option>
-            <option value="change-category">Change Category</option>
-          </select>
+      <!-- TAB PANEL: Products List -->
+      <div id="tab-products" class="products-tab-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap:wrap; gap:15px;">
+          <h1 style="font-family:'Outfit'; font-size:32px; color:var(--text-color); margin:0;">Products Catalogue</h1>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button onclick="exportProductsCSV()" class="btn btn-secondary" style="border-radius:8px; display:flex; align-items:center; gap:5px;"><i data-lucide="download"></i> Export CSV</button>
+            <button onclick="document.getElementById('csv-import-file').click()" class="btn btn-secondary" style="border-radius:8px; display:flex; align-items:center; gap:5px;"><i data-lucide="upload"></i> Import CSV</button>
+            <input type="file" id="csv-import-file" accept=".csv" style="display:none;" onchange="importProductsCSV(event)">
+            <button onclick="toggleModal('add-product-modal', true)" class="btn btn-primary" style="border-radius:8px;">Add New Product</button>
+          </div>
+        </div>
+
+        <!-- Bulk actions panel -->
+        <div class="glass" id="bulk-actions-panel" style="display:none; padding:15px; margin-bottom:20px; border-radius:12px; align-items:center; gap:15px; flex-wrap:wrap;">
+          <span style="font-size:14px; font-weight:600; color:var(--primary-color);" id="bulk-selected-count">0 products selected</span>
           
-          <!-- Contextual inputs for bulk actions -->
-          <div id="bulk-stock-input-container" style="display:none; gap:5px; align-items:center;">
-            <select id="bulk-stock-action" class="admin-form-control" style="width:100px; padding:6px; margin:0;">
-              <option value="set">Set to</option>
-              <option value="add">Add</option>
-              <option value="subtract">Subtract</option>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <select id="bulk-action-select" class="admin-form-control" style="width:200px; padding:6px; margin:0;">
+              <option value="">Choose Bulk Action...</option>
+              <option value="delete">Delete Selected</option>
+              <option value="update-stock">Update Stock Level</option>
+              <option value="change-category">Change Category</option>
             </select>
-            <input type="number" id="bulk-stock-val" class="admin-form-control" style="width:80px; padding:6px; margin:0;" min="0" placeholder="Qty">
-          </div>
+            
+            <!-- Contextual inputs for bulk actions -->
+            <div id="bulk-stock-input-container" style="display:none; gap:5px; align-items:center;">
+              <select id="bulk-stock-action" class="admin-form-control" style="width:100px; padding:6px; margin:0;">
+                <option value="set">Set to</option>
+                <option value="add">Add</option>
+                <option value="subtract">Subtract</option>
+              </select>
+              <input type="number" id="bulk-stock-val" class="admin-form-control" style="width:80px; padding:6px; margin:0;" min="0" placeholder="Qty">
+            </div>
 
-          <div id="bulk-category-input-container" style="display:none;">
-            <select id="bulk-category-select" class="admin-form-control" style="width:180px; padding:6px; margin:0;">
-              <!-- Loaded dynamically -->
-            </select>
-          </div>
+            <div id="bulk-category-input-container" style="display:none;">
+              <select id="bulk-category-select" class="admin-form-control" style="width:180px; padding:6px; margin:0;">
+                <!-- Loaded dynamically -->
+              </select>
+            </div>
 
-          <button id="bulk-action-apply" class="btn btn-primary" style="border-radius:6px; padding:6px 15px;">Apply</button>
+            <button id="bulk-action-apply" class="btn btn-primary" style="border-radius:6px; padding:6px 15px;">Apply</button>
+          </div>
+        </div>
+
+        <!-- Products Inventory Table -->
+        <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width: 40px;"><input type="checkbox" id="select-all-products" style="cursor:pointer;"></th>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Base Price</th>
+                <th>Stock Level</th>
+                <th>Featured</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-products-tbody">
+              <tr><td colspan="8" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- Products Inventory Table -->
-      <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th style="width: 40px;"><input type="checkbox" id="select-all-products" style="cursor:pointer;"></th>
-              <th>Image</th>
-              <th>Name</th>
-              <th>Category</th>
-              <th>Base Price</th>
-              <th>Stock Level</th>
-              <th>Featured</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="admin-products-tbody">
-            <tr><td colspan="8" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
-          </tbody>
-        </table>
+      <!-- TAB PANEL: Categories -->
+      <div id="tab-categories" class="products-tab-panel" style="display:none; max-width:600px; margin: 0 auto;">
+        <div class="glass" style="padding:25px; border-radius:12px; margin-top:20px;">
+          <h2 style="font-family:'Outfit'; font-size:24px; margin-bottom:15px; color:var(--text-color);">Category Manager</h2>
+          <form id="add-category-form-prod" style="margin-bottom:20px; border-bottom:1px dashed var(--card-border); padding-bottom:15px;">
+            <div class="admin-form-group">
+              <label style="color:var(--text-color) !important; font-weight:bold;">Category Name *</label>
+              <input type="text" id="cat-name-field" class="admin-form-control" placeholder="e.g. Eco-Friendly Gifts" required>
+            </div>
+            <div class="admin-form-group">
+              <label style="color:var(--text-color) !important; font-weight:bold;">Category Image</label>
+              <input type="hidden" id="cat-image-field">
+              <div id="cat-preview-box" style="margin-bottom:8px; border:1px dashed var(--card-border); border-radius:8px; padding:8px; display:flex; justify-content:center; align-items:center; min-height:80px; background:rgba(255,255,255,0.02); overflow:hidden;">
+                <span style="color:var(--text-muted); font-size:12px;">No Image Selected</span>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button type="button" class="btn btn-secondary" id="cat-select-btn" style="flex:1; font-size:12px; padding:8px 10px;">Choose Image</button>
+                <button type="button" class="btn btn-secondary" id="cat-remove-btn" style="font-size:12px; padding:8px 10px; background:#ef4444; color:white;">Remove</button>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px;">Add Category</button>
+          </form>
+          <h3 style="font-family:'Outfit'; font-size:18px; margin-bottom:10px; color:var(--text-color);">Existing Categories</h3>
+          <div id="categories-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:350px; overflow-y:auto; padding-right:5px;"></div>
+        </div>
+      </div>
+
+      <!-- TAB PANEL: Inventory -->
+      <div id="tab-inventory" class="products-tab-panel" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h2 style="font-family:'Outfit'; font-size:24px; color:var(--text-color);">Inventory Manager</h2>
+          <button onclick="loadInventoryProducts()" class="btn btn-secondary" style="border-radius:8px; display:flex; align-items:center; gap:5px;"><i data-lucide="refresh-cw"></i> Refresh</button>
+        </div>
+        <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th style="width: 150px;">Stock Level</th>
+                <th style="width: 150px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-inventory-tbody">
+              <tr><td colspan="5" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB PANEL: Variants -->
+      <div id="tab-variants" class="products-tab-panel" style="display:none; max-width:600px; margin: 0 auto;">
+        <div class="glass" style="padding:25px; border-radius:12px; margin-top:20px;">
+          <h2 style="font-family:'Outfit'; font-size:24px; margin-bottom:15px; color:var(--text-color);">Global Product Variants</h2>
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">Configure variant groups (e.g. Size, Material) and options used across catalog products.</p>
+          
+          <form id="add-variant-group-form" style="margin-bottom:20px; border-bottom:1px dashed var(--card-border); padding-bottom:15px;">
+            <div class="admin-form-group">
+              <label style="color:var(--text-color) !important; font-weight:bold;">Variant Name *</label>
+              <input type="text" id="var-group-name" class="admin-form-control" placeholder="e.g. Size, Color, Packaging" required>
+            </div>
+            <div class="admin-form-group">
+              <label style="color:var(--text-color) !important; font-weight:bold;">Options (Comma separated) *</label>
+              <input type="text" id="var-group-options" class="admin-form-control" placeholder="e.g. Small, Medium, Large" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px;">Add Variant Group</button>
+          </form>
+          
+          <h3 style="font-family:'Outfit'; font-size:18px; margin-bottom:10px; color:var(--text-color);">Active Variant Configurations</h3>
+          <div id="variants-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto;"></div>
+        </div>
+      </div>
+
+      <!-- TAB PANEL: Collections -->
+      <div id="tab-collections" class="products-tab-panel" style="display:none; max-width:800px; margin: 0 auto;">
+        <div class="glass" style="padding:25px; border-radius:12px; margin-top:20px;">
+          <h2 style="font-family:'Outfit'; font-size:24px; margin-bottom:15px; color:var(--text-color);">Spotlight Collections Curation</h2>
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">Feature curated category collections inside the homepage collections spotlight slider.</p>
+          
+          <div class="glass table-responsive" style="padding:15px; border-radius:8px; margin-bottom:20px;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 50px;">Feature</th>
+                  <th>Image</th>
+                  <th>Collection / Category Name</th>
+                  <th>Slug</th>
+                </tr>
+              </thead>
+              <tbody id="admin-collections-tbody">
+                <tr><td colspan="4" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" onclick="saveCollectionsSpotlightConfig()" class="btn btn-primary" style="width:100%; border-radius:8px;">Save Spotlight Collections</button>
+        </div>
       </div>
     </main>
 
@@ -302,6 +414,7 @@
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/js/media-library.js"></script>
   <script src="/assets/js/admin.js"></script>
   <script>
     let preservedImages = [];
@@ -608,6 +721,432 @@
         submitBtn.disabled = false;
         submitBtn.textContent = 'Save Product';
       }
+    });
+
+    // --- Dynamic Tab Logic for Catalog ---
+    function switchProductsTab(event, tabId) {
+      document.querySelectorAll('.products-tab-panel').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('.studio-tab-btn').forEach(b => b.classList.remove('active'));
+      
+      const panel = document.getElementById(tabId);
+      if (panel) panel.style.display = 'block';
+      
+      if (event && event.target) {
+        event.target.classList.add('active');
+      } else {
+        const btn = document.getElementById('btn-' + tabId);
+        if (btn) btn.classList.add('active');
+      }
+      
+      // Update URL query param
+      const url = new URL(window.location.href);
+      const tabName = tabId.replace('tab-', '');
+      url.searchParams.set('tab', tabName);
+      window.history.replaceState({}, '', url.toString());
+
+      // Trigger lazy tab loading
+      if (tabId === 'tab-categories') {
+        loadCategoriesList();
+      } else if (tabId === 'tab-inventory') {
+        loadInventoryProducts();
+      } else if (tabId === 'tab-variants') {
+        loadVariantsConfig();
+      } else if (tabId === 'tab-collections') {
+        loadCollectionsSpotlightConfig();
+      }
+    }
+    window.switchProductsTab = switchProductsTab;
+
+    // --- Categories Tab Handlers ---
+    async function loadCategoriesList() {
+      const container = document.getElementById('categories-list-container');
+      if (!container) return;
+      container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">Loading categories...</p>';
+      try {
+        const res = await adminFetch('/api/products/categories');
+        const data = await res.json();
+        if (data.success && data.categories) {
+          container.innerHTML = data.categories.map(c => `
+            <div class="glass-panel" style="padding:10px; border-radius:8px; border:1px solid var(--card-border); background:rgba(255,255,255,0.01); display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:40px; height:40px; border-radius:4px; overflow:hidden; border:1px solid var(--card-border);">
+                  <img src="${c.image || '/assets/images/default-product.webp'}" style="width:100%; height:100%; object-fit:cover;">
+                </div>
+                <div>
+                  <strong style="color:var(--text-color); font-size:14px;">${c.name}</strong>
+                  <div style="font-size:11px; color:var(--text-muted);">Slug: ${c.slug}</div>
+                </div>
+              </div>
+              <button type="button" onclick="deleteCategoryById('${c._id}', '${c.name.replace(/'/g, "\\'")}')" class="btn" style="padding:4px 8px; font-size:10px; border-radius:4px; background:#ef4444; color:white; border:none;">Delete</button>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">No categories found.</p>';
+        }
+      } catch (err) {
+        container.innerHTML = '<p style="color:red; font-size:13px;">Error loading categories.</p>';
+      }
+    }
+
+    function createNewCategorySubmit() {
+      const nameField = document.getElementById('cat-name-field');
+      const imageField = document.getElementById('cat-image-field');
+      if (!nameField || !nameField.value.trim()) {
+        showToast('Please enter category name', 'warning');
+        return;
+      }
+      const payload = {
+        name: nameField.value.trim(),
+        image: imageField.value || '/assets/images/default-product.webp'
+      };
+      
+      const form = document.getElementById('add-category-form-prod');
+      const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Adding...';
+      }
+
+      adminFetch('/api/products/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showToast('Category added successfully!', 'success');
+          nameField.value = '';
+          imageField.value = '';
+          updateCatPreview('');
+          loadCategoriesList();
+          loadCategoriesDropdown();
+        } else {
+          showToast(data.error || 'Failed to add category', 'error');
+        }
+      })
+      .catch(err => showToast('Connection error', 'error'))
+      .finally(() => {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Add Category';
+        }
+      });
+    }
+
+    async function deleteCategoryById(id, name) {
+      if (!confirm(`Are you sure you want to delete category "${name}"? Products inside this category will remain but will have no reference category.`)) return;
+      try {
+        const res = await adminFetch(`/api/products/categories/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Category deleted successfully', 'success');
+          loadCategoriesList();
+          loadCategoriesDropdown();
+        } else {
+          showToast(data.error || 'Failed to delete category', 'error');
+        }
+      } catch (err) {
+        showToast('Error deleting category', 'error');
+      }
+    }
+
+    function updateCatPreview(url) {
+      const box = document.getElementById('cat-preview-box');
+      if (!box) return;
+      if (url) {
+        box.innerHTML = `<img src="${url}" style="max-height:100px; max-width:100%; object-fit:contain; border-radius:6px;">`;
+      } else {
+        box.innerHTML = `<span style="color:var(--text-muted); font-size:11px;">No Image Selected</span>`;
+      }
+    }
+    window.updateCatPreview = updateCatPreview;
+    window.createNewCategorySubmit = createNewCategorySubmit;
+    window.deleteCategoryById = deleteCategoryById;
+
+    // --- Inventory Tab Handlers ---
+    async function loadInventoryProducts() {
+      const tbody = document.getElementById('admin-inventory-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>';
+      try {
+        const res = await adminFetch('/api/products?limit=100');
+        const data = await res.json();
+        if (data.success && data.products) {
+          tbody.innerHTML = data.products.map(p => `
+            <tr>
+              <td>
+                <div style="width:40px; height:40px; border-radius:6px; overflow:hidden; border:1px solid var(--adm-border);">
+                  <img src="${p.images[0] ? p.images[0].url : '/assets/images/default-product.webp'}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/images/default-product.webp'">
+                </div>
+              </td>
+              <td><strong>${p.name}</strong></td>
+              <td><span class="badge" style="background: rgba(106, 13, 173, 0.05); color: var(--adm-accent); border: 1px solid rgba(106, 13, 173, 0.1);">${p.category ? p.category.name : 'Uncategorized'}</span></td>
+              <td>
+                <input type="number" id="inv-stock-${p._id}" class="admin-form-control" style="width:100px; margin:0;" value="${p.stock}" min="0">
+              </td>
+              <td>
+                <button onclick="updateProductStockInline('${p._id}')" class="btn btn-primary" style="padding:6px 12px; font-size:11px; border-radius:6px;">Save Stock</button>
+              </td>
+            </tr>
+          `).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Failed to load inventory.</td></tr>';
+        }
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Error loading inventory.</td></tr>';
+      }
+    }
+    window.loadInventoryProducts = loadInventoryProducts;
+
+    async function updateProductStockInline(id) {
+      const stockInput = document.getElementById(`inv-stock-${id}`);
+      if (!stockInput) return;
+      const stockVal = parseInt(stockInput.value);
+      if (isNaN(stockVal) || stockVal < 0) {
+        showToast('Invalid stock value', 'warning');
+        return;
+      }
+      try {
+        const res = await adminFetch(`/api/products/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stock: stockVal })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Stock level updated successfully!', 'success');
+          loadAdminProducts(); // sync cache
+        } else {
+          showToast(data.error || 'Failed to update stock', 'error');
+        }
+      } catch (err) {
+        showToast('Error updating stock level', 'error');
+      }
+    }
+    window.updateProductStockInline = updateProductStockInline;
+
+    // --- Variants Tab Handlers ---
+    let variantGroups = [];
+
+    async function loadVariantsConfig() {
+      const container = document.getElementById('variants-list-container');
+      if (!container) return;
+      container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">Loading configurations...</p>';
+      try {
+        const res = await adminFetch('/api/settings/variantsConfig');
+        const data = await res.json();
+        if (data.success && data.setting) {
+          variantGroups = data.setting.groups || [];
+        } else {
+          variantGroups = [];
+        }
+        renderVariantsList();
+      } catch (err) {
+        container.innerHTML = '<p style="color:red; font-size:13px;">Error loading configurations</p>';
+      }
+    }
+    window.loadVariantsConfig = loadVariantsConfig;
+
+    function renderVariantsList() {
+      const container = document.getElementById('variants-list-container');
+      if (!container) return;
+      if (variantGroups.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">No variants defined yet.</p>';
+        return;
+      }
+      container.innerHTML = variantGroups.map((g, idx) => `
+        <div class="glass-panel" style="padding:15px; border-radius:8px; border:1px solid var(--card-border); background:rgba(255,255,255,0.01); display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong style="color:var(--text-color); font-size:15px;">${g.name}</strong>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Options: ${g.options.join(', ')}</div>
+          </div>
+          <button type="button" onclick="deleteVariantGroup(${idx})" class="btn" style="padding:4px 8px; font-size:10px; border-radius:4px; background:#ef4444; color:white; border:none;">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    async function saveVariantsConfig() {
+      try {
+        const res = await adminFetch('/api/settings/variantsConfig', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value: { groups: variantGroups } })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Variant configuration updated!', 'success');
+          loadVariantsConfig();
+        } else {
+          showToast(data.error || 'Failed to update variant config', 'error');
+        }
+      } catch (err) {
+        showToast('Error saving variant configuration', 'error');
+      }
+    }
+    window.saveVariantsConfig = saveVariantsConfig;
+
+    async function deleteVariantGroup(idx) {
+      if (!confirm('Delete this variant group?')) return;
+      variantGroups.splice(idx, 1);
+      await saveVariantsConfig();
+    }
+    window.deleteVariantGroup = deleteVariantGroup;
+
+    // --- Collections Spotlight Handlers ---
+    let homepageSectionsDoc = null;
+    let allCategories = [];
+
+    async function loadCollectionsSpotlightConfig() {
+      const tbody = document.getElementById('admin-collections-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>';
+      
+      try {
+        const catRes = await adminFetch('/api/products/categories');
+        const catData = await catRes.json();
+        if (!catData.success) throw new Error(catData.error || 'Failed to fetch categories');
+        allCategories = catData.categories || [];
+        
+        const hpRes = await adminFetch('/api/site-settings/homepage');
+        const hpData = await hpRes.json();
+        if (!hpData.success) throw new Error(hpData.error || 'Failed to fetch homepage sections');
+        homepageSectionsDoc = hpData.data || {};
+        
+        const spotlightSection = (homepageSectionsDoc.sections || []).find(s => s.id === 'collections_spotlight');
+        const featuredCollectionIds = spotlightSection && spotlightSection.config ? (spotlightSection.config.collectionIds || []) : [];
+        
+        if (allCategories.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No categories exist to curate. Create categories first.</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = allCategories.map(c => {
+          const isFeatured = featuredCollectionIds.includes(c._id);
+          return `
+            <tr>
+              <td>
+                <input type="checkbox" class="collection-spotlight-checkbox" data-id="${c._id}" ${isFeatured ? 'checked' : ''} style="cursor:pointer; width:20px; height:20px;">
+              </td>
+              <td>
+                <div style="width:40px; height:40px; border-radius:6px; overflow:hidden; border:1px solid var(--adm-border);">
+                  <img src="${c.image || '/assets/images/default-product.webp'}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/images/default-product.webp'">
+                </div>
+              </td>
+              <td><strong>${c.name}</strong></td>
+              <td><code>${c.slug}</code></td>
+            </tr>
+          `;
+        }).join('');
+        
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Error: ${err.message}</td></tr>`;
+      }
+    }
+    window.loadCollectionsSpotlightConfig = loadCollectionsSpotlightConfig;
+
+    async function saveCollectionsSpotlightConfig() {
+      if (!homepageSectionsDoc) {
+        showToast('Homepage configuration state is missing. Please reload page.', 'error');
+        return;
+      }
+      
+      const spotlightSection = (homepageSectionsDoc.sections || []).find(s => s.id === 'collections_spotlight');
+      if (!spotlightSection) {
+        showToast('Collections spotlight section config not found in homepage settings', 'error');
+        return;
+      }
+      
+      const checkboxes = document.querySelectorAll('.collection-spotlight-checkbox:checked');
+      const collectionIds = Array.from(checkboxes).map(cb => cb.getAttribute('data-id'));
+      
+      spotlightSection.config = spotlightSection.config || {};
+      spotlightSection.config.collectionIds = collectionIds;
+      
+      try {
+        const res = await adminFetch('/api/site-settings/homepage', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sections: homepageSectionsDoc.sections })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Spotlight collections saved and updated!', 'success');
+          loadCollectionsSpotlightConfig();
+        } else {
+          showToast(data.error || 'Failed to save spotlight collections', 'error');
+        }
+      } catch (err) {
+        showToast('Error saving spotlight collections', 'error');
+      }
+    }
+    window.saveCollectionsSpotlightConfig = saveCollectionsSpotlightConfig;
+
+    // --- DOMContentLoaded Init ---
+    document.addEventListener('DOMContentLoaded', () => {
+      // Category Image Upload Events
+      const catSelectBtn = document.getElementById('cat-select-btn');
+      const catRemoveBtn = document.getElementById('cat-remove-btn');
+      const catImageField = document.getElementById('cat-image-field');
+      
+      if (catSelectBtn) {
+        catSelectBtn.addEventListener('click', () => {
+          if (window.MZMediaLibrary && window.MZMediaLibrary.openPicker) {
+            window.MZMediaLibrary.openPicker((asset) => {
+              if (catImageField) {
+                catImageField.value = asset.url;
+                updateCatPreview(asset.url);
+              }
+            });
+          } else {
+            showToast('Media picker library unavailable', 'error');
+          }
+        });
+      }
+      
+      if (catRemoveBtn) {
+        catRemoveBtn.addEventListener('click', () => {
+          if (catImageField) {
+            catImageField.value = '';
+            updateCatPreview('');
+          }
+        });
+      }
+
+      // Add Category Form interceptor
+      const catForm = document.getElementById('add-category-form-prod');
+      if (catForm) {
+        catForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          createNewCategorySubmit();
+        });
+      }
+
+      // Add Variant Form interceptor
+      const varForm = document.getElementById('add-variant-group-form');
+      if (varForm) {
+        varForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const nameInput = document.getElementById('var-group-name');
+          const optionsInput = document.getElementById('var-group-options');
+          if (!nameInput || !optionsInput) return;
+          const nameVal = nameInput.value.trim();
+          const optionsVal = optionsInput.value.split(',').map(o => o.trim()).filter(Boolean);
+          if (!nameVal || optionsVal.length === 0) {
+            showToast('Please provide variant name and options', 'warning');
+            return;
+          }
+          variantGroups.push({ name: nameVal, options: optionsVal });
+          nameInput.value = '';
+          optionsInput.value = '';
+          await saveVariantsConfig();
+        });
+      }
+
+      // Switch to active query parameter tab
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab') || 'products';
+      switchProductsTab(null, 'tab-' + tabParam);
     });
 
     window.toggleModal = toggleModal;

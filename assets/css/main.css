@@ -746,6 +746,7 @@ img.lazy-loaded {
 
 /* Center: logo */
 .logo-wrapper {
+  color: rgb(255, 221, 53);
   justify-self: center;
   text-align: center;
   display: flex;
@@ -3083,6 +3084,7 @@ h6,
     margin-top: 0 !important;
     top: auto !important;
     transform: none !important;
+    margin-left: 10px;
   }
 
   /* 2. Strict Viewport Bounds Stabilization */
@@ -3389,7 +3391,7 @@ h6,
 :root[data-theme="light"] .footer-tagline,
 :root[data-theme="light"] .footer-copyright,
 :root[data-theme="light"] .footer-contact-item {
-  color: #5A506A !important;
+  color: rgb(0, 0, 0) !important;
 }
 
 .glass-enabled:root[data-theme="light"] .glass-panel,

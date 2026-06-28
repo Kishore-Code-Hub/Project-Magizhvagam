@@ -492,6 +492,7 @@ object {
     cursor: pointer !important;
     z-index: auto !important;
     top: auto !important;
+    margin-left: 40px;
   }
 
   .logo-wrapper {

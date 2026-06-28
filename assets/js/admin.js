@@ -113,6 +113,11 @@ function injectAdminSidebar() {
 
   const activeCls = (file) => path.includes(file) ? 'active' : '';
   const activeTabCls = (tab) => (path.includes('settings.html') && currentTab === tab) ? 'active' : '';
+  const activeProductTabCls = (tab) => {
+    if (!path.includes('products.html')) return '';
+    const viewTab = urlParams.get('tab') || 'products';
+    return viewTab === tab ? 'active' : '';
+  };
   const isProductsView = path.includes('products.html');
   const isMediaView = path.includes('media.html');
   const isSettingsView = path.includes('settings.html');
@@ -136,27 +141,19 @@ function injectAdminSidebar() {
       <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Catalog</li>
       <li class="admin-menu-item has-submenu ${isProductsView ? 'expanded' : ''}" id="menu-products">
         <a class="admin-menu-item-link" onclick="toggleSubmenu('products')">
-          <i data-lucide="gift"></i> <span>Products</span>
+          <i data-lucide="gift"></i> <span>Catalog</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
         <ul class="admin-menu-submenu ${isProductsView ? 'open' : ''}" id="submenu-products">
-          <li class="${isProductsView && !window.location.search ? 'active' : ''}"><a href="/admin/products.html"><span>Product List</span></a></li>
-          <li><a href="/admin/products.html?action=add"><span>Add Product</span></a></li>
-          <li class="${window.location.search.includes('view=categories') ? 'active' : ''}"><a href="/admin/products.html?view=categories"><span>Categories</span></a></li>
-          <li class="${window.location.search.includes('view=inventory') ? 'active' : ''}"><a href="/admin/products.html?view=inventory"><span>Inventory</span></a></li>
-          <li class="${window.location.search.includes('view=variants') ? 'active' : ''}"><a href="/admin/products.html?view=variants"><span>Variants</span></a></li>
+          <li class="${activeProductTabCls('products')}"><a href="/admin/products.html?tab=products"><span>Products List</span></a></li>
+          <li class="${activeProductTabCls('categories')}"><a href="/admin/products.html?tab=categories"><span>Categories</span></a></li>
+          <li class="${activeProductTabCls('inventory')}"><a href="/admin/products.html?tab=inventory"><span>Inventory</span></a></li>
+          <li class="${activeProductTabCls('variants')}"><a href="/admin/products.html?tab=variants"><span>Variants</span></a></li>
+          <li class="${activeProductTabCls('collections')}"><a href="/admin/products.html?tab=collections"><span>Collections</span></a></li>
         </ul>
       </li>
-      <li class="admin-menu-item has-submenu ${isMediaView ? 'expanded' : ''}" id="menu-media">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('media')">
-          <i data-lucide="image"></i> <span>Media Library</span>
-          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
-        </a>
-        <ul class="admin-menu-submenu ${isMediaView ? 'open' : ''}" id="submenu-media">
-          <li class="${isMediaView && !window.location.search.includes('tab=') ? 'active' : ''}"><a href="/admin/media.html"><span>Gallery</span></a></li>
-          <li class="${window.location.search.includes('tab=compression') ? 'active' : ''}"><a href="/admin/media.html?tab=compression"><span>Image Compression</span></a></li>
-          <li class="${window.location.search.includes('tab=limits') ? 'active' : ''}"><a href="/admin/media.html?tab=limits"><span>Upload Limits</span></a></li>
-        </ul>
+      <li class="admin-menu-item ${activeCls('media.html')}">
+        <a href="/admin/media.html"><i data-lucide="image"></i> <span>Media Library</span></a>
       </li>
 
       <!-- SALES SECTION -->
@@ -206,38 +203,37 @@ function injectAdminSidebar() {
 
       <!-- APPEARANCE STUDIO SECTION -->
       <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Appearance</li>
-      <li class="admin-menu-item has-submenu ${isSettingsView && ['presets', 'colors', 'typography', 'footer', 'buttons', 'cards', 'products', 'categories', 'mobile', 'animations', 'glass'].includes(currentTab) ? 'expanded' : ''}" id="menu-appearance">
+      <li class="admin-menu-item has-submenu ${isSettingsView && ['presets', 'colors', 'typography', 'footer', 'buttons', 'cards', 'mobile-settings', 'animations', 'glass', 'custom-css'].includes(currentTab) ? 'expanded' : ''}" id="menu-appearance">
         <a class="admin-menu-item-link" onclick="toggleSubmenu('appearance')">
-          <i data-lucide="palette"></i> <span>Theme Studio</span>
+          <i data-lucide="palette"></i> <span>Appearance Studio</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
-        <ul class="admin-menu-submenu ${isSettingsView && ['presets', 'colors', 'typography', 'footer', 'buttons', 'cards', 'products', 'categories', 'mobile', 'animations', 'glass'].includes(currentTab) ? 'open' : ''}" id="submenu-appearance">
+        <ul class="admin-menu-submenu ${isSettingsView && ['presets', 'colors', 'typography', 'footer', 'buttons', 'cards', 'mobile-settings', 'animations', 'glass', 'custom-css'].includes(currentTab) ? 'open' : ''}" id="submenu-appearance">
           <li class="${activeTabCls('presets')}"><a href="/admin/settings.html?tab=presets"><span>Theme Presets</span></a></li>
           <li class="${activeTabCls('colors')}"><a href="/admin/settings.html?tab=colors"><span>Colors</span></a></li>
           <li class="${activeTabCls('typography')}"><a href="/admin/settings.html?tab=typography"><span>Typography</span></a></li>
           <li class="${activeTabCls('footer')}"><a href="/admin/settings.html?tab=footer"><span>Footer Settings</span></a></li>
           <li class="${activeTabCls('buttons')}"><a href="/admin/settings.html?tab=buttons"><span>Buttons Layout</span></a></li>
           <li class="${activeTabCls('cards')}"><a href="/admin/settings.html?tab=cards"><span>Cards Layout</span></a></li>
-          <li class="${activeTabCls('products')}"><a href="/admin/settings.html?tab=products"><span>Product Pages</span></a></li>
-          <li class="${activeTabCls('categories')}"><a href="/admin/settings.html?tab=categories"><span>Category Pages</span></a></li>
-          <li class="${activeTabCls('mobile')}"><a href="/admin/settings.html?tab=mobile"><span>Mobile Settings</span></a></li>
           <li class="${activeTabCls('animations')}"><a href="/admin/settings.html?tab=animations"><span>Animations</span></a></li>
           <li class="${activeTabCls('glass')}"><a href="/admin/settings.html?tab=glass"><span>Glassmorphism</span></a></li>
+          <li class="${activeTabCls('custom-css')}"><a href="/admin/settings.html?tab=custom-css"><span>Custom CSS</span></a></li>
         </ul>
       </li>
 
       <!-- SYSTEM & SETTINGS SECTION -->
       <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Settings</li>
-      <li class="admin-menu-item has-submenu ${isSettingsView && ['general', 'seo', 'analytics', 'integrations'].includes(currentTab) ? 'expanded' : ''}" id="menu-settings">
+      <li class="admin-menu-item has-submenu ${isSettingsView && ['general', 'seo', 'analytics', 'integrations', 'mobile-settings'].includes(currentTab) ? 'expanded' : ''}" id="menu-settings">
         <a class="admin-menu-item-link" onclick="toggleSubmenu('settings')">
           <i data-lucide="settings"></i> <span>Store Settings</span>
           <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
         </a>
-        <ul class="admin-menu-submenu ${isSettingsView && ['general', 'seo', 'analytics', 'integrations'].includes(currentTab) ? 'open' : ''}" id="submenu-settings">
+        <ul class="admin-menu-submenu ${isSettingsView && ['general', 'seo', 'analytics', 'integrations', 'mobile-settings'].includes(currentTab) ? 'open' : ''}" id="submenu-settings">
           <li class="${activeTabCls('general')}"><a href="/admin/settings.html?tab=general"><span>General</span></a></li>
           <li class="${activeTabCls('seo')}"><a href="/admin/settings.html?tab=seo"><span>SEO Settings</span></a></li>
           <li class="${activeTabCls('analytics')}"><a href="/admin/settings.html?tab=analytics"><span>Analytics</span></a></li>
           <li class="${activeTabCls('integrations')}"><a href="/admin/settings.html?tab=integrations"><span>Integrations</span></a></li>
+          <li class="${activeTabCls('mobile-settings')}"><a href="/admin/settings.html?tab=mobile-settings"><span>Mobile Settings</span></a></li>
         </ul>
       </li>
 
@@ -247,13 +243,10 @@ function injectAdminSidebar() {
         <a href="/admin/reports.html"><i data-lucide="bar-chart-2"></i> <span>Sales Reports</span></a>
       </li>
       <li class="admin-menu-item ${activeCls('security-logs.html')}">
-        <a href="/admin/security-logs.html"><i data-lucide="shield-alert"></i> <span>Security Logs</span></a>
+        <a href="/admin/security-logs.html"><i data-lucide="shield"></i> <span>Security Logs</span></a>
       </li>
       <li class="admin-menu-item ${activeCls('system-diagnostics.html')}">
         <a href="/admin/system-diagnostics.html"><i data-lucide="cpu"></i> <span>Diagnostics</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('css')}">
-        <a href="/admin/settings.html?tab=css"><i data-lucide="code"></i> <span>Custom CSS</span></a>
       </li>
 
       <li style="margin-top:20px; border-top:1px solid var(--adm-border); padding-top:15px;">
