@@ -101,6 +101,9 @@ router.get('/admin/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../../admin/login.html'));
 });
 
+// Route for workspace template directories (dynamically loaded by the SPA)
+router.use('/admin/workspaces', checkAdminPageAuth, express.static(path.join(__dirname, '../../admin/workspaces')));
+
 // Route for specific page files
 router.get('/admin/:page', checkAdminPageAuth, (req, res) => {
   const filename = path.basename(req.params.page);

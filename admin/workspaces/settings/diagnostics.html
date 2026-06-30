@@ -1,0 +1,21 @@
+<div class="workspace-panel" data-workspace="diagnostics">
+  <div class="glass" style="padding:25px; border-radius:12px; max-width:650px; margin:0 auto;">
+    <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">💻 SMTP Connection Diagnostics</h3>
+    <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">Test mail servers connectivity and dispatch test emails.</p>
+    
+    <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+      <button id="refresh-diag" class="btn btn-secondary" style="border-radius:8px;">Check SMTP Server Connection</button>
+    </div>
+    <pre id="diag-output" style="background:rgba(0,0,0,0.2); padding:12px; border-radius:8px; margin-top:10px; max-height:250px; overflow:auto; font-family:monospace; font-size:12px; border:1px solid var(--card-border); color:var(--text-color);">Diagnostics logs will output here...</pre>
+
+    <div style="margin-top:25px; border-top:1px dashed var(--card-border); padding-top:20px;">
+      <h4 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--text-color);">Send Test Email</h4>
+      <div class="admin-form-group">
+        <label>Recipient Address</label>
+        <input id="test-recipient" type="email" placeholder="admin@example.com" class="admin-form-control" style="width:100%;">
+      </div>
+      <button id="send-test" class="btn btn-primary" style="border-radius:8px; width:100%;">Dispatch Test Email</button>
+      <pre id="send-output" style="background:rgba(0,0,0,0.2); padding:12px; border-radius:8px; margin-top:10px; max-height:250px; overflow:auto; font-family:monospace; font-size:12px; border:1px solid var(--card-border); color:var(--text-color);">Dispatch response logs will output here...</pre>
+    </div>
+  </div>
+</div>

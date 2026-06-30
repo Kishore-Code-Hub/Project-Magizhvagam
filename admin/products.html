@@ -744,6 +744,21 @@
       url.searchParams.set('tab', tabName);
       window.history.replaceState({}, '', url.toString());
 
+      // Update breadcrumbs and sidebar highlights dynamically
+      if (typeof window.updateAdminBreadcrumbs === 'function') {
+        const tabNames = {
+          products: 'Products List',
+          categories: 'Categories',
+          inventory: 'Inventory',
+          variants: 'Variants',
+          collections: 'Collections'
+        };
+        window.updateAdminBreadcrumbs('Catalog', tabNames[tabName] || 'Products List');
+      }
+      if (typeof window.syncSPASidebarActive === 'function') {
+        window.syncSPASidebarActive();
+      }
+
       // Trigger lazy tab loading
       if (tabId === 'tab-categories') {
         loadCategoriesList();

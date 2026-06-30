@@ -24,7 +24,9 @@ router.put('/feature-toggles', protect, adminOnly, updateFeatureToggles);
 // Admin-only settings builder, uploads & Coupon endpoints
 router.post('/upload', protect, adminOnly, upload.single('image'), uploadSettingsImage);
 router.get('/coupons/all', protect, adminOnly, getCoupons);
+router.get('/coupons', protect, adminOnly, getCoupons);
 router.post('/coupons/new', protect, adminOnly, createCoupon);
+router.post('/coupons', protect, adminOnly, createCoupon);
 router.delete('/coupons/:id', protect, adminOnly, deleteCoupon);
 
 // Dynamic key routes (keep these LAST)

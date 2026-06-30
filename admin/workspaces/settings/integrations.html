@@ -1,0 +1,19 @@
+<div class="workspace-panel" data-workspace="integrations">
+  <div class="glass" style="padding:25px; border-radius:12px; max-width:650px; margin:0 auto;">
+    <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">🔌 External Integrations</h3>
+    <form id="integrations-settings-form">
+      <div class="admin-form-group">
+        <label>Payment Gateway Transaction Mode</label>
+        <select id="integration-payment-mode" class="admin-form-control">
+          <option value="Sandbox">Sandbox (Test Environment)</option>
+          <option value="Production">Production (Live Transactions)</option>
+        </select>
+      </div>
+      <div class="admin-form-group">
+        <label>Shipping Provider Webhook URL</label>
+        <input type="text" id="integration-shipping-url" class="admin-form-control" placeholder="https://api.shipping.com/v1/callback">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:10px;">Save Integrations</button>
+    </form>
+  </div>
+</div>

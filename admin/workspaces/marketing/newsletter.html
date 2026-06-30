@@ -1,0 +1,29 @@
+<div class="workspace-panel" data-workspace="newsletter">
+  <div class="grid grid-2" style="gap:30px; align-items:start;">
+    <!-- Newsletter Settings -->
+    <div class="glass" style="padding:25px; border-radius:12px;">
+      <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">Mailing List Defaults</h3>
+      <form id="newsletter-settings-form">
+        <div class="admin-form-group">
+          <label>Mailing List Title</label>
+          <input type="text" id="newsletter-title-field" class="admin-form-control" placeholder="Stay in the Loop" required>
+        </div>
+        <div class="admin-form-group">
+          <label>Incentive Subtitle</label>
+          <input type="text" id="newsletter-incentive-field" class="admin-form-control" placeholder="Stay Updated!" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:10px;">Save Newsletter Settings</button>
+      </form>
+    </div>
+
+    <!-- Registered Subscribers -->
+    <div class="glass" style="padding:25px; border-radius:12px;">
+      <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">Newsletter Subscribers</h3>
+      <div id="newsletter-subscribers-container" style="display:flex; flex-direction:column; gap:12px; max-height:400px; overflow-y:auto;">
+        <div class="glass-panel" style="padding:15px; border-radius:6px; text-align:center; color:var(--text-muted); border:1px solid var(--card-border);">
+          No subscribers found.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

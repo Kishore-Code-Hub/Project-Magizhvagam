@@ -1,0 +1,41 @@
+<div class="workspace-panel" data-workspace="about">
+  <div class="glass" style="padding:25px; border-radius:12px; max-width:700px; margin:0 auto;">
+    <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">About Page Copy</h3>
+    <form id="about-page-form">
+      <div class="admin-form-group">
+        <label>Story Main Heading</label>
+        <input type="text" id="about-story-heading-field" class="admin-form-control">
+      </div>
+      <div class="admin-form-group">
+        <label>Story Intro Subtitle</label>
+        <textarea id="about-story-intro-field" class="admin-form-control" rows="3"></textarea>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap:20px;">
+        <div class="admin-form-group">
+          <label>Left Section Heading</label>
+          <input type="text" id="about-left-heading-field" class="admin-form-control">
+        </div>
+        <div class="admin-form-group">
+          <label>About Accent Image</label>
+          <input type="hidden" id="about-image-field">
+          <div id="about-image-preview" style="height:80px; border:1px dashed var(--card-border); border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.02);">
+            <span style="color:var(--text-muted); font-size:12px;">No image selected</span>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button type="button" class="btn btn-secondary" id="about-pick-image" style="flex:1; font-size:11px; padding:6px 10px;">Choose Image</button>
+            <button type="button" class="btn btn-secondary" id="about-clear-image" style="font-size:11px; padding:6px 10px; background:#ef4444; color:white;">Remove</button>
+          </div>
+        </div>
+      </div>
+      <div class="admin-form-group">
+        <label>Story Paragraph 1</label>
+        <textarea id="about-left-p1-field" class="admin-form-control" rows="3"></textarea>
+      </div>
+      <div class="admin-form-group">
+        <label>Story Paragraph 2</label>
+        <textarea id="about-left-p2-field" class="admin-form-control" rows="3"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:10px;">Save About Details</button>
+    </form>
+  </div>
+</div>

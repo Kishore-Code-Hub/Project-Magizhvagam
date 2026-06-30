@@ -228,6 +228,23 @@
 
       const tabName = tabId.replace('tab-', '');
       window.history.pushState(null, '', `/admin/content.html?tab=${tabName}`);
+
+      // Update breadcrumbs and sidebar highlights dynamically
+      if (typeof window.updateAdminBreadcrumbs === 'function') {
+        const tabNames = {
+          homepage: 'Homepage Builder',
+          testimonials: 'Testimonials',
+          'about-page': 'About Page',
+          'contact-page': 'Contact Page',
+          'privacy-page': 'Privacy Policy',
+          'terms-page': 'Terms of Service',
+          header: 'Navigation Builder'
+        };
+        window.updateAdminBreadcrumbs('Content', tabNames[tabName] || 'Homepage Builder');
+      }
+      if (typeof window.syncSPASidebarActive === 'function') {
+        window.syncSPASidebarActive();
+      }
     }
 
     let homepageV4 = null;

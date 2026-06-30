@@ -550,6 +550,17 @@
         syncLivePreview();
       });
     });
+
+    // Switch to active query parameter tab
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab') || 'presets';
+    const tabId = tabParam === 'custom-css' ? 'tab-css' : 'tab-' + tabParam;
+    const btn = Array.from(document.querySelectorAll('.studio-tabs .studio-tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
+    if (btn) {
+      window.switchStudioTab({ currentTarget: btn }, tabId);
+    } else {
+      window.switchStudioTab(null, tabId);
+    }
   }
 
   // Switch tabs inside panel
@@ -561,8 +572,49 @@
       btn.classList.remove('active');
     });
     
-    document.getElementById(tabId)?.classList.add('active');
-    e.currentTarget.classList.add('active');
+    const panel = document.getElementById(tabId);
+    if (panel) panel.classList.add('active');
+    
+    if (e && e.currentTarget) {
+      e.currentTarget.classList.add('active');
+    } else {
+      const btns = document.querySelectorAll('.studio-tabs .studio-tab-btn');
+      btns.forEach(btn => {
+        if (btn.getAttribute('onclick')?.includes(tabId)) {
+          btn.classList.add('active');
+        }
+      });
+    }
+
+    const tabName = tabId.replace('tab-', '');
+    const tabParam = tabName === 'css' ? 'custom-css' : tabName;
+    
+    // Update URL without reload
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tabParam);
+    window.history.replaceState({}, '', url.toString());
+
+    // Update breadcrumbs and sidebar highlights dynamically
+    if (typeof window.updateAdminBreadcrumbs === 'function') {
+      const tabNames = {
+        presets: 'Theme Presets',
+        colors: 'Colors',
+        typography: 'Typography',
+        footer: 'Footer Settings',
+        buttons: 'Buttons Layout',
+        cards: 'Cards Layout',
+        animations: 'Animations',
+        glass: 'Glassmorphism',
+        'custom-css': 'Custom CSS',
+        header: 'Header Settings',
+        products: 'Product Pages',
+        mobile: 'Mobile Settings'
+      };
+      window.updateAdminBreadcrumbs('Appearance', tabNames[tabParam] || 'Theme Presets');
+    }
+    if (typeof window.syncSPASidebarActive === 'function') {
+      window.syncSPASidebarActive();
+    }
   };
 
   window.MZAppearanceStudio = {

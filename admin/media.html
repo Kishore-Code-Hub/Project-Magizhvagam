@@ -175,12 +175,26 @@
       
       // Update browser URL query parameter tab
       const url = new URL(window.location.href);
+      const tabName = tabId.replace('tab-', '');
       if (tabId === 'tab-gallery') {
         url.searchParams.delete('tab');
       } else {
-        url.searchParams.set('tab', tabId.replace('tab-', ''));
+        url.searchParams.set('tab', tabName);
       }
       window.history.replaceState({}, '', url.toString());
+
+      // Update breadcrumbs and sidebar highlights dynamically
+      if (typeof window.updateAdminBreadcrumbs === 'function') {
+        const tabNames = {
+          gallery: 'Media Library',
+          compression: 'Image Compression',
+          limits: 'Upload Limits'
+        };
+        window.updateAdminBreadcrumbs('Catalog', tabNames[tabName] || 'Media Library');
+      }
+      if (typeof window.syncSPASidebarActive === 'function') {
+        window.syncSPASidebarActive();
+      }
     }
     window.switchMediaTab = switchMediaTab;
 
@@ -247,7 +261,7 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    function initMediaPage() {
       if (window.MZMediaLibrary) window.MZMediaLibrary.initMediaLibraryPage();
       
       loadMediaSettings();
@@ -260,9 +274,18 @@
         switchMediaTab(null, 'tab-limits');
       }
 
-      document.getElementById('save-compression-btn').addEventListener('click', saveMediaSettings);
-      document.getElementById('save-limits-btn').addEventListener('click', saveMediaSettings);
-    });
+      const saveCompBtn = document.getElementById('save-compression-btn');
+      const saveLimitBtn = document.getElementById('save-limits-btn');
+      if (saveCompBtn) saveCompBtn.addEventListener('click', saveMediaSettings);
+      if (saveLimitBtn) saveLimitBtn.addEventListener('click', saveMediaSettings);
+    }
+    window.initMediaPage = initMediaPage;
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initMediaPage);
+    } else {
+      initMediaPage();
+    }
   </script>
 </body>
 </html>

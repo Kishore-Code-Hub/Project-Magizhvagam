@@ -36,6 +36,14 @@ async function initAdminRouterPage() {
     }
   } else if (path.includes('reports.html')) {
     loadReportsPageData();
+  } else if (path.includes('media.html')) {
+    if (typeof window.initMediaPage === 'function') {
+      window.initMediaPage();
+    }
+  } else if (path.includes('security-logs.html')) {
+    if (typeof window.initSecurityLogsPage === 'function') {
+      window.initSecurityLogsPage();
+    }
   }
 }
 window.initAdminRouterPage = initAdminRouterPage;
@@ -364,8 +372,17 @@ function injectAdminTopbar() {
   const mainPanel = document.querySelector('.admin-main');
   if (!mainPanel) return;
 
+  // Remove existing topbar if present to avoid duplication
+  const existingTopbar = mainPanel.querySelector('.admin-topbar');
+  if (existingTopbar) {
+    existingTopbar.remove();
+  }
+
   // Determine current page and section for breadcrumbs
   const path = window.location.pathname;
+  const params = new URLSearchParams(window.location.search);
+  const currentTab = params.get('tab');
+
   let section = 'Admin';
   let pageName = 'Dashboard';
 
@@ -374,18 +391,18 @@ function injectAdminTopbar() {
     pageName = 'Dashboard';
   } else if (path.includes('products.html')) {
     section = 'Catalog';
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('action') === 'add') {
-      pageName = 'Add Product';
-    } else if (params.get('view') === 'categories') {
-      pageName = 'Categories';
-    } else if (params.get('view') === 'inventory') {
-      pageName = 'Inventory Manager';
-    } else if (params.get('view') === 'variants') {
-      pageName = 'Variants Config';
-    } else {
-      pageName = 'Products List';
-    }
+    const tab = currentTab || 'products';
+    const tabNames = {
+      products: 'Products List',
+      categories: 'Categories',
+      inventory: 'Inventory',
+      variants: 'Variants',
+      collections: 'Collections'
+    };
+    pageName = tabNames[tab] || 'Products List';
+  } else if (path.includes('media.html')) {
+    section = 'Catalog';
+    pageName = 'Media Library';
   } else if (path.includes('orders.html')) {
     section = 'Sales';
     pageName = 'Orders';
@@ -395,20 +412,65 @@ function injectAdminTopbar() {
   } else if (path.includes('invoices.html')) {
     section = 'Sales';
     pageName = 'Invoice Hub';
-  } else if (path.includes('media.html')) {
-    section = 'Catalog';
-    pageName = 'Media Library';
+  } else if (path.includes('marketing.html')) {
+    section = 'Marketing';
+    const tab = currentTab || 'coupons';
+    const tabNames = {
+      coupons: 'Coupons',
+      'flash-sales': 'Flash Sales',
+      popup: 'Popup Builder',
+      newsletter: 'Newsletter'
+    };
+    pageName = tabNames[tab] || 'Coupons';
+  } else if (path.includes('content.html')) {
+    section = 'Content';
+    const tab = currentTab || 'homepage';
+    const tabNames = {
+      homepage: 'Homepage Builder',
+      testimonials: 'Testimonials',
+      'about-page': 'About Page',
+      'contact-page': 'Contact Page',
+      'privacy-page': 'Privacy Policy',
+      'terms-page': 'Terms of Service',
+      header: 'Navigation Builder'
+    };
+    pageName = tabNames[tab] || 'Homepage Builder';
+  } else if (path.includes('appearance.html')) {
+    section = 'Appearance';
+    const tab = currentTab || 'presets';
+    const tabNames = {
+      presets: 'Theme Presets',
+      colors: 'Colors',
+      typography: 'Typography',
+      footer: 'Footer Settings',
+      buttons: 'Buttons Layout',
+      cards: 'Cards Layout',
+      animations: 'Animations',
+      glass: 'Glassmorphism',
+      'custom-css': 'Custom CSS'
+    };
+    pageName = tabNames[tab] || 'Theme Presets';
   } else if (path.includes('reports.html')) {
-    section = 'System & Tools';
+    section = 'System';
     pageName = 'Sales Reports';
-  } else if (path.includes('system-diagnostics.html')) {
-    section = 'System & Tools';
-    pageName = 'Diagnostics';
   } else if (path.includes('settings.html')) {
-    section = 'Content & Appearance';
-    const params = new URLSearchParams(window.location.search);
-    const tab = params.get('tab') || 'presets';
-    pageName = tab.charAt(0).toUpperCase() + tab.slice(1) + ' Settings';
+    section = 'System';
+    const tab = currentTab || 'general';
+    const tabNames = {
+      general: 'General Settings',
+      seo: 'SEO Settings',
+      analytics: 'Analytics',
+      integrations: 'Integrations',
+      'mobile-settings': 'Mobile Settings',
+      diagnostics: 'Diagnostics'
+    };
+    pageName = tabNames[tab] || 'General Settings';
+  } else if (path.includes('security-logs.html')) {
+    section = 'System';
+    pageName = 'Security Logs';
+  } else if (path.includes('system-diagnostics.html')) {
+    section = 'System';
+    pageName = 'Diagnostics';
   }
 
   const topbar = document.createElement('header');
@@ -443,9 +505,9 @@ function injectAdminTopbar() {
       <div class="admin-breadcrumbs">
         <a href="/admin/dashboard.html">Admin</a>
         <span class="separator">/</span>
-        <span class="separator">${section}</span>
+        <span class="separator" id="breadcrumb-section">${section}</span>
         <span class="separator">/</span>
-        <span class="current">${pageName}</span>
+        <span class="current" id="breadcrumb-page">${pageName}</span>
       </div>
     </div>
 
@@ -505,6 +567,13 @@ function injectAdminTopbar() {
   mainPanel.insertBefore(topbar, mainPanel.firstChild);
   window.renderIcons();
 }
+
+window.updateAdminBreadcrumbs = function(section, pageName) {
+  const secEl = document.getElementById('breadcrumb-section');
+  const pageEl = document.getElementById('breadcrumb-page');
+  if (secEl) secEl.textContent = section;
+  if (pageEl) pageEl.textContent = pageName;
+};
 
 /* ─── Inject Navigation overlays (Command Palette & Notification Drawer) ─── */
 function injectOverlays() {

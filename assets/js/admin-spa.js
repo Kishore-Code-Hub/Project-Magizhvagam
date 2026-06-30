@@ -89,8 +89,8 @@
       // Sync active state in sidebar navigation menu
       syncSidebarActiveState();
 
-      // Parse and execute script tags
-      executeScripts(mainContent);
+      // Parse and execute script tags from the entire fetched page
+      executeScripts(doc);
 
       // Re-trigger global routing initializers
       if (window.initAdminRouterPage && typeof window.initAdminRouterPage === 'function') {
@@ -112,10 +112,26 @@
     }
   }
 
-  // Force duplicate script tags execution
-  function executeScripts(container) {
-    const scripts = container.querySelectorAll('script');
+  // Force duplicate script tags execution except global shell scripts
+  function executeScripts(doc) {
+    const shellScripts = [
+      'admin-guard.js',
+      'app.js',
+      'auth.js',
+      'admin-api.js',
+      'admin.js',
+      'contrast-engine.js'
+    ];
+
+    const scripts = doc.querySelectorAll('script');
     scripts.forEach(oldScript => {
+      if (oldScript.src) {
+        const srcFilename = oldScript.src.split('/').pop().split('?')[0];
+        if (shellScripts.includes(srcFilename)) {
+          return; // skip shell script
+        }
+      }
+      
       const newScript = document.createElement('script');
       Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
       if (oldScript.src) {
@@ -123,7 +139,11 @@
       } else {
         newScript.textContent = oldScript.textContent;
       }
-      oldScript.parentNode.replaceChild(newScript, oldScript);
+      document.body.appendChild(newScript);
+      
+      if (!oldScript.src) {
+        newScript.remove(); // Clean up dynamic inline scripts to keep DOM tidy
+      }
     });
   }
 
@@ -131,35 +151,60 @@
   function syncSidebarActiveState() {
     const path = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
-    const currentTab = urlParams.get('tab') || 'presets';
+    
+    // Determine active tab correctly based on path
+    const getActiveTab = (p, params) => {
+      const tab = params.get('tab');
+      if (tab) return tab;
+      if (p.includes('products.html')) return 'products';
+      if (p.includes('marketing.html')) return 'coupons';
+      if (p.includes('content.html')) return 'homepage';
+      if (p.includes('appearance.html')) return 'presets';
+      if (p.includes('settings.html')) return 'general';
+      return '';
+    };
+
+    const currentTab = getActiveTab(path, urlParams);
 
     // Remove active state classes
     document.querySelectorAll('.admin-menu-item, .admin-menu-submenu li').forEach(el => {
       el.classList.remove('active');
+      el.classList.remove('expanded');
     });
 
-    // Match parent item links
-    document.querySelectorAll('.admin-menu-item > a').forEach(a => {
-      const url = new URL(a.href, window.location.origin);
-      if (url.pathname === path && !url.search) {
-        a.closest('.admin-menu-item').classList.add('active');
-      }
+    document.querySelectorAll('.admin-menu-submenu').forEach(el => {
+      el.classList.remove('open');
     });
 
-    // Match sub-menu items
+    // Match submenu links first to avoid double activation
+    let matchedSubmenu = false;
     document.querySelectorAll('.admin-menu-submenu a').forEach(a => {
       const url = new URL(a.href, window.location.origin);
       const tabParam = url.searchParams.get('tab');
       if (url.pathname === path && tabParam === currentTab) {
         a.closest('li').classList.add('active');
+        matchedSubmenu = true;
+        
+        // Expand the parent submenu
         const parentMenu = a.closest('.has-submenu');
         if (parentMenu) {
+          parentMenu.classList.add('active');
           parentMenu.classList.add('expanded');
           const submenu = parentMenu.querySelector('.admin-menu-submenu');
           if (submenu) submenu.classList.add('open');
         }
       }
     });
+
+    // Match top level items (only if no submenu item was matched)
+    if (!matchedSubmenu) {
+      document.querySelectorAll('.admin-menu-item > a').forEach(a => {
+        const url = new URL(a.href, window.location.origin);
+        if (url.pathname === path) {
+          a.closest('.admin-menu-item').classList.add('active');
+        }
+      });
+    }
   }
 
   // Bind active highlights
