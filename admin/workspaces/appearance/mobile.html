@@ -1,0 +1,33 @@
+<div class="workspace-panel" data-workspace="mobile">
+  <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Mobile Layout</h3>
+  <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:16px;">Customize styling values optimized specifically for small screen mobile viewports.</p>
+
+  <div class="glass" style="padding:20px; border-radius:8px; display:flex; flex-direction:column; gap:16px;">
+    <!-- Mobile Font scale -->
+    <div class="control-group">
+      <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Mobile Text Scale Factor (relative multiplier)</label>
+      <div class="range-slider-wrapper" style="display:flex; align-items:center; gap:12px;">
+        <input type="range" id="mobile-font-scale-field" min="0.5" max="1.5" step="0.05" class="range-slider" style="flex:1; cursor:pointer;">
+        <span id="mobile-font-scale-val" class="range-value" style="font-size:12px; font-weight:700; width:36px; text-align:right;">0.9</span>
+      </div>
+    </div>
+
+    <!-- Mobile Header height -->
+    <div class="control-group">
+      <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Mobile Top Navigation Header Height (pixels)</label>
+      <div class="range-slider-wrapper" style="display:flex; align-items:center; gap:12px;">
+        <input type="range" id="mobile-header-height-field" min="40" max="100" step="4" class="range-slider" style="flex:1; cursor:pointer;">
+        <span id="mobile-header-height-val" class="range-value" style="font-size:12px; font-weight:700; width:36px; text-align:right;">64</span>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation BG -->
+    <div class="control-group">
+      <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Mobile Overlay Drawer Background Color</label>
+      <div style="display:flex; gap:8px;">
+        <input type="color" id="mobile-nav-bg-field" style="width:36px; height:32px; border:none; padding:0; background:none; cursor:pointer;">
+        <input type="text" id="mobile-nav-bg-text" class="studio-input" style="flex:1; padding:6px 10px; font-size:12px; border:1px solid var(--studio-border); border-radius:6px; background:var(--studio-bg); color:var(--text-color);">
+      </div>
+    </div>
+  </div>
+</div>

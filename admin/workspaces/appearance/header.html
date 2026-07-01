@@ -1,0 +1,106 @@
+<div class="workspace-panel" data-workspace="header">
+  <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Header Setting</h3>
+  <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:16px;">Configure brand name, upload store logo image, define WhatsApp contacts, and announcements bars.</p>
+
+  <div class="glass" style="padding:20px; border-radius:8px; display:flex; flex-direction:column; gap:16px;">
+    <!-- Store Brand Name -->
+    <div class="control-group">
+      <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Store Branding Name</label>
+      <input type="text" id="brand-name-field" class="studio-input" style="width:100%; padding:8px; font-size:12px; border:1px solid var(--studio-border); border-radius:6px; background:var(--studio-bg); color:var(--text-color);">
+    </div>
+
+    <!-- Store logo -->
+    <div class="control-group">
+      <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Store Brand Logo Image</label>
+      <input type="hidden" id="logo-field">
+      <div id="logo-preview-box" style="height:90px; border:1px dashed var(--studio-border); border-radius:8px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.02); overflow:hidden; margin-bottom:8px;">
+        <span style="color:var(--studio-text-muted); font-size:11px;">No Logo Selected</span>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn btn-secondary" id="header-pick-logo" style="flex:1; padding:6px 10px; font-size:11px;">Select Image</button>
+        <button type="button" class="btn btn-secondary" id="header-clear-logo" style="padding:6px 10px; font-size:11px; background:#ef4444; color:white;">Remove</button>
+      </div>
+    </div>
+
+    <!-- WhatsApp contact -->
+    <div class="control-group">
+      <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">WhatsApp Support Number (With Country Code)</label>
+      <input type="text" id="whatsapp-contact-field" class="studio-input" placeholder="919876543210" style="width:100%; padding:8px; font-size:12px; border:1px solid var(--studio-border); border-radius:6px; background:var(--studio-bg); color:var(--text-color);">
+    </div>
+
+    <!-- Sticky Header Toggle -->
+    <div class="control-group">
+      <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+        <input type="checkbox" id="hdr-sticky-toggle" checked>
+        <span style="font-size:11px; font-weight:700;">Enable Sticky Header on Scroll</span>
+      </label>
+    </div>
+
+    <hr style="border:0; border-top:1px solid var(--studio-border); margin:5px 0;">
+
+    <!-- Announcement Bar Accents -->
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:4px;">
+        <input type="checkbox" id="hdr-announcement-toggle" checked>
+        <span style="font-size:11px; font-weight:700;">Show Top Announcement Banner</span>
+      </label>
+      
+      <div id="announcement-color-controls" style="display:flex; flex-direction:column; gap:12px; padding-left:15px; border-left:2px solid var(--studio-gold);">
+        <div class="control-group">
+          <label style="font-size:11px; display:block; margin-bottom:4px;">Banner Background Color</label>
+          <div style="display:flex; gap:8px;">
+            <input type="color" id="hdr-announcement-bg" style="width:36px; height:32px; border:none; padding:0; background:none; cursor:pointer;">
+            <input type="text" id="hdr-announcement-bg-text" class="studio-input" style="flex:1; padding:6px 10px; font-size:12px; border:1px solid var(--studio-border); border-radius:6px; background:var(--studio-bg); color:var(--text-color);">
+          </div>
+        </div>
+        <div class="control-group">
+          <label style="font-size:11px; display:block; margin-bottom:4px;">Banner Text Color</label>
+          <div style="display:flex; gap:8px;">
+            <input type="color" id="hdr-announcement-text" style="width:36px; height:32px; border:none; padding:0; background:none; cursor:pointer;">
+            <input type="text" id="hdr-announcement-text-text" class="studio-input" style="flex:1; padding:6px 10px; font-size:12px; border:1px solid var(--studio-border); border-radius:6px; background:var(--studio-bg); color:var(--text-color);">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr style="border:0; border-top:1px solid var(--studio-border); margin:5px 0;">
+
+    <!-- Navigation Overlay Settings -->
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <h4 style="margin:0; font-size:12px; color:var(--studio-gold); font-weight:700;">Navigation Styles</h4>
+      
+      <div class="control-group">
+        <label style="font-size:11px; display:block; margin-bottom:4px;">Dropdown Panel Background Color</label>
+        <div style="display:flex; gap:8px;">
+          <input type="color" id="nav-dropdown-bg-picker" style="width:36px; height:32px; border:none; padding:0; background:none; cursor:pointer;">
+          <input type="text" id="nav-dropdown-bg-text" class="studio-input" style="flex:1; padding:6px 10px; font-size:12px; border:1px solid var(--studio-border); border-radius:6px; background:var(--studio-bg); color:var(--text-color);">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label style="font-size:11px; display:block; margin-bottom:4px;">Dropdown Border Outline Color</label>
+        <div style="display:flex; gap:8px;">
+          <input type="color" id="nav-dropdown-border-picker" style="width:36px; height:32px; border:none; padding:0; background:none; cursor:pointer;">
+          <input type="text" id="nav-dropdown-border-text" class="studio-input" style="flex:1; padding:6px 10px; font-size:12px; border:1px solid var(--studio-border); border-radius:6px; background:var(--studio-bg); color:var(--text-color);">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label style="font-size:11px; display:block; margin-bottom:4px;">Dropdown Links Default Color</label>
+        <div style="display:flex; gap:8px;">
+          <input type="color" id="nav-item-picker" style="width:36px; height:32px; border:none; padding:0; background:none; cursor:pointer;">
+          <input type="text" id="nav-item-text" class="studio-input" style="flex:1; padding:6px 10px; font-size:12px; border:1px solid var(--studio-border); border-radius:6px; background:var(--studio-bg); color:var(--text-color);">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label style="font-size:11px; display:block; margin-bottom:4px;">Mega Menu Accent Highlight Color</label>
+        <div style="display:flex; gap:8px;">
+          <input type="color" id="nav-mega-picker" style="width:36px; height:32px; border:none; padding:0; background:none; cursor:pointer;">
+          <input type="text" id="nav-mega-text" class="studio-input" style="flex:1; padding:6px 10px; font-size:12px; border:1px solid var(--studio-border); border-radius:6px; background:var(--studio-bg); color:var(--text-color);">
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

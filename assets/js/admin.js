@@ -23,8 +23,8 @@ async function initAdminRouterPage() {
       window.initSettingsPage();
     }
   } else if (path.includes('appearance.html')) {
-    if (window.MZAppearanceStudio && typeof window.MZAppearanceStudio.init === 'function') {
-      window.MZAppearanceStudio.init();
+    if (typeof window.initAppearancePage === 'function') {
+      window.initAppearancePage();
     }
   } else if (path.includes('marketing.html')) {
     if (typeof window.initMarketingPage === 'function') {

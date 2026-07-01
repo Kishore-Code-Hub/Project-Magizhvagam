@@ -1,0 +1,125 @@
+<div class="workspace-panel" data-workspace="glass">
+  <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Glass Specular</h3>
+  <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:16px;">Configure glassmorphic transparency levels, backdrop blur radius, shadow weights, and section toggles.</p>
+
+  <div class="glass" style="padding:20px; border-radius:8px; display:flex; flex-direction:column; gap:16px;">
+    <!-- Global Enable -->
+    <div class="control-group">
+      <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+        <input type="checkbox" id="glass-global-toggle" checked>
+        <span style="font-size:11px; font-weight:700;">Enable Storefront Glassmorphism</span>
+      </label>
+    </div>
+
+    <div id="glass-specular-controls" style="display:flex; flex-direction:column; gap:15px;">
+      <!-- Blur -->
+      <div class="control-group">
+        <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Backdrop Blur Radius (pixels)</label>
+        <div class="range-slider-wrapper" style="display:flex; align-items:center; gap:12px;">
+          <input type="range" id="glass-blur-field" min="0" max="24" step="2" class="range-slider" style="flex:1; cursor:pointer;">
+          <span id="glass-blur-val" class="range-value" style="font-size:12px; font-weight:700; width:36px; text-align:right;">12</span>
+        </div>
+      </div>
+
+      <!-- BG Opacity -->
+      <div class="control-group">
+        <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Background Transparency Opacity</label>
+        <div class="range-slider-wrapper" style="display:flex; align-items:center; gap:12px;">
+          <input type="range" id="glass-bg-opacity-field" min="0.0" max="1.0" step="0.02" class="range-slider" style="flex:1; cursor:pointer;">
+          <span id="glass-bg-opacity-val" class="range-value" style="font-size:12px; font-weight:700; width:36px; text-align:right;">0.12</span>
+        </div>
+      </div>
+
+      <!-- Border Opacity -->
+      <div class="control-group">
+        <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Specular Highlights Border Opacity</label>
+        <div class="range-slider-wrapper" style="display:flex; align-items:center; gap:12px;">
+          <input type="range" id="glass-border-opacity-field" min="0.0" max="1.0" step="0.02" class="range-slider" style="flex:1; cursor:pointer;">
+          <span id="glass-border-opacity-val" class="range-value" style="font-size:12px; font-weight:700; width:36px; text-align:right;">0.15</span>
+        </div>
+      </div>
+
+      <!-- Shadow Intensity -->
+      <div class="control-group">
+        <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Drop Shadow Intensity</label>
+        <div class="range-slider-wrapper" style="display:flex; align-items:center; gap:12px;">
+          <input type="range" id="glass-shadow-intensity-field" min="0.0" max="3.0" step="0.2" class="range-slider" style="flex:1; cursor:pointer;">
+          <span id="glass-shadow-intensity-val" class="range-value" style="font-size:12px; font-weight:700; width:36px; text-align:right;">1.0</span>
+        </div>
+      </div>
+
+      <!-- Border Radius -->
+      <div class="control-group">
+        <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Glass Panels Corner Radius (pixels)</label>
+        <div class="range-slider-wrapper" style="display:flex; align-items:center; gap:12px;">
+          <input type="range" id="glass-border-radius-field" min="0" max="32" step="2" class="range-slider" style="flex:1; cursor:pointer;">
+          <span id="glass-border-radius-val" class="range-value" style="font-size:12px; font-weight:700; width:36px; text-align:right;">16</span>
+        </div>
+      </div>
+
+      <!-- Brightness -->
+      <div class="control-group">
+        <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Backdrop Brightness Filter Offset</label>
+        <div class="range-slider-wrapper" style="display:flex; align-items:center; gap:12px;">
+          <input type="range" id="glass-brightness-field" min="0.5" max="1.5" step="0.05" class="range-slider" style="flex:1; cursor:pointer;">
+          <span id="glass-brightness-val" class="range-value" style="font-size:12px; font-weight:700; width:36px; text-align:right;">1.0</span>
+        </div>
+      </div>
+
+      <!-- Contrast -->
+      <div class="control-group">
+        <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Backdrop Contrast Filter Offset</label>
+        <div class="range-slider-wrapper" style="display:flex; align-items:center; gap:12px;">
+          <input type="range" id="glass-contrast-field" min="0.5" max="1.5" step="0.05" class="range-slider" style="flex:1; cursor:pointer;">
+          <span id="glass-contrast-val" class="range-value" style="font-size:12px; font-weight:700; width:36px; text-align:right;">1.0</span>
+        </div>
+      </div>
+
+      <!-- Hover intensity -->
+      <div class="control-group">
+        <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Backdrop Hover Scale Elevation Factor</label>
+        <div class="range-slider-wrapper" style="display:flex; align-items:center; gap:12px;">
+          <input type="range" id="glass-hover-intensity-field" min="1.0" max="2.0" step="0.05" class="range-slider" style="flex:1; cursor:pointer;">
+          <span id="glass-hover-intensity-val" class="range-value" style="font-size:12px; font-weight:700; width:36px; text-align:right;">1.1</span>
+        </div>
+      </div>
+
+      <hr style="border:0; border-top:1px solid var(--studio-border); margin:5px 0;">
+
+      <!-- Specific section checks -->
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <h4 style="margin:0; font-size:12px; color:var(--studio-gold); font-weight:700; margin-bottom:4px;">Section Specific Glassmorphism</h4>
+        
+        <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+          <input type="checkbox" id="glass-header-toggle" checked>
+          <span style="font-size:11px;">Header Glass</span>
+        </label>
+        <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+          <input type="checkbox" id="glass-product-toggle" checked>
+          <span style="font-size:11px;">Product Card Glass</span>
+        </label>
+        <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+          <input type="checkbox" id="glass-modal-toggle" checked>
+          <span style="font-size:11px;">Modal Glass</span>
+        </label>
+        <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+          <input type="checkbox" id="glass-sidebar-toggle" checked>
+          <span style="font-size:11px;">Sidebar Glass</span>
+        </label>
+        <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+          <input type="checkbox" id="glass-footer-toggle" checked>
+          <span style="font-size:11px;">Footer Glass</span>
+        </label>
+        <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+          <input type="checkbox" id="glass-form-toggle" checked>
+          <span style="font-size:11px;">Form Inputs Glass</span>
+        </label>
+        <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+          <input type="checkbox" id="glass-hero-toggle" checked>
+          <span style="font-size:11px;">Hero Banner Glass</span>
+        </label>
+      </div>
+
+    </div>
+  </div>
+</div>

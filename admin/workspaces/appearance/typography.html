@@ -1,0 +1,30 @@
+<div class="workspace-panel" data-workspace="typography">
+  <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Typography Font</h3>
+  <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:16px;">Configure fonts and standard size multipliers for all storefront headings and text blocks.</p>
+
+  <div class="glass" style="padding:20px; border-radius:8px; display:flex; flex-direction:column; gap:15px;">
+    <!-- Font Family -->
+    <div class="control-group">
+      <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Theme Font Family</label>
+      <select id="font-family-field" class="studio-input" style="width:100%; padding:8px; font-size:12px; border:1px solid var(--studio-border); border-radius:6px; background:var(--studio-bg); color:var(--text-color);">
+        <option value="Outfit">Outfit (Default Premium)</option>
+        <option value="Playfair Display">Playfair Display (Elegant Serif)</option>
+        <option value="Inter">Inter (Clean Modern Sans-Serif)</option>
+        <option value="Cinzel">Cinzel (Luxury Capital Serif)</option>
+        <option value="Montserrat">Montserrat (Classic Clean)</option>
+        <option value="Lora">Lora (Readability Serif)</option>
+      </select>
+      <p style="font-size:10px; color:var(--studio-text-muted); margin-top:4px;">Google Font links are automatically pre-loaded on customer storefronts.</p>
+    </div>
+
+    <!-- Font Scale -->
+    <div class="control-group" style="margin-top:5px;">
+      <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Global Text Scale Multiplier</label>
+      <div class="range-slider-wrapper" style="display:flex; align-items:center; gap:12px;">
+        <input type="range" id="font-scale-field" min="0.8" max="1.3" step="0.05" class="range-slider" style="flex:1; cursor:pointer;">
+        <span id="font-scale-val" class="range-value" style="font-size:12px; font-weight:700; width:36px; text-align:right;">1.0</span>
+      </div>
+      <p style="font-size:10px; color:var(--studio-text-muted); margin-top:4px;">Scales relative base font sizes dynamically (ideal range is 0.95 - 1.15).</p>
+    </div>
+  </div>
+</div>

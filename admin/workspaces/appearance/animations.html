@@ -1,0 +1,34 @@
+<div class="workspace-panel" data-workspace="animations">
+  <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--studio-gold);">Animations Settings</h3>
+  <p style="font-size:11px; color:var(--studio-text-muted); margin-bottom:16px;">Configure transition effects speed and mouse hover dynamics across product listings.</p>
+
+  <div class="glass" style="padding:20px; border-radius:8px; display:flex; flex-direction:column; gap:16px;">
+    <!-- Enable Animations toggle -->
+    <div class="control-group">
+      <label class="section-toggle" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+        <input type="checkbox" id="anim-enable-toggle" checked>
+        <span style="font-size:11px; font-weight:700;">Enable Page Transition Animations</span>
+      </label>
+    </div>
+
+    <!-- Animation speed -->
+    <div class="control-group" id="animation-speed-container">
+      <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Global Transition Speeds (seconds)</label>
+      <div class="range-slider-wrapper" style="display:flex; align-items:center; gap:12px;">
+        <input type="range" id="anim-speed-field" min="0.10" max="1.00" step="0.05" class="range-slider" style="flex:1; cursor:pointer;">
+        <span id="anim-speed-val" class="range-value" style="font-size:12px; font-weight:700; width:36px; text-align:right;">0.30</span>
+      </div>
+    </div>
+
+    <!-- Product Card hover style -->
+    <div class="control-group">
+      <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:700;">Listing Product Card Hover Animation Style</label>
+      <select id="anim-hover-style-field" class="studio-input" style="width:100%; padding:8px; font-size:12px; border:1px solid var(--studio-border); border-radius:6px; background:var(--studio-bg); color:var(--text-color);">
+        <option value="lift">Lift Card Elevation (default)</option>
+        <option value="glow">Gold Outer Glow Specular</option>
+        <option value="zoom">Scale Zoom Product Image</option>
+        <option value="none">No Hover Animations</option>
+      </select>
+    </div>
+  </div>
+</div>

@@ -640,6 +640,31 @@
     fetchAndUpdate(null);
   });
 
+  // Listen for real-time Visual Customizer updates via postMessage
+  window.addEventListener('message', function (event) {
+    if (event.data && event.data.type === 'mz:sync-preview-theme') {
+      const themeData = event.data.theme;
+      if (themeData) {
+        applyTheme(themeData);
+      }
+    }
+  });
+
+  // Listen for saved customizer changes across other tabs
+  try {
+    const bc = new BroadcastChannel('mz-theme-channel');
+    bc.addEventListener('message', function (event) {
+      if (event.data && event.data.type === 'mz:theme-saved') {
+        localStorage.removeItem('mz-theme-cache');
+        localStorage.removeItem('mz-homepage-settings');
+        localStorage.removeItem('mz-feature-toggles');
+        window.location.reload();
+      }
+    });
+  } catch (e) {
+    console.warn('[theme-loader] BroadcastChannel not supported:', e);
+  }
+
   // ─── Execute immediately ──────────────────────────────────────────────────
   loadTheme();
 
