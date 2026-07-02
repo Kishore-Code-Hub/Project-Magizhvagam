@@ -80,6 +80,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
+// Custom Security Headers (Permissions-Policy)
+app.use((req, res, next) => {
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), interest-cohort=()');
+  next();
+});
+
 // NoSQL Query Injection Protection
 app.use(mongoSanitize());
 
@@ -326,9 +332,17 @@ app.use((req, res) => {
 // 7. Global Error Handler Middleware
 app.use((err, req, res, next) => {
   console.error(`SERVER ERROR: ${err.message}\nStack: ${err.stack}`);
-  res.status(err.status || 500).json({
+  const status = err.status || (err.name === 'ValidationError' ? 400 : 500);
+  const errMsg = (process.env.NODE_ENV === 'production' && status === 500) 
+    ? 'An unexpected error occurred on the server.' 
+    : err.message || 'Internal Server Error';
+
+  res.status(status).json({
     success: false,
-    error: err.message || 'Internal Server Error'
+    message: errMsg,
+    error: errMsg,
+    status,
+    data: null
   });
 });
 

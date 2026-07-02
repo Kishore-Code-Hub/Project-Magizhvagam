@@ -1,0 +1,72 @@
+<div class="workspace-panel" data-workspace="profile">
+  <div class="grid grid-2" style="gap:30px; align-items:start;">
+    <!-- Profile Info Form -->
+    <div class="glass" style="padding:25px; border-radius:12px;">
+      <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">Account Details</h3>
+      <form id="admin-profile-info-form">
+        <div class="admin-form-group">
+          <label>Administrator Name</label>
+          <input type="text" id="admin-profile-name" class="admin-form-control" required placeholder="Administrator">
+        </div>
+        <div class="admin-form-group">
+          <label>Email Address</label>
+          <input type="email" id="admin-profile-email" class="admin-form-control" required placeholder="admin@magizhvagam.com">
+        </div>
+        <div class="admin-form-group">
+          <label>Profile Picture</label>
+          <input type="hidden" id="admin-profile-pic-field">
+          <div id="admin-profile-pic-preview" style="width:100px; height:100px; border:1px dashed var(--card-border); border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.02); margin-bottom:12px;">
+            <span style="color:var(--text-muted); font-size:12px;">No Image</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn btn-secondary" id="admin-profile-pick-pic" style="flex:1; font-size:11px; padding:6px 10px;">Choose Image</button>
+            <button type="button" class="btn btn-secondary" id="admin-profile-clear-pic" style="font-size:11px; padding:6px 10px; background:#ef4444; color:white;">Remove</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:10px;">Update Profile Details</button>
+      </form>
+    </div>
+
+    <!-- Password Change Form -->
+    <div class="glass" style="padding:25px; border-radius:12px;">
+      <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">Change Password</h3>
+      <form id="admin-password-form">
+        <div class="admin-form-group" style="position:relative;">
+          <label>Current Password</label>
+          <input type="password" id="admin-current-pass" class="admin-form-control" required placeholder="••••••••••••">
+          <button type="button" class="toggle-pass-visibility" data-target="admin-current-pass" style="position:absolute; right:10px; bottom:8px; background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:12px;">Show</button>
+        </div>
+        <div class="admin-form-group" style="position:relative; margin-bottom:8px;">
+          <label>New Password</label>
+          <input type="password" id="admin-new-pass" class="admin-form-control" required placeholder="••••••••••••">
+          <button type="button" class="toggle-pass-visibility" data-target="admin-new-pass" style="position:absolute; right:10px; bottom:8px; background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:12px;">Show</button>
+        </div>
+        
+        <!-- Password Strength Meter -->
+        <div class="pass-strength-container" style="margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;">
+            <span>Password Strength:</span>
+            <span id="pass-strength-label" style="font-weight:600;">Too Weak</span>
+          </div>
+          <div style="height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden;">
+            <div id="pass-strength-bar" style="width:0%; height:100%; background:#ef4444; transition:width 0.2s, background-color 0.2s;"></div>
+          </div>
+          <ul style="font-size:11px; color:var(--text-muted); margin:8px 0 0 16px; padding:0; line-height:1.4;">
+            <li id="req-len">Minimum 12 characters</li>
+            <li id="req-upper">At least one uppercase letter</li>
+            <li id="req-lower">At least one lowercase letter</li>
+            <li id="req-num">At least one number</li>
+            <li id="req-spec">At least one special character</li>
+          </ul>
+        </div>
+
+        <div class="admin-form-group" style="position:relative;">
+          <label>Confirm New Password</label>
+          <input type="password" id="admin-confirm-pass" class="admin-form-control" required placeholder="••••••••••••">
+          <button type="button" class="toggle-pass-visibility" data-target="admin-confirm-pass" style="position:absolute; right:10px; bottom:8px; background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:12px;">Show</button>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:10px;">Change Password & Revoke Sessions</button>
+      </form>
+    </div>
+  </div>
+</div>

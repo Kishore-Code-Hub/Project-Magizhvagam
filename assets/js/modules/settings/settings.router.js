@@ -10,7 +10,9 @@
     'analytics':        AnalyticsSettingsController,
     'integrations':     IntegrationsSettingsController,
     'mobile-settings':  MobileSettingsController,
-    'diagnostics':      DiagnosticsController
+    'diagnostics':      DiagnosticsController,
+    'profile':          ProfileSettingsController,
+    'security':         SecuritySettingsController
   };
 
   const TAB_LABELS = {
@@ -19,7 +21,9 @@
     'analytics':        'Analytics',
     'integrations':     'Integrations',
     'mobile-settings':  'Mobile Offset',
-    'diagnostics':      'Diagnostics'
+    'diagnostics':      'Diagnostics',
+    'profile':          'Account Profile',
+    'security':         'Security & 2FA'
   };
 
   let router = null;

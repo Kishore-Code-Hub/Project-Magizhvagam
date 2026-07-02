@@ -158,7 +158,7 @@
     </div>
     
     <div class="admin-login-card">
-      <h2 class="admin-login-title">Sign In</h2>
+      <h2 class="admin-login-title" id="card-title">Sign In</h2>
       
       <div id="error-message" class="error-box"></div>
       
@@ -175,12 +175,32 @@
         
         <button type="submit" id="submit-btn" class="btn-admin">Login to Dashboard</button>
       </form>
+
+      <!-- 2FA Form -->
+      <form id="admin-2fa-form" style="display:none;">
+        <p style="font-size:12px; color:#64748b; margin-bottom:20px; line-height:1.5; text-align:center;">Two-factor authentication is active on this account. Enter the 6-digit verification code from your authenticator app, or a backup recovery code.</p>
+        <div class="form-group">
+          <label class="form-label" for="otp-code">Authentication Code</label>
+          <input type="text" id="otp-code" class="form-control" placeholder="000000 / XXXX-XXXX" style="text-align:center; font-size:16px; letter-spacing:1px;" required autocomplete="one-time-code">
+        </div>
+        <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-bottom:15px;">
+          <input type="checkbox" id="remember-device" style="width:16px; height:16px; cursor:pointer;">
+          <label for="remember-device" style="font-size:12px; color:#64748b; cursor:pointer; font-weight:600; user-select:none; margin:0;">Remember this device for 30 days</label>
+        </div>
+        <button type="submit" id="verify-btn" class="btn-admin">Verify & Access</button>
+        <div style="text-align:center; margin-top:15px;">
+          <a href="#" id="back-to-login-link" style="font-size:12px; color:#6a0dad; text-decoration:none; font-weight:600;">Back to Sign In</a>
+        </div>
+      </form>
     </div>
   </div>
 
   <!-- Shared Toast Layer Dynamic Injector -->
   <script src="/assets/js/app.js"></script>
   <script>
+    let temp2FAToken = '';
+
+    // Primary login form submit
     document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -209,18 +229,31 @@
           return;
         }
 
-        if (data.success && data.user && data.user.role === 'admin') {
-          localStorage.setItem("adminAuth", "true");
-          if (typeof window.setSessionUser === 'function') {
-            window.setSessionUser(data.user);
+        if (data.success) {
+          if (data.require2FA) {
+            // Store temp token and switch view
+            temp2FAToken = data.tempToken;
+            document.getElementById('admin-login-form').style.display = 'none';
+            document.getElementById('admin-2fa-form').style.display = 'block';
+            document.getElementById('card-title').textContent = 'Two-Factor Verification';
+            document.getElementById('otp-code').focus();
+            showToast('Two-Factor code required.', 'info');
+          } else if (data.user && data.user.role === 'admin') {
+            localStorage.setItem("adminAuth", "true");
+            if (typeof window.setSessionUser === 'function') {
+              window.setSessionUser(data.user);
+            }
+            showToast('Verification successful! Access granted.', 'success');
+            
+            setTimeout(() => {
+              const urlParams = new URLSearchParams(window.location.search);
+              const redirect = urlParams.get('redirect') || 'admin/dashboard.html';
+              window.location.replace('/' + redirect);
+            }, 1000);
+          } else {
+            errorBox.textContent = 'Access denied. Administrator account required.';
+            errorBox.style.display = 'block';
           }
-          showToast('Verification successful! Access granted.', 'success');
-          
-          setTimeout(() => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const redirect = urlParams.get('redirect') || 'admin/dashboard.html';
-            window.location.replace('/' + redirect);
-          }, 1000);
         } else {
           let errText = 'Access denied. Administrator account required.';
           if (res.status === 401) errText = 'Invalid administrative credentials.';
@@ -236,6 +269,62 @@
         submitBtn.disabled = false;
         submitBtn.textContent = 'Login to Dashboard';
       }
+    });
+
+    // 2FA Verification form submit
+    document.getElementById('admin-2fa-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const code = document.getElementById('otp-code').value.trim();
+      const rememberDevice = document.getElementById('remember-device').checked;
+      const errorBox = document.getElementById('error-message');
+      const verifyBtn = document.getElementById('verify-btn');
+
+      errorBox.style.display = 'none';
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verifying code...';
+
+      try {
+        const res = await fetch('/api/auth/admin/verify-2fa', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tempToken: temp2FAToken, code, rememberDevice })
+        });
+
+        const data = await res.json();
+        if (data.success && data.user && data.user.role === 'admin') {
+          localStorage.setItem("adminAuth", "true");
+          if (typeof window.setSessionUser === 'function') {
+            window.setSessionUser(data.user);
+          }
+          showToast('Verification successful! Access granted.', 'success');
+          
+          setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirect = urlParams.get('redirect') || 'admin/dashboard.html';
+            window.location.replace('/' + redirect);
+          }, 1000);
+        } else {
+          errorBox.textContent = data.error || 'Verification failed. Try again.';
+          errorBox.style.display = 'block';
+        }
+      } catch (err) {
+        errorBox.textContent = 'Server connection error. Please try again.';
+        errorBox.style.display = 'block';
+      } finally {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify & Access';
+      }
+    });
+
+    // Back to Login link
+    document.getElementById('back-to-login-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      temp2FAToken = '';
+      document.getElementById('admin-2fa-form').style.display = 'none';
+      document.getElementById('admin-login-form').style.display = 'block';
+      document.getElementById('card-title').textContent = 'Sign In';
+      document.getElementById('error-message').style.display = 'none';
     });
   </script>
 </body>

@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = require('../config/jwt');
 
+const UserSession = require('../models/UserSession');
+
 const ALLOWED_ADMIN_PAGES = new Set([
   'dashboard.html',
   'products.html',
@@ -25,7 +27,17 @@ const ALLOWED_ADMIN_PAGES = new Set([
 const checkAdminPageAuth = async (req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   let token = req.cookies ? req.cookies.admin_accessToken : null;
+  const refreshToken = req.cookies ? req.cookies.admin_refreshToken : null;
   const page = req.params.page || 'dashboard.html';
+
+  if (refreshToken) {
+    const session = await UserSession.findOne({ refreshToken });
+    if (!session) {
+      res.clearCookie('admin_accessToken');
+      res.clearCookie('admin_refreshToken');
+      return handleHtmlAuthFailure(req, res, page);
+    }
+  }
 
   if (!token) {
     return handleHtmlAuthFailure(req, res, page);
@@ -63,8 +75,11 @@ const tryHtmlAutoRefresh = async (req, res, next, page) => {
   try {
     const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
     const user = await User.findById(decoded.id);
+    const session = await UserSession.findOne({ refreshToken });
 
-    if (!user || user.refreshToken !== refreshToken || user.role !== 'admin') {
+    if (!user || !session || user.role !== 'admin') {
+      res.clearCookie('admin_accessToken');
+      res.clearCookie('admin_refreshToken');
       return handleHtmlAuthFailure(req, res, page);
     }
 
@@ -86,6 +101,8 @@ const tryHtmlAutoRefresh = async (req, res, next, page) => {
     req.user = user;
     return next();
   } catch (err) {
+    res.clearCookie('admin_accessToken');
+    res.clearCookie('admin_refreshToken');
     return handleHtmlAuthFailure(req, res, page);
   }
 };

@@ -66,7 +66,18 @@ const UserSchema = new mongoose.Schema({
   addresses: [AddressSchema],
   cartItems: { type: [CartItemSchema], default: [] },
   wishlistItems: { type: [WishlistItemSchema], default: [] },
-  refreshToken: { type: String, default: null }
+  refreshToken: { type: String, default: null },
+
+  // Two-Factor Authentication
+  twoFactorEnabled: { type: Boolean, default: false },
+  twoFactorSecret: { type: String, default: null },
+  twoFactorRecoveryCodes: { type: [String], default: [] },
+  twoFactorTempSecret: { type: String, default: null },
+  rememberDeviceTokens: [{
+    token: { type: String, required: true },
+    expiresAt: { type: Date, required: true }
+  }],
+  passwordChangedAt: { type: Date, default: null }
 }, { timestamps: true });
 
 UserSchema.pre('validate', function(next) {

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const UserSession = require('../models/UserSession');
 const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = require('../config/jwt');
 
 const USER_SAFE_SELECT = '-passwordHash -refreshToken';
@@ -25,6 +26,21 @@ const generateRefreshToken = (user) => {
 // Middleware to protect routes & automatically refresh tokens
 const protect = async (req, res, next) => {
   let token = null;
+  const refreshToken = req.cookies ? req.cookies.admin_refreshToken : null;
+
+  // Enforce session check if a refresh token exists
+  if (refreshToken) {
+    const session = await UserSession.findOne({ refreshToken });
+    if (!session) {
+      // Invalidate cookies immediately if the session has been revoked/deleted
+      res.clearCookie('admin_accessToken');
+      res.clearCookie('admin_refreshToken');
+      return res.status(401).json({ success: false, error: 'Session has been revoked or logged out' });
+    }
+    // Update last activity
+    session.lastActivity = new Date();
+    await session.save();
+  }
 
   // 1. Try reading from Authorization Header
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -67,9 +83,16 @@ const tryAutoRefresh = async (req, res, next) => {
     const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
     const userDoc = await User.findById(decoded.id);
 
-    if (!userDoc || userDoc.refreshToken !== refreshToken) {
-      return res.status(401).json({ success: false, error: 'Session expired, please login again' });
+    const session = await UserSession.findOne({ refreshToken });
+    if (!userDoc || !session) {
+      res.clearCookie('admin_accessToken');
+      res.clearCookie('admin_refreshToken');
+      return res.status(401).json({ success: false, error: 'Session expired or revoked, please login again' });
     }
+
+    // Update last activity
+    session.lastActivity = new Date();
+    await session.save();
 
     const newAccessToken = generateAccessToken(userDoc);
 
@@ -83,6 +106,8 @@ const tryAutoRefresh = async (req, res, next) => {
     req.user = await User.findById(decoded.id).select(USER_SAFE_SELECT);
     return next();
   } catch (err) {
+    res.clearCookie('admin_accessToken');
+    res.clearCookie('admin_refreshToken');
     return res.status(401).json({ success: false, error: 'Session expired, login required' });
   }
 };
@@ -90,6 +115,19 @@ const tryAutoRefresh = async (req, res, next) => {
 // Optional auth — never returns 401; attaches req.user when session is valid
 const optionalProtect = async (req, res, next) => {
   let token = null;
+  const refreshToken = req.cookies ? req.cookies.admin_refreshToken : null;
+
+  if (refreshToken) {
+    const session = await UserSession.findOne({ refreshToken });
+    if (!session) {
+      res.clearCookie('admin_accessToken');
+      res.clearCookie('admin_refreshToken');
+      req.user = null;
+      return next();
+    }
+    session.lastActivity = new Date();
+    await session.save();
+  }
 
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
@@ -109,7 +147,6 @@ const optionalProtect = async (req, res, next) => {
     return next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      const refreshToken = req.cookies ? req.cookies.admin_refreshToken : null;
       if (!refreshToken) {
         req.user = null;
         return next();
@@ -117,7 +154,10 @@ const optionalProtect = async (req, res, next) => {
       try {
         const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
         const userDoc = await User.findById(decoded.id);
-        if (!userDoc || userDoc.refreshToken !== refreshToken) {
+        const session = await UserSession.findOne({ refreshToken });
+        if (!userDoc || !session) {
+          res.clearCookie('admin_accessToken');
+          res.clearCookie('admin_refreshToken');
           req.user = null;
           return next();
         }

@@ -505,10 +505,10 @@ function injectAdminTopbar() {
             <div style="font-weight: 700; font-size: 13px; color: var(--adm-text);">${userName}</div>
             <div class="profile-popover-email">${userEmail}</div>
           </div>
-          <a href="/admin/settings.html?tab=advanced-settings" class="profile-popover-item">
+          <a href="/admin/settings.html?tab=profile" class="profile-popover-item">
             <i data-lucide="user"></i> Account Profile
           </a>
-          <a href="/admin/settings.html?tab=presets" class="profile-popover-item">
+          <a href="/admin/settings.html?tab=general" class="profile-popover-item">
             <i data-lucide="settings"></i> System Settings
           </a>
           <a href="#" onclick="window.toggleAdminTheme(); return false;" class="profile-popover-item" id="theme-toggle-popover-btn">

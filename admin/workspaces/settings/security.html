@@ -1,0 +1,93 @@
+<div class="workspace-panel" data-workspace="security">
+  <!-- Load client-side QR renderer from cdn inside settings context -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js" integrity="sha512-pUh59cUMD6Tig7S6Bspz/N709SNAc2X2kS3XG0A88m4bHk0n4m0j10yPqyLz7r0sZ2n/Uo979q7fXh4pYg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <div class="grid grid-2" style="gap:30px; align-items:start;">
+    <!-- 2FA Manager Panel -->
+    <div class="glass" style="padding:25px; border-radius:12px;">
+      <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-bottom:15px;">🔒 Two-Factor Authentication (2FA)</h3>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px; line-height:1.4;">Add an extra layer of protection by requiring a 6-digit TOTP verification code from an authenticator app (e.g. Google Authenticator, Microsoft Authenticator, Authy) during admin login attempts.</p>
+      
+      <!-- 2FA Status Banner -->
+      <div id="mfa-status-banner" style="padding:12px 16px; border-radius:8px; display:flex; align-items:center; gap:12px; margin-bottom:20px; font-weight:600; font-size:13px;">
+        <span id="mfa-status-indicator" style="width:10px; height:10px; border-radius:50%;"></span>
+        <span id="mfa-status-text">Checking status...</span>
+      </div>
+
+      <!-- Setup Form (Hidden by default, shown during activation) -->
+      <div id="mfa-setup-section" style="display:none; border-top:1px dashed var(--card-border); padding-top:20px;">
+        <h4 style="font-family:'Outfit'; font-size:15px; margin-bottom:10px;">Setup Authenticator App</h4>
+        <ol style="font-size:12px; color:var(--text-muted); padding-left:16px; line-height:1.5; margin-bottom:16px;">
+          <li>Scan the QR code below using your authenticator app.</li>
+          <li>If you cannot scan, manually enter the secret key: <strong id="mfa-setup-secret" style="color:var(--primary-color); word-break:break-all;"></strong></li>
+        </ol>
+        
+        <!-- Offline Canvas QR Generator -->
+        <div style="display:flex; justify-content:center; padding:15px; background:white; border-radius:8px; width:fit-content; margin:0 auto 20px;">
+          <canvas id="mfa-qr-canvas"></canvas>
+        </div>
+
+        <div class="admin-form-group">
+          <label>Enter 6-Digit Code from App</label>
+          <input type="text" id="mfa-verification-code" class="admin-form-control" maxlength="6" placeholder="000000" style="text-align:center; font-size:18px; letter-spacing:4px; max-width:200px; margin:0 auto 12px; display:block;">
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button type="button" id="mfa-cancel-setup-btn" class="btn btn-secondary" style="flex:1;">Cancel Setup</button>
+          <button type="button" id="mfa-confirm-enable-btn" class="btn btn-primary" style="flex:1;">Enable 2FA</button>
+        </div>
+      </div>
+
+      <!-- Recovery Codes Viewer (Hidden by default) -->
+      <div id="mfa-recovery-section" style="display:none; background:rgba(212,160,58,0.05); border:1px solid rgba(212,160,58,0.2); padding:16px; border-radius:8px; margin-bottom:20px;">
+        <h4 style="font-family:'Outfit'; font-size:14px; color:var(--primary-color); margin-bottom:8px; font-weight:700;">Backup Recovery Codes</h4>
+        <p style="font-size:11px; color:var(--text-muted); line-height:1.4; margin-bottom:12px;">Save these codes in a secure offline location. If you lose access to your authenticator device, you can use these to gain admin access. Each code can only be used once.</p>
+        <div id="mfa-recovery-codes-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-family:monospace; font-size:13px; color:var(--text-color); margin-bottom:12px;"></div>
+        <button type="button" id="mfa-hide-recovery-btn" class="btn btn-secondary" style="width:100%; font-size:11px; padding:4px 8px;">Dismiss & Hide Codes</button>
+      </div>
+
+      <!-- Action Area for Already Enabled User -->
+      <div id="mfa-active-section" style="display:none; border-top:1px dashed var(--card-border); padding-top:20px;">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <button type="button" id="mfa-show-codes-btn" class="btn btn-secondary" style="width:100%;">View Recovery Backup Codes</button>
+          <button type="button" id="mfa-disable-btn" class="btn btn-secondary" style="width:100%; background:#ef4444; color:white; border-color:#ef4444;">Disable Two-Factor Authentication</button>
+        </div>
+      </div>
+
+      <!-- Action Area for Disabled User -->
+      <div id="mfa-inactive-section" style="display:none;">
+        <button type="button" id="mfa-start-setup-btn" class="btn btn-primary" style="width:100%;">Enable 2FA Support</button>
+      </div>
+    </div>
+
+    <!-- Active Sessions Panel -->
+    <div class="glass" style="padding:25px; border-radius:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+        <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin:0;">💻 Active Administrative Sessions</h3>
+        <button type="button" id="sessions-refresh-btn" class="btn btn-secondary" style="font-size:11px; padding:4px 8px;">Refresh</button>
+      </div>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px; line-height:1.4;">Manage all browser sessions currently logged into this administrator account. You can revoke other active sessions individually or globally.</p>
+      
+      <div style="display:flex; gap:10px; margin-bottom:20px;">
+        <button type="button" id="sessions-revoke-others-btn" class="btn btn-secondary" style="flex:1; font-size:12px; padding:8px;">Sign Out Other Sessions</button>
+        <button type="button" id="sessions-revoke-all-btn" class="btn btn-secondary" style="flex:1; font-size:12px; padding:8px; background:#ef4444; color:white; border-color:#ef4444;">Sign Out of All Devices</button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px; max-height:400px; overflow-y:auto;" id="sessions-list-container">
+        <div style="text-align:center;"><div class="spinner" style="margin:auto;"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Dialog Overlay Modal (Unified Modal helper) -->
+  <div id="mfa-confirm-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+    <div class="glass" style="max-width:400px; width:90%; padding:25px; border-radius:12px; text-align:center;">
+      <h3 style="font-family:'Outfit'; font-size:18px; margin-bottom:10px; color:var(--text-color);" id="mfa-modal-title">Confirm Action</h3>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px; line-height:1.4;" id="mfa-modal-desc">Please enter your administrator password to confirm this security operation.</p>
+      <input type="password" id="mfa-modal-password-input" class="admin-form-control" placeholder="Enter Password" style="margin-bottom:20px; text-align:center;">
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button type="button" id="mfa-modal-cancel-btn" class="btn btn-secondary" style="flex:1;">Cancel</button>
+        <button type="button" id="mfa-modal-submit-btn" class="btn btn-primary" style="flex:1;">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>

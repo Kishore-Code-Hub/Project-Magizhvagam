@@ -3,20 +3,48 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const https = require('https');
 const User = require('../models/User');
+const UserSession = require('../models/UserSession');
 const Order = require('../models/Order');
 const { generateAccessToken, generateRefreshToken } = require('../middleware/authMiddleware');
-const { JWT_REFRESH_SECRET } = require('../config/jwt');
+const { JWT_REFRESH_SECRET, JWT_ACCESS_SECRET } = require('../config/jwt');
 const { logActivity } = require('../services/auditService');
 const { getFeatureToggleValues } = require('./settingController');
 const emailService = require('../services/emailService');
 const { sendVerificationEmail, sendPasswordResetEmail } = emailService;
 const normalizeEmail = require('../utils/normalizeEmail');
+const { generateBase32Secret, verifyTOTP, generateRecoveryCodes } = require('../utils/totp');
+const { parseUserAgent } = require('../utils/userAgentParser');
 
 
 // NOTE: The original exports.register had a runtime crash (pincodeStr was never declared).
 // The original exports.login bypassed the unified password check.
 // Both have been removed. Active handlers: handleLocalRegister and handleLocalLogin (below).
 
+
+// Helper to register active sessions in database
+const createUserSession = async (req, userId, refreshToken) => {
+  try {
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+    const userAgent = req.headers['user-agent'] || '';
+    const { browser, os, device } = parseUserAgent(userAgent);
+    const country = req.headers['cf-ipcountry'] || 'Unknown';
+
+    await UserSession.create({
+      userId,
+      refreshToken,
+      userAgent,
+      ipAddress: ip,
+      browser,
+      os,
+      device,
+      country,
+      loginTime: new Date(),
+      lastActivity: new Date()
+    });
+  } catch (err) {
+    console.error('Session creation failed:', err);
+  }
+};
 
 // @desc    Admin login & role validation
 // @route   POST /api/auth/admin/login
@@ -27,34 +55,21 @@ exports.adminLogin = async (req, res) => {
     console.log('[DEBUG AUTH] Incoming admin login email:', email);
 
     if (typeof email !== 'string' || typeof password !== 'string') {
-      console.log('[DEBUG AUTH] Rejection: Invalid input format');
       return res.status(400).json({ success: false, error: 'Invalid input format' });
     }
 
     if (!email || !password) {
-      console.log('[DEBUG AUTH] Rejection: Missing email or password');
       return res.status(400).json({ success: false, error: 'Please provide email and password' });
     }
 
     const user = await User.findOne({ email: normalizeEmail(email) });
     if (!user) {
-      console.log('[DEBUG AUTH] Rejection: User not found in database');
       await logActivity(req, 'login_failure', `Invalid email attempt for: ${email}`);
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
-    console.log('[DEBUG AUTH] User found:', {
-      email: user.email,
-      role: user.role,
-      hasPassword: !!user.password,
-      hasPasswordHash: !!user.passwordHash,
-      passwordVal: user.password ? user.password.substring(0, 10) + '...' : 'none',
-      passwordHashVal: user.passwordHash ? user.passwordHash.substring(0, 10) + '...' : 'none'
-    });
-
-    // Check role strictly before checking password (or after, but strictly enforce role = 'admin')
+    // Check role strictly
     if (user.role !== 'admin') {
-      console.log('[DEBUG AUTH] Rejection: User role is not admin. Role is:', user.role);
       await logActivity(req, 'admin_login_failure', `Unauthorized admin login attempt for: ${email}`);
       return res.status(403).json({ success: false, error: 'Access denied. Administrator account required.' });
     }
@@ -62,17 +77,14 @@ exports.adminLogin = async (req, res) => {
     // Check account lockout status
     if (user.lockUntil && user.lockUntil > Date.now()) {
       const remainingMins = Math.ceil((user.lockUntil - Date.now()) / (60 * 1000));
-      console.log('[DEBUG AUTH] Rejection: Account locked out until:', user.lockUntil);
       await logActivity(req, 'login_lockedout', `Blocked attempt for locked account: ${email}`);
       return res.status(403).json({ success: false, error: `Account is temporarily locked. Try again in ${remainingMins} minutes.` });
     }
 
     const targetHash = user.password || user.passwordHash || '';
     const isMatch = await bcrypt.compare(password, targetHash);
-    console.log('[DEBUG AUTH] Bcrypt comparison isMatch:', isMatch);
     
     if (!isMatch) {
-      console.log('[DEBUG AUTH] Rejection: Password bcrypt comparison failed');
       user.loginAttempts = (user.loginAttempts || 0) + 1;
       let msg = 'Invalid credentials';
 
@@ -88,11 +100,48 @@ exports.adminLogin = async (req, res) => {
       return res.status(401).json({ success: false, error: msg });
     }
 
-    console.log('[DEBUG AUTH] Success: Password matched. Proceeding with tokens.');
-
     // Reset attempts on successful login
     user.loginAttempts = 0;
     user.lockUntil = undefined;
+    await user.save();
+
+    // Check if 2FA is enabled
+    if (user.twoFactorEnabled) {
+      // Check for a valid remember-device token cookie
+      const rememberCookie = req.cookies ? req.cookies.admin_remember_device : null;
+      let bypass2FA = false;
+
+      if (rememberCookie) {
+        try {
+          const [cookieUserId, cookieToken] = rememberCookie.split(':');
+          if (cookieUserId === String(user._id)) {
+            const tokenMatch = user.rememberDeviceTokens.find(
+              t => t.token === cookieToken && t.expiresAt > new Date()
+            );
+            if (tokenMatch) {
+              bypass2FA = true;
+              console.log('[DEBUG AUTH] 2FA bypassed via valid remember-device token.');
+            }
+          }
+        } catch (e) {
+          console.warn('Remember-device token parsing error:', e);
+        }
+      }
+
+      if (!bypass2FA) {
+        // Issue short-lived temp token for 2FA validation step-up
+        const tempToken = jwt.sign(
+          { id: user._id, purpose: '2fa_login_pending' },
+          JWT_REFRESH_SECRET,
+          { expiresIn: '5m' }
+        );
+        return res.status(200).json({
+          success: true,
+          require2FA: true,
+          tempToken
+        });
+      }
+    }
 
     // Generate tokens
     const accessToken = generateAccessToken(user);
@@ -101,6 +150,9 @@ exports.adminLogin = async (req, res) => {
     // Save refresh token to user model
     user.refreshToken = refreshToken;
     await user.save();
+
+    // Create session entry
+    await createUserSession(req, user._id, refreshToken);
 
     // Set secure HTTP-Only cookies
     res.cookie('admin_accessToken', accessToken, {
@@ -120,7 +172,7 @@ exports.adminLogin = async (req, res) => {
     // Log login success
     await logActivity(req, 'login_success', `Admin logged in successfully`);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       accessToken,
       user: {
@@ -132,7 +184,7 @@ exports.adminLogin = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ success: false, error: `Login error: ${error.message}` });
+    return res.status(500).json({ success: false, error: `Login error: ${error.message}` });
   }
 };
 
@@ -154,6 +206,8 @@ exports.logout = async (req, res) => {
         req.user = user; // Attach temporary user reference for logging helper
         await logActivity(req, 'logout', `User signed out`);
       }
+      // Remove the session entry
+      await UserSession.findOneAndDelete({ refreshToken });
     }
 
     // Clear Cookies with explicit settings matching creation
@@ -1227,6 +1281,414 @@ exports.adminUnlockAccount = async (req, res) => {
     res.status(200).json({ success: true, message: 'Account unlocked and login attempts cleared' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ─── TWO-FACTOR AUTHENTICATION CONTROLLERS ──────────────────────────────────────
+
+// @desc    Verify 2FA TOTP code or recovery code during login
+// @route   POST /api/auth/admin/verify-2fa
+// @access  Public
+exports.verifyAdmin2FA = async (req, res) => {
+  try {
+    const { tempToken, code, rememberDevice } = req.body;
+
+    if (!tempToken || !code) {
+      return res.status(400).json({ success: false, error: 'Token and verification code required' });
+    }
+
+    // Verify temp token
+    let decoded;
+    try {
+      decoded = jwt.verify(tempToken, JWT_REFRESH_SECRET);
+    } catch (err) {
+      return res.status(401).json({ success: false, error: '2FA session expired. Please log in again.' });
+    }
+
+    if (decoded.purpose !== '2fa_login_pending') {
+      return res.status(400).json({ success: false, error: 'Invalid authentication context' });
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user || user.role !== 'admin') {
+      return res.status(401).json({ success: false, error: 'User access invalid' });
+    }
+
+    let isCodeValid = false;
+    let isRecovery = false;
+
+    // Remove dashes and normalize recovery code/OTP input
+    const cleanCode = code.replace(/[-\s]/g, '').trim().toUpperCase();
+
+    // 1. Check TOTP
+    if (/^\d{6}$/.test(cleanCode)) {
+      isCodeValid = verifyTOTP(cleanCode, user.twoFactorSecret);
+    } 
+    // 2. Check Recovery Code
+    else {
+      // Recovery codes are formatted as XXXX-XXXX but stored plain as XXXXXXXX or formatted
+      const formattedCode = code.includes('-') ? code.trim().toUpperCase() : `${code.substring(0, 4)}-${code.substring(4, 8)}`.toUpperCase();
+      const codeIndex = user.twoFactorRecoveryCodes.indexOf(formattedCode);
+      if (codeIndex !== -1) {
+        isCodeValid = true;
+        isRecovery = true;
+        // Consume the recovery code
+        user.twoFactorRecoveryCodes.splice(codeIndex, 1);
+        await user.save();
+        await logActivity(req, '2fa_recovery_code_used', `Used backup recovery code for 2FA`);
+      }
+    }
+
+    if (!isCodeValid) {
+      return res.status(400).json({ success: false, error: 'Invalid authentication code' });
+    }
+
+    // Generate tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    user.refreshToken = refreshToken;
+    user.loginAttempts = 0;
+    user.lockUntil = undefined;
+    await user.save();
+
+    // Create session entry
+    await createUserSession(req, user._id, refreshToken);
+
+    // Set cookies
+    res.cookie('admin_accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 3 * 60 * 1000 // 3 mins
+    });
+
+    res.cookie('admin_refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
+    // Check remember device option
+    if (rememberDevice) {
+      const deviceToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+      user.rememberDeviceTokens.push({ token: deviceToken, expiresAt });
+      await user.save();
+
+      res.cookie('admin_remember_device', `${user._id}:${deviceToken}`, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      });
+    }
+
+    await logActivity(req, 'login_success', `Admin logged in successfully with 2FA ${isRecovery ? '(Recovery Code)' : ''}`);
+
+    return res.status(200).json({
+      success: true,
+      accessToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Initiate 2FA setup by generating secret and QR info
+// @route   POST /api/auth/admin/2fa/setup
+// @access  Private (Admin Only)
+exports.setup2FA = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const secret = generateBase32Secret();
+    user.twoFactorTempSecret = secret;
+    await user.save();
+
+    const otpauthUri = `otpauth://totp/MAGIZHVAGAM:${user.email}?secret=${secret}&issuer=MAGIZHVAGAM`;
+    return res.status(200).json({
+      success: true,
+      secret,
+      otpauthUri
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Verify temp secret and enable 2FA
+// @route   POST /api/auth/admin/2fa/enable
+// @access  Private (Admin Only)
+exports.enable2FA = async (req, res) => {
+  try {
+    const { code } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    if (!user.twoFactorTempSecret) {
+      return res.status(400).json({ success: false, error: '2FA setup was not initiated. Run setup first.' });
+    }
+
+    const isValid = verifyTOTP(code, user.twoFactorTempSecret);
+    if (!isValid) {
+      return res.status(400).json({ success: false, error: 'Verification code is invalid. Please try again.' });
+    }
+
+    user.twoFactorSecret = user.twoFactorTempSecret;
+    user.twoFactorTempSecret = null;
+    user.twoFactorEnabled = true;
+
+    // Generate backup recovery codes
+    const recoveryCodes = generateRecoveryCodes(8);
+    user.twoFactorRecoveryCodes = recoveryCodes;
+    await user.save();
+
+    await logActivity(req, '2fa_enable', 'Two-Factor Authentication enabled');
+
+    return res.status(200).json({
+      success: true,
+      message: 'Two-Factor Authentication enabled successfully!',
+      recoveryCodes
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Disable 2FA after password confirmation
+// @route   POST /api/auth/admin/2fa/disable
+// @access  Private (Admin Only)
+exports.disable2FA = async (req, res) => {
+  try {
+    const { password } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, error: 'Password confirmation failed' });
+    }
+
+    user.twoFactorEnabled = false;
+    user.twoFactorSecret = null;
+    user.twoFactorRecoveryCodes = [];
+    user.rememberDeviceTokens = [];
+    await user.save();
+
+    res.clearCookie('admin_remember_device');
+
+    await logActivity(req, '2fa_disable', 'Two-Factor Authentication disabled');
+
+    return res.status(200).json({
+      success: true,
+      message: 'Two-Factor Authentication disabled successfully.'
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Regenerate new recovery codes
+// @route   POST /api/auth/admin/2fa/recovery-codes
+// @access  Private (Admin Only)
+exports.generateNewRecoveryCodes = async (req, res) => {
+  try {
+    const { password } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, error: 'Password confirmation failed' });
+    }
+
+    const newCodes = generateRecoveryCodes(8);
+    user.twoFactorRecoveryCodes = newCodes;
+    await user.save();
+
+    await logActivity(req, '2fa_recovery_regenerate', 'Regenerated Two-Factor backup recovery codes');
+
+    return res.status(200).json({
+      success: true,
+      recoveryCodes: newCodes
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+
+// ─── ADMIN PASSWORD MANAGEMENT ──────────────────────────────────────────────────
+
+// @desc    Update admin password with strength validation
+// @route   POST /api/auth/admin/update-password
+// @access  Private (Admin Only)
+exports.updateAdminPassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({ success: false, error: 'Please enter all password fields' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ success: false, error: 'Passwords do not match' });
+    }
+
+    // Strict validation
+    const strengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{12,}$/;
+    if (!strengthRegex.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password must be at least 12 characters, contain 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.'
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    // Validate current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, error: 'Current password is incorrect' });
+    }
+
+    // Prevent password reuse
+    const isReused = await bcrypt.compare(newPassword, user.password);
+    if (isReused) {
+      return res.status(400).json({ success: false, error: 'New password cannot be the same as your current password' });
+    }
+
+    // Set new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashedPassword;
+    user.passwordHash = hashedPassword;
+    user.passwordChangedAt = new Date();
+    user.refreshToken = null;
+    await user.save();
+
+    // Revoke all sessions
+    await UserSession.deleteMany({ userId: user._id });
+
+    // Clear authentication cookies
+    res.clearCookie('admin_accessToken');
+    res.clearCookie('admin_refreshToken');
+    res.clearCookie('admin_remember_device');
+
+    await logActivity(req, 'password_change_success', 'Administrator updated account password (forced logout)');
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password updated successfully. All sessions revoked. Please log in again.'
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+
+// ─── SESSION MANAGEMENT CONTROLLERS ─────────────────────────────────────────────
+
+// @desc    Get active admin sessions list
+// @route   GET /api/auth/admin/sessions
+// @access  Private (Admin Only)
+exports.getActiveSessions = async (req, res) => {
+  try {
+    const sessions = await UserSession.find({ userId: req.user._id }).sort({ lastActivity: -1 });
+    const currentRefreshToken = req.cookies ? req.cookies.admin_refreshToken : null;
+
+    const formattedSessions = sessions.map(s => ({
+      id: s._id,
+      ipAddress: s.ipAddress,
+      browser: s.browser,
+      os: s.os,
+      device: s.device,
+      country: s.country,
+      loginTime: s.loginTime,
+      lastActivity: s.lastActivity,
+      isCurrent: s.refreshToken === currentRefreshToken
+    }));
+
+    return res.status(200).json({
+      success: true,
+      sessions: formattedSessions
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Revoke specific admin session
+// @route   DELETE /api/auth/admin/sessions/:id
+// @access  Private (Admin Only)
+exports.revokeSession = async (req, res) => {
+  try {
+    const session = await UserSession.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
+    if (!session) {
+      return res.status(404).json({ success: false, error: 'Session not found' });
+    }
+
+    await logActivity(req, 'session_revoked', `Revoked active session IP: ${session.ipAddress}`);
+    return res.status(200).json({ success: true, message: 'Session revoked successfully.' });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Revoke other admin sessions
+// @route   POST /api/auth/admin/sessions/logout-others
+// @access  Private (Admin Only)
+exports.revokeOtherSessions = async (req, res) => {
+  try {
+    const currentRefreshToken = req.cookies ? req.cookies.admin_refreshToken : null;
+
+    const result = await UserSession.deleteMany({
+      userId: req.user._id,
+      refreshToken: { $ne: currentRefreshToken }
+    });
+
+    await logActivity(req, 'session_revoked_others', 'Revoked all other active admin sessions');
+    return res.status(200).json({
+      success: true,
+      message: `Successfully closed ${result.deletedCount} other active sessions.`
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Revoke all sessions (force logout everywhere)
+// @route   POST /api/auth/admin/sessions/logout-all
+// @access  Private (Admin Only)
+exports.revokeAllSessions = async (req, res) => {
+  try {
+    await UserSession.deleteMany({ userId: req.user._id });
+
+    const user = await User.findById(req.user._id);
+    if (user) {
+      user.refreshToken = null;
+      await user.save();
+    }
+
+    res.clearCookie('admin_accessToken');
+    res.clearCookie('admin_refreshToken');
+    res.clearCookie('admin_remember_device');
+
+    await logActivity(req, 'session_revoked_all', 'Revoked all active admin sessions (forced logout)');
+    return res.status(200).json({ success: true, message: 'Logged out of all sessions successfully.' });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
 

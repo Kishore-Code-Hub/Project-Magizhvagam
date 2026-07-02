@@ -1,7 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const upload = multer({ limits: { fileSize: 5 * 1024 * 1024 } }); // Memory storage for single avatar upload
+const path = require('path');
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedMime = /^image\/(jpeg|jpg|png|webp|gif)$/;
+    const ext = path.extname(file.originalname).toLowerCase();
+    const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+    
+    if (allowedMime.test(file.mimetype) && allowedExts.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only standard image files are allowed (.jpg, .jpeg, .png, .webp, .gif)'), false);
+    }
+  }
+});
 
 const { 
   handleLocalRegister, 
@@ -25,7 +41,18 @@ const {
   verifyOtp,
   resendOtp,
   verifyResetOtp,
-  resetPasswordWithOtp
+  resetPasswordWithOtp,
+  // 2FA & Password/Session controllers
+  verifyAdmin2FA,
+  setup2FA,
+  enable2FA,
+  disable2FA,
+  generateNewRecoveryCodes,
+  updateAdminPassword,
+  getActiveSessions,
+  revokeSession,
+  revokeOtherSessions,
+  revokeAllSessions
 } = require('../controllers/authController');
 const { protect, optionalProtect, adminOnly } = require('../middleware/authMiddleware');
 
@@ -42,7 +69,23 @@ router.post('/logout', terminateUserSession);
 
 // Admin-specific Login & Customers directory
 router.post('/admin/login', adminLogin);
+router.post('/admin/verify-2fa', verifyAdmin2FA);
 router.get('/customers', protect, adminOnly, getCustomers);
+
+// 2FA Management Endpoints (Admin Only)
+router.post('/admin/2fa/setup', protect, adminOnly, setup2FA);
+router.post('/admin/2fa/enable', protect, adminOnly, enable2FA);
+router.post('/admin/2fa/disable', protect, adminOnly, disable2FA);
+router.post('/admin/2fa/recovery-codes', protect, adminOnly, generateNewRecoveryCodes);
+
+// Admin Profile Password Management
+router.post('/admin/update-password', protect, adminOnly, updateAdminPassword);
+
+// Session Management Endpoints (Admin Only)
+router.get('/admin/sessions', protect, adminOnly, getActiveSessions);
+router.delete('/admin/sessions/:id', protect, adminOnly, revokeSession);
+router.post('/admin/sessions/logout-others', protect, adminOnly, revokeOtherSessions);
+router.post('/admin/sessions/logout-all', protect, adminOnly, revokeAllSessions);
 
 // Token Refresher & Session retrieval
 router.post('/refresh', refresh);
