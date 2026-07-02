@@ -68,12 +68,23 @@ class BaseController {
     const cssUrl = this.getCssUrl();
     if (cssUrl) {
       const linkId = `mz-style-workspace-${this.name}`;
-      if (!document.getElementById(linkId)) {
-        const link = document.createElement('link');
+      let link = document.getElementById(linkId);
+      if (!link) {
+        link = document.createElement('link');
         link.id = linkId;
         link.rel = 'stylesheet';
         link.href = cssUrl;
+        
+        const loadPromise = new Promise((resolve, reject) => {
+          link.onload = () => resolve();
+          link.onerror = () => {
+            console.error(`[${this.name}] Failed to load stylesheet: ${cssUrl}`);
+            reject(new Error(`Failed to load stylesheet: ${cssUrl}`));
+          };
+        });
+        
         document.head.appendChild(link);
+        await loadPromise;
       }
     }
 
@@ -91,11 +102,7 @@ class BaseController {
       } catch (err) {
         if (err.name === 'AbortError') return;
         console.error(`[${this.name}] Template load failed:`, err);
-        container.innerHTML = `<div style="padding:40px;text-align:center;color:#ef4444;">
-          <h3>Failed to load workspace</h3>
-          <p>${err.message}</p>
-        </div>`;
-        return;
+        throw err;
       }
     }
   }
@@ -266,6 +273,7 @@ class WorkspaceRouter {
     this._activeTab = null;
     this._activeController = null;
     this._popstateHandler = null;
+    this._navigationId = 0;
   }
 
   /** Get the workspace container element */
@@ -299,6 +307,9 @@ class WorkspaceRouter {
 
     // Skip if already on this tab
     if (this._activeTab === tabName && this._activeController) return;
+
+    // Increment transaction ID to discard stale loads
+    const navigationId = ++this._navigationId;
 
     // Unmount previous controller (unloads specific styles and dispatches destroy)
     if (this._activeController) {
@@ -340,16 +351,52 @@ class WorkspaceRouter {
       window.syncSPASidebarActive();
     }
 
-    // Instantiate and mount new controller
-    const controller = new ResolvedClass();
-    this._activeController = controller;
+    try {
+      // Instantiate and mount new controller
+      const controller = new ResolvedClass();
+      this._activeController = controller;
 
-    // Inject cache reference for data reuse
-    controller._routerCache = this.cache;
+      // Inject cache reference for data reuse
+      controller._routerCache = this.cache;
 
-    await controller.mount(container);
-    controller.init();
-    await controller.load();
+      await controller.mount(container);
+
+      // Verify that navigation was not superceded during mount
+      if (this._navigationId !== navigationId) {
+        controller.destroy();
+        return;
+      }
+
+      controller.init();
+      await controller.load();
+
+      // Verify that navigation was not superceded during load
+      if (this._navigationId !== navigationId) {
+        controller.destroy();
+        return;
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      console.error(`[WorkspaceRouter] Navigation error to ${tabName}:`, err);
+      
+      // Render recovery UI in container if this navigation is still active
+      if (this._navigationId === navigationId) {
+        container.innerHTML = `
+          <div class="workspace-error-panel" style="padding:40px; text-align:center; display:flex; flex-direction:column; gap:16px; align-items:center; justify-content:center; min-height:300px;">
+            <div style="font-size:36px; margin-bottom: 8px;">⚠️</div>
+            <h3 style="margin:0; font-size:16px; font-weight:700; color:#ef4444;">Failed to load workspace</h3>
+            <p style="margin:0 0 12px 0; color:#64748B; font-size:13px; max-width: 320px; line-height: 1.4;">There was a problem loading the template or initializing settings.</p>
+            <button type="button" class="studio-btn studio-btn-primary" id="mz-workspace-retry-btn">Reload Workspace</button>
+          </div>
+        `;
+        const retryBtn = container.querySelector('#mz-workspace-retry-btn');
+        if (retryBtn) {
+          retryBtn.addEventListener('click', () => {
+            this.navigate(tabName, { pushState: false });
+          });
+        }
+      }
+    }
   }
 
   /** Destroy the router and its active controller */

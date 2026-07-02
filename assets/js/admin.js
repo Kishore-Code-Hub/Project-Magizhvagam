@@ -22,10 +22,7 @@ async function initAdminRouterPage() {
     if (typeof window.initSettingsPage === 'function') {
       window.initSettingsPage();
     }
-  } else if (path.includes('appearance.html')) {
-    if (typeof window.initAppearancePage === 'function') {
-      window.initAppearancePage();
-    }
+
   } else if (path.includes('marketing.html')) {
     if (typeof window.initMarketingPage === 'function') {
       window.initMarketingPage();
@@ -147,7 +144,6 @@ function injectAdminSidebar() {
   const isMediaView = path.includes('media.html');
   const isMarketingView = path.includes('marketing.html');
   const isContentView = path.includes('content.html');
-  const isAppearanceView = path.includes('appearance.html');
   const isSettingsView = path.includes('settings.html');
 
   sidebar.className = 'admin-sidebar';
@@ -229,25 +225,7 @@ function injectAdminSidebar() {
         </ul>
       </li>
 
-      <!-- APPEARANCE STUDIO SECTION -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Appearance</li>
-      <li class="admin-menu-item has-submenu ${isAppearanceView ? 'expanded' : ''}" id="menu-appearance">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('appearance')">
-          <i data-lucide="palette"></i> <span>Appearance Studio</span>
-          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
-        </a>
-        <ul class="admin-menu-submenu ${isAppearanceView ? 'open' : ''}" id="submenu-appearance">
-          <li class="${activeTabCls('appearance.html', 'presets')}"><a href="/admin/appearance.html?tab=presets"><span>Theme Presets</span></a></li>
-          <li class="${activeTabCls('appearance.html', 'colors')}"><a href="/admin/appearance.html?tab=colors"><span>Colors</span></a></li>
-          <li class="${activeTabCls('appearance.html', 'typography')}"><a href="/admin/appearance.html?tab=typography"><span>Typography</span></a></li>
-          <li class="${activeTabCls('appearance.html', 'footer')}"><a href="/admin/appearance.html?tab=footer"><span>Footer Settings</span></a></li>
-          <li class="${activeTabCls('appearance.html', 'buttons')}"><a href="/admin/appearance.html?tab=buttons"><span>Buttons Layout</span></a></li>
-          <li class="${activeTabCls('appearance.html', 'cards')}"><a href="/admin/appearance.html?tab=cards"><span>Cards Layout</span></a></li>
-          <li class="${activeTabCls('appearance.html', 'animations')}"><a href="/admin/appearance.html?tab=animations"><span>Animations</span></a></li>
-          <li class="${activeTabCls('appearance.html', 'glass')}"><a href="/admin/appearance.html?tab=glass"><span>Glassmorphism</span></a></li>
-          <li class="${activeTabCls('appearance.html', 'custom-css')}"><a href="/admin/appearance.html?tab=custom-css"><span>Custom CSS</span></a></li>
-        </ul>
-      </li>
+
 
       <!-- SYSTEM & SETTINGS SECTION -->
       <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Settings</li>
@@ -435,21 +413,6 @@ function injectAdminTopbar() {
       header: 'Navigation Builder'
     };
     pageName = tabNames[tab] || 'Homepage Builder';
-  } else if (path.includes('appearance.html')) {
-    section = 'Appearance';
-    const tab = currentTab || 'presets';
-    const tabNames = {
-      presets: 'Theme Presets',
-      colors: 'Colors',
-      typography: 'Typography',
-      footer: 'Footer Settings',
-      buttons: 'Buttons Layout',
-      cards: 'Cards Layout',
-      animations: 'Animations',
-      glass: 'Glassmorphism',
-      'custom-css': 'Custom CSS'
-    };
-    pageName = tabNames[tab] || 'Theme Presets';
   } else if (path.includes('reports.html')) {
     section = 'System';
     pageName = 'Sales Reports';

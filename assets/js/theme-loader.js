@@ -51,6 +51,8 @@
     'theme.hdr.height': '--hdr-height',
     'theme.hdr.announcement_bg': '--hdr-announcement-bg',
     'theme.hdr.announcement_text': '--hdr-announcement-text',
+    'theme.hdr.mobile_height': '--hdr-mobile-height',
+    'typography.scaleMultiplier': '--layout-font-scale',
 
     // GROUP 02 — NAVIGATION & MEGA MENU
     'theme.nav.dropdown_bg': '--nav-dropdown-bg',
@@ -375,7 +377,8 @@
     'shadowStrength': '--layout-shadow-strength',
     'glassOpacity': '--layout-glass-opacity',
     'glassBlur': '--layout-glass-blur',
-    'animationSpeed': '--layout-animation-speed'
+    'animationSpeed': '--layout-animation-speed',
+    'mobileFontScale': '--layout-mobile-font-scale'
   };
 
   // Units for numeric values that need px suffix
@@ -391,7 +394,8 @@
     '--layout-card-radius', '--layout-btn-radius',
     '--layout-input-radius', '--layout-border-width',
     '--layout-glass-blur', '--mod-backdrop-blur',
-    '--glass-blur', '--glass-border-radius'
+    '--glass-blur', '--glass-border-radius',
+    '--hdr-mobile-height'
   ]);
 
   /**
@@ -542,6 +546,21 @@
       styleEl.textContent = `:root {\n${allDeclarations.join('\n')}\n}`;
     }
 
+    let scaleStyle = document.getElementById('mz-scale-vars');
+    if (!scaleStyle) {
+      scaleStyle = document.createElement('style');
+      scaleStyle.id = 'mz-scale-vars';
+      document.head.appendChild(scaleStyle);
+    }
+    const mainScale = parseFloat(data.typography?.scaleMultiplier) || 1.0;
+    const mobScale = parseFloat(data.layout?.mobileFontScale) || 0.9;
+    scaleStyle.textContent = `
+      html { font-size: calc(16px * ${mainScale}) !important; }
+      @media (max-width: 768px) {
+        html { font-size: calc(16px * ${mobScale}) !important; }
+      }
+    `;
+
     let customCssEl = document.getElementById('mz-custom-css');
     if (!customCssEl) {
       customCssEl = document.createElement('style');
@@ -562,6 +581,12 @@
       document.documentElement.classList.toggle(`glass-${comp}-enabled`, isEnabled);
       document.documentElement.classList.toggle(`glass-${comp}-disabled`, !isEnabled);
     });
+
+    // Update animations attributes dynamically for live preview sync
+    const animationsEnabled = data.layout?.animationsEnabled !== false;
+    const hoverStyle = data.theme?.pc?.hover_style || 'lift';
+    document.documentElement.setAttribute('data-mz-anim', animationsEnabled ? 'elevated' : 'none');
+    document.documentElement.setAttribute('data-mz-card-hover', hoverStyle);
   }
 
   // Synchronously load from localStorage cache and apply to avoid paint flash
@@ -667,6 +692,11 @@
 
   // ─── Execute immediately ──────────────────────────────────────────────────
   loadTheme();
+
+  // If inside an iframe, advertise readiness immediately
+  if (window.self !== window.top) {
+    window.parent.postMessage({ type: 'mz:preview-iframe-ready' }, '*');
+  }
 
   // Expose for external use
   window.__mzThemeLoader = {

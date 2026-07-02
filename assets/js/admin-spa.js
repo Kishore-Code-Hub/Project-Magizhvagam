@@ -11,7 +11,6 @@
     'customers.html',
     'marketing.html',
     'content.html',
-    'appearance.html',
     'reports.html',
     'settings.html',
     'security-logs.html',
@@ -159,7 +158,6 @@
       if (p.includes('products.html')) return 'products';
       if (p.includes('marketing.html')) return 'coupons';
       if (p.includes('content.html')) return 'homepage';
-      if (p.includes('appearance.html')) return 'presets';
       if (p.includes('settings.html')) return 'general';
       return '';
     };

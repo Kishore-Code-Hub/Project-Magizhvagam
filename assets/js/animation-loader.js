@@ -48,6 +48,29 @@
 
   async function loadAnimationConfig() {
     try {
+      // First check if there is cached theme settings in localStorage
+      const cached = localStorage.getItem('mz-theme-cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && parsed.data) {
+          const t = parsed.data;
+          const animationsEnabled = t.layout?.animationsEnabled !== false;
+          const hoverStyle = t.theme?.pc?.hover_style || 'lift';
+          const speed = t.layout?.animationSpeed !== undefined ? t.layout.animationSpeed : 0.3;
+
+          applyAnimationConfig({
+            preset: animationsEnabled ? 'elevated' : 'none',
+            overrides: {
+              cardHover: hoverStyle,
+              scrollReveal: animationsEnabled,
+              pageEntrance: 'fade'
+            }
+          });
+          document.documentElement.style.setProperty('--layout-animation-speed', animationsEnabled ? speed : 0);
+          return;
+        }
+      }
+
       const res = await fetch('/api/site-settings/animation');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();

@@ -87,13 +87,13 @@ object {
 }
 
 .mobile-sidebar {
-  background: rgba(13, 10, 20, 0.96) !important;
+  background: var(--nav-mobile-bg, rgba(13, 10, 20, 0.96)) !important;
   backdrop-filter: blur(24px) !important;
   -webkit-backdrop-filter: blur(24px) !important;
 }
 
 :root[data-theme="light"] .mobile-sidebar {
-  background: rgba(250, 249, 245, 0.97) !important;
+  background: var(--nav-mobile-bg, rgba(250, 249, 245, 0.97)) !important;
 }
 
 /* --- Search Glassmorphism --- */
@@ -468,7 +468,7 @@ object {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    min-height: 52px !important;
+    min-height: var(--hdr-mobile-height, 52px) !important;
     width: 100% !important;
     padding: 6px 0 !important;
     gap: 0 !important;
