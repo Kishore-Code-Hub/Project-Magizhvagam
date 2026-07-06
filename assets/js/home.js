@@ -131,17 +131,6 @@ async function loadHomepageV4Sections() {
     if (heroSec?.enabled && heroSec.config) {
       applyHeroSectionConfig(heroSec.config);
     }
-
-    const testSec = sections.find(s => s.id === 'testimonials');
-    if (testSec?.enabled && testSec.config?.items?.length) {
-      renderTestimonialsV4(testSec.config.items);
-    }
-
-    const newsletterSec = sections.find(s => s.id === 'newsletter');
-    if (newsletterSec?.enabled && newsletterSec.config) {
-      renderNewsletterSection(newsletterSec.config);
-    }
-
     return true;
   } catch (err) {
     console.warn('[home.js] V4 homepage sections unavailable');
@@ -244,37 +233,6 @@ function applyHeroSectionConfig(config) {
   }
 }
 
-function renderNewsletterSection(config) {
-  const section = document.querySelector('[data-mz-section="newsletter"]');
-  if (!section) return;
-  section.innerHTML = `
-    <div class="newsletter-inner glass-panel" data-reveal>
-      <h2>${config.heading || 'Stay in the Loop'}</h2>
-      <p>${config.incentive || 'Stay Tuned for exclusive offers and gift inspiration.'}</p>
-      <form class="newsletter-form" onsubmit="event.preventDefault(); if(window.showToast) showToast('Thank you for subscribing!', 'success');">
-        <input type="email" required placeholder="${config.placeholder || 'Enter your email'}" aria-label="Email address">
-        <button type="submit" class="btn btn-primary">${config.ctaLabel || 'Send'}</button>
-      </form>
-    </div>
-  `;
-  section.style.display = '';
-}
-
-function renderTestimonialsV4(items) {
-  const container = document.getElementById('testimonials-mount');
-  if (!container || !items?.length) return;
-
-  container.innerHTML = items.map(t => `
-    <article class="testimonial-card glass-panel scroll-reveal" data-reveal>
-      <div class="testimonial-stars">${'★'.repeat(Math.min(5, t.rating || 5))}</div>
-      <blockquote>"${t.text || t.comment || ''}"</blockquote>
-      <footer>
-        <strong>${t.name || t.author || 'Customer'}</strong>
-        ${t.location || t.occasion ? `<span>${t.location || t.occasion}</span>` : ''}
-      </footer>
-    </article>
-  `).join('');
-}
 
 
 

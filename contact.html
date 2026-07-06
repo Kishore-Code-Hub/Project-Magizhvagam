@@ -48,6 +48,16 @@
       border-color: hsl(var(--primary-purple));
       background: white;
     }
+
+    @media (max-width: 768px) {
+      .contact-layout {
+        padding-top: 16px !important;
+      }
+      .contact-layout h1 {
+        margin-top: 0 !important;
+        font-size: 28px !important;
+      }
+    }
   </style>
 </head>
 
@@ -128,9 +138,9 @@
           <div>
             <h5 style="font-family:'Outfit'; font-size:15px; margin-bottom:4px;">WhatsApp Support</h5>
             <p style="color:var(--text-muted); font-size:13px; margin-bottom:4px; font-weight:700; color:#25D366;">
-              Fastest response channel</p>
-            <p style="color:var(--text-muted); font-size:13px; margin-bottom:12px;" class="contact-phone-val">+91 98765
-              43210</p>
+              Fast response</p>
+            <p style="color:var(--text-muted); font-size:13px; margin-bottom:12px;" class="contact-phone-val">Click to
+              Chat</p>
             <a href="https://wa.me/919894086929" class="btn btn-gold contact-chat-link"
               style="border-radius:4px; padding:6px 16px; font-size:12px;">Chat Now</a>
           </div>
@@ -179,22 +189,119 @@
   <script src="/assets/js/store-enhancements.js"></script>
   <script src="/assets/js/app.js"></script>
   <script>
-    // Route "Drop us a Message" form directly to Gmail via mailto
+    // Route "Drop us a Message" form to backend SMTP API
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
-      contactForm.addEventListener('submit', (e) => {
+      contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const name = document.getElementById('c-name').value.trim();
         const email = document.getElementById('c-email').value.trim();
-        const subjectRaw = document.getElementById('c-subject').value.trim();
+        const subject = document.getElementById('c-subject').value.trim();
         const message = document.getElementById('c-msg').value.trim();
 
-        const targetEmail = 'hellomagizhvagam@gmail.com';
-        const subject = encodeURIComponent(`New Store Query from ${name}: ${subjectRaw}`);
-        const body = encodeURIComponent(`Name: ${name}\nReply-To: ${email}\n\nMessage:\n${message}`);
+        // Frontend validation
+        if (!name || !email || !subject || !message) {
+          if (window.showToast) window.showToast('Please fill out all required fields.', 'error');
+          return;
+        }
 
-        window.location.href = `mailto:${targetEmail}?subject=${subject}&body=${body}`;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          if (window.showToast) window.showToast('Please enter a valid email address.', 'error');
+          return;
+        }
+
+        const submitBtn = contactForm.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+
+        // Disable button & show spinner
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span style="display:inline-flex; align-items:center; gap:8px;">
+          <span style="width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-radius:50%; border-top-color:#fff; animation:spin 1s linear infinite; display:inline-block;"></span>
+          Sending...
+        </span>`;
+
+        try {
+          const res = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, subject, message })
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            if (window.showToast) window.showToast('Enquiry sent successfully!', 'success');
+            contactForm.reset();
+            showPremiumPopup(true, 'Enquiry Sent!', 'Thank you for reaching out. Our team will get back to you within 24 hours.');
+          } else {
+            if (window.showToast) window.showToast(data.error || 'Failed to send enquiry.', 'error');
+            showPremiumPopup(false, 'Submission Failed', data.error || 'Failed to dispatch email. Please try again.');
+          }
+        } catch (err) {
+          if (window.showToast) window.showToast('Network error, please try again.', 'error');
+          showPremiumPopup(false, 'Network Error', 'Connection to server failed. Please try again.');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnText;
+        }
+      });
+    }
+
+    function showPremiumPopup(isSuccess, title, desc) {
+      const existing = document.getElementById('premium-contact-popup');
+      if (existing) existing.remove();
+
+      const popup = document.createElement('div');
+      popup.id = 'premium-contact-popup';
+      popup.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: rgba(13, 10, 20, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      `;
+
+      const card = document.createElement('div');
+      card.style.cssText = `
+        max-width: 420px;
+        width: calc(100% - 32px);
+        padding: 40px 30px;
+        border-radius: 16px;
+        text-align: center;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        transform: scale(0.9);
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        color: #1A1523;
+      `;
+
+      const iconColor = isSuccess ? '#25D366' : '#EF4444';
+      const iconBg = isSuccess ? 'rgba(37, 211, 102, 0.1)' : 'rgba(239, 68, 68, 0.1)';
+      const iconSvg = isSuccess ?
+        `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>` :
+        `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+
+      card.innerHTML = `
+        <div style="width:64px; height:64px; border-radius:50%; background:${iconBg}; color:${iconColor}; border:2px solid ${iconColor}; display:inline-flex; align-items:center; justify-content:center; margin-bottom:24px;">
+          ${iconSvg}
+        </div>
+        <h3 style="font-family:'Outfit', sans-serif; font-size:24px; font-weight:700; margin-bottom:12px; color:#1A1523;">${title}</h3>
+        <p style="font-size:14.5px; color:#4A5568; line-height:1.6; margin-bottom:28px;">${desc}</p>
+        <button type="button" class="btn" style="width:100%; border-radius:8px; padding:12px 24px; font-weight:700; background: linear-gradient(135deg, #c89b3c, #da1b60); border: none; color: white; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('premium-contact-popup').remove()">Dismiss</button>
+      `;
+
+      popup.appendChild(card);
+      document.body.appendChild(popup);
+
+      requestAnimationFrame(() => {
+        popup.style.opacity = '1';
+        card.style.transform = 'scale(1)';
       });
     }
   </script>

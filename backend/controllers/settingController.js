@@ -240,7 +240,6 @@ const DEFAULT_FEATURE_TOGGLES = {
   registrationEnabled: true,
   whatsappCheckoutEnabled: false,
   codEnabled: true,
-  reviewsEnabled: true,
   recommendationsEnabled: true,
   promosEnabled: true,
   announcementBannerEnabled: true,
@@ -298,7 +297,6 @@ exports.updateFeatureToggles = async (req, res) => {
     if (toggles.registrationEnabled !== undefined) sanitized.registrationEnabled = !!toggles.registrationEnabled;
     if (toggles.whatsappCheckoutEnabled !== undefined) sanitized.whatsappCheckoutEnabled = !!toggles.whatsappCheckoutEnabled;
     if (toggles.codEnabled !== undefined) sanitized.codEnabled = !!toggles.codEnabled;
-    if (toggles.reviewsEnabled !== undefined) sanitized.reviewsEnabled = !!toggles.reviewsEnabled;
     if (toggles.recommendationsEnabled !== undefined) sanitized.recommendationsEnabled = !!toggles.recommendationsEnabled;
     if (toggles.promosEnabled !== undefined) sanitized.promosEnabled = !!toggles.promosEnabled;
     if (toggles.announcementBannerEnabled !== undefined) sanitized.announcementBannerEnabled = !!toggles.announcementBannerEnabled;
@@ -819,5 +817,37 @@ exports.uploadSettingsImage = async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ success: false, error: `Upload error: ${error.message}` });
+  }
+};
+
+// @desc    Subscribe to Newsletter
+// @route   POST /api/settings/subscribe
+// @access  Public
+exports.subscribeNewsletter = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required.' });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ success: false, error: 'Please provide a valid email address.' });
+    }
+
+    let setting = await Setting.findOne({ key: 'subscribers' });
+    if (!setting) {
+      setting = await Setting.create({ key: 'subscribers', value: [email] });
+    } else {
+      let subscribers = Array.isArray(setting.value) ? setting.value : [];
+      if (!subscribers.includes(email)) {
+        subscribers.push(email);
+        setting.value = subscribers;
+        setting.markModified('value');
+        await setting.save();
+      }
+    }
+    res.status(200).json({ success: true, message: 'Subscribed successfully!' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: `Subscription error: ${error.message}` });
   }
 };

@@ -1602,12 +1602,44 @@ async function setupWhatsApp() {
     text-decoration: none;
     font-size: 26px;
     font-weight: bold;
+    transform: translateY(120px);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
   `;
   // Simple inner icon
   btn.innerHTML = `
     <svg style="width:30px; height:30px; fill:white;" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.32a8.188 8.188 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24M8.53 7.33c-.15 0-.41.06-.63.29-.22.23-.84.82-.84 2s.87 2.33.99 2.49c.12.17 1.71 2.61 4.15 3.66.58.25 1.03.4 1.39.51.58.18 1.11.16 1.53.1.47-.07 1.45-.59 1.65-1.17.2-.58.2-1.07.14-1.17-.06-.1-.23-.16-.49-.29-.26-.13-1.53-.76-1.77-.85-.24-.09-.41-.13-.58.13-.17.26-.66.85-.81 1.02-.15.17-.3.19-.56.06-.26-.13-1.1-.41-2.1-1.3-.78-.7-1.31-1.56-1.46-1.82-.15-.26-.02-.4.11-.53.12-.11.26-.3.39-.46.13-.17.17-.29.26-.49.09-.19.04-.37-.02-.49-.06-.12-.58-1.4-1.8-1.82c-.22-.05-.44-.05-.63-.05z"/></svg>
   `;
   document.body.appendChild(btn);
+
+  let idleTimeout = null;
+  let isVisible = false;
+
+  const showWhatsAppBtn = () => {
+    if (!isVisible) {
+      btn.style.transform = 'translateY(0)';
+      btn.style.opacity = '1';
+      isVisible = true;
+    }
+    clearTimeout(idleTimeout);
+    idleTimeout = setTimeout(hideWhatsAppBtn, 3000); // 3 seconds idle timeout
+  };
+
+  const hideWhatsAppBtn = () => {
+    btn.style.transform = 'translateY(120px)';
+    btn.style.opacity = '0';
+    isVisible = false;
+  };
+
+  // Bind key interaction events
+  window.addEventListener('scroll', showWhatsAppBtn, { passive: true });
+  window.addEventListener('mousemove', showWhatsAppBtn, { passive: true });
+  window.addEventListener('touchstart', showWhatsAppBtn, { passive: true });
+  window.addEventListener('keydown', showWhatsAppBtn, { passive: true });
+  window.addEventListener('click', showWhatsAppBtn, { passive: true });
+
+  // Start in hidden state
+  hideWhatsAppBtn();
 }
 
 // Dynamic login/register modal for guests
@@ -1942,7 +1974,7 @@ window.showWhatsAppConfirmationModal = (summary, onConfirm) => {
 
       <div style="margin: 20px 0; text-align: left; display: flex; flex-direction: column; gap: 14px;">
         <div>
-          <label for="wa-customer-name" style="display:block; font-size:12px; font-weight:700; margin-bottom:6px; color:var(--text-color);">Name</label>
+          <label for="wa-customer-name" style="display:block; font-size:12px; font-weight:700; margin-bottom:6px; color:var(white--text-color);">Name</label>
           <input type="text" id="wa-customer-name" placeholder="Enter your name" style="width:100%; padding:10px 12px; border:1px solid var(--card-border); border-radius:8px; font-size:14px; font-family:'Outfit'; background:#FFFFFF; color:var(--text-color); outline:none; box-sizing:border-box;" value="${defaultName}">
           <span id="wa-name-error" style="color:#ef4444; font-size:11px; display:none; margin-top:4px;">Name must be at least 2 characters.</span>
         </div>

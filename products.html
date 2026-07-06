@@ -72,103 +72,111 @@
     <div class="catalog-layout">
       
       <!-- Filters Sidebar -->
+      <!-- Filters Sidebar -->
       <aside class="filter-sidebar glass animated scale-in">
-        <h3 class="filter-title" style="font-family:'Outfit';">Refine Search</h3>
+        <div class="filter-sidebar-header">
+          <h3 class="filter-title" style="font-family:'Outfit';">Refine Search</h3>
+          <button type="button" class="filter-close-btn" id="mobile-filter-close" aria-label="Close filters">✕ Close</button>
+        </div>
         
         <form id="filter-form">
-          <div class="form-group" style="position:relative;">
-            <label for="filter-search">Keyword Search</label>
-            <input type="text" id="filter-search" class="form-control" placeholder="Key, title, tag..." autocomplete="off">
-            <div id="search-suggestions-box" class="glass" style="position:absolute; top:100%; left:0; width:100%; max-height:280px; overflow-y:auto; border:1px solid var(--card-border); border-radius:12px; z-index:999; display:none; padding:12px; margin-top:6px; box-shadow:0 12px 30px rgba(0,0,0,0.15); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); background:var(--card-bg);">
-              <!-- Loaded dynamically -->
+          <div class="filter-sidebar-content">
+            <div class="form-group" style="position:relative;">
+              <label for="filter-search">Keyword Search</label>
+              <input type="text" id="filter-search" class="form-control" placeholder="Key, title, tag..." autocomplete="off">
+              <div id="search-suggestions-box" class="glass" style="position:absolute; top:100%; left:0; width:100%; max-height:280px; overflow-y:auto; border:1px solid var(--card-border); border-radius:12px; z-index:999; display:none; padding:12px; margin-top:6px; box-shadow:0 12px 30px rgba(0,0,0,0.15); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); background:var(--card-bg);">
+                <!-- Loaded dynamically -->
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="filter-category">Event Category</label>
+              <select id="filter-category" class="form-control">
+                <option value="">All Categories</option>
+                <!-- Loaded dynamically -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Price Range (₹)</label>
+              <div style="display:flex; gap:8px;">
+                <input type="number" id="filter-min-price" class="form-control" placeholder="Min" min="0">
+                <input type="number" id="filter-max-price" class="form-control" placeholder="Max" min="0">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="filter-material">Material</label>
+              <select id="filter-material" class="form-control">
+                <option value="">Any Material</option>
+                <option value="Brass">Brass</option>
+                <option value="Jute">Jute</option>
+                <option value="Wooden">Wooden</option>
+                <option value="Ceramic">Ceramic</option>
+                <option value="Clay">Clay / Terracotta</option>
+                <option value="Silver">Silver Plated</option>
+                <option value="Leather">Leather</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="filter-color">Color Accent</label>
+              <input type="text" id="filter-color" class="form-control" placeholder="e.g. Gold, Silver, Pink">
+            </div>
+
+            <div class="form-group">
+              <label for="filter-occasion">Occasion Tag</label>
+              <select id="filter-occasion" class="form-control">
+                <option value="">Any Occasion</option>
+                <option value="wedding">Wedding</option>
+                <option value="birthday">Birthday</option>
+                <option value="baby-shower">Baby Shower</option>
+                <option value="corporate">Corporate</option>
+                <option value="festival">Festival</option>
+                <option value="housewarming">Housewarming</option>
+              </select>
+            </div>
+
+            <!-- Availability filter -->
+            <div class="form-group">
+              <label for="filter-availability">Availability</label>
+              <select id="filter-availability" class="form-control">
+                <option value="">All Products</option>
+                <option value="inStock">In Stock Only</option>
+                <option value="outOfStock">Out of Stock Only</option>
+              </select>
+            </div>
+
+            <!-- Rating filter -->
+            <div class="form-group">
+              <label for="filter-rating">Minimum Rating</label>
+              <select id="filter-rating" class="form-control">
+                <option value="">Any Rating</option>
+                <option value="5">★★★★★ (5 Stars)</option>
+                <option value="4">★★★★☆ & Above (4+ Stars)</option>
+                <option value="3">★★★☆☆ & Above (3+ Stars)</option>
+                <option value="2">★★☆☆☆ & Above (2+ Stars)</option>
+              </select>
+            </div>
+
+            <!-- Boolean toggles checkboxes -->
+            <div class="form-group" style="display:flex; flex-direction:column; gap:8px; margin-top:20px;">
+              <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer; font-size:12px; color:var(--text-color);">
+                <input type="checkbox" id="filter-discount" style="cursor:pointer;"> 🏷️ On Discount Only
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer; font-size:12px; color:var(--text-color);">
+                <input type="checkbox" id="filter-featured" style="cursor:pointer;"> ⭐ Featured Items Only
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer; font-size:12px; color:var(--text-color);">
+                <input type="checkbox" id="filter-new-arrivals" style="cursor:pointer;"> 🚀 New Arrivals Only
+              </label>
             </div>
           </div>
-          
-          <div class="form-group">
-            <label for="filter-category">Event Category</label>
-            <select id="filter-category" class="form-control">
-              <option value="">All Categories</option>
-              <!-- Loaded dynamically -->
-            </select>
-          </div>
 
-          <div class="form-group">
-            <label>Price Range (₹)</label>
-            <div style="display:flex; gap:8px;">
-              <input type="number" id="filter-min-price" class="form-control" placeholder="Min" min="0">
-              <input type="number" id="filter-max-price" class="form-control" placeholder="Max" min="0">
-            </div>
+          <div class="filter-sidebar-footer">
+            <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; font-size:13px; margin-bottom:10px; margin-top:15px;">Apply Filters</button>
+            <button type="button" onclick="clearAllFilters()" class="btn btn-secondary" style="width:100%; border-radius:8px; font-size:13px;">Clear All</button>
           </div>
-
-          <div class="form-group">
-            <label for="filter-material">Material</label>
-            <select id="filter-material" class="form-control">
-              <option value="">Any Material</option>
-              <option value="Brass">Brass</option>
-              <option value="Jute">Jute</option>
-              <option value="Wooden">Wooden</option>
-              <option value="Ceramic">Ceramic</option>
-              <option value="Clay">Clay / Terracotta</option>
-              <option value="Silver">Silver Plated</option>
-              <option value="Leather">Leather</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="filter-color">Color Accent</label>
-            <input type="text" id="filter-color" class="form-control" placeholder="e.g. Gold, Silver, Pink">
-          </div>
-
-          <div class="form-group">
-            <label for="filter-occasion">Occasion Tag</label>
-            <select id="filter-occasion" class="form-control">
-              <option value="">Any Occasion</option>
-              <option value="wedding">Wedding</option>
-              <option value="birthday">Birthday</option>
-              <option value="baby-shower">Baby Shower</option>
-              <option value="corporate">Corporate</option>
-              <option value="festival">Festival</option>
-              <option value="housewarming">Housewarming</option>
-            </select>
-          </div>
-
-          <!-- Availability filter -->
-          <div class="form-group">
-            <label for="filter-availability">Availability</label>
-            <select id="filter-availability" class="form-control">
-              <option value="">All Products</option>
-              <option value="inStock">In Stock Only</option>
-              <option value="outOfStock">Out of Stock Only</option>
-            </select>
-          </div>
-
-          <!-- Rating filter -->
-          <div class="form-group">
-            <label for="filter-rating">Minimum Rating</label>
-            <select id="filter-rating" class="form-control">
-              <option value="">Any Rating</option>
-              <option value="5">★★★★★ (5 Stars)</option>
-              <option value="4">★★★★☆ & Above (4+ Stars)</option>
-              <option value="3">★★★☆☆ & Above (3+ Stars)</option>
-              <option value="2">★★☆☆☆ & Above (2+ Stars)</option>
-            </select>
-          </div>
-
-          <!-- Boolean toggles checkboxes -->
-          <div class="form-group" style="display:flex; flex-direction:column; gap:8px; margin-top:20px;">
-            <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer; font-size:12px; color:var(--text-color);">
-              <input type="checkbox" id="filter-discount" style="cursor:pointer;"> 🏷️ On Discount Only
-            </label>
-            <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer; font-size:12px; color:var(--text-color);">
-              <input type="checkbox" id="filter-featured" style="cursor:pointer;"> ⭐ Featured Items Only
-            </label>
-            <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer; font-size:12px; color:var(--text-color);">
-              <input type="checkbox" id="filter-new-arrivals" style="cursor:pointer;"> 🚀 New Arrivals Only
-            </label>
-          </div>
-
-          <button type="submit" class="btn btn-primary" style="width:100%; border-radius:8px; font-size:13px; margin-bottom:10px; margin-top:15px;">Apply Filters</button>
-          <button type="button" onclick="clearAllFilters()" class="btn btn-secondary" style="width:100%; border-radius:8px; font-size:13px;">Clear All</button>
         </form>
       </aside>
 
@@ -177,7 +185,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
           <h2 style="font-size:24px; font-family:'Outfit'; color:var(--text-color);">Gifts Collection</h2>
           
-          <div>
+          <div class="desktop-sort-wrapper">
             <select id="filter-sort" class="form-control" style="width:180px; font-weight:600;">
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -189,6 +197,26 @@
               <option value="alphabetical">Alphabetical (A-Z)</option>
             </select>
           </div>
+        </div>
+
+        <!-- Sticky Sort & Filter Bar for Mobile/Tablet -->
+        <div class="mobile-sort-filter-sticky-bar" id="mobile-sort-filter-bar">
+          <button type="button" class="mobile-bar-btn" id="mobile-sort-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px; vertical-align:middle;">
+              <line x1="4" y1="9" x2="20" y2="9"></line>
+              <line x1="4" y1="15" x2="20" y2="15"></line>
+              <circle cx="9" cy="9" r="2"></circle>
+              <circle cx="15" cy="15" r="2"></circle>
+            </svg>
+            Sort
+          </button>
+          <div class="mobile-bar-divider"></div>
+          <button type="button" class="mobile-bar-btn" id="mobile-filter-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px; vertical-align:middle;">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            Filter
+          </button>
         </div>
 
         <div class="grid grid-3" id="catalog-grid" style="min-height:400px;">
@@ -206,6 +234,30 @@
 
   <!-- Shared Footer -->
   <footer id="main-footer" class="ft-layout-wrapper"></footer>
+
+  <!-- Mobile Filter Backdrop -->
+  <div class="mobile-filter-backdrop" id="mobile-filter-backdrop"></div>
+
+  <!-- Mobile Sort Bottom Sheet -->
+  <div class="mobile-sort-sheet" id="mobile-sort-sheet">
+    <div class="mobile-sort-sheet-backdrop" id="mobile-sort-backdrop"></div>
+    <div class="mobile-sort-sheet-content">
+      <div class="mobile-sort-sheet-header">
+        <h4>Sort By</h4>
+        <button type="button" class="mobile-sort-close-btn" id="mobile-sort-close">✕</button>
+      </div>
+      <div class="mobile-sort-sheet-options">
+        <button type="button" class="sort-option-btn" data-value="mostPopular">Recommended / Featured</button>
+        <button type="button" class="sort-option-btn" data-value="newest">Newest First</button>
+        <button type="button" class="sort-option-btn" data-value="bestSelling">Best Selling</button>
+        <button type="button" class="sort-option-btn" data-value="priceLowHigh">Price: Low to High</button>
+        <button type="button" class="sort-option-btn" data-value="priceHighLow">Price: High to Low</button>
+        <button type="button" class="sort-option-btn" data-value="highestRated">Highest Rated</button>
+        <button type="button" class="sort-option-btn" data-value="oldest">Oldest First</button>
+        <button type="button" class="sort-option-btn" data-value="alphabetical">Alphabetical (A-Z)</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Scripts -->
   <script src="/assets/js/animation-loader.js"></script>

@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const { 
   getSetting, updateSetting, getCoupons, createCoupon, deleteCoupon, resetSetting, uploadSettingsImage,
-  getFeatureToggles, updateFeatureToggles
+  getFeatureToggles, updateFeatureToggles, subscribeNewsletter
 } = require('../controllers/settingController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
@@ -20,6 +20,9 @@ router.get('/', (req, res) => {
 // Feature toggles (MUST be before /:key to avoid route conflict)
 router.get('/feature-toggles', getFeatureToggles);
 router.put('/feature-toggles', protect, adminOnly, updateFeatureToggles);
+
+// Public Newsletter subscription
+router.post('/subscribe', subscribeNewsletter);
 
 // Admin-only settings builder, uploads & Coupon endpoints
 router.post('/upload', protect, adminOnly, upload.single('image'), uploadSettingsImage);

@@ -1,6 +1,5 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
-const Review = require('../models/Review');
 const Setting = require('../models/Setting');
 const { deleteFromCloudinary } = require('../services/cloudinary');
 const fs = require('fs');
@@ -256,13 +255,10 @@ exports.getProductById = async (req, res) => {
       related = [...catMatches, ...tagMatches];
     }
 
-    // Fetch product reviews
-    const reviews = await Review.find({ productId: product._id }).sort({ createdAt: -1 });
-
     res.status(200).json({
       success: true,
       product: normalizeProductDoc(product),
-      reviews,
+      reviews: [],
       related: related.map(normalizeProductDoc)
     });
   } catch (error) {
@@ -502,45 +498,6 @@ exports.deleteProduct = async (req, res) => {
     res.status(200).json({ success: true, message: 'Product deleted from system.' });
   } catch (error) {
     res.status(500).json({ success: false, error: `Product deletion error: ${error.message}` });
-  }
-};
-
-// @desc    Add review & compute product average rating
-// @route   POST /api/products/:id/reviews
-// @access  Public
-exports.createReview = async (req, res) => {
-  try {
-    const { name, rating, comment } = req.body;
-    const productId = req.params.id;
-
-    if (!name || !rating) {
-      return res.status(400).json({ success: false, error: 'Please provide name and rating' });
-    }
-
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
-    }
-
-    const review = await Review.create({
-      productId,
-      name,
-      rating: Number(rating),
-      comment: comment || ''
-    });
-
-    // Update product review aggregates
-    const allReviews = await Review.find({ productId });
-    const count = allReviews.length;
-    const avg = allReviews.reduce((sum, rev) => sum + rev.rating, 0) / count;
-
-    product.totalReviews = count;
-    product.averageRating = Math.round(avg * 10) / 10;
-    await product.save();
-
-    res.status(201).json({ success: true, message: 'Review submitted successfully!', review });
-  } catch (error) {
-    res.status(500).json({ success: false, error: `Review error: ${error.message}` });
   }
 };
 

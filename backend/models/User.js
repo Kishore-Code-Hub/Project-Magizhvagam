@@ -68,16 +68,24 @@ const UserSchema = new mongoose.Schema({
   wishlistItems: { type: [WishlistItemSchema], default: [] },
   refreshToken: { type: String, default: null },
 
-  // Two-Factor Authentication
+  // Two-Factor Authentication (Email OTP based)
   twoFactorEnabled: { type: Boolean, default: false },
-  twoFactorSecret: { type: String, default: null },
-  twoFactorRecoveryCodes: { type: [String], default: [] },
-  twoFactorTempSecret: { type: String, default: null },
-  rememberDeviceTokens: [{
-    token: { type: String, required: true },
-    expiresAt: { type: Date, required: true }
-  }],
-  passwordChangedAt: { type: Date, default: null }
+  passwordChangedAt: { type: Date, default: null },
+
+  // Email Login OTP
+  loginOtpHash: { type: String, default: null },
+  loginOtpExpires: { type: Date, default: null },
+  loginOtpAttempts: { type: Number, default: 0 },
+  loginOtpSentAt: { type: Date, default: null },
+
+  // Email Change Verification State
+  emailChangeNewEmail: { type: String, default: null },
+  emailChangeCurrentOtpHash: { type: String, default: null },
+  emailChangeCurrentOtpExpires: { type: Date, default: null },
+  emailChangeCurrentVerified: { type: Boolean, default: false },
+  emailChangeNewOtpHash: { type: String, default: null },
+  emailChangeNewOtpExpires: { type: Date, default: null },
+  emailChangeAttempts: { type: Number, default: 0 }
 }, { timestamps: true });
 
 UserSchema.pre('validate', function(next) {

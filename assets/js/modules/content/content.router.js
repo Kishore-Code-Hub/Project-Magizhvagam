@@ -6,7 +6,6 @@
 
   const REGISTRY = {
     'homepage':     HomepageContentController,
-    'testimonials': TestimonialsController,
     'about':        AboutController,
     'contact':      ContactController,
     'policies':     PoliciesController,
@@ -15,7 +14,6 @@
 
   const TAB_LABELS = {
     'homepage':     'Homepage Sections',
-    'testimonials': 'Reviews Curation',
     'about':        'Brand Story',
     'contact':      'Contact Details',
     'policies':     'Store Policies',

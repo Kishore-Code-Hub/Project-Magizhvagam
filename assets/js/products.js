@@ -52,6 +52,9 @@ async function initCatalog() {
     currentPage = 1;
     loadCatalogProducts();
   });
+
+  // 5. Mobile Sort & Filter Modal Interaction Bindings
+  initMobileSortFilter();
 }
 
 async function loadSidebarCategories() {
@@ -378,6 +381,22 @@ window.clearAllFilters = () => {
   document.getElementById('filter-new-arrivals').checked = false;
   document.getElementById('filter-sort').value = 'newest';
   
+  // Close mobile filter panel if open
+  const filterSidebar = document.querySelector('.filter-sidebar');
+  const filterBackdrop = document.getElementById('mobile-filter-backdrop');
+  if (filterSidebar) filterSidebar.classList.remove('open');
+  if (filterBackdrop) filterBackdrop.classList.remove('open');
+  
+  // Restore scroll position and unlock fixed body
+  if (document.body.style.position === 'fixed') {
+    const scrollY = parseInt(document.body.style.top || '0') * -1;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    window.scrollTo(0, scrollY);
+  }
+
   currentPage = 1;
   loadCatalogProducts();
   if (typeof showToast === 'function') {
@@ -582,5 +601,119 @@ function initSearchSuggestions() {
   document.getElementById('filter-form').addEventListener('submit', () => {
     const val = input.value.trim();
     if (val) addRecentSearch(val);
+  });
+}
+
+function initMobileSortFilter() {
+  const mobileSortBtn = document.getElementById('mobile-sort-btn');
+  const mobileFilterBtn = document.getElementById('mobile-filter-btn');
+  
+  const sortSheet = document.getElementById('mobile-sort-sheet');
+  const sortBackdrop = document.getElementById('mobile-sort-backdrop');
+  const sortClose = document.getElementById('mobile-sort-close');
+  
+  const filterSidebar = document.querySelector('.filter-sidebar');
+  const filterBackdrop = document.getElementById('mobile-filter-backdrop');
+  const filterClose = document.getElementById('mobile-filter-close');
+  
+  const filterForm = document.getElementById('filter-form');
+  const sortSelect = document.getElementById('filter-sort');
+
+  let savedScrollY = 0;
+
+  const lockScroll = () => {
+    savedScrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${savedScrollY}px`;
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+  };
+
+  const unlockScroll = () => {
+    if (document.body.style.position === 'fixed') {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, savedScrollY);
+    }
+  };
+
+  // --- Toggle Filter Sheet ---
+  if (mobileFilterBtn && filterSidebar && filterBackdrop) {
+    mobileFilterBtn.addEventListener('click', () => {
+      filterSidebar.classList.add('open');
+      filterBackdrop.classList.add('open');
+      lockScroll();
+    });
+
+    const closeFilter = () => {
+      filterSidebar.classList.remove('open');
+      filterBackdrop.classList.remove('open');
+      unlockScroll();
+    };
+
+    if (filterClose) filterClose.addEventListener('click', closeFilter);
+    filterBackdrop.addEventListener('click', closeFilter);
+
+    // Close on Filter submit
+    filterForm.addEventListener('submit', () => {
+      closeFilter();
+    });
+  }
+
+  // --- Toggle Sort Sheet ---
+  if (mobileSortBtn && sortSheet && sortBackdrop) {
+    mobileSortBtn.addEventListener('click', () => {
+      // Set active class on the current sort option button
+      const currentSortVal = sortSelect.value;
+      const optionBtns = sortSheet.querySelectorAll('.sort-option-btn');
+      optionBtns.forEach(btn => {
+        if (btn.getAttribute('data-value') === currentSortVal) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      sortSheet.classList.add('open');
+      lockScroll();
+    });
+
+    const closeSort = () => {
+      sortSheet.classList.remove('open');
+      unlockScroll();
+    };
+
+    if (sortClose) sortClose.addEventListener('click', closeSort);
+    sortBackdrop.addEventListener('click', closeSort);
+
+    // Option Button Click
+    const optionBtns = sortSheet.querySelectorAll('.sort-option-btn');
+    optionBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = btn.getAttribute('data-value');
+        if (sortSelect) {
+          sortSelect.value = val;
+          sortSelect.dispatchEvent(new Event('change'));
+        }
+        closeSort();
+      });
+    });
+  }
+
+  // --- ESC Key to close both ---
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (filterSidebar && filterSidebar.classList.contains('open')) {
+        filterSidebar.classList.remove('open');
+        if (filterBackdrop) filterBackdrop.classList.remove('open');
+        unlockScroll();
+      }
+      if (sortSheet && sortSheet.classList.contains('open')) {
+        sortSheet.classList.remove('open');
+        unlockScroll();
+      }
+    }
   });
 }

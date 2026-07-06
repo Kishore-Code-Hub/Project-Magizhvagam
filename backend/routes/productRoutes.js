@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { 
   getProducts, getProductById, createProduct, 
-  updateProduct, deleteProduct, createReview, 
+  updateProduct, deleteProduct, 
   getCategories, createCategory, deleteCategory, updateCategory,
   duplicateProduct, bulkDeleteProducts, bulkUpdateProducts, bulkImportProducts,
   toggleProductFeatured
@@ -27,7 +27,6 @@ router.post('/', protect, adminOnly, uploadMultiple, processImages, createProduc
 
 // Parameterized public/admin routes last
 router.get('/:id', getProductById);
-router.post('/:id/reviews', createReview);
 router.put('/:id/featured', protect, adminOnly, toggleProductFeatured);
 router.put('/:id', protect, adminOnly, uploadMultiple, processImages, updateProduct);
 router.delete('/:id', protect, adminOnly, deleteProduct);

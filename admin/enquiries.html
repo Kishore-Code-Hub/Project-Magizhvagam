@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Enquiries | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Enquiries Panel -->
+    <main class="admin-main">
+      <h1 style="font-family:'Outfit'; font-size:32px; margin-bottom:30px; color:var(--text-color);">Customer Enquiries</h1>
+
+      <!-- Enquiries Table -->
+      <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Client Name</th>
+              <th>Email Address</th>
+              <th>Occasion / Subject</th>
+              <th>Message Content</th>
+              <th>Status</th>
+              <th>Submitted At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-enquiries-tbody">
+            <tr><td colspan="7" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/js/admin.js"></script>
+</body>
+</html>

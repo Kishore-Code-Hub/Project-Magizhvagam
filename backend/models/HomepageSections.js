@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 const SECTION_IDS = [
   'announcement_bar', 'hero', 'flash_sale', 'featured_categories',
   'collections_spotlight', 'featured_products', 'customization_preview',
-  'testimonials', 'bulk_orders_cta', 'how_it_works', 'brand_story',
+  'bulk_orders_cta', 'how_it_works', 'brand_story',
   'faq', 'newsletter', 'instagram', 'blog_preview'
 ];
 
@@ -31,7 +31,6 @@ const DEFAULT_SECTIONS = [
   { id: 'collections_spotlight', enabled: true, order: 4, config: { heading: 'Curated Collections', collectionIds: [], rowCount: 1 } },
   { id: 'featured_products', enabled: true, order: 5, config: { count: 8, sort: 'newest', productIds: [] } },
   { id: 'customization_preview', enabled: true, order: 6, config: { heading: 'Make It Uniquely Yours', subtext: 'Add personalized messages, engraving, and event signatures to any gift.', demoImages: [] } },
-  { id: 'testimonials', enabled: true, order: 7, config: { layout: 'grid', items: [] } },
   { id: 'bulk_orders_cta', enabled: true, order: 8, config: { heading: 'Planning a Big Event?', subtext: 'Get special pricing on bulk orders of 50+ items. We handle everything from customization to venue delivery.', formTriggerLabel: 'Get Bulk Quote', backgroundImage: '' } },
   {
     id: 'how_it_works', enabled: true, order: 9, config: {

@@ -9,6 +9,7 @@
     'products.html',
     'orders.html',
     'customers.html',
+    'enquiries.html',
     'marketing.html',
     'content.html',
     'reports.html',

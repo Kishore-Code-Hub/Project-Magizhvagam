@@ -41,6 +41,10 @@ async function initAdminRouterPage() {
     if (typeof window.initSecurityLogsPage === 'function') {
       window.initSecurityLogsPage();
     }
+  } else if (path.includes('enquiries.html')) {
+    if (typeof window.loadAdminEnquiries === 'function') {
+      window.loadAdminEnquiries();
+    }
   }
 }
 window.initAdminRouterPage = initAdminRouterPage;
@@ -188,6 +192,9 @@ function injectAdminSidebar() {
       <li class="admin-menu-item ${activeCls('customers.html')}">
         <a href="/admin/customers.html"><i data-lucide="users"></i> <span>Customers</span></a>
       </li>
+      <li class="admin-menu-item ${activeCls('enquiries.html')}">
+        <a href="/admin/enquiries.html"><i data-lucide="message-square"></i> <span>Enquiries</span></a>
+      </li>
       <li class="admin-menu-item ${activeCls('invoices.html')}">
         <a href="/admin/invoices.html"><i data-lucide="file-text"></i> <span>Invoice Hub</span></a>
       </li>
@@ -216,7 +223,6 @@ function injectAdminSidebar() {
         </a>
         <ul class="admin-menu-submenu ${isContentView ? 'open' : ''}" id="submenu-content">
           <li class="${activeTabCls('content.html', 'homepage')}"><a href="/admin/content.html?tab=homepage"><span>Homepage Builder</span></a></li>
-          <li class="${activeTabCls('content.html', 'testimonials')}"><a href="/admin/content.html?tab=testimonials"><span>Testimonials</span></a></li>
           <li class="${activeTabCls('content.html', 'about-page')}"><a href="/admin/content.html?tab=about-page"><span>About Page</span></a></li>
           <li class="${activeTabCls('content.html', 'contact-page')}"><a href="/admin/content.html?tab=contact-page"><span>Contact Page</span></a></li>
           <li class="${activeTabCls('content.html', 'privacy-page')}"><a href="/admin/content.html?tab=privacy-page"><span>Privacy Policy</span></a></li>
@@ -387,6 +393,9 @@ function injectAdminTopbar() {
   } else if (path.includes('customers.html')) {
     section = 'Sales';
     pageName = 'Customers';
+  } else if (path.includes('enquiries.html')) {
+    section = 'Sales';
+    pageName = 'Enquiries';
   } else if (path.includes('invoices.html')) {
     section = 'Sales';
     pageName = 'Invoice Hub';
@@ -2323,7 +2332,6 @@ async function loadFeatureToggles() {
       registrationEnabled: { type: 'checkbox', checkbox: 'toggle-registrationEnabled', status: 'toggle-status-registration' },
       whatsappCheckoutEnabled: { type: 'checkbox', checkbox: 'toggle-whatsappCheckoutEnabled', status: 'toggle-status-whatsapp' },
       codEnabled: { type: 'checkbox', checkbox: 'toggle-codEnabled', status: 'toggle-status-cod' },
-      reviewsEnabled: { type: 'checkbox', checkbox: 'toggle-reviewsEnabled', status: 'toggle-status-reviews' },
       promosEnabled: { type: 'checkbox', checkbox: 'toggle-promosEnabled', status: 'toggle-status-promos' },
       homepageLayoutFeatured: { type: 'checkbox', checkbox: 'toggle-homepageLayoutFeatured', status: 'toggle-status-homepageLayoutFeatured' },
       customerLoginRequirement: { type: 'checkbox', checkbox: 'toggle-customerLoginRequirement', status: 'toggle-status-customerLoginRequirement' },
@@ -2385,7 +2393,6 @@ function syncFeatureToggleUI(key, value) {
     registrationEnabled: { type: 'checkbox', checkbox: 'toggle-registrationEnabled', status: 'toggle-status-registration' },
     whatsappCheckoutEnabled: { type: 'checkbox', checkbox: 'toggle-whatsappCheckoutEnabled', status: 'toggle-status-whatsapp' },
     codEnabled: { type: 'checkbox', checkbox: 'toggle-codEnabled', status: 'toggle-status-cod' },
-    reviewsEnabled: { type: 'checkbox', checkbox: 'toggle-reviewsEnabled', status: 'toggle-status-reviews' },
     promosEnabled: { type: 'checkbox', checkbox: 'toggle-promosEnabled', status: 'toggle-status-promos' },
     homepageLayoutFeatured: { type: 'checkbox', checkbox: 'toggle-homepageLayoutFeatured', status: 'toggle-status-homepageLayoutFeatured' },
     customerLoginRequirement: { type: 'checkbox', checkbox: 'toggle-customerLoginRequirement', status: 'toggle-status-customerLoginRequirement' },
@@ -2684,4 +2691,80 @@ async function applyAdminBranding() {
     document.body.appendChild(s);
   }
 })();
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+}
+
+async function loadAdminEnquiries() {
+  const tbody = document.getElementById('admin-enquiries-tbody');
+  if (!tbody) return;
+
+  try {
+    const res = await adminFetch('/api/contact');
+    const data = await res.json();
+
+    if (!data.success) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--adm-danger);">Failed to load: ${data.error}</td></tr>`;
+      return;
+    }
+
+    const enquiries = data.enquiries || [];
+    if (enquiries.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--adm-text-muted); padding:30px;">No enquiries found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = enquiries.map(e => {
+      const isUnread = e.status === 'unread';
+      const badgeText = isUnread ? 'Unread' : 'Reviewed';
+      const actionBtn = isUnread 
+        ? `<button onclick="window.markEnquiryAsRead('${e._id}')" class="btn" style="background:var(--adm-accent, #c89b3c); color:white; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s;">Mark as Read</button>`
+        : `<span style="color:var(--adm-text-muted); font-size:12px;">Processed</span>`;
+
+      const formattedDate = new Date(e.createdAt).toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      });
+
+      return `
+        <tr style="${isUnread ? 'font-weight: 600;' : ''}">
+          <td style="color:var(--adm-text);">${escapeHtml(e.name)}</td>
+          <td><a href="mailto:${escapeHtml(e.email)}" style="color:var(--adm-accent); font-weight:500;">${escapeHtml(e.email)}</a></td>
+          <td style="color:var(--adm-text);">${escapeHtml(e.subject)}</td>
+          <td style="max-width:300px; white-space:pre-wrap; color:var(--adm-text);">${escapeHtml(e.message)}</td>
+          <td><span class="badge" style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; background: ${isUnread ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)'}; color: ${isUnread ? 'var(--adm-danger, #ef4444)' : 'var(--adm-success, #22c55e)'};">${badgeText}</span></td>
+          <td style="color:var(--adm-text-muted); font-size:12px;">${formattedDate}</td>
+          <td>${actionBtn}</td>
+        </tr>
+      `;
+    }).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--adm-danger);">Server error loading enquiries.</td></tr>`;
+  }
+}
+window.loadAdminEnquiries = loadAdminEnquiries;
+
+window.markEnquiryAsRead = async (id) => {
+  try {
+    const res = await adminFetch(`/api/contact/${id}/read`, { method: 'PUT' });
+    const data = await res.json();
+    if (data.success) {
+      if (window.showToast) {
+        window.showToast('Enquiry marked as read successfully', 'success');
+      }
+      loadAdminEnquiries();
+    } else {
+      alert(`Error: ${data.error}`);
+    }
+  } catch (err) {
+    alert(`Request failed: ${err.message}`);
+  }
+};
 

@@ -115,6 +115,126 @@
       display: none;
       pointer-events: none;
     }
+
+    /* Hide on desktop, show only on mobile */
+    .mobile-only {
+      display: none !important;
+    }
+
+    /* Responsive overrides for Mobile/Tablet (320px–768px) */
+    @media (max-width: 768px) {
+      .mobile-only {
+        display: block !important;
+      }
+
+      .details-layout {
+        padding: 20px 0 40px !important;
+      }
+
+      .details-layout .grid-2 {
+        grid-template-columns: 1fr !important;
+        gap: 24px !important;
+      }
+
+      .gallery-container {
+        position: static !important;
+        width: 100% !important;
+        margin-bottom: 10px;
+      }
+
+      .main-image-box {
+        height: auto !important;
+        aspect-ratio: 1 / 1 !important;
+        max-height: 400px;
+      }
+
+      .thumbnails-grid {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .thumbnails-grid::-webkit-scrollbar {
+        display: none;
+      }
+
+      .thumb-btn {
+        width: 60px !important;
+        height: 60px !important;
+      }
+
+      .details-info-sidebar {
+        padding: 20px 16px !important;
+        position: static !important;
+        width: 100% !important;
+        border-radius: 12px !important;
+      }
+
+      #details-title {
+        font-size: 24px !important;
+        line-height: 1.3 !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+      }
+
+      #details-price {
+        font-size: 24px !important;
+      }
+
+      #details-old-price {
+        font-size: 16px !important;
+      }
+
+      .details-info-sidebar div[style*="display:flex; align-items:center; gap:20px;"] {
+        flex-wrap: wrap !important;
+        gap: 12px !important;
+      }
+
+      .details-info-sidebar div[style*="display:grid; grid-template-columns:1fr 50px;"] {
+        grid-template-columns: 1fr 50px !important;
+        gap: 10px !important;
+      }
+
+      .details-info-sidebar button.btn-gold {
+        font-size: 13px !important;
+        padding: 12px 8px !important;
+        white-space: normal !important;
+        text-align: center;
+        height: auto !important;
+      }
+
+      #fbt-products-container {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 16px !important;
+      }
+
+      #fbt-products-container > div:last-child {
+        border-left: none !important;
+        padding-left: 0 !important;
+        border-top: 1px solid var(--card-border) !important;
+        padding-top: 16px !important;
+        min-width: 100% !important;
+      }
+
+      #details-breadcrumbs {
+        font-size: 12px !important;
+        flex-wrap: wrap;
+        display: flex !important;
+        line-height: 1.6;
+      }
+
+      .details-info-sidebar div[style*="display: flex; align-items: center; gap: 12px;"] {
+        gap: 8px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .details-info-sidebar div[style*="display:flex; align-items:center; gap:20px;"] {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+      }
+    }
   </style>
 </head>
 
@@ -162,12 +282,7 @@
             style="font-size:32px; font-family:'Outfit'; margin-bottom:12px; line-height:1.2; color:var(--text-color);">
             Product Name</h1>
 
-          <div id="details-rating-summary-container"
-            style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
-            <div style="color:#D4AF37; font-size:18px;" id="details-rating-stars">★★★★★</div>
-            <strong id="details-rating-avg" style="font-size:14px;">4.8</strong>
-            <span id="details-rating-count" style="color:var(--text-muted); font-size:14px;">(24 reviews)</span>
-          </div>
+
 
           <div
             style="display:flex; align-items:baseline; gap:12px; margin-bottom:24px; border-bottom:1px solid var(--card-border); padding-bottom:20px;">
@@ -299,7 +414,7 @@
       <div class="tab-header">
         <div class="tab-link active" onclick="switchTab(this, 'tab-desc')">Description</div>
         <div class="tab-link" onclick="switchTab(this, 'tab-specs')">Specifications</div>
-        <div class="tab-link" onclick="switchTab(this, 'tab-reviews')" id="tab-reviews-title">Reviews (0)</div>
+
       </div>
 
       <!-- Description tab -->
@@ -333,112 +448,7 @@
         </div>
       </div>
 
-      <!-- Reviews tab -->
-      <div class="tab-panel" id="tab-reviews">
-        <div class="grid grid-2" style="gap:40px; align-items:start;">
 
-          <!-- Ratings Summary & Submit Form -->
-          <div style="display:flex; flex-direction:column; gap:30px;">
-            <!-- Breakdown Card -->
-            <div class="glass" style="padding:30px; border-radius:12px;">
-              <h4 style="font-family:'Outfit'; font-size:18px; margin-bottom:20px;">Rating Breakdown</h4>
-              <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px;">
-                <div style="text-align:center;">
-                  <div style="font-size:48px; font-weight:800; color:var(--text-color);" id="rating-breakdown-avg">0.0</div>
-                  <div style="color:#D4AF37; font-size:16px;" id="rating-breakdown-stars">☆☆☆☆☆</div>
-                  <div style="font-size:12px; color:var(--text-muted); margin-top:4px;" id="rating-breakdown-count">0 reviews</div>
-                </div>
-                <div style="flex-grow:1; display:flex; flex-direction:column; gap:8px;">
-                  <div style="display:flex; align-items:center; gap:10px; font-size:12px;">
-                    <span style="width:40px; text-align:right;">5 Star</span>
-                    <div style="flex-grow:1; height:8px; background:rgba(0,0,0,0.05); border-radius:4px; overflow:hidden;">
-                      <div id="breakdown-bar-5" style="width:0%; height:100%; background:#D4AF37; border-radius:4px; transition:width 0.5s ease;"></div>
-                    </div>
-                    <span style="width:30px;" id="breakdown-percent-5">0%</span>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:10px; font-size:12px;">
-                    <span style="width:40px; text-align:right;">4 Star</span>
-                    <div style="flex-grow:1; height:8px; background:rgba(0,0,0,0.05); border-radius:4px; overflow:hidden;">
-                      <div id="breakdown-bar-4" style="width:0%; height:100%; background:#D4AF37; border-radius:4px; transition:width 0.5s ease;"></div>
-                    </div>
-                    <span style="width:30px;" id="breakdown-percent-4">0%</span>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:10px; font-size:12px;">
-                    <span style="width:40px; text-align:right;">3 Star</span>
-                    <div style="flex-grow:1; height:8px; background:rgba(0,0,0,0.05); border-radius:4px; overflow:hidden;">
-                      <div id="breakdown-bar-3" style="width:0%; height:100%; background:#D4AF37; border-radius:4px; transition:width 0.5s ease;"></div>
-                    </div>
-                    <span style="width:30px;" id="breakdown-percent-3">0%</span>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:10px; font-size:12px;">
-                    <span style="width:40px; text-align:right;">2 Star</span>
-                    <div style="flex-grow:1; height:8px; background:rgba(0,0,0,0.05); border-radius:4px; overflow:hidden;">
-                      <div id="breakdown-bar-2" style="width:0%; height:100%; background:#D4AF37; border-radius:4px; transition:width 0.5s ease;"></div>
-                    </div>
-                    <span style="width:30px;" id="breakdown-percent-2">0%</span>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:10px; font-size:12px;">
-                    <span style="width:40px; text-align:right;">1 Star</span>
-                    <div style="flex-grow:1; height:8px; background:rgba(0,0,0,0.05); border-radius:4px; overflow:hidden;">
-                      <div id="breakdown-bar-1" style="width:0%; height:100%; background:#D4AF37; border-radius:4px; transition:width 0.5s ease;"></div>
-                    </div>
-                    <span style="width:30px;" id="breakdown-percent-1">0%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Submit Review Form -->
-            <div class="glass" style="padding:30px; border-radius:12px;">
-              <h4 style="font-family:'Outfit'; font-size:18px; margin-bottom:20px;">Write a Review</h4>
-              <form id="review-form">
-                <div style="margin-bottom:14px;">
-                  <label style="display:block; font-size:12px; font-weight:600; margin-bottom:6px;">Your Name</label>
-                  <input type="text" id="review-name" class="form-control" placeholder="Name" required
-                    style="border: 1px solid var(--card-border);">
-                </div>
-                <div style="margin-bottom:14px;">
-                  <label style="display:block; font-size:12px; font-weight:600; margin-bottom:6px;">Star Rating</label>
-                  <select id="review-rating" class="form-control" required
-                    style="border: 1px solid var(--card-border); font-weight:700; color:#D4AF37;">
-                    <option value="5">★★★★★ (5 Stars)</option>
-                    <option value="4">★★★★☆ (4 Stars)</option>
-                    <option value="3">★★★☆☆ (3 Stars)</option>
-                    <option value="2">★★☆☆☆ (2 Stars)</option>
-                    <option value="1">★☆☆☆☆ (1 Star)</option>
-                  </select>
-                </div>
-                <div style="margin-bottom:18px;">
-                  <label style="display:block; font-size:12px; font-weight:600; margin-bottom:6px;">Comments</label>
-                  <textarea id="review-comment" class="form-control" rows="4" placeholder="Share your experience..."
-                    style="border: 1px solid var(--card-border); resize:none;"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width:100%; border-radius:6px;">Submit Review</button>
-              </form>
-            </div>
-          </div>
-
-          <!-- Reviews List -->
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-              <h4 style="font-family:'Outfit'; font-size:18px; margin:0;">Customer Feedback</h4>
-              <div>
-                <select id="review-sort-select" onchange="changeReviewSorting()" class="form-control" style="width:160px; padding:6px; font-size:12px;">
-                  <option value="newest">Newest First</option>
-                  <option value="highest">Highest Rating</option>
-                  <option value="lowest">Lowest Rating</option>
-                </select>
-              </div>
-            </div>
-            <div id="reviews-list-container" style="display:flex; flex-direction:column; gap:16px; min-height:100px;">
-              <!-- Loaded dynamically -->
-            </div>
-            <div style="text-align:center; margin-top:20px;">
-              <button id="btn-load-more-reviews" onclick="loadMoreReviews()" class="btn btn-secondary" style="display:none; border-radius:8px; padding:8px 20px; font-size:13px; font-weight:600;">Load More Reviews</button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Frequently Bought Together -->
       <section id="fbt-section" style="margin-top:60px; border-top:1px solid var(--card-border); padding-top:50px; display: none;">
@@ -517,50 +527,8 @@
     document.addEventListener('DOMContentLoaded', async () => {
       loadProductDetails();
 
-      // Enforce reviews system toggle
-      try {
-        const toggles = window.featureToggles || await window.fetchFeatureToggles();
-        if (toggles && toggles.reviewsEnabled === false) {
-          const ratingSummary = document.getElementById('details-rating-summary-container');
-          if (ratingSummary) ratingSummary.style.display = 'none';
-
-          const reviewsTabTitle = document.getElementById('tab-reviews-title');
-          if (reviewsTabTitle) reviewsTabTitle.style.display = 'none';
-
-          const reviewsTabPanel = document.getElementById('tab-reviews');
-          if (reviewsTabPanel) reviewsTabPanel.style.display = 'none';
-        }
-      } catch (err) {
-        console.error('Error enforcing reviews toggle:', err);
-      }
-
-      // Register Review Submission
-      document.getElementById('review-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('review-name').value.trim();
-        const rating = document.getElementById('review-rating').value;
-        const comment = document.getElementById('review-comment').value.trim();
-        const productId = getQueryParam('id');
-
-        try {
-          const res = await fetch(`/api/products/${productId}/reviews`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, rating, comment })
-          });
-          const data = await res.json();
-          if (data.success) {
-            showToast('Review submitted successfully!', 'success');
-            document.getElementById('review-form').reset();
-            // Reload page data
-            loadProductDetails();
-          } else {
-            showToast(data.error || 'Failed to submit review', 'error');
-          }
-        } catch (err) {
-          showToast('Connection error submitting review', 'error');
-        }
-      });
+      // Mobile Swipe Gestures for Gallery
+      initMobileSwipeGestures();
 
       // Mobile Swipe Gestures for Gallery
       initMobileSwipeGestures();
@@ -648,11 +616,7 @@
         // Pricing
         updatePricingAndSummary();
 
-        // Star rating
-        document.getElementById('details-rating-avg').textContent = activeProduct.averageRating || '0.0';
-        document.getElementById('details-rating-count').textContent = `(${activeProduct.totalReviews || '0'} reviews)`;
-        document.getElementById('details-rating-stars').textContent = '★'.repeat(Math.round(activeProduct.averageRating || 0)) + '☆'.repeat(5 - Math.round(activeProduct.averageRating || 0));
-        document.getElementById('tab-reviews-title').textContent = `Reviews (${activeProduct.totalReviews || '0'})`;
+
 
         // Specs
         const specs = activeProduct.specifications || {};
@@ -676,10 +640,7 @@
           thumbGrid.innerHTML = '';
         }
 
-        // Initialize reviews data and render breakdown & list
-        productReviews = data.reviews || [];
-        calculateReviewsBreakdown(productReviews);
-        renderReviewsList();
+
 
         // Sync wishlist state badge icon
         const wishlist = getWishlist();
@@ -1163,116 +1124,7 @@
       }
     }
 
-    // Reviews helper functions
-    function calculateReviewsBreakdown(reviews) {
-      const total = reviews.length;
-      const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-      reviews.forEach(r => {
-        const rate = Math.round(r.rating);
-        if (counts[rate] !== undefined) counts[rate]++;
-      });
 
-      const avg = total > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / total).toFixed(1) : '0.0';
-
-      const avgEl = document.getElementById('rating-breakdown-avg');
-      const starsEl = document.getElementById('rating-breakdown-stars');
-      const countEl = document.getElementById('rating-breakdown-count');
-      if (avgEl) avgEl.textContent = avg;
-      if (starsEl) starsEl.textContent = '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
-      if (countEl) countEl.textContent = `${total} review${total === 1 ? '' : 's'}`;
-
-      for (let i = 1; i <= 5; i++) {
-        const pct = total > 0 ? Math.round((counts[i] / total) * 100) : 0;
-        const bar = document.getElementById(`breakdown-bar-${i}`);
-        const label = document.getElementById(`breakdown-percent-${i}`);
-        if (bar) bar.style.width = `${pct}%`;
-        if (label) label.textContent = `${pct}%`;
-      }
-    }
-
-    function changeReviewSorting() {
-      const select = document.getElementById('review-sort-select');
-      if (!select) return;
-      currentReviewSort = select.value;
-      currentReviewsPage = 1;
-      renderReviewsList();
-    }
-
-    function loadMoreReviews() {
-      currentReviewsPage++;
-      renderReviewsList();
-    }
-
-    function renderReviewsList() {
-      const container = document.getElementById('reviews-list-container');
-      const loadMoreBtn = document.getElementById('btn-load-more-reviews');
-      if (!container) return;
-
-      if (productReviews.length === 0) {
-        container.innerHTML = `
-          <div style="text-align:center; padding:30px; color:var(--text-muted); font-style:italic;">
-            No reviews yet. Be the first to share your experience!
-          </div>
-        `;
-        if (loadMoreBtn) loadMoreBtn.style.display = 'none';
-        return;
-      }
-
-      let sorted = [...productReviews];
-      if (currentReviewSort === 'highest') {
-        sorted.sort((a, b) => b.rating - a.rating || new Date(b.createdAt) - new Date(a.createdAt));
-      } else if (currentReviewSort === 'lowest') {
-        sorted.sort((a, b) => a.rating - b.rating || new Date(b.createdAt) - new Date(a.createdAt));
-      } else {
-        sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      }
-
-      const visible = sorted.slice(0, currentReviewsPage * reviewsLimit);
-      const helpfulVotes = JSON.parse(localStorage.getItem('helpful_reviews') || '{}');
-
-      container.innerHTML = visible.map(r => {
-        const isVoted = helpfulVotes[r._id || r.id] ? 'voted' : '';
-        const helpfulCount = r.helpfulCount || (r._id ? (Math.round(r._id.charCodeAt(0) % 5)) : 0);
-        const displayCount = helpfulCount + (helpfulVotes[r._id || r.id] ? 1 : 0);
-
-        return `
-          <div class="glass" style="padding:20px; border-radius:12px; border: 1px solid var(--card-border);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <strong>${r.name}</strong>
-              <span style="font-size:12px; color:var(--text-muted);">${new Date(r.createdAt).toLocaleDateString('en-IN')}</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <div style="color:#D4AF37; font-size:14px;">${'★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)}</div>
-              <button class="helpful-btn" onclick="voteReviewHelpful(this, '${r._id || r.id}', ${helpfulCount})" style="background:transparent; border:none; cursor:pointer; font-size:12px; color:${isVoted ? 'hsl(var(--primary-purple))' : 'var(--text-muted)'}; font-weight:${isVoted ? '700' : '400'}; display:flex; align-items:center; gap:4px;">
-                👍 Helpful (${displayCount})
-              </button>
-            </div>
-            <p style="font-size:14px; color:var(--text-color); line-height:1.6; margin:0;">${r.comment || 'No comment provided.'}</p>
-          </div>
-        `;
-      }).join('');
-
-      if (loadMoreBtn) {
-        loadMoreBtn.style.display = (visible.length < sorted.length) ? 'inline-block' : 'none';
-      }
-    }
-
-    window.voteReviewHelpful = (btn, reviewId, baseCount) => {
-      const votes = JSON.parse(localStorage.getItem('helpful_reviews') || '{}');
-      if (votes[reviewId]) {
-        delete votes[reviewId];
-        btn.style.color = 'var(--text-muted)';
-        btn.style.fontWeight = '400';
-        btn.textContent = `👍 Helpful (${baseCount})`;
-      } else {
-        votes[reviewId] = true;
-        btn.style.color = 'hsl(var(--primary-purple))';
-        btn.style.fontWeight = '700';
-        btn.textContent = `👍 Helpful (${baseCount + 1})`;
-        showToast('Review marked as helpful!', 'success');
-      }
-      localStorage.setItem('helpful_reviews', JSON.stringify(votes));
-    };
 
     // Sticky summary bar toggling on mobile
     window.addEventListener('scroll', () => {
