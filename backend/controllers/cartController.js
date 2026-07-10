@@ -1,8 +1,8 @@
-const User = require('../models/User');
+const prisma = require('../services/prisma');
 
 const formatCart = (items) =>
   (items || []).map((item) => ({
-    productId: item.productId.toString(),
+    productId: item.productId,
     name: item.name,
     price: item.price,
     image: item.image,
@@ -10,64 +10,74 @@ const formatCart = (items) =>
   }));
 
 exports.getCart = async (req, res) => {
-  if (!req.user || !req.user._id) {
+  if (!req.user || !req.user.id) {
     return res.status(401).json({ success: false, error: 'Unauthorized: User authentication required' });
   }
   try {
-    const user = await User.findById(req.user._id).select('cartItems');
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
-    }
-    res.status(200).json({ success: true, cart: formatCart(user.cartItems) });
+    const items = await prisma.cartItem.findMany({
+      where: { userId: req.user.id }
+    });
+    res.status(200).json({ success: true, cart: formatCart(items) });
   } catch (error) {
     res.status(500).json({ success: false, error: `Cart fetch error: ${error.message}` });
   }
 };
 
 exports.mergeCart = async (req, res) => {
-  if (!req.user || !req.user._id) {
+  if (!req.user || !req.user.id) {
     return res.status(401).json({ success: false, error: 'Unauthorized: User authentication required' });
   }
   try {
     const { items } = req.body;
     if (!Array.isArray(items) || items.length === 0) {
-      const user = await User.findById(req.user._id).select('cartItems');
-      return res.status(200).json({ success: true, cart: formatCart(user?.cartItems) });
+      const currentItems = await prisma.cartItem.findMany({
+        where: { userId: req.user.id }
+      });
+      return res.status(200).json({ success: true, cart: formatCart(currentItems) });
     }
 
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
-    }
+    // Merge logic inside database transaction for consistency
+    await prisma.$transaction(async (tx) => {
+      for (const incoming of items) {
+        if (!incoming || !incoming.productId) continue;
+        const qty = Math.max(1, Number(incoming.quantity) || 1);
 
-    for (const incoming of items) {
-      if (!incoming?.productId) continue;
-      const idx = user.cartItems.findIndex(
-        (item) => item.productId.toString() === String(incoming.productId)
-      );
-      const qty = Math.max(1, Number(incoming.quantity) || 1);
-      if (idx > -1) {
-        user.cartItems[idx].quantity += qty;
-      } else {
-        user.cartItems.push({
-          productId: incoming.productId,
-          name: incoming.name || 'Product',
-          price: Number(incoming.price) || 0,
-          image: incoming.image || '/assets/images/default-product.webp',
-          quantity: qty
+        const existing = await tx.cartItem.findFirst({
+          where: { userId: req.user.id, productId: incoming.productId }
         });
-      }
-    }
 
-    await user.save();
-    res.status(200).json({ success: true, cart: formatCart(user.cartItems) });
+        if (existing) {
+          await tx.cartItem.update({
+            where: { id: existing.id },
+            data: { quantity: existing.quantity + qty }
+          });
+        } else {
+          await tx.cartItem.create({
+            data: {
+              userId: req.user.id,
+              productId: incoming.productId,
+              name: incoming.name || 'Product',
+              price: Number(incoming.price) || 0,
+              image: incoming.image || '/assets/images/default-product.webp',
+              quantity: qty
+            }
+          });
+        }
+      }
+    });
+
+    const finalItems = await prisma.cartItem.findMany({
+      where: { userId: req.user.id }
+    });
+
+    res.status(200).json({ success: true, cart: formatCart(finalItems) });
   } catch (error) {
     res.status(500).json({ success: false, error: `Cart merge error: ${error.message}` });
   }
 };
 
 exports.addCartItem = async (req, res) => {
-  if (!req.user || !req.user._id) {
+  if (!req.user || !req.user.id) {
     return res.status(401).json({ success: false, error: 'Unauthorized: User authentication required' });
   }
   try {
@@ -76,96 +86,105 @@ exports.addCartItem = async (req, res) => {
       return res.status(400).json({ success: false, error: 'productId and name are required' });
     }
 
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
-    }
-
     const qty = Math.max(1, Number(quantity) || 1);
-    const idx = user.cartItems.findIndex((item) => item.productId.toString() === String(productId));
 
-    if (idx > -1) {
-      user.cartItems[idx].quantity += qty;
+    const existing = await prisma.cartItem.findFirst({
+      where: { userId: req.user.id, productId }
+    });
+
+    if (existing) {
+      await prisma.cartItem.update({
+        where: { id: existing.id },
+        data: { quantity: existing.quantity + qty }
+      });
     } else {
-      user.cartItems.push({
-        productId,
-        name,
-        price: Number(price) || 0,
-        image: image || '/assets/images/default-product.webp',
-        quantity: qty
+      await prisma.cartItem.create({
+        data: {
+          userId: req.user.id,
+          productId,
+          name,
+          price: Number(price) || 0,
+          image: image || '/assets/images/default-product.webp',
+          quantity: qty
+        }
       });
     }
 
-    await user.save();
-    res.status(200).json({ success: true, cart: formatCart(user.cartItems) });
+    const finalItems = await prisma.cartItem.findMany({
+      where: { userId: req.user.id }
+    });
+
+    res.status(200).json({ success: true, cart: formatCart(finalItems) });
   } catch (error) {
     res.status(500).json({ success: false, error: `Add to cart error: ${error.message}` });
   }
 };
 
 exports.updateCartItem = async (req, res) => {
-  if (!req.user || !req.user._id) {
+  if (!req.user || !req.user.id) {
     return res.status(401).json({ success: false, error: 'Unauthorized: User authentication required' });
   }
   try {
     const { quantity } = req.body;
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
-    }
+    const productId = req.params.productId;
 
-    const idx = user.cartItems.findIndex(
-      (item) => item.productId.toString() === req.params.productId
-    );
-    if (idx === -1) {
+    const existing = await prisma.cartItem.findFirst({
+      where: { userId: req.user.id, productId }
+    });
+
+    if (!existing) {
       return res.status(404).json({ success: false, error: 'Item not in cart' });
     }
 
     const qty = Number(quantity);
-    if (!qty || qty < 1) {
-      user.cartItems.splice(idx, 1);
+    if (isNaN(qty) || qty < 1) {
+      await prisma.cartItem.delete({
+        where: { id: existing.id }
+      });
     } else {
-      user.cartItems[idx].quantity = qty;
+      await prisma.cartItem.update({
+        where: { id: existing.id },
+        data: { quantity: qty }
+      });
     }
 
-    await user.save();
-    res.status(200).json({ success: true, cart: formatCart(user.cartItems) });
+    const finalItems = await prisma.cartItem.findMany({
+      where: { userId: req.user.id }
+    });
+
+    res.status(200).json({ success: true, cart: formatCart(finalItems) });
   } catch (error) {
     res.status(500).json({ success: false, error: `Update cart error: ${error.message}` });
   }
 };
 
 exports.removeCartItem = async (req, res) => {
-  if (!req.user || !req.user._id) {
+  if (!req.user || !req.user.id) {
     return res.status(401).json({ success: false, error: 'Unauthorized: User authentication required' });
   }
   try {
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
-    }
+    await prisma.cartItem.deleteMany({
+      where: { userId: req.user.id, productId: req.params.productId }
+    });
 
-    user.cartItems = user.cartItems.filter(
-      (item) => item.productId.toString() !== req.params.productId
-    );
-    await user.save();
-    res.status(200).json({ success: true, cart: formatCart(user.cartItems) });
+    const finalItems = await prisma.cartItem.findMany({
+      where: { userId: req.user.id }
+    });
+
+    res.status(200).json({ success: true, cart: formatCart(finalItems) });
   } catch (error) {
     res.status(500).json({ success: false, error: `Remove cart item error: ${error.message}` });
   }
 };
 
 exports.clearCart = async (req, res) => {
-  if (!req.user || !req.user._id) {
+  if (!req.user || !req.user.id) {
     return res.status(401).json({ success: false, error: 'Unauthorized: User authentication required' });
   }
   try {
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
-    }
-    user.cartItems = [];
-    await user.save();
+    await prisma.cartItem.deleteMany({
+      where: { userId: req.user.id }
+    });
     res.status(200).json({ success: true, cart: [] });
   } catch (error) {
     res.status(500).json({ success: false, error: `Clear cart error: ${error.message}` });

@@ -1,14 +1,21 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const UserSession = require('../models/UserSession');
+const prisma = require('../services/prisma');
 const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = require('../config/jwt');
 
-const USER_SAFE_SELECT = '-passwordHash -refreshToken';
+// Helper to remove sensitive fields from user object
+const sanitizeUser = (user) => {
+  if (!user) return null;
+  const sanitized = { ...user };
+  delete sanitized.password;
+  delete sanitized.passwordHash;
+  delete sanitized.refreshToken;
+  return sanitized;
+};
 
-// Generate short-lived access token (15 mins)
+// Generate short-lived access token (3 mins in dev/prod)
 const generateAccessToken = (user) => {
   return jwt.sign(
-    { id: user._id, email: user.email, role: user.role },
+    { id: user.id || user._id, email: user.email, role: user.role },
     JWT_ACCESS_SECRET,
     { expiresIn: '3m' }
   );
@@ -17,7 +24,7 @@ const generateAccessToken = (user) => {
 // Generate long-lived refresh token (7 days)
 const generateRefreshToken = (user) => {
   return jwt.sign(
-    { id: user._id },
+    { id: user.id || user._id },
     JWT_REFRESH_SECRET,
     { expiresIn: '7d' }
   );
@@ -30,7 +37,9 @@ const protect = async (req, res, next) => {
 
   // Enforce session check if a refresh token exists
   if (refreshToken) {
-    const session = await UserSession.findOne({ refreshToken });
+    const session = await prisma.userSession.findUnique({
+      where: { refreshToken }
+    });
     if (!session) {
       // Invalidate cookies immediately if the session has been revoked/deleted
       res.clearCookie('admin_accessToken');
@@ -38,8 +47,10 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ success: false, error: 'Session has been revoked or logged out' });
     }
     // Update last activity
-    session.lastActivity = new Date();
-    await session.save();
+    await prisma.userSession.update({
+      where: { refreshToken },
+      data: { lastActivity: new Date() }
+    });
   }
 
   // 1. Try reading from Authorization Header
@@ -58,10 +69,13 @@ const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_ACCESS_SECRET);
-    req.user = await User.findById(decoded.id).select(USER_SAFE_SELECT);
-    if (!req.user) {
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id }
+    });
+    if (!user) {
       return res.status(401).json({ success: false, error: 'User associated with this token no longer exists' });
     }
+    req.user = sanitizeUser(user);
     return next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
@@ -81,9 +95,14 @@ const tryAutoRefresh = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
-    const userDoc = await User.findById(decoded.id);
+    const userDoc = await prisma.user.findUnique({
+      where: { id: decoded.id }
+    });
 
-    const session = await UserSession.findOne({ refreshToken });
+    const session = await prisma.userSession.findUnique({
+      where: { refreshToken }
+    });
+    
     if (!userDoc || !session) {
       res.clearCookie('admin_accessToken');
       res.clearCookie('admin_refreshToken');
@@ -91,19 +110,24 @@ const tryAutoRefresh = async (req, res, next) => {
     }
 
     // Update last activity
-    session.lastActivity = new Date();
-    await session.save();
+    await prisma.userSession.update({
+      where: { refreshToken },
+      data: { lastActivity: new Date() }
+    });
 
     const newAccessToken = generateAccessToken(userDoc);
 
     res.cookie('admin_accessToken', newAccessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'strict',
       maxAge: 3 * 60 * 1000
     });
 
-    req.user = await User.findById(decoded.id).select(USER_SAFE_SELECT);
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id }
+    });
+    req.user = sanitizeUser(user);
     return next();
   } catch (err) {
     res.clearCookie('admin_accessToken');
@@ -118,15 +142,19 @@ const optionalProtect = async (req, res, next) => {
   const refreshToken = req.cookies ? req.cookies.admin_refreshToken : null;
 
   if (refreshToken) {
-    const session = await UserSession.findOne({ refreshToken });
+    const session = await prisma.userSession.findUnique({
+      where: { refreshToken }
+    });
     if (!session) {
       res.clearCookie('admin_accessToken');
       res.clearCookie('admin_refreshToken');
       req.user = null;
       return next();
     }
-    session.lastActivity = new Date();
-    await session.save();
+    await prisma.userSession.update({
+      where: { refreshToken },
+      data: { lastActivity: new Date() }
+    });
   }
 
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -142,8 +170,14 @@ const optionalProtect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_ACCESS_SECRET);
-    req.user = await User.findById(decoded.id).select(USER_SAFE_SELECT);
-    if (!req.user) req.user = null;
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id }
+    });
+    if (user) {
+      req.user = sanitizeUser(user);
+    } else {
+      req.user = null;
+    }
     return next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
@@ -153,8 +187,12 @@ const optionalProtect = async (req, res, next) => {
       }
       try {
         const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
-        const userDoc = await User.findById(decoded.id);
-        const session = await UserSession.findOne({ refreshToken });
+        const userDoc = await prisma.user.findUnique({
+          where: { id: decoded.id }
+        });
+        const session = await prisma.userSession.findUnique({
+          where: { refreshToken }
+        });
         if (!userDoc || !session) {
           res.clearCookie('admin_accessToken');
           res.clearCookie('admin_refreshToken');
@@ -164,11 +202,14 @@ const optionalProtect = async (req, res, next) => {
         const newAccessToken = generateAccessToken(userDoc);
         res.cookie('admin_accessToken', newAccessToken, {
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
+          secure: true,
           sameSite: 'strict',
           maxAge: 3 * 60 * 1000
         });
-        req.user = await User.findById(decoded.id).select(USER_SAFE_SELECT);
+        const user = await prisma.user.findUnique({
+          where: { id: decoded.id }
+        });
+        req.user = sanitizeUser(user);
         return next();
       } catch {
         req.user = null;
@@ -227,4 +268,3 @@ module.exports = {
   generateAccessToken,
   generateRefreshToken
 };
-

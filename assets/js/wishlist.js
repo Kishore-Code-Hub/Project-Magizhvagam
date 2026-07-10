@@ -53,14 +53,14 @@ function renderWishlist() {
         title: 'Your Wishlist is Empty',
         message: 'Save premium return gifts to purchase or share later.',
         ctaLabel: 'Browse Catalog',
-        ctaHref: '/products.html'
+        ctaHref: '/products'
       });
     } else {
       container.innerHTML = `
         <div style="grid-column: 1/-1; text-align:center; padding:50px 20px;">
           <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:12px;">Your Wishlist is Empty</h3>
           <p style="color:var(--text-muted); font-size:14px; margin-bottom:24px;">Save return gifts to purchase later.</p>
-          <a href="/products.html" class="btn btn-primary">Browse Catalog</a>
+          <a href="/products" class="btn btn-primary">Browse Catalog</a>
         </div>
       `;
     }
@@ -75,14 +75,14 @@ function renderWishlist() {
       </button>
 
       <div style="aspect-ratio: 1 / 1; width: 100%; height: auto; max-height: 250px; background: rgba(var(--glass-bg-rgb, 255, 255, 255), calc(var(--glass-bg-opacity, 0.12) * 0.5)) !important; display:flex; align-items:center; justify-content:center; border-bottom:1px solid rgba(var(--glass-border-rgb, 220, 220, 220), var(--glass-border-opacity, 0.15)) !important; position:relative; overflow:hidden;">
-        <a href="/product-details.html?id=${item.productId}" style="width:100%; height:100%; display:block;">
+        <a href="/product/${item.productId}" style="width:100%; height:100%; display:block;">
           <img src="${item.image || '/assets/images/default-product.webp'}" alt="${item.name}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
         </a>
       </div>
 
       <div style="padding:20px; display:flex; flex-direction:column; flex-grow:1; justify-content:space-between; background: rgba(var(--glass-bg-rgb, 255, 255, 255), calc(var(--glass-bg-opacity, 0.12) * 1.5)) !important; backdrop-filter: blur(var(--glass-blur, 16px)) !important; -webkit-backdrop-filter: blur(var(--glass-blur, 16px)) !important; border-top: 1px solid rgba(var(--glass-border-rgb, 220, 220, 220), var(--glass-border-opacity, 0.15)) !important;">
         <div>
-          <a href="/product-details.html?id=${item.productId}">
+          <a href="/product/${item.productId}">
             <h4 style="font-size:15px; font-family:'Outfit'; font-weight:600; margin-bottom:12px; color:var(--text-color);">${item.name}</h4>
           </a>
         </div>

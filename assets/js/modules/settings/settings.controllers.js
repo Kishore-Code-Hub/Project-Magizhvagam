@@ -264,3 +264,104 @@ class DiagnosticsController extends BaseController {
   }
 }
 window.DiagnosticsController = DiagnosticsController;
+
+// ─── API Panel Controller ──────────────────────────────────────────────────────────
+class ApiPanelSettingsController extends BaseController {
+  constructor() { super('api-panel'); }
+  getTemplateUrl() { return '/admin/workspaces/settings/api-panel.html'; }
+
+  init() {
+    const genBtn = this.$('#api-generate-btn');
+    if (genBtn) this.on(genBtn, 'click', () => this.generateToken());
+
+    const copyBtn = this.$('#api-copy-btn');
+    if (copyBtn) this.on(copyBtn, 'click', () => this.copyToken());
+
+    const sendBtn = this.$('#api-explorer-send-btn');
+    if (sendBtn) this.on(sendBtn, 'click', () => this.sendRequest());
+  }
+
+  async load() {
+    try {
+      const res = await adminFetch('/api/settings/apiKey');
+      if (res.ok) {
+        const data = await res.json();
+        const value = (data && data.success && data.setting) ? data.setting : null;
+        if (value && value.token) {
+          const field = this.$('#api-token-field');
+          if (field) field.value = value.token;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed loading API token configuration', err);
+    }
+  }
+
+  async generateToken() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let rand = '';
+    for (let i = 0; i < 40; i++) {
+      rand += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const newToken = 'magizhvagam_live_' + rand;
+    
+    try {
+      const res = await adminFetch('/api/settings/apiKey', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: { token: newToken, generatedAt: new Date() } })
+      });
+      const data = await res.json();
+      if (data.success) {
+        const field = this.$('#api-token-field');
+        if (field) field.value = newToken;
+        showToast('Secure API Token generated & saved!', 'success');
+      } else {
+        showToast('Failed to save generated token', 'error');
+      }
+    } catch (err) {
+      showToast('Error syncing API credentials to server', 'error');
+    }
+  }
+
+  copyToken() {
+    const field = this.$('#api-token-field');
+    if (!field || !field.value) {
+      showToast('No API token to copy', 'warning');
+      return;
+    }
+    navigator.clipboard.writeText(field.value);
+    showToast('API token copied to clipboard!', 'success');
+  }
+
+  async sendRequest() {
+    const endpoint = this.$('#api-explorer-endpoint')?.value;
+    const method = this.$('#api-explorer-method')?.value || 'GET';
+    const output = this.$('#api-explorer-response');
+
+    if (!endpoint) return;
+    if (output) output.textContent = '// Running fetch request on server...';
+
+    try {
+      const res = await adminFetch(endpoint, { method });
+      const status = res.status;
+      const json = await res.json();
+      if (output) {
+        output.textContent = JSON.stringify({
+          status,
+          statusText: res.statusText,
+          headers: { 'Content-Type': 'application/json' },
+          data: json
+        }, null, 2);
+      }
+    } catch (err) {
+      if (output) {
+        output.textContent = JSON.stringify({
+          error: true,
+          message: err.message
+        }, null, 2);
+      }
+    }
+  }
+}
+window.ApiPanelSettingsController = ApiPanelSettingsController;

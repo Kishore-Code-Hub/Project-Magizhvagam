@@ -275,3 +275,475 @@ html[data-mz-anim="none"] * {
   line-height: var(--leading-relaxed);
 }
 .testimonial-stars { color: var(--color-brand-primary); margin-bottom: 8px; }
+
+/* ==========================================================================
+   MAGIZHVAGAM REDESIGN EXTENSIONS
+   ========================================================================== */
+
+/* Motion System Design Tokens */
+:root {
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 450ms;
+  --ease-default: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-luxury: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Skeleton Loading Shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton,
+.skeleton-shimmer,
+.skeleton-card,
+.skeleton-image,
+.skeleton-text,
+.skeleton-text-sm {
+  background: linear-gradient(
+    90deg,
+    var(--card-bg, rgba(26, 21, 35, 0.6)) 25%,
+    rgba(201, 145, 61, 0.08) 37%,
+    var(--card-bg, rgba(26, 21, 35, 0.6)) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+  border-radius: var(--border-radius, 8px);
+  display: block;
+}
+
+.skeleton-image {
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.skeleton-text {
+  height: 14px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.skeleton-text-sm {
+  height: 10px;
+  margin-bottom: 6px;
+  border-radius: 4px;
+}
+
+:root[data-theme="light"] .skeleton,
+:root[data-theme="light"] .skeleton-shimmer,
+:root[data-theme="light"] .skeleton-card,
+:root[data-theme="light"] .skeleton-image,
+:root[data-theme="light"] .skeleton-text,
+:root[data-theme="light"] .skeleton-text-sm {
+  background: linear-gradient(
+    90deg,
+    rgba(240, 237, 230, 0.8) 25%,
+    rgba(201, 145, 61, 0.12) 37%,
+    rgba(240, 237, 230, 0.8) 63%
+  );
+  background-size: 200% 100%;
+}
+
+/* Ambient Floating Decorative Blobs */
+@keyframes ambientFloat {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+.ambient-gradient-blob {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201, 145, 61, 0.12) 0%, rgba(201, 145, 61, 0) 70%);
+  filter: blur(40px);
+  z-index: 0;
+  pointer-events: none;
+  animation: ambientFloat 20s infinite ease-in-out;
+}
+
+:root[data-theme="light"] .ambient-gradient-blob {
+  background: radial-gradient(circle, rgba(201, 145, 61, 0.08) 0%, rgba(201, 145, 61, 0) 70%);
+}
+
+/* Custom Interactive Cursor (Desktop Only) */
+@media (pointer: fine) {
+  .custom-cursor {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-primary, #C9913D);
+    border-radius: 50%;
+    position: fixed;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 9999;
+    transition: width var(--duration-fast) var(--ease-luxury), height var(--duration-fast) var(--ease-luxury), background var(--duration-fast) var(--ease-luxury);
+  }
+  .custom-cursor-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--color-primary, #C9913D);
+    border-radius: 50%;
+    position: fixed;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 9999;
+  }
+  .custom-cursor.hovering {
+    width: 44px;
+    height: 44px;
+    background: rgba(201, 145, 61, 0.15);
+    border-color: var(--color-secondary, #E0A84A);
+  }
+}
+
+/* Micro-Click Transitions */
+.btn-interactive {
+  transition: transform var(--duration-fast) var(--ease-luxury), box-shadow var(--duration-fast) var(--ease-luxury);
+}
+
+.btn-interactive:active {
+  transform: scale(0.96) !important;
+}
+
+/* Heart Icon Pulsate Trigger (Wishlist addition) */
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.2); }
+  50% { transform: scale(0.9); }
+  75% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.pulsate-heart {
+  animation: heartBeat 0.45s var(--ease-back) 1;
+}
+
+/* Smart Hide/Show Header Transitions */
+#main-header {
+  transform: translateY(0);
+  transition: transform var(--duration-normal) var(--ease-luxury),
+              background var(--duration-normal) var(--ease-default),
+              border-color var(--duration-normal) var(--ease-default),
+              box-shadow var(--duration-normal) var(--ease-default),
+              backdrop-filter var(--duration-normal) var(--ease-default) !important;
+}
+
+#main-header.header-hidden {
+  transform: translateY(-100%) !important;
+}
+
+/* Shine Sweep Effect Keyframe */
+@keyframes shineSweep {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
+  }
+}
+
+.shine-sweep-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine-sweep-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.shine-sweep-container:hover::before {
+  animation: shineSweep 0.9s ease-in-out;
+}
+
+/* Floating Decorative Keyframe */
+@keyframes floatItem {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(3deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+.float-decorative {
+  animation: floatItem 6s ease-in-out infinite;
+}
+
+.float-delay-1 {
+  animation-delay: -1.5s;
+}
+
+.float-delay-2 {
+  animation-delay: -3s;
+}
+
+.float-delay-3 {
+  animation-delay: -4.5s;
+}
+
+/* Morphing Page Transition SVG Overlay */
+.transition-curtain-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999;
+  pointer-events: none;
+}
+.transition-curtain-overlay svg {
+  width: 100%;
+  height: 100%;
+}
+.transition-curtain-overlay.active {
+  pointer-events: all;
+}
+
+/* ==========================================================================
+   MAGIZHVAGAM CINEMATIC VISUAL SYSTEM CLASSES
+   ========================================================================== */
+
+/* Aurora Mesh Backgrounds */
+.aurora-mesh-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -2;
+  pointer-events: none;
+  background: var(--bg-main, #0D0A14);
+}
+
+.aurora-mesh-blob {
+  position: absolute;
+  width: 60vw;
+  height: 60vw;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.35;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+
+.aurora-blob-1 {
+  background: radial-gradient(circle, rgba(106, 13, 173, 0.45) 0%, rgba(106, 13, 173, 0) 70%);
+  top: -10%;
+  left: -10%;
+  animation: aurora-move-1 25s infinite alternate ease-in-out;
+}
+
+.aurora-blob-2 {
+  background: radial-gradient(circle, rgba(201, 145, 61, 0.35) 0%, rgba(201, 145, 61, 0) 70%);
+  bottom: -10%;
+  right: -10%;
+  animation: aurora-move-2 20s infinite alternate ease-in-out;
+}
+
+.aurora-blob-3 {
+  background: radial-gradient(circle, rgba(13, 148, 136, 0.3) 0%, rgba(13, 148, 136, 0) 70%);
+  top: 40%;
+  left: 50%;
+  animation: aurora-move-3 30s infinite alternate ease-in-out;
+}
+
+@keyframes aurora-move-1 {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  50% { transform: translate(15%, 10%) scale(1.1) rotate(180deg); }
+  100% { transform: translate(-10%, -15%) scale(0.9) rotate(360deg); }
+}
+
+@keyframes aurora-move-2 {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  50% { transform: translate(-10%, -20%) scale(1.2) rotate(-180deg); }
+  100% { transform: translate(15%, 15%) scale(0.85) rotate(-360deg); }
+}
+
+@keyframes aurora-move-3 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-20%, 15%) scale(0.9); }
+  100% { transform: translate(10%, -10%) scale(1.1); }
+}
+
+/* Noise Texture Overlay */
+.noise-texture-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Glass Reflections & Shine Sweeps */
+.premium-glass-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-glass-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.05) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Liquid Hover Filters */
+.liquid-hover-target {
+  filter: url('#liquid-distortion');
+  transition: filter 0.3s ease;
+}
+
+/* Perspective 3D Transforms */
+.perspective-stage {
+  perspective: 1000px;
+}
+
+.tilt-3d-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.1s ease-out;
+}
+
+.tilt-3d-content {
+  transform: translateZ(25px);
+}
+
+/* Spotlight Hover Highlights */
+.spotlight-hover-layer {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle 150px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(201, 145, 61, 0.1) 0%,
+    rgba(201, 145, 61, 0) 80%
+  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.premium-glass-card:hover .spotlight-hover-layer {
+  opacity: 1;
+}
+
+/* Counters */
+.counter-animate-container {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Logo Glow & Hover Filters */
+.logo-wrapper:hover {
+  filter: drop-shadow(0 0 16px rgba(168, 85, 247, 0.6)) drop-shadow(0 0 4px rgba(201, 145, 61, 0.4)) !important;
+  transition: filter 0.3s ease;
+}
+
+/* Cart Badge Gentle Pulse */
+.badge-count {
+  animation: badgePulse 2s infinite ease-in-out !important;
+}
+
+@keyframes badgePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.22); box-shadow: 0 0 10px rgba(192, 57, 43, 0.7); }
+  100% { transform: scale(1); }
+}
+
+/* Product Card Image Zoom + Slight Rotate */
+.product-card:hover .product-image-wrap img,
+.pc-card:hover img {
+  transform: scale(1.08) rotate(1.5deg) !important;
+}
+
+/* Free Shipping & Stepper Progress Bars */
+.progress-bar-glow-gradient {
+  background: linear-gradient(90deg, #A855F7, #C9913D) !important;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.6) !important;
+  transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Checkout Stepper Circles */
+.stepper-circle.active {
+  transform: scale(1.2) !important;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.5) !important;
+  border-color: var(--adm-accent, #A855F7) !important;
+}
+
+.stepper-circle.checked {
+  background-color: var(--color-success, #22c55e) !important;
+  border-color: var(--color-success, #22c55e) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Heart Icon Pulsate Trigger (Wishlist addition) */
+.pulsate-heart-beating {
+  animation: heartBeatPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes heartBeatPulse {
+  0% { transform: scale(1); }
+  15% { transform: scale(1.18); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.15); }
+  60% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+/* Search Input Autofill suggestions slide */
+.suggestion-item-slide {
+  opacity: 0;
+  transform: translateY(15px);
+  animation: suggestionSlideIn 0.35s forwards cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes suggestionSlideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

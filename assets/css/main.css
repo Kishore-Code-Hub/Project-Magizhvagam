@@ -2474,9 +2474,9 @@ body.inner-page {
 
 .footer-top {
   display: grid;
-  grid-template-columns: 1.2fr 3fr;
-  gap: 60px;
-  margin-bottom: 40px;
+  grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+  gap: 40px;
+  margin-bottom: 50px;
 }
 
 .footer-brand {
@@ -2516,14 +2516,14 @@ body.inner-page {
 
 .footer-social-icon {
   background: var(--ft-social-icon-bg, rgba(201, 145, 61, 0.08)) !important;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-muted, #7A6E8A) !important;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -2531,12 +2531,6 @@ body.inner-page {
   background: var(--ft-social-icon-hover-bg, rgba(201, 145, 61, 0.15)) !important;
   color: var(--color-brand-primary, #C9913D) !important;
   transform: translateY(-3px) scale(1.1) !important;
-}
-
-.footer-columns {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
 }
 
 .footer-column {
@@ -2547,10 +2541,10 @@ body.inner-page {
 
 .footer-column-heading {
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: var(--text-primary, #F5F0E8) !important;
 }
 
@@ -2689,14 +2683,15 @@ body.inner-page {
 
 @media (max-width: 1024px) {
   .footer-top {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 40px;
   }
 }
 
 @media (max-width: 768px) {
-  .footer-columns {
+  .footer-top {
     grid-template-columns: 1fr 1fr;
+    gap: 30px;
   }
 
   .footer-newsletter {
@@ -2717,8 +2712,19 @@ body.inner-page {
 }
 
 @media (max-width: 480px) {
-  .footer-columns {
+  .footer-top {
     grid-template-columns: 1fr;
+    gap: 30px;
+    text-align: center;
+  }
+  .footer-brand {
+    align-items: center;
+  }
+  .footer-social {
+    justify-content: center;
+  }
+  .footer-contact-item {
+    justify-content: center;
   }
 }
 

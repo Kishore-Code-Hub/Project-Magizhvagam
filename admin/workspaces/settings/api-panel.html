@@ -1,0 +1,66 @@
+<div class="workspace-panel" data-workspace="api-panel">
+  <div class="grid grid-2" style="gap: 30px; align-items: start;">
+    
+    <!-- API Credentials Card -->
+    <div class="glass" style="padding: 25px; border-radius: 12px;">
+      <h3 style="font-family:'Outfit'; font-size: 20px; color: var(--text-color); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+        🔑 Developer API Tokens
+      </h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">
+        Generate and manage long-lived API tokens for external integrations. Keep these tokens secure as they grant full administrative access.
+      </p>
+
+      <div class="admin-form-group">
+        <label>Active API Token</label>
+        <div style="display: flex; gap: 10px;">
+          <input type="text" id="api-token-field" class="admin-form-control" readonly placeholder="No API key generated yet..." style="font-family: monospace; font-size: 13px;">
+          <button type="button" id="api-copy-btn" class="btn btn-secondary" style="padding: 10px 14px; border-radius: 8px; white-space: nowrap;">Copy</button>
+        </div>
+      </div>
+
+      <button type="button" id="api-generate-btn" class="btn btn-primary" style="width: 100%; border-radius: 8px; margin-top: 10px;">
+        Generate Secure API Token
+      </button>
+    </div>
+
+    <!-- API Request Explorer Card -->
+    <div class="glass" style="padding: 25px; border-radius: 12px;">
+      <h3 style="font-family:'Outfit'; font-size: 20px; color: var(--text-color); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+        🚀 Interactive API Explorer
+      </h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">
+        Test store API endpoints directly from the dashboard panel. Responses will be fetched in real time.
+      </p>
+
+      <div class="admin-form-group">
+        <label>Endpoint URL</label>
+        <div style="display: flex; gap: 10px;">
+          <select id="api-explorer-method" class="admin-form-control" style="max-width: 100px; font-weight: 700; color: var(--primary-color);">
+            <option value="GET">GET</option>
+          </select>
+          <select id="api-explorer-endpoint" class="admin-form-control">
+            <option value="/api/products?limit=3">/api/products?limit=3</option>
+            <option value="/api/products/categories">/api/products/categories</option>
+            <option value="/api/settings/feature-toggles">/api/settings/feature-toggles</option>
+            <option value="/api/contact/enquiries">/api/contact/enquiries</option>
+            <option value="/api/orders">/api/orders</option>
+            <option value="/api/auth/customers">/api/auth/customers</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="button" id="api-explorer-send-btn" class="btn btn-primary" style="width: 100%; border-radius: 8px; margin-bottom: 20px;">
+        Send API Request
+      </button>
+
+      <label style="font-weight: 600; font-size: 12px; display: block; margin-bottom: 8px;">Response Body</label>
+      <div style="position: relative;">
+        <pre id="api-explorer-response" style="margin: 0; background: #0c0618; border: 1px solid var(--card-border); color: #00FF66; padding: 15px; border-radius: 8px; max-height: 250px; overflow-y: auto; font-family: monospace; font-size: 12px;">{
+  "status": "idle",
+  "message": "Click Send API Request to execute the query."
+}</pre>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,5 +1,5 @@
 const emailService = require('../services/emailService');
-const Enquiry = require('../models/Enquiry');
+const prisma = require('../services/prisma');
 
 // @desc    Submit contact enquiry
 // @route   POST /api/contact
@@ -8,7 +8,6 @@ exports.submitEnquiry = async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
 
-    // Validation
     if (!name || !name.trim()) {
       return res.status(400).json({ success: false, error: 'Full Name is required.' });
     }
@@ -29,9 +28,11 @@ exports.submitEnquiry = async (req, res) => {
     const emailLower = email.trim().toLowerCase();
 
     // Enforce one active enquiry policy: check for pending (unread) enquiry
-    const existingEnquiry = await Enquiry.findOne({
-      email: emailLower,
-      status: 'unread'
+    const existingEnquiry = await prisma.enquiry.findFirst({
+      where: {
+        email: emailLower,
+        status: 'unread'
+      }
     });
 
     if (existingEnquiry) {
@@ -59,14 +60,15 @@ exports.submitEnquiry = async (req, res) => {
     console.log(`[Contact Form] SMTP email dispatch succeeded.`);
 
     // Store in database
-    const newEnquiry = new Enquiry({
-      name: name.trim(),
-      email: emailLower,
-      subject: subject.trim(),
-      message: message.trim(),
-      status: 'unread'
+    await prisma.enquiry.create({
+      data: {
+        name: name.trim(),
+        email: emailLower,
+        subject: subject.trim(),
+        message: message.trim(),
+        status: 'unread'
+      }
     });
-    await newEnquiry.save();
 
     res.status(200).json({ success: true, message: 'Your enquiry has been sent successfully!' });
   } catch (error) {

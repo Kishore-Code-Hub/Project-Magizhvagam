@@ -33,7 +33,7 @@ async function initProductTicker() {
       }
       
       const buildItemHTML = (p) => `
-        <a href="/product-details.html?id=${p._id}" class="ticker-item" aria-label="${p.name}">
+        <a href="/product/${p._id}" class="ticker-item" aria-label="${p.name}">
           <img src="${p.images && p.images[0] ? p.images[0].url : '/assets/images/default-product.webp'}" 
                alt="${p.name}" width="44" height="44" 
                style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;" 
@@ -401,11 +401,11 @@ async function renderCategoryHighlights(catIds) {
       }
 
       container.innerHTML = filtered.map(cat => `
-        <a href="/products.html?category=${cat.slug}" class="glass-panel category-card hover-lift animated fadeInUp">
-          <div>
-            <img src="${cat.image || '/assets/images/default-category.webp'}" alt="${cat.name}" loading="lazy" onerror="this.src='/assets/images/default-category.webp'">
+        <a href="/products.html?category=${cat.slug}" class="glass-panel category-card hover-lift shine-sweep-container animated fadeInUp" style="border-radius:16px; overflow:hidden; display:block; padding:20px; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+          <div class="category-img-wrapper" style="border-radius:12px; overflow:hidden; margin-bottom:12px; aspect-ratio:1/1;">
+            <img src="${cat.image || '/assets/images/default-category.webp'}" alt="${cat.name}" loading="lazy" style="width:100%; height:100%; object-fit:cover; transition:transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);" onerror="this.src='/assets/images/default-category.webp'">
           </div>
-          <h4>${cat.name}</h4>
+          <h4 style="font-family:'Outfit'; font-size:16px; margin:0; text-align:center; color:var(--text-color);">${cat.name}</h4>
         </a>
       `).join('');
     }
@@ -647,11 +647,253 @@ function renderTestimonials(testimonials) {
   if (!container || !testimonials || testimonials.length === 0) return;
 
   container.innerHTML = testimonials.map(t => `
-    <div class="glass testimonial-card animated fadeInUp" style="padding:30px; border-radius:16px;">
+    <div class="glass testimonial-card animated fadeInUp" style="padding:30px; border-radius:16px; transition: transform 0.4s ease, box-shadow 0.4s ease;">
       <div style="color:#D4AF37; margin-bottom:12px; font-size:16px;">${'★'.repeat(t.rating)}</div>
       <p style="font-style:italic; color:var(--text-muted); margin-bottom:20px; font-size:14px; line-height:1.6;">"${t.comment}"</p>
       <h5 style="font-family:'Outfit'; font-weight:600; font-size:14px; color:var(--text-color);">${t.author}</h5>
       <span style="font-size:11px; color:#D4AF37; font-weight:700; text-transform:uppercase;">Verified Purchase</span>
     </div>
   `).join('');
+
+  // Apply hover effects on testimonial cards
+  document.querySelectorAll('.testimonial-card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      card.style.transform = 'translateY(-6px) scale(1.01)';
+      card.style.boxShadow = '0 12px 24px rgba(106, 13, 173, 0.08)';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'translateY(0) scale(1)';
+      card.style.boxShadow = 'none';
+    });
+  });
 }
+
+// 6. Premium Homepage Motion Effects
+
+function animateHeroText() {
+  const heroSection = document.querySelector('[data-mz-section="hero"]');
+  if (!heroSection) return;
+
+  const headline = heroSection.querySelector('.hero-headline');
+  const subtext = heroSection.querySelector('.hero-subtext');
+  const badge = heroSection.querySelector('.hero-badge') || heroSection.querySelector('.hero-badge-tag');
+  const ctas = heroSection.querySelectorAll('.hero-cta-action-row .btn');
+
+  if (!headline) return;
+
+  // Manual split text into words wrapped in overflow hidden containers
+  const words = headline.textContent.trim().split(/\s+/);
+  headline.innerHTML = words.map(w => `
+    <span class="hero-word-wrapper" style="display:inline-block; overflow:hidden; vertical-align:bottom;">
+      <span class="hero-word" style="display:inline-block; transform:translateY(100%); opacity:0;">${w}</span>
+    </span>
+  `).join(' ');
+
+  // Add .btn-interactive for magnetic cursor hover actions
+  ctas.forEach(btn => {
+    btn.classList.add('btn-interactive');
+    // Micro click bounce interaction
+    btn.addEventListener('mousedown', () => {
+      gsap.to(btn, { scale: 0.95, duration: 0.1 });
+    });
+    btn.addEventListener('mouseup', () => {
+      gsap.to(btn, { scale: 1, duration: 0.2, ease: 'power2.out' });
+    });
+  });
+
+  // Re-run magnetic listener binding if MZMotionSystem is ready
+  if (window.MZMotionSystem?.initMotionSystem) {
+    // Re-bind magnetic hooks to dynamically modified CTAs
+    setTimeout(() => {
+      const magneticElements = document.querySelectorAll('.btn-interactive');
+      magneticElements.forEach(el => {
+        if (el.getAttribute('data-magnetic-bound')) return;
+        el.setAttribute('data-magnetic-bound', 'true');
+        el.addEventListener('mousemove', (e) => {
+          const rect = el.getBoundingClientRect();
+          const elX = rect.left + rect.width / 2;
+          const elY = rect.top + rect.height / 2;
+          const disX = e.clientX - elX;
+          const disY = e.clientY - elY;
+          gsap.to(el, { x: disX * 0.35, y: disY * 0.35, duration: 0.3, ease: 'power2.out', overwrite: 'auto' });
+        });
+        el.addEventListener('mouseleave', () => {
+          gsap.to(el, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.4)', overwrite: 'auto' });
+        });
+      });
+    }, 50);
+  }
+
+  // Animation timeline
+  const tl = gsap.timeline();
+  if (badge) {
+    tl.fromTo(badge, { opacity: 0, scale: 0.8, y: -20 }, { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: 'back.out(1.7)' });
+  }
+  tl.to(headline.querySelectorAll('.hero-word'), {
+    y: '0%',
+    opacity: 1,
+    duration: 0.8,
+    stagger: 0.08,
+    ease: 'power3.out'
+  }, '-=0.3');
+
+  if (subtext) {
+    tl.fromTo(subtext, { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.4');
+  }
+
+  if (ctas.length > 0) {
+    tl.fromTo(ctas, { opacity: 0, scale: 0.9, y: 10 }, { opacity: 1, scale: 1, y: 0, duration: 0.5, stagger: 0.1, ease: 'back.out(1.2)' }, '-=0.3');
+  }
+}
+
+function initHeroParallax() {
+  const heroSection = document.querySelector('.hero-parallax-viewport');
+  const bg = heroSection?.querySelector('.bg-canvas');
+  if (!heroSection || !bg) return;
+
+  heroSection.addEventListener('mousemove', (e) => {
+    const { width, height } = heroSection.getBoundingClientRect();
+    const xVal = (e.clientX - width / 2) / (width / 2);
+    const yVal = (e.clientY - height / 2) / (height / 2);
+
+    gsap.to(bg, {
+      x: xVal * 25,
+      y: yVal * 25,
+      rotation: xVal * 1,
+      duration: 1.2,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    });
+  }, { passive: true });
+
+  heroSection.addEventListener('mouseleave', () => {
+    gsap.to(bg, {
+      x: 0,
+      y: 0,
+      rotation: 0,
+      duration: 1.6,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    });
+  });
+}
+
+function injectHeroDecorations() {
+  const heroSection = document.querySelector('.hero-parallax-viewport');
+  if (!heroSection) return;
+
+  const decoration1 = document.createElement('div');
+  decoration1.className = 'float-decorative float-delay-1';
+  decoration1.style.cssText = 'position:absolute; top:20%; left:6%; width:44px; height:44px; border-radius:50%; background:radial-gradient(circle, rgba(201,145,61,0.18) 0%, rgba(201,145,61,0) 70%); border:1.5px solid rgba(201,145,61,0.25); pointer-events:none; z-index:2;';
+
+  const decoration2 = document.createElement('div');
+  decoration2.className = 'float-decorative float-delay-2';
+  decoration2.style.cssText = 'position:absolute; bottom:25%; right:8%; width:64px; height:64px; border-radius:50%; background:radial-gradient(circle, rgba(139,92,246,0.18) 0%, rgba(139,92,246,0) 70%); border:1.5px solid rgba(139,92,246,0.25); pointer-events:none; z-index:2;';
+
+  heroSection.appendChild(decoration1);
+  heroSection.appendChild(decoration2);
+}
+
+function initStatsCounters() {
+  const statsSection = document.querySelector('.home-stats-wrapper');
+  if (!statsSection) return;
+
+  const numbers = statsSection.querySelectorAll('.stat-number');
+  if (!numbers.length) return;
+
+  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+    gsap.from(numbers, {
+      scrollTrigger: {
+        trigger: statsSection,
+        start: 'top 85%',
+        toggleActions: 'play none none none'
+      },
+      duration: 1.8,
+      ease: 'power2.out',
+      onStart: () => {
+        numbers.forEach(el => {
+          const target = parseInt(el.getAttribute('data-target') || '0', 10);
+          let current = 0;
+          const suffix = target >= 1000 ? '+' : '%';
+          const interval = setInterval(() => {
+            current += Math.ceil(target / 40);
+            if (current >= target) {
+              current = target;
+              clearInterval(interval);
+            }
+            // Format 15000 as 15k+ or similar, or full format
+            el.textContent = current.toLocaleString() + suffix;
+          }, 35);
+        });
+      }
+    });
+  }
+}
+
+function initFaqAccordion() {
+  const faqItems = document.querySelectorAll('.faq-item');
+  faqItems.forEach(item => {
+    const trigger = item.querySelector('.faq-trigger');
+    const content = item.querySelector('.faq-content');
+    const icon = item.querySelector('.faq-icon');
+
+    if (!trigger || !content) return;
+
+    trigger.addEventListener('click', () => {
+      const isOpen = content.style.display === 'block';
+
+      // Close all other faq sections
+      document.querySelectorAll('.faq-content').forEach(c => {
+        c.style.display = 'none';
+        const itemIcon = c.closest('.faq-item')?.querySelector('.faq-icon');
+        if (itemIcon) itemIcon.style.transform = 'rotate(0deg)';
+      });
+
+      if (!isOpen) {
+        content.style.display = 'block';
+        if (icon) icon.style.transform = 'rotate(45deg)';
+        gsap.fromTo(content, { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' });
+      } else {
+        content.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      }
+    });
+  });
+}
+
+function initTimelineReveal() {
+  const timeline = document.querySelector('.brand-story-timeline');
+  if (!timeline) return;
+
+  const items = timeline.querySelectorAll('.timeline-item');
+  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+    gsap.fromTo(items, 
+      { opacity: 0, x: -30 },
+      {
+        opacity: 1,
+        x: 0,
+        duration: 0.8,
+        stagger: 0.2,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: timeline,
+          start: 'top 80%',
+          toggleActions: 'play none none none'
+        }
+      }
+    );
+  }
+}
+
+// Call premium features on load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    animateHeroText();
+    initHeroParallax();
+    injectHeroDecorations();
+    initStatsCounters();
+    initFaqAccordion();
+    initTimelineReveal();
+  }, 100);
+});
+

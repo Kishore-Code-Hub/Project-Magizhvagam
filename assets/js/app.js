@@ -17,7 +17,7 @@ window.addEventListener("error", (e) => {
       if (response.status === 401) {
         const path = window.location.pathname.toLowerCase();
         // Prevent redirect looping on login, register, or admin login pages
-        const isAuthPage = ['/login.html', '/register.html', '/admin/login'].some(p => path.endsWith(p));
+        const isAuthPage = ['/login', '/register', '/admin/login'].some(p => path.endsWith(p));
         if (!isAuthPage) {
           const redirectPath = window.location.pathname.substring(1) + window.location.search;
 
@@ -46,7 +46,7 @@ window.addEventListener("error", (e) => {
             }
           }
 
-          window.location.replace('/login.html?redirect=' + encodeURIComponent(redirectPath));
+          window.location.replace('/login?redirect=' + encodeURIComponent(redirectPath));
         }
       }
       return response;
@@ -238,8 +238,8 @@ window.validateUserSession = async function validateUserSession() {
       localStorage.removeItem('magizhvagam_wishlist');
 
       const path = window.location.pathname;
-      const isAuthPage = ['/login.html', '/register.html'].some((p) => path.endsWith(p));
-      const isProtected = ['/profile.html', '/wishlist.html', '/checkout.html', '/cart.html'].some(p => path.endsWith(p)) || path.includes('/admin/');
+      const isAuthPage = ['/login', '/register'].some((p) => path.endsWith(p));
+      const isProtected = ['/account', '/wishlist', '/checkout', '/cart'].some(p => path.endsWith(p)) || path.includes('/admin/');
       if (isProtected && !isAuthPage) {
         const redirectPath = window.location.pathname.substring(1) + window.location.search;
         if (path.includes('/admin/')) {
@@ -247,7 +247,7 @@ window.validateUserSession = async function validateUserSession() {
         } else {
           showToast('Please login or create a customer account to continue.', 'error');
           setTimeout(() => {
-            window.location.replace('/login.html?redirect=' + encodeURIComponent(redirectPath));
+            window.location.replace('/login?redirect=' + encodeURIComponent(redirectPath));
           }, 1500);
         }
       }
@@ -458,7 +458,7 @@ window.handleLogout = async () => {
   showToast('Logged out successfully', 'success');
   const logoutTarget = window.location.pathname.includes('/admin/')
     ? '/admin/login'
-    : '/login.html';
+    : '/login';
   setTimeout(() => {
     window.location.replace(logoutTarget);
   }, 1000);
@@ -1056,7 +1056,7 @@ function injectComponents(settings, user = null) {
       </svg>
     `;
     authUtilHtml = `
-      <a href="/index.html" class="guest-btn guest-btn-login" id="header-browse-store-btn">Browse Store</a>
+      <a href="/" class="guest-btn guest-btn-login" id="header-browse-store-btn">Browse Store</a>
       <div class="account-menu-wrapper" id="account-menu-wrapper">
         <button class="header-icon-btn" aria-label="Admin session" style="${user.profilePicture ? 'padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1.5px solid var(--gold-color); overflow: hidden; width: 28px; height: 28px;' : ''}">
           ${avatarHtml}
@@ -1082,9 +1082,9 @@ function injectComponents(settings, user = null) {
         </button>
         <div class="account-dropdown">
           <div class="dropdown-link" style="font-weight: 700; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; color: var(--text-color);">Hello, <span id="user-name-display" class="profile-name">${user.name}</span></div>
-          <a href="/profile.html" class="dropdown-link">My Profile</a>
-          <a href="/profile.html#orders" class="dropdown-link">My Orders</a>
-          <a href="/wishlist.html" class="dropdown-link">Wishlist</a>
+          <a href="/account" class="dropdown-link">My Profile</a>
+          <a href="/account#orders" class="dropdown-link">My Orders</a>
+          <a href="/wishlist" class="dropdown-link">Wishlist</a>
           <a href="#" class="dropdown-link logout-link" onclick="window.handleLogout(); return false;">Logout</a>
         </div>
       </div>`;
@@ -1093,11 +1093,11 @@ function injectComponents(settings, user = null) {
   // ── NAV LINKS ─────────────────────────────────────────────────────────────
   const navLinksHtml = `
     <nav class="nav-menu" id="desktop-nav" aria-label="Main navigation">
-      <a href="/index.html" class="nav-link">Home</a>
-      <a href="/products.html" class="nav-link">Products</a>
-      <a href="/index.html#categories" class="nav-link">Categories</a>
-      <a href="/about.html" class="nav-link">About</a>
-      <a href="/contact.html" class="nav-link">Contact</a>
+      <a href="/" class="nav-link">Home</a>
+      <a href="/products" class="nav-link">Products</a>
+      <a href="/#categories" class="nav-link">Categories</a>
+      <a href="/about" class="nav-link">About</a>
+      <a href="/contact" class="nav-link">Contact</a>
     </nav>`;
 
   // ── BUILD MOBILE SIDEBAR ──────────────────────────────────────────────────
@@ -1105,20 +1105,20 @@ function injectComponents(settings, user = null) {
   if (!user) {
     const allowSignup = !(window.featureToggles && window.featureToggles.allowSignup === false);
     mobileSidebarAuthLinks = `
-      <a href="/login.html" class="sidebar-link">Login</a>
-      ${allowSignup ? '<a href="/register.html" class="sidebar-link">Register</a>' : ''}`;
+      <a href="/login" class="sidebar-link">Login</a>
+      ${allowSignup ? '<a href="/register" class="sidebar-link">Register</a>' : ''}`;
   } else if (user.role === 'admin') {
     mobileSidebarAuthLinks = `
-      <a href="/index.html" class="sidebar-link">Browse Store</a>
+      <a href="/" class="sidebar-link">Browse Store</a>
       <a href="#" class="sidebar-link sidebar-logout" onclick="window.handleLogout(); return false;">Logout</a>`;
   } else {
     // Accordion: tap Account to expand sub-links
     mobileSidebarAuthLinks = `
       <button class="sidebar-account-toggle" id="sidebar-account-toggle" type="button">Account (<span class="profile-name">${user.name}</span>) <span class="arrow" id="sidebar-account-arrow">&#9658;</span></button>
       <div class="sidebar-account-submenu" id="sidebar-account-submenu">
-        <a href="/profile.html" class="sidebar-link">My Profile</a>
-        <a href="/profile.html#orders" class="sidebar-link">My Orders</a>
-        <a href="/wishlist.html" class="sidebar-link">Wishlist</a>
+        <a href="/account" class="sidebar-link">My Profile</a>
+        <a href="/account#orders" class="sidebar-link">My Orders</a>
+        <a href="/wishlist" class="sidebar-link">Wishlist</a>
         <a href="#" class="sidebar-link sidebar-logout" onclick="window.handleLogout(); return false;">Logout</a>
       </div>`;
   }
@@ -1143,12 +1143,12 @@ function injectComponents(settings, user = null) {
                 <!-- Left: Contact info -->
                 <div class="header-contact-info" id="header-contact-left">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.93 6.93l1.51-1.51a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-                  <a href="/contact.html">Get in Touch</a>
+                  <a href="/contact">Get in Touch</a>
                 </div>
               </div>
 
               <!-- Center: Logo -->
-              <a href="/index.html" class="logo-wrapper" id="header-logo" aria-label="${brandName} Home">
+              <a href="/" class="logo-wrapper" id="header-logo" aria-label="${brandName} Home">
                 ${logoInnerHtml}
               </a>
 
@@ -1173,7 +1173,7 @@ function injectComponents(settings, user = null) {
         <!-- Mobile slide-in sidebar -->
         <div class="mobile-sidebar" id="mobile-sidebar" aria-hidden="true">
           <div class="sidebar-header">
-            <a href="/index.html" class="logo-wrapper" style="flex-direction:row; gap:8px;">
+            <a href="/" class="logo-wrapper" style="flex-direction:row; gap:8px;">
               <span class="logo-title" style="font-size:20px;">${brandName}</span>
             </a>
             <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close menu">&times;</button>
@@ -1195,7 +1195,7 @@ function injectComponents(settings, user = null) {
             <button id="mobile-search-close" style="background:none; border:none; font-size:24px; font-weight:700; cursor:pointer; color:var(--text-color);">&times;</button>
             <span style="font-family:'Outfit'; font-size:18px; font-weight:700;">Search Gifts</span>
           </div>
-          <form action="/products.html" method="GET" style="position:relative;">
+          <form action="/products" method="GET" style="position:relative;">
             <input type="text" name="search" id="mobile-search-input" placeholder="Search for gifts..." autocomplete="off"
               style="width:100%; padding:14px 20px; border-radius:12px; border:2px solid hsl(var(--primary-purple)); font-size:16px; font-family:'Outfit'; background:#fff; color:var(--text-color); outline:none;">
             <button type="submit" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:hsl(var(--primary-purple));">
@@ -1224,12 +1224,12 @@ function injectComponents(settings, user = null) {
                 <!-- Left: Contact info -->
                 <div class="header-contact-info" id="header-contact-left">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.93 6.93l1.51-1.51a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-                  <a href="/contact.html">Get in Touch</a>
+                  <a href="/contact">Get in Touch</a>
                 </div>
               </div>
 
               <!-- Center: Logo -->
-              <a href="/index.html" class="logo-wrapper" id="header-logo" aria-label="${brandName} Home">
+              <a href="/" class="logo-wrapper" id="header-logo" aria-label="${brandName} Home">
                 ${logoInnerHtml}
               </a>
 
@@ -1252,17 +1252,17 @@ function injectComponents(settings, user = null) {
         <!-- Mobile slide-in sidebar -->
         <div class="mobile-sidebar" id="mobile-sidebar" aria-hidden="true">
           <div class="sidebar-header">
-            <a href="/index.html" class="logo-wrapper" style="flex-direction:row; gap:8px;">
+            <a href="/" class="logo-wrapper" style="flex-direction:row; gap:8px;">
               <span class="logo-title" style="font-size:20px;">${brandName}</span>
             </a>
             <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close menu">&times;</button>
           </div>
           <ul class="sidebar-menu">
-            <li><a href="/index.html" class="sidebar-link">Home</a></li>
-            <li><a href="/products.html" class="sidebar-link">Products</a></li>
-            <li><a href="/index.html#categories" class="sidebar-link">Categories</a></li>
-            <li><a href="/about.html" class="sidebar-link">About Us</a></li>
-            <li><a href="/contact.html" class="sidebar-link">Contact</a></li>
+            <li><a href="/" class="sidebar-link">Home</a></li>
+            <li><a href="/products" class="sidebar-link">Products</a></li>
+            <li><a href="/#categories" class="sidebar-link">Categories</a></li>
+            <li><a href="/about" class="sidebar-link">About Us</a></li>
+            <li><a href="/contact" class="sidebar-link">Contact</a></li>
           </ul>
           <div class="sidebar-auth-section" id="sidebar-auth-section">
             ${mobileSidebarAuthLinks}
@@ -1278,7 +1278,7 @@ function injectComponents(settings, user = null) {
             <button id="mobile-search-close" style="background:none; border:none; font-size:24px; font-weight:700; cursor:pointer; color:var(--text-color);">&times;</button>
             <span style="font-family:'Outfit'; font-size:18px; font-weight:700;">Search Gifts</span>
           </div>
-          <form action="/products.html" method="GET" style="position:relative;">
+          <form action="/products" method="GET" style="position:relative;">
             <input type="text" name="search" id="mobile-search-input" placeholder="Search for gifts..." autocomplete="off"
               style="width:100%; padding:14px 20px; border-radius:12px; border:2px solid hsl(var(--primary-purple)); font-size:16px; font-family:'Outfit'; background:#fff; color:var(--text-color); outline:none;">
             <button type="submit" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:hsl(var(--primary-purple));">
@@ -1362,7 +1362,7 @@ function injectComponents(settings, user = null) {
             try { data = JSON.parse(text); } catch (ex) { data = { success: false, products: [] }; }
             if (data.success && data.products && data.products.length > 0) {
               searchAutocompleteBox.innerHTML = data.products.map(p => `
-                <a href="/product-details.html?id=${p._id}" style="padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); color:var(--text-color); font-weight:500; font-size:13px;">
+                <a href="/product/${p._id}" style="padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); color:var(--text-color); font-weight:500; font-size:13px;">
                   <span>${p.name}</span>
                   <span style="color:hsl(var(--primary-purple)); font-weight:700;">${formatPrice(p.discountPrice !== null ? p.discountPrice : p.price)}</span>
                 </a>
@@ -1442,7 +1442,7 @@ function injectComponents(settings, user = null) {
           try { data = JSON.parse(text); } catch (ex) { data = { success: false, products: [] }; }
           if (data.success && data.products && data.products.length > 0) {
             mobileAutocompleteResults.innerHTML = data.products.map(p => `
-              <a href="/product-details.html?id=${p._id}" class="glass" style="padding:12px 16px; display:flex; justify-content:space-between; align-items:center; border-radius:8px; color:var(--text-color); font-weight:500; font-size:14px;">
+              <a href="/product/${p._id}" class="glass" style="padding:12px 16px; display:flex; justify-content:space-between; align-items:center; border-radius:8px; color:var(--text-color); font-weight:500; font-size:14px;">
                 <span>${p.name}</span>
                 <span style="color:hsl(var(--primary-purple)); font-weight:700;">${formatPrice(p.discountPrice !== null ? p.discountPrice : p.price)}</span>
               </a>
@@ -1490,59 +1490,32 @@ function injectComponents(settings, user = null) {
 
   }
 
-  // â”€â”€ INJECT FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // ── INJECT FOOTER ──────────────────────────────────────────────────────
   if (footerEl) {
-    if (window.__mzFooter) {
-      window.__mzFooter.render(footerEl).catch(err => console.error('[app.js] Dynamic footer render failed:', err));
-    } else {
-      footerEl.style.backgroundColor = 'var(--footer-bg)';
-      footerEl.style.color = '#FFFFFF';
-      footerEl.style.padding = '60px 0 30px';
-      footerEl.style.marginTop = '60px';
+    const triggerFooterRender = () => {
+      if (window.__mzFooter) {
+        window.__mzFooter.render(footerEl).catch(err => console.error('[app.js] Dynamic footer render failed:', err));
+        return true;
+      }
+      return false;
+    };
 
-      footerEl.innerHTML = `
-        <div class="container grid grid-4" style="margin-bottom:40px;">
-          <div>
-            <h3>${brandName}</h3>
-            <p style="color:#A59AB0; font-size:14px; margin-bottom:20px;">Making Every Celebration Memorable. Premium Return Gifts and Customized Gifts for weddings, baby showers, birthdays, and corporate events.</p>
-            <div style="display:flex; gap:12px;">
-              <a href="#" style="background:#2C1C3E; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px;">FB</a>
-              <a href="#" style="background:#2C1C3E; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px;">IG</a>
-              <a href="#" style="background:#2C1C3E; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px;">WA</a>
-            </div>
-          </div>
-          <div>
-            <h4 style="color:white; font-size:16px; margin-bottom:16px;">Gift Categories</h4>
-            <ul style="list-style:none; display:flex; flex-direction:column; gap:10px; font-size:14px; color:#A59AB0;">
-              <li><a href="/products.html?category=wedding-return-gifts" style="color:#A59AB0;">Wedding Return Gifts</a></li>
-              <li><a href="/products.html?category=birthday-return-gifts" style="color:#A59AB0;">Birthday Return Gifts</a></li>
-              <li><a href="/products.html?category=baby-shower-gifts" style="color:#A59AB0;">Baby Shower Return Gifts</a></li>
-              <li><a href="/products.html?category=eco-friendly-gifts" style="color:#A59AB0;">Eco-Friendly Gifts</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 style="color:white; font-size:16px; margin-bottom:16px;">Quick Links</h4>
-            <ul style="list-style:none; display:flex; flex-direction:column; gap:10px; font-size:14px; color:#A59AB0;">
-              <li><a href="/about.html" style="color:#A59AB0;">Our Story</a></li>
-              <li><a href="/contact.html" style="color:#A59AB0;">Contact Us</a></li>
-              <li><a href="/profile.html" style="color:#A59AB0;">My Account</a></li>
-              <li><a href="/sitemap.xml" style="color:#A59AB0;">Sitemap</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 style="color:white; font-size:16px; margin-bottom:16px;">Contact Support</h4>
-            <p style="color:#A59AB0; font-size:14px; margin-bottom:10px;">Chennai, Tamil Nadu, India</p>
-            <p style="color:#A59AB0; font-size:14px; margin-bottom:10px;">Email: hellomagizhvagam@gmail.com</p>
-            <p class="contact-phone-val" style="color:#A59AB0; font-size:14px;">WhatsApp: +91 98765 43210</p>
-          </div>
-        </div>
-        <div class="container" style="border-top:1px solid #2C1C3E; padding-top:20px; text-align:center; color:#A59AB0; font-size:13px;">
-          <p>&copy; ${new Date().getFullYear()} ${brandName}. All Rights Reserved. Crafted for premium experiences.</p>
-        </div>
-      `;
-      window.renderIcons && window.renderIcons();
+    if (!triggerFooterRender()) {
+      const footerPoll = setInterval(() => {
+        if (triggerFooterRender()) {
+          clearInterval(footerPoll);
+        }
+      }, 50);
+      setTimeout(() => clearInterval(footerPoll), 3000);
     }
+  }
+
+  // Inject dynamic commerce drawers and search suggestions overlay
+  try {
+    injectMiniCartDrawerElement();
+    initPremiumSearchExperience();
+  } catch (err) {
+    console.error('Failed to auto-inject drawer overlays:', err);
   }
 }
 
@@ -1861,7 +1834,7 @@ window.createProductCardHTML = (p) => {
   const totalRev = typeof p.totalReviews === 'number' ? p.totalReviews : Number(p.totalReviews) || 0;
 
   const html = `
-    <div class="product-card glass hover-lift animated fadeInUp${altImageClass}" style="border-radius:16px; overflow:hidden; position:relative; display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+    <div class="product-card glass hover-lift shine-sweep-container animated fadeInUp${altImageClass}" style="border-radius:16px; overflow:hidden; position:relative; display:flex; flex-direction:column; justify-content:space-between; height:100%; transition: transform 0.4s ease, box-shadow 0.4s ease;">
       
       <!-- Badges Stack -->
       <div class="product-badge-stack" style="position:absolute; top:12px; left:12px; z-index:10; display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
@@ -1869,7 +1842,7 @@ window.createProductCardHTML = (p) => {
       </div>
       
       <div class="image-zoom-container" style="aspect-ratio: 1 / 1; width: 100%; height: auto; max-height: 250px; background: rgba(var(--glass-bg-rgb, 255, 255, 255), calc(var(--glass-bg-opacity, 0.12) * 0.5)) !important; display:flex; align-items:center; justify-content:center; position:relative; border-bottom:1px solid rgba(var(--glass-border-rgb, 220, 220, 220), var(--glass-border-opacity, 0.15)) !important; overflow:hidden;">
-        <a href="/product-details.html?id=${pId}" style="width:100%; height:100%; display:block; position:relative;">
+        <a href="/product/${pId}" style="width:100%; height:100%; display:block; position:relative;">
           <img src="${imgUrl}" alt="${nameEscaped}" class="product-primary-img" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
           ${hasAltImage ? `<img src="${secondaryImgUrl}" alt="${nameEscaped}" class="product-secondary-img" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">` : ''}
         </a>
@@ -1886,7 +1859,7 @@ window.createProductCardHTML = (p) => {
 
       <div style="padding:20px; display:flex; flex-direction:column; flex-grow:1; justify-content:space-between; background: rgba(var(--glass-bg-rgb, 255, 255, 255), calc(var(--glass-bg-opacity, 0.12) * 1.5)) !important; backdrop-filter: blur(var(--glass-blur, 16px)) !important; -webkit-backdrop-filter: blur(var(--glass-blur, 16px)) !important; border-top: 1px solid rgba(var(--glass-border-rgb, 220, 220, 220), var(--glass-border-opacity, 0.15)) !important;">
         <div>
-          <a href="/product-details.html?id=${pId}">
+          <a href="/product/${pId}">
             <h4 style="font-size:15px; font-family:'Outfit'; font-weight:600; margin-bottom:8px; line-height:1.4; color:var(--text-color);">${nameEscaped}</h4>
           </a>
           <div style="display:flex; align-items:center; gap:4px; font-size:12px; color:#D4AF37; margin-bottom:14px;">
@@ -2186,4 +2159,376 @@ window.showWhatsAppConfirmationModal = (summary, onConfirm) => {
     }
   }, true);
 })();
+
+// Global 3D Card Hover Tilt Effect Initializer
+window.initProductCardHover3D = () => {
+  if (!window.matchMedia('(pointer: fine)').matches) return;
+  if (typeof gsap === 'undefined') return;
+
+  const cards = document.querySelectorAll('.product-card');
+  cards.forEach(card => {
+    if (card.getAttribute('data-tilt-bound')) return;
+    card.setAttribute('data-tilt-bound', 'true');
+
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const xc = rect.width / 2;
+      const yc = rect.height / 2;
+
+      // Calculate tilt angles (max 8 degrees tilt for elegant neomorphism look)
+      const angleX = (yc - y) / 16;
+      const angleY = (x - xc) / 16;
+
+      gsap.to(card, {
+        rotationX: angleX,
+        rotationY: angleY,
+        transformPerspective: 800,
+        ease: 'power1.out',
+        duration: 0.3,
+        overwrite: 'auto'
+      });
+    });
+
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card, {
+        rotationX: 0,
+        rotationY: 0,
+        ease: 'power2.out',
+        duration: 0.6,
+        overwrite: 'auto'
+      });
+    });
+  });
+};
+
+// Auto run tilt initializer after dynamic catalog grid renders
+const originMapProducts = window.createProductCardHTML;
+window.createProductCardHTML = (p) => {
+  setTimeout(() => {
+    window.initProductCardHover3D();
+  }, 100);
+  return originMapProducts ? originMapProducts(p) : '';
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// PHASE 4 — DYNAMIC OVERLAY SYSTEMS & MICRO INTERACTIONS
+// ═══════════════════════════════════════════════════════════════════════
+
+function injectMiniCartDrawerElement() {
+  if (document.getElementById('mini-cart-drawer')) return;
+
+  const drawer = document.createElement('div');
+  drawer.id = 'mini-cart-drawer';
+  drawer.className = 'mini-cart-drawer glass';
+  drawer.style.cssText = 'position:fixed; top:0; right:0; width:100%; max-width:440px; height:100vh; background:rgba(13,10,20,0.96); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-left:1px solid rgba(255,255,255,0.08); box-shadow:-10px 0 40px rgba(0,0,0,0.5); z-index:100005; display:flex; flex-direction:column; transform:translateX(100%); transition:transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);';
+
+  drawer.innerHTML = `
+    <!-- Header -->
+    <div style="padding:20px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="font-family:'Outfit'; font-size:18px; margin:0; color:var(--text-color);">Your Shopping Cart</h3>
+      <button class="mini-cart-close" style="background:none; border:none; color:var(--text-color); font-size:24px; cursor:pointer;">&times;</button>
+    </div>
+
+    <!-- Free Shipping Progress Tracker -->
+    <div style="padding:16px 20px; background:rgba(106, 13, 173, 0.08); border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div id="free-shipping-text" style="font-size:12px; font-weight:600; margin-bottom:8px; color:var(--text-color);"></div>
+      <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+        <div id="free-shipping-progress" style="height:100%; width:0%; background:hsl(var(--primary-purple)); transition:width 0.4s ease;"></div>
+      </div>
+    </div>
+
+    <!-- Items list -->
+    <div id="mini-cart-items-mount" style="flex-grow:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:16px;">
+      <!-- Loaded dynamically -->
+    </div>
+
+    <!-- Summary & Checkout Footer -->
+    <div style="padding:20px; border-top:1px solid rgba(255,255,255,0.08); background:rgba(0,0,0,0.25);">
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px;">
+        <span style="color:var(--text-muted);">Cart Subtotal</span>
+        <strong id="mini-cart-subtotal" style="color:hsl(var(--primary-purple)); font-size:16px;">₹0.00</strong>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:20px; line-height:1.4;">
+        Taxes and shipping are calculated dynamically during order routing checkout.
+      </p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <a href="/cart.html" class="btn btn-secondary" style="border-radius:8px; text-align:center; padding:10px 0; font-size:12px;">View Cart Page</a>
+        <a href="/checkout.html" class="btn btn-primary" style="border-radius:8px; text-align:center; padding:10px 0; font-size:12px;">Proceed Checkout</a>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(drawer);
+
+  // Sync drawer contents
+  renderMiniCartItems();
+  window.addEventListener('cartUpdated', renderMiniCartItems);
+
+  // Re-bind click event in storefront-init
+  if (window.MZStorefront?.initPage) {
+    window.MZStorefront.initPage();
+  }
+}
+
+window.renderMiniCartItems = () => {
+  const mount = document.getElementById('mini-cart-items-mount');
+  const subtotalEl = document.getElementById('mini-cart-subtotal');
+  const shippingText = document.getElementById('free-shipping-text');
+  const shippingProgress = document.getElementById('free-shipping-progress');
+  if (!mount) return;
+
+  const items = getCart(); // reads cache from localStorage
+  if (items.length === 0) {
+    mount.innerHTML = `
+      <div style="text-align:center; padding:40px 0; color:var(--text-muted);">
+        <p style="font-size:32px; margin-bottom:12px;">🛒</p>
+        <p style="font-size:13px;">Your shopping cart is empty.</p>
+      </div>
+    `;
+    if (subtotalEl) subtotalEl.textContent = '₹0.00';
+    if (shippingText) shippingText.textContent = 'Add items to qualify for Free Shipping!';
+    if (shippingProgress) shippingProgress.style.width = '0%';
+    return;
+  }
+
+  let subtotal = 0;
+
+  mount.innerHTML = items.map(item => {
+    const itemSub = item.price * item.quantity;
+    subtotal += itemSub;
+    return `
+      <div class="mini-cart-item" data-product-id="${item.productId}" style="display:flex; gap:12px; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:12px;">
+        <img src="${item.image || '/assets/images/default-product.webp'}" alt="${item.name}" style="width:50px; height:50px; border-radius:8px; object-fit:cover;">
+        <div style="flex-grow:1; min-width:0;">
+          <h4 style="font-family:'Outfit'; font-size:13px; margin:0; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; color:var(--text-color);">${item.name}</h4>
+          <span style="font-size:12px; color:hsl(var(--primary-purple)); font-weight:700;">₹${item.price}</span>
+
+          <!-- Qty controls -->
+          <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+            <button onclick="updateCartItemQty('${item.productId}', -1)" style="width:20px; height:20px; border-radius:4px; border:1px solid rgba(255,255,255,0.1); background:none; color:white; cursor:pointer;">-</button>
+            <span style="font-size:12px; font-weight:700;">${item.quantity}</span>
+            <button onclick="updateCartItemQty('${item.productId}', 1)" style="width:20px; height:20px; border-radius:4px; border:1px solid rgba(255,255,255,0.1); background:none; color:white; cursor:pointer;">+</button>
+          </div>
+        </div>
+        <button onclick="removeCartItemWithAnim('${item.productId}')" style="background:none; border:none; color:#ef4444; font-size:16px; cursor:pointer;" aria-label="Remove item">&times;</button>
+      </div>
+    `;
+  }).join('');
+
+  if (subtotalEl) subtotalEl.textContent = formatPrice(subtotal);
+
+  // Update free shipping bar
+  const threshold = 1500;
+  if (shippingText && shippingProgress) {
+    if (subtotal >= threshold) {
+      shippingText.textContent = '🎉 You qualify for Free Shipping!';
+      shippingProgress.style.width = '100%';
+    } else {
+      const diff = threshold - subtotal;
+      shippingText.textContent = `Add ${formatPrice(diff)} more for Free Shipping!`;
+      shippingProgress.style.width = `${Math.min((subtotal / threshold) * 100, 100)}%`;
+    }
+  }
+};
+
+window.updateCartItemQty = (productId, delta) => {
+  const items = getCart();
+  const item = items.find(i => i.productId === productId);
+  if (!item) return;
+  const newQty = item.quantity + delta;
+  if (newQty <= 0) {
+    removeCartItemWithAnim(productId);
+  } else {
+    const user = getStoredUser();
+    if (user && user.role === 'customer') {
+      fetch('/api/cart/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, name: item.name, price: item.price, image: item.image, quantity: delta })
+      }).then(res => res.json()).then(data => {
+        if (data.success) {
+          setCartCache(data.cart);
+          syncCartCounters();
+          window.dispatchEvent(new Event('cartUpdated'));
+        }
+      });
+    } else {
+      item.quantity = newQty;
+      localStorage.setItem('magizhvagam_cart', JSON.stringify(items));
+      syncCartCounters();
+      window.dispatchEvent(new Event('cartUpdated'));
+    }
+  }
+};
+
+window.removeCartItemWithAnim = (productId) => {
+  const itemRow = document.querySelector(`.mini-cart-item[data-product-id="${productId}"]`);
+  if (itemRow && typeof gsap !== 'undefined') {
+    gsap.to(itemRow, {
+      opacity: 0,
+      x: 50,
+      height: 0,
+      padding: 0,
+      margin: 0,
+      duration: 0.35,
+      ease: 'power2.in',
+      onComplete: () => {
+        executeRemove(productId);
+      }
+    });
+  } else {
+    executeRemove(productId);
+  }
+
+  function executeRemove(id) {
+    const user = getStoredUser();
+    if (user && user.role === 'customer') {
+      fetch(`/api/cart/items/${id}`, {
+        method: 'DELETE'
+      }).then(res => res.json()).then(data => {
+        if (data.success) {
+          setCartCache(data.cart);
+          syncCartCounters();
+          window.dispatchEvent(new Event('cartUpdated'));
+        }
+      });
+    } else {
+      let items = getCart();
+      items = items.filter(i => i.productId !== id);
+      localStorage.setItem('magizhvagam_cart', JSON.stringify(items));
+      syncCartCounters();
+      window.dispatchEvent(new Event('cartUpdated'));
+    }
+  }
+};
+
+function initPremiumSearchExperience() {
+  const overlay = document.getElementById('mobile-search-overlay');
+  if (overlay && !overlay.querySelector('.search-suggestions-block')) {
+    const suggestionsBlock = document.createElement('div');
+    suggestionsBlock.className = 'search-suggestions-block';
+    suggestionsBlock.style.cssText = 'margin-top:24px; display:block;';
+    suggestionsBlock.innerHTML = `
+      <div class="ai-suggestion-glow glass-panel" style="padding:14px; border-radius:12px; margin-bottom:20px; background:rgba(106, 13, 173, 0.04); border:1px solid rgba(106, 13, 173, 0.15); display:flex; align-items:center; gap:8px;">
+        <span style="font-size:16px;">🤖</span>
+        <div style="font-size:12px; font-weight:600; color:var(--text-color);">
+          AI Suggester: <span id="ai-typing-text" style="color:hsl(var(--primary-purple)); font-family:monospace; font-weight:700;"></span>
+        </div>
+      </div>
+
+      <h4 style="font-family:'Outfit'; font-size:14px; margin-bottom:12px; color:var(--text-muted);">Trending Gift Searches</h4>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px;">
+        <a href="/products.html?search=Brass" class="btn-pill" style="font-size:11px; padding:6px 12px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid var(--card-border); color:var(--text-color); font-weight:600; text-decoration:none; display:inline-block; transition:all 0.3s ease;">✨ Brass Vilakku</a>
+        <a href="/products.html?search=Jute" class="btn-pill" style="font-size:11px; padding:6px 12px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid var(--card-border); color:var(--text-color); font-weight:600; text-decoration:none; display:inline-block; transition:all 0.3s ease;">🌱 Eco Jute Hampers</a>
+        <a href="/products.html?search=Silk" class="btn-pill" style="font-size:11px; padding:6px 12px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid var(--card-border); color:var(--text-color); font-weight:600; text-decoration:none; display:inline-block; transition:all 0.3s ease;">🎁 Silk Box Hampers</a>
+      </div>
+
+      <h4 style="font-family:'Outfit'; font-size:14px; margin-bottom:12px; color:var(--text-muted);">Recent Searches</h4>
+      <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px;">
+        <li class="recent-search-item" style="font-size:12px; display:flex; align-items:center; gap:6px; color:var(--text-color); cursor:pointer; font-weight:600;">🕒 Brass Vilakku</li>
+        <li class="recent-search-item" style="font-size:12px; display:flex; align-items:center; gap:6px; color:var(--text-color); cursor:pointer; font-weight:600;">🕒 Sandalwood Keyring</li>
+      </ul>
+    `;
+    overlay.appendChild(suggestionsBlock);
+
+    // Bind click fill search
+    overlay.querySelectorAll('.recent-search-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const text = item.textContent.replace('🕒 ', '').trim();
+        const input = document.getElementById('mobile-search-input');
+        if (input) {
+          input.value = text;
+          input.focus();
+        }
+      });
+    });
+  }
+
+  // Bind close buttons explicitly with GSAP fadeout
+  const closeBtn = document.getElementById('mobile-search-close');
+  if (closeBtn && overlay) {
+    closeBtn.addEventListener('click', () => {
+      if (typeof gsap !== 'undefined') {
+        gsap.to(overlay, {
+          opacity: 0,
+          duration: 0.3,
+          onComplete: () => {
+            overlay.classList.remove('active');
+            overlay.style.opacity = '';
+            document.body.style.overflow = '';
+          }
+        });
+      } else {
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+  }
+
+  // Intercept the desktop and mobile search open button triggers
+  const searchToggleBtn = document.getElementById('search-toggle-btn');
+  if (searchToggleBtn && overlay) {
+    searchToggleBtn.addEventListener('click', () => {
+      if (window.innerWidth <= 768) {
+        if (typeof gsap !== 'undefined') {
+          gsap.fromTo(overlay, { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.35, ease: 'power2.out' });
+        }
+        startAiTyping();
+      }
+    });
+  }
+}
+
+// AI Suggestions typing animation
+function startAiTyping() {
+  const words = ['Eco-friendly Jute Hampers', 'Traditional brass Vilakku', 'Silver Plated Kumkum boxes', 'Hand-carved Rosewood elephants'];
+  const textEl = document.getElementById('ai-typing-text');
+  if (!textEl) return;
+
+  let wordIdx = 0;
+  let charIdx = 0;
+  let isDeleting = false;
+  let typingSpeed = 100;
+
+  if (window.mzAiTypingTimeout) {
+    clearTimeout(window.mzAiTypingTimeout);
+  }
+
+  function type() {
+    const currentWord = words[wordIdx];
+    if (isDeleting) {
+      textEl.textContent = currentWord.substring(0, charIdx - 1);
+      charIdx--;
+      typingSpeed = 50;
+    } else {
+      textEl.textContent = currentWord.substring(0, charIdx + 1);
+      charIdx++;
+      typingSpeed = 100;
+    }
+
+    if (!isDeleting && charIdx === currentWord.length) {
+      isDeleting = true;
+      typingSpeed = 2000;
+    } else if (isDeleting && charIdx === 0) {
+      isDeleting = false;
+      wordIdx = (wordIdx + 1) % words.length;
+      typingSpeed = 500;
+    }
+
+    window.mzAiTypingTimeout = setTimeout(type, typingSpeed);
+  }
+  type();
+}
+
+// Run initializers on load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    injectMiniCartDrawerElement();
+    initPremiumSearchExperience();
+  }, 300);
+});
+
+
 

@@ -4,16 +4,17 @@ const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const helmet = require('helmet');
-const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 require('dotenv').config();
 
-const mongoose = require('mongoose');
+// Port declaration — must be before any usage
+const PORT = parseInt(process.env.PORT, 10) || 5000;
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+const prisma = require('./services/prisma');
 const connectDB = require('./services/db');
 const jwt = require('jsonwebtoken');
-const User = require('./models/User');
-const Setting = require('./models/Setting');
 const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = require('./config/jwt');
 
 // Route files
@@ -33,115 +34,148 @@ const contactRoutes = require('./routes/contactRoutes');
 
 const app = express();
 
+// Hide Express/Node identity
+app.disable('x-powered-by');
+app.set('env', IS_PRODUCTION ? 'production' : 'development');
+
 app.use(compression());
 
-// 1. Graceful Shutdown — register BEFORE connecting so SIGINT during
-//    the DB connect wait is handled cleanly (nodemon sends SIGINT on save)
+// 1. Graceful Shutdown — register BEFORE connecting
 process.on('SIGINT', gracefulShutdown);
 process.on('SIGTERM', gracefulShutdown);
 
-// 2. Database Connection — await before starting HTTP server
-//    so no requests are served while MongoDB is still connecting
+// 2. Database Connection
 connectDB()
   .then(() => {
     startServer(PORT);
   })
   .catch((err) => {
-    console.error('FATAL: Could not connect to MongoDB. Server will not start.', err.message);
+    console.error('FATAL: Could not connect to database. Server will not start.', err.message);
     process.exit(1);
   });
 
-// 2. Global Security Middlewares
-// Setup Helmet headers with relaxed policies for fonts/images from third parties (Google Fonts/Cloudinary)
+// ─── SECURITY: Block access to sensitive files and directories ───
+app.use((req, res, next) => {
+  const blocked = /^\/(\.(env|git|gitignore|dockerignore)|backend|prisma|node_modules|package\.json|package-lock\.json|tsconfig|docker|backup|logs|\.well-known\/)/i;
+  if (blocked.test(req.path)) {
+    return res.status(403).json({ success: false, error: 'Forbidden' });
+  }
+  next();
+});
+
+// ─── SECURITY: Helmet with hardened CSP & headers ───
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://cdnjs.cloudflare.com"], // Chart.js, Lucide, Three.js, SortableJS
-      scriptSrcAttr: ["'unsafe-inline'"], // Allow onclick handlers on static HTML pages
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
-      connectSrc: ["'self'"]
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrcAttr: ["'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https://res.cloudinary.com"],
+      connectSrc: ["'self'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
+      objectSrc: ["'none'"]
     }
-  }
+  },
+  crossOriginEmbedderPolicy: { policy: 'credentialless' },
+  crossOriginOpenerPolicy: { policy: 'same-origin' },
+  crossOriginResourcePolicy: { policy: 'same-origin' },
+  originAgentCluster: true,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  hsts: IS_PRODUCTION ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
+  frameguard: { action: 'deny' },
+  noSniff: true
 }));
 
-// CORS Configuration
+// ─── SECURITY: CORS ───
 const corsOptions = {
-  origin: true, // Allow dynamic resolution of origin
+  origin: IS_PRODUCTION ? (process.env.APP_ORIGIN || 'https://magizhvagam.com') : true,
   credentials: true,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 app.use(cors(corsOptions));
 
-// Body Parser & Cookie Parser
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// Custom Security Headers (Permissions-Policy)
+// ─── SECURITY: Additional headers ───
 app.use((req, res, next) => {
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), interest-cohort=()');
+  // Cache-Control for API routes
+  if (req.path.startsWith('/api/')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
   next();
 });
 
-// NoSQL Query Injection Protection
-app.use(mongoSanitize());
-
-// Rate Limiting (100 requests per 15 minutes)
+// ─── RATE LIMITING (always active, no skip) ───
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
   message: { success: false, error: 'Too many requests from this IP, please try again after 15 minutes.' },
   standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req) => process.env.NODE_ENV !== 'production'
+  legacyHeaders: false
 });
 app.use('/api', apiLimiter);
 
 // Database health check endpoint
-app.get('/api/health', (req, res) => {
-  const isConnected = mongoose.connection.readyState === 1;
-  res.status(isConnected ? 200 : 503).json({
-    success: isConnected,
-    status: isConnected ? 'UP' : 'DOWN',
-    database: {
-      status: isConnected ? 'connected' : 'disconnected',
-      readyState: mongoose.connection.readyState
-    },
-    timestamp: new Date()
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).json({
+      success: true,
+      status: 'UP',
+      database: {
+        status: 'connected',
+        readyState: 1
+      },
+      timestamp: new Date()
+    });
+  } catch (err) {
+    res.status(503).json({
+      success: false,
+      status: 'DOWN',
+      database: { status: 'disconnected', readyState: 0 },
+      timestamp: new Date()
+    });
+  }
 });
-// 3. Rate Limit Auth Routes specifically (max 20 attempts per 15 minutes)
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 10,
   message: { success: false, error: 'Too many auth requests from this IP, please try again after 15 minutes.' },
   standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req) => process.env.NODE_ENV !== 'production'
+  legacyHeaders: false
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/admin/login', authLimiter);
-// Rate limiting for state-mutating checkout and product write operations
+app.use('/api/auth/forgot-password', rateLimit({ windowMs: 15 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false, message: { success: false, error: 'Too many password reset requests.' } }));
+app.use('/api/auth/verify-otp', rateLimit({ windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, message: { success: false, error: 'Too many OTP verification attempts.' } }));
+
 const checkoutLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 15,
   message: { success: false, error: 'Too many checkout requests from this IP, please try again after 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => process.env.NODE_ENV !== 'production' || req.method === 'GET'
+  skip: (req) => req.method === 'GET'
 });
 
 const uploadLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 30,
   message: { success: false, error: 'Too many product write requests from this IP, please try again after 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => process.env.NODE_ENV !== 'production' || req.method === 'GET'
+  skip: (req) => req.method === 'GET'
 });
 
 app.use('/api/orders', checkoutLimiter);
@@ -161,16 +195,15 @@ app.use('/api/about-page', aboutRoutes);
 app.use('/api/admin/system', adminSystemRoutes);
 app.use('/api/contact', contactRoutes);
 
-
-// 4. Mount Admin Protected Pages Route Router (MUST BE BEFORE ROOT STATIC ROUTE)
+// 4. Mount Admin Protected Pages Router
 app.use(adminPageRoutes);
 
-// 5. Serve Assets and Uploads statically
-app.use('/assets/images/products', express.static(path.join(__dirname, '../assets/images/products')));
-app.use('/assets', express.static(path.join(__dirname, '../assets')));
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// 5. Serve Assets and Uploads statically (with cache headers)
+const staticCacheOptions = { maxAge: IS_PRODUCTION ? '1y' : '0', etag: true };
+app.use('/assets/images/products', express.static(path.join(__dirname, '../assets/images/products'), staticCacheOptions));
+app.use('/assets', express.static(path.join(__dirname, '../assets'), staticCacheOptions));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads'), staticCacheOptions));
 
-// Fallback for missing images to serve branded default assets
 const serveDefaultFallbackImage = (req, res) => {
   const urlPath = req.path.toLowerCase();
   let fallbackFile = 'default-product.webp';
@@ -180,7 +213,6 @@ const serveDefaultFallbackImage = (req, res) => {
   } else if (urlPath.includes('/products/') || urlPath.includes('product')) {
     fallbackFile = 'products/placeholder.webp';
   } else if (urlPath.includes('banner') || urlPath.includes('hero') || urlPath.includes('promo')) {
-    // Use a neutral product placeholder for missing banners instead of a branded demo banner
     fallbackFile = 'products/placeholder.webp';
   } else if (urlPath.includes('avatar') || urlPath.includes('user') || urlPath.includes('profile')) {
     fallbackFile = 'default-avatar.webp';
@@ -200,13 +232,14 @@ const checkCustomerPageAuth = async (req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   let token = req.cookies ? req.cookies.admin_accessToken : null;
 
-  const isCheckout = req.path === '/checkout.html';
-  const isCart = req.path === '/cart.html';
+  const isCheckout = req.path === '/checkout';
+  const isCart = req.path === '/cart';
   let loginRequired = true;
   if (isCheckout || isCart) {
     try {
-      const settingObj = await Setting.findOne({ key: 'featureToggles' });
-      if (settingObj && settingObj.value && settingObj.value.customerLoginRequirement === false) {
+      const settingObj = await prisma.setting.findUnique({ where: { key: 'featureToggles' } });
+      const toggleVal = settingObj ? (typeof settingObj.value === 'string' ? JSON.parse(settingObj.value) : settingObj.value) : null;
+      if (toggleVal && toggleVal.customerLoginRequirement === false) {
         loginRequired = false;
       }
     } catch (err) {
@@ -218,12 +251,12 @@ const checkCustomerPageAuth = async (req, res, next) => {
     if (!loginRequired) {
       return next();
     }
-    return res.redirect(`/login.html?redirect=${req.path.slice(1)}`);
+    return res.redirect(`/login?redirect=${req.path.slice(1)}`);
   }
 
   try {
     const decoded = jwt.verify(token, JWT_ACCESS_SECRET);
-    const user = await User.findById(decoded.id);
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
     if (user) {
       req.user = user;
       return next();
@@ -231,23 +264,23 @@ const checkCustomerPageAuth = async (req, res, next) => {
     if (!loginRequired) {
       return next();
     }
-    return res.redirect(`/login.html?redirect=${req.path.slice(1)}`);
+    return res.redirect(`/login?redirect=${req.path.slice(1)}`);
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
       const refreshToken = req.cookies ? req.cookies.admin_refreshToken : null;
       if (refreshToken) {
         try {
           const decodedRefresh = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
-          const user = await User.findById(decodedRefresh.id);
+          const user = await prisma.user.findUnique({ where: { id: decodedRefresh.id } });
           if (user) {
             const newAccessToken = jwt.sign(
-              { id: user._id, email: user.email, role: user.role },
+              { id: user.id, email: user.email, role: user.role },
               JWT_ACCESS_SECRET,
               { expiresIn: '3m' }
             );
             res.cookie('admin_accessToken', newAccessToken, {
               httpOnly: true,
-              secure: process.env.NODE_ENV === 'production',
+              secure: true,
               sameSite: 'strict',
               maxAge: 3 * 60 * 1000
             });
@@ -260,46 +293,112 @@ const checkCustomerPageAuth = async (req, res, next) => {
     if (!loginRequired) {
       return next();
     }
-    return res.redirect(`/login.html?redirect=${req.path.slice(1)}`);
+    return res.redirect(`/login?redirect=${req.path.slice(1)}`);
   }
 };
 
-// 6. Serve Public and Protected HTML Pages Specifically
-const customerPages = ['profile.html', 'wishlist.html', 'checkout.html', 'cart.html'];
-const publicPages = [
-  'index.html', 'about.html', 'contact.html', 'products.html',
-  'product-details.html', 'login.html'
-];
+// --- Clean URLs and Backward-Compatible 301 Redirects ---
+app.use((req, res, next) => {
+  const urlPath = req.path;
+  const query = req.query;
 
-customerPages.forEach(page => {
-  app.get(`/${page}`, checkCustomerPageAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, '../', page));
-  });
+  // 301 redirects for legacy HTML files
+  if (urlPath === '/index.html') {
+    return res.redirect(301, '/');
+  }
+  if (urlPath === '/products.html') {
+    const qs = new URLSearchParams(query).toString();
+    return res.redirect(301, `/products${qs ? '?' + qs : ''}`);
+  }
+  if (urlPath === '/product-details.html') {
+    const id = query.id;
+    if (id) {
+      delete query.id;
+      const qs = new URLSearchParams(query).toString();
+      return res.redirect(301, `/product/${id}${qs ? '?' + qs : ''}`);
+    }
+    return res.redirect(301, '/products');
+  }
+  if (urlPath === '/contact.html') {
+    return res.redirect(301, '/contact');
+  }
+  if (urlPath === '/about.html') {
+    return res.redirect(301, '/about');
+  }
+  if (urlPath === '/login.html') {
+    const qs = new URLSearchParams(query).toString();
+    return res.redirect(301, `/login${qs ? '?' + qs : ''}`);
+  }
+  if (urlPath === '/register.html') {
+    return res.redirect(301, '/register');
+  }
+  if (urlPath === '/profile.html') {
+    return res.redirect(301, '/account');
+  }
+  if (urlPath === '/wishlist.html') {
+    return res.redirect(301, '/wishlist');
+  }
+  if (urlPath === '/cart.html') {
+    return res.redirect(301, '/cart');
+  }
+  if (urlPath === '/checkout.html') {
+    const qs = new URLSearchParams(query).toString();
+    return res.redirect(301, `/checkout${qs ? '?' + qs : ''}`);
+  }
+
+  next();
 });
 
-publicPages.forEach(page => {
-  app.get(`/${page}`, (req, res) => {
-    res.sendFile(path.join(__dirname, '../', page));
-  });
+// Serve Customer Protected Clean Routes
+app.get('/account', checkCustomerPageAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, '../profile.html'));
+});
+app.get('/wishlist', checkCustomerPageAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, '../wishlist.html'));
+});
+app.get('/checkout', checkCustomerPageAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, '../checkout.html'));
 });
 
-// Custom handlers for signup pages with allowSignup toggles
+// Serve Public Clean Routes
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../index.html'));
+});
+app.get('/products', (req, res) => {
+  res.sendFile(path.join(__dirname, '../products.html'));
+});
+app.get('/product/:id', (req, res) => {
+  res.sendFile(path.join(__dirname, '../product-details.html'));
+});
+app.get('/contact', (req, res) => {
+  res.sendFile(path.join(__dirname, '../contact.html'));
+});
+app.get('/about', (req, res) => {
+  res.sendFile(path.join(__dirname, '../about.html'));
+});
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, '../login.html'));
+});
+app.get('/cart', (req, res) => {
+  res.sendFile(path.join(__dirname, '../cart.html'));
+});
+
 app.get('/signup', async (req, res) => {
   try {
-    const settingObj = await Setting.findOne({ key: 'allowSignup' });
+    const settingObj = await prisma.setting.findUnique({ where: { key: 'allowSignup' } });
     const allowSignup = settingObj ? settingObj.value === true : true;
     if (!allowSignup) {
       return res.status(200).send('New registrations are temporarily disabled. Please contact administrator.');
     }
-    return res.redirect('/register.html');
+    return res.redirect('/register');
   } catch (err) {
-    return res.redirect('/register.html');
+    return res.redirect('/register');
   }
 });
 
-app.get('/register.html', async (req, res) => {
+app.get('/register', async (req, res) => {
   try {
-    const settingObj = await Setting.findOne({ key: 'allowSignup' });
+    const settingObj = await prisma.setting.findUnique({ where: { key: 'allowSignup' } });
     const allowSignup = settingObj ? settingObj.value === true : true;
     if (!allowSignup) {
       return res.status(200).send('New registrations are temporarily disabled. Please contact administrator.');
@@ -310,7 +409,6 @@ app.get('/register.html', async (req, res) => {
   }
 });
 
-// Serve sitemap.xml and robots.txt
 app.get('/sitemap.xml', (req, res) => {
   res.sendFile(path.join(__dirname, '../sitemap.xml'));
 });
@@ -318,48 +416,51 @@ app.get('/robots.txt', (req, res) => {
   res.sendFile(path.join(__dirname, '../robots.txt'));
 });
 
-// Redirect root to index.html
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../index.html'));
-});
-
-// Fallback: 404 handler for unmatched pages
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ success: false, error: 'API endpoint not found' });
   }
-  res.status(404).sendFile(path.join(__dirname, '../index.html'));
+  res.status(404).sendFile(path.join(__dirname, '../error.html'));
 });
 
-// 7. Global Error Handler Middleware
+// ─── GLOBAL ERROR HANDLER (sanitized for production) ───
 app.use((err, req, res, next) => {
-  console.error(`SERVER ERROR: ${err.message}\nStack: ${err.stack}`);
+  // Log full error for developers, never expose to client
+  console.error(`SERVER ERROR: ${err.message}`);
+  if (!IS_PRODUCTION) console.error(err.stack);
+
   const status = err.status || (err.name === 'ValidationError' ? 400 : 500);
-  const errMsg = (process.env.NODE_ENV === 'production' && status === 500) 
-    ? 'An unexpected error occurred on the server.' 
+  const clientMsg = (IS_PRODUCTION && status === 500)
+    ? 'An unexpected error occurred on the server.'
     : err.message || 'Internal Server Error';
 
   res.status(status).json({
     success: false,
-    message: errMsg,
-    error: errMsg,
+    error: clientMsg,
     status,
     data: null
   });
 });
 
-const PORT = parseInt(process.env.PORT, 10) || 5000;
+// ─── SERVER STARTUP (single instance only — no port auto-increment) ───
 let server;
 function startServer(port) {
   if (process.env.VERCEL) return;
   server = app.listen(port, () => {
-    console.log(`MAGIZHVAGAM E-Commerce Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
+    console.log(`\n  ╔══════════════════════════════════════════╗`);
+    console.log(`  ║  MAGIZHVAGAM Server                      ║`);
+    console.log(`  ║  Mode: ${(process.env.NODE_ENV || 'development').padEnd(33)}║`);
+    console.log(`  ║  Port: ${String(port).padEnd(33)}║`);
+    console.log(`  ║  PID:  ${String(process.pid).padEnd(33)}║`);
+    console.log(`  ╚══════════════════════════════════════════╝\n`);
   });
 
   server.on('error', (err) => {
     if (err && err.code === 'EADDRINUSE') {
-      console.error(`Port ${port} already in use. Trying ${port + 1}...`);
-      setTimeout(() => startServer(port + 1), 500);
+      console.error(`\n  FATAL: Port ${port} is already in use.`);
+      console.error('  Another instance of the server may be running.');
+      console.error('  Kill the existing process or use a different PORT in .env.\n');
+      process.exit(1);
     } else {
       console.error('Server error:', err);
       process.exit(1);
@@ -367,16 +468,14 @@ function startServer(port) {
   });
 }
 
-// Graceful Shutdown — defined here so it can be referenced by the
-// signal handlers registered at the top of the file (before connectDB)
 function gracefulShutdown() {
   console.log('Initiating graceful shutdown...');
   if (server) {
     server.close(async () => {
       console.log('HTTP server closed.');
       try {
-        await mongoose.connection.close();
-        console.log('MongoDB connection closed.');
+        await prisma.$disconnect();
+        console.log('PostgreSQL connection closed.');
         console.log('Server shutdown completed');
         process.exit(0);
       } catch (err) {

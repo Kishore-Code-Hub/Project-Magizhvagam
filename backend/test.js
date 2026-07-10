@@ -99,18 +99,18 @@ const runTests = async () => {
     assert(admRes.statusCode === 302, 'Serving admin files redirects unauthorized client requests with HTTP 302');
 
     // Test 6: Verify Customer static block redirects
-    const profileUrl = `http://localhost:${PORT}/profile.html`;
+    const profileUrl = `http://localhost:${PORT}/account`;
     const profRes = await request(profileUrl);
-    assert(profRes.statusCode === 302, 'Serving profile.html redirects unauthorized client requests with HTTP 302');
-    assert(profRes.headers.location && profRes.headers.location.startsWith('/login.html'), 'profile.html redirect URL points to login.html');
+    assert(profRes.statusCode === 302, 'Serving /account redirects unauthorized client requests with HTTP 302');
+    assert(profRes.headers.location && profRes.headers.location.startsWith('/login'), 'profile redirect URL points to /login');
 
-    const wishlistUrl = `http://localhost:${PORT}/wishlist.html`;
+    const wishlistUrl = `http://localhost:${PORT}/wishlist`;
     const wishRes = await request(wishlistUrl);
-    assert(wishRes.statusCode === 302, 'Serving wishlist.html redirects unauthorized client requests with HTTP 302');
+    assert(wishRes.statusCode === 302, 'Serving /wishlist redirects unauthorized client requests with HTTP 302');
 
-    const checkoutUrl = `http://localhost:${PORT}/checkout.html`;
+    const checkoutUrl = `http://localhost:${PORT}/checkout`;
     const checkRes = await request(checkoutUrl);
-    assert(checkRes.statusCode === 302, 'Serving checkout.html redirects unauthorized client requests with HTTP 302');
+    assert(checkRes.statusCode === 302, 'Serving /checkout redirects unauthorized client requests with HTTP 302');
 
     // Test 7: Order detail requires authentication
     const fakeOrderId = '507f1f77bcf86cd799439011';

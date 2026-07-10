@@ -2,8 +2,7 @@ const multer = require('multer');
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
-const mongoose = require('mongoose');
-const Product = require('../models/Product');
+const prisma = require('../services/prisma');
 const { isCloudinaryConfigured, uploadToCloudinary } = require('../services/cloudinary');
 
 // In-memory storage for raw buffers before optimization
@@ -32,8 +31,10 @@ const processImages = async (req, res, next) => {
     let folderName = null;
 
     if (req.params.id) {
-      // For updates, retrieve the existing product's assigned folder
-      const existingProduct = await Product.findById(req.params.id);
+      // For updates, retrieve the existing product's assigned folder using Prisma
+      const existingProduct = await prisma.product.findUnique({
+        where: { id: req.params.id }
+      });
       if (existingProduct && existingProduct.imageFolder) {
         folderName = existingProduct.imageFolder;
       }
@@ -110,7 +111,7 @@ const processImages = async (req, res, next) => {
           
           processedImages.push({
             url: `/assets/images/products/${folderName}/${filename}`,
-            publicId: `${folderName}/${filename}`, // Save relative path under assets/images/products/ as publicId for easy local deletion later
+            publicId: `${folderName}/${filename}`,
             fieldName: fieldName
           });
         }

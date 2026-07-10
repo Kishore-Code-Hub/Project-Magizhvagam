@@ -10,6 +10,6 @@
   }
 
   if (localStorage.getItem("adminAuth") !== "true") {
-    window.location.href = "/admin/login.html";
+    window.location.href = "/admin/login";
   }
 })();

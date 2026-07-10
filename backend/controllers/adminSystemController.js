@@ -1,6 +1,6 @@
 const emailService = require('../services/emailService');
 const { logActivity } = require('../services/auditService');
-const AuditLog = require('../models/AuditLog');
+const prisma = require('../services/prisma');
 
 exports.testSmtp = async (req, res) => {
   try {
@@ -31,15 +31,30 @@ exports.getAuditLogs = async (req, res) => {
     const limit = parseInt(req.query.limit) || 100;
     const skip = parseInt(req.query.skip) || 0;
     
-    const logs = await AuditLog.find()
-      .populate('userId', 'name email role')
-      .sort({ timestamp: -1 })
-      .skip(skip)
-      .limit(limit);
+    const logs = await prisma.auditLog.findMany({
+      include: {
+        user: {
+          select: { name: true, email: true, role: true }
+        }
+      },
+      orderBy: { timestamp: 'desc' },
+      skip,
+      take: limit
+    });
       
-    const total = await AuditLog.countDocuments();
+    const total = await prisma.auditLog.count();
+
+    // Map id to _id for admin page frontend compatibility
+    const compatLogs = logs.map(l => ({
+      ...l,
+      _id: l.id,
+      userId: l.user ? {
+        _id: l.user.id,
+        ...l.user
+      } : null
+    }));
     
-    return res.status(200).json({ success: true, count: logs.length, total, data: logs });
+    return res.status(200).json({ success: true, count: compatLogs.length, total, data: compatLogs });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }

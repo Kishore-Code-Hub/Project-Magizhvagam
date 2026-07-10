@@ -12,7 +12,8 @@
     'mobile-settings':  MobileSettingsController,
     'diagnostics':      DiagnosticsController,
     'profile':          ProfileSettingsController,
-    'security':         SecuritySettingsController
+    'security':         SecuritySettingsController,
+    'api-panel':        ApiPanelSettingsController
   };
 
   const TAB_LABELS = {
@@ -23,7 +24,8 @@
     'mobile-settings':  'Mobile Offset',
     'diagnostics':      'Diagnostics',
     'profile':          'Account Profile',
-    'security':         'Security & 2FA'
+    'security':         'Security & 2FA',
+    'api-panel':        'API Panel'
   };
 
   let router = null;

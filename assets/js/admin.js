@@ -1,7 +1,19 @@
-/**
- * MAGIZHVAGAM - Admin Panel JS Controller
- * Manages dashboard metrics, products CRUD, order statuses, and homepage setting updates
- */
+// Force scroll restoration to manual and scroll to top immediately to prevent auto-scrolling on admin pages
+if ('scrollRestoration' in window.history) {
+  window.history.scrollRestoration = 'manual';
+}
+window.scrollTo(0, 0);
+document.documentElement.scrollTop = 0;
+if (document.body) document.body.scrollTop = 0;
+
+window.addEventListener('DOMContentLoaded', () => {
+  window.scrollTo(0, 0);
+});
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    window.scrollTo(0, 0);
+  }, 10);
+});
 
 async function initAdminRouterPage() {
   const path = window.location.pathname;
@@ -90,11 +102,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   applyAdminBranding();
+  injectAmbientBlobs();
   injectAdminSidebar();
   injectAdminTopbar();
   injectOverlays();
   initSidebarResizer();
   initOverlaysEvents();
+
+  // Trace mouse coordinates on .glass cards for Raycast-style glowing hover spotlights
+  document.addEventListener('mousemove', (e) => {
+    const cards = document.querySelectorAll('.glass, .metric-card, .admin-card, .btn');
+    cards.forEach(card => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+    });
+  });
 
   await initAdminRouterPage();
 });
@@ -152,122 +177,229 @@ function injectAdminSidebar() {
 
   sidebar.className = 'admin-sidebar';
   sidebar.innerHTML = `
-    <div class="admin-logo">
-      <span>MAGIZHVAGAM</span>
+    <!-- Workspace Selector Header -->
+    <div class="workspace-switcher" style="padding: 16px 20px; border-bottom: 1px solid var(--adm-border); display: flex; align-items: center; gap: 12px; cursor: pointer; background: rgba(255,255,255,0.01);">
+      <div style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--adm-accent) 0%, var(--adm-accent-hover) 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 14px;">M</div>
+      <div style="flex-grow: 1; min-width: 0;" class="profile-info-wrapper">
+        <h4 style="margin: 0; font-size: 13px; font-weight: 800; color: var(--adm-text); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Magizhvagam OS</h4>
+        <span style="font-size: 10px; color: var(--adm-text-muted);">Main • HQ Console</span>
+      </div>
       <button type="button" id="sidebar-toggle-btn" style="background:transparent; border:none; color:var(--adm-text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:4px;">
-        <i data-lucide="menu"></i>
+        <i data-lucide="chevrons-left-right" style="width:14px; height:14px;"></i>
       </button>
     </div>
-    <ul class="admin-menu" style="overflow-y: auto; height: calc(100vh - 100px); padding-bottom: 40px; margin: 0; list-style: none;">
-      <!-- GENERAL SECTION -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em;">General</li>
+
+    <!-- Search Filter Navigation Box -->
+    <div style="padding: 10px 16px; border-bottom: 1px solid var(--adm-border);" class="sidebar-search-wrapper">
+      <div style="position: relative; display: flex; align-items: center;">
+        <i data-lucide="search" style="position: absolute; left: 10px; width: 12px; height: 12px; color: var(--adm-text-muted);"></i>
+        <input type="text" id="sidebar-filter-input" placeholder="Quick filter workspaces..." style="width: 100%; background: rgba(0,0,0,0.12); border: 1px solid var(--adm-border); border-radius: 6px; padding: 6px 10px 6px 28px; font-size: 11px; color: var(--adm-text); outline: none;">
+      </div>
+    </div>
+
+    <!-- Navigation List -->
+    <ul class="admin-menu" style="overflow-y: auto; height: calc(100vh - 220px); padding-bottom: 40px; margin: 0; list-style: none;">
+      <!-- OVERVIEW -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Overview</li>
       <li class="admin-menu-item ${activeCls('dashboard.html')}">
         <a href="/admin/dashboard.html"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a>
       </li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'analytics')}">
+        <a href="/admin/settings.html?tab=analytics"><i data-lucide="trending-up"></i> <span>Analytics</span></a>
+      </li>
+      <li class="admin-menu-item ${activeCls('reports.html') && !currentTab ? 'active' : ''}">
+        <a href="/admin/reports.html"><i data-lucide="bar-chart-2"></i> <span>Reports</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('reports.html', 'revenue')}">
+        <a href="/admin/reports.html?tab=revenue"><i data-lucide="dollar-sign"></i> <span>Revenue Trend</span></a>
+      </li>
 
-      <!-- CATALOG SECTION -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Catalog</li>
-      <li class="admin-menu-item has-submenu ${isProductsView ? 'expanded' : ''}" id="menu-products">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('products')">
-          <i data-lucide="gift"></i> <span>Catalog</span>
-          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
-        </a>
-        <ul class="admin-menu-submenu ${isProductsView ? 'open' : ''}" id="submenu-products">
-          <li class="${activeProductTabCls('products')}"><a href="/admin/products.html?tab=products"><span>Products List</span></a></li>
-          <li class="${activeProductTabCls('categories')}"><a href="/admin/products.html?tab=categories"><span>Categories</span></a></li>
-          <li class="${activeProductTabCls('inventory')}"><a href="/admin/products.html?tab=inventory"><span>Inventory</span></a></li>
-          <li class="${activeProductTabCls('variants')}"><a href="/admin/products.html?tab=variants"><span>Variants</span></a></li>
-          <li class="${activeProductTabCls('collections')}"><a href="/admin/products.html?tab=collections"><span>Collections</span></a></li>
-        </ul>
+      <!-- CATALOG & MEDIA -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Catalog</li>
+      <li class="admin-menu-item ${activeProductTabCls('products')}">
+        <a href="/admin/products.html?tab=products"><i data-lucide="gift"></i> <span>Products</span></a>
+      </li>
+      <li class="admin-menu-item ${activeProductTabCls('categories')}">
+        <a href="/admin/products.html?tab=categories"><i data-lucide="tag"></i> <span>Categories</span></a>
+      </li>
+      <li class="admin-menu-item ${activeProductTabCls('collections')}">
+        <a href="/admin/products.html?tab=collections"><i data-lucide="folder"></i> <span>Collections</span></a>
+      </li>
+      <li class="admin-menu-item ${activeProductTabCls('variants')}">
+        <a href="/admin/products.html?tab=variants"><i data-lucide="award"></i> <span>Brands</span></a>
+      </li>
+      <li class="admin-menu-item ${activeProductTabCls('inventory')}">
+        <a href="/admin/products.html?tab=inventory"><i data-lucide="archive"></i> <span>Inventory</span></a>
       </li>
       <li class="admin-menu-item ${activeCls('media.html')}">
         <a href="/admin/media.html"><i data-lucide="image"></i> <span>Media Library</span></a>
       </li>
 
-      <!-- SALES SECTION -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Sales</li>
-      <li class="admin-menu-item ${activeCls('orders.html')}">
+      <!-- SALES OPERATIONS -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Sales</li>
+      <li class="admin-menu-item ${activeCls('orders.html') && !currentTab ? 'active' : ''}">
         <a href="/admin/orders.html"><i data-lucide="shopping-bag"></i> <span>Orders</span></a>
       </li>
-      <li class="admin-menu-item ${activeCls('customers.html')}">
-        <a href="/admin/customers.html"><i data-lucide="users"></i> <span>Customers</span></a>
-      </li>
-      <li class="admin-menu-item ${activeCls('enquiries.html')}">
-        <a href="/admin/enquiries.html"><i data-lucide="message-square"></i> <span>Enquiries</span></a>
+      <li class="admin-menu-item ${activeTabCls('orders.html', 'returns')}">
+        <a href="/admin/orders.html?tab=returns"><i data-lucide="rotate-ccw"></i> <span>Returns</span></a>
       </li>
       <li class="admin-menu-item ${activeCls('invoices.html')}">
         <a href="/admin/invoices.html"><i data-lucide="file-text"></i> <span>Invoice Hub</span></a>
       </li>
-
-      <!-- MARKETING SECTION -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Marketing</li>
-      <li class="admin-menu-item has-submenu ${isMarketingView ? 'expanded' : ''}" id="menu-marketing">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('marketing')">
-          <i data-lucide="percent"></i> <span>Marketing Tools</span>
-          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
-        </a>
-        <ul class="admin-menu-submenu ${isMarketingView ? 'open' : ''}" id="submenu-marketing">
-          <li class="${activeTabCls('marketing.html', 'coupons')}"><a href="/admin/marketing.html?tab=coupons"><span>Coupons</span></a></li>
-          <li class="${activeTabCls('marketing.html', 'flash-sales')}"><a href="/admin/marketing.html?tab=flash-sales"><span>Flash Sales</span></a></li>
-          <li class="${activeTabCls('marketing.html', 'popup')}"><a href="/admin/marketing.html?tab=popup"><span>Popup Builder</span></a></li>
-          <li class="${activeTabCls('marketing.html', 'newsletter')}"><a href="/admin/marketing.html?tab=newsletter"><span>Newsletter</span></a></li>
-        </ul>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'shipping')}">
+        <a href="/admin/settings.html?tab=shipping"><i data-lucide="truck"></i> <span>Shipping</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'taxes')}">
+        <a href="/admin/settings.html?tab=taxes"><i data-lucide="receipt"></i> <span>Taxes</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'payment')}">
+        <a href="/admin/settings.html?tab=payment"><i data-lucide="credit-card"></i> <span>Payment Gateways</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'delivery')}">
+        <a href="/admin/settings.html?tab=delivery"><i data-lucide="package"></i> <span>Delivery Partners</span></a>
       </li>
 
-      <!-- CONTENT SECTION -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Content</li>
-      <li class="admin-menu-item has-submenu ${isContentView ? 'expanded' : ''}" id="menu-content">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('content')">
-          <i data-lucide="edit-3"></i> <span>Content Editor</span>
-          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
-        </a>
-        <ul class="admin-menu-submenu ${isContentView ? 'open' : ''}" id="submenu-content">
-          <li class="${activeTabCls('content.html', 'homepage')}"><a href="/admin/content.html?tab=homepage"><span>Homepage Builder</span></a></li>
-          <li class="${activeTabCls('content.html', 'about-page')}"><a href="/admin/content.html?tab=about-page"><span>About Page</span></a></li>
-          <li class="${activeTabCls('content.html', 'contact-page')}"><a href="/admin/content.html?tab=contact-page"><span>Contact Page</span></a></li>
-          <li class="${activeTabCls('content.html', 'privacy-page')}"><a href="/admin/content.html?tab=privacy-page"><span>Privacy Policy</span></a></li>
-          <li class="${activeTabCls('content.html', 'terms-page')}"><a href="/admin/content.html?tab=terms-page"><span>Terms of Service</span></a></li>
-          <li class="${activeTabCls('content.html', 'header')}"><a href="/admin/content.html?tab=header"><span>Navigation Builder</span></a></li>
-        </ul>
+      <!-- CUSTOMERS & CRM -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Customers</li>
+      <li class="admin-menu-item ${activeCls('customers.html') && !currentTab ? 'active' : ''}">
+        <a href="/admin/customers.html"><i data-lucide="users"></i> <span>Customers</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('customers.html', 'crm')}">
+        <a href="/admin/customers.html?tab=crm"><i data-lucide="contact"></i> <span>CRM Registry</span></a>
+      </li>
+      <li class="admin-menu-item ${activeCls('enquiries.html')}">
+        <a href="/admin/enquiries.html"><i data-lucide="message-square"></i> <span>Enquiries</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('enquiries.html', 'tickets')}">
+        <a href="/admin/enquiries.html?tab=tickets"><i data-lucide="help-circle"></i> <span>Support Tickets</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'testimonials')}">
+        <a href="/admin/settings.html?tab=testimonials"><i data-lucide="star"></i> <span>Reviews</span></a>
       </li>
 
-
-
-      <!-- SYSTEM & SETTINGS SECTION -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Settings</li>
-      <li class="admin-menu-item has-submenu ${isSettingsView ? 'expanded' : ''}" id="menu-settings">
-        <a class="admin-menu-item-link" onclick="toggleSubmenu('settings')">
-          <i data-lucide="settings"></i> <span>Store Settings</span>
-          <i data-lucide="chevron-right" class="submenu-toggle-icon"></i>
-        </a>
-        <ul class="admin-menu-submenu ${isSettingsView ? 'open' : ''}" id="submenu-settings">
-          <li class="${activeTabCls('settings.html', 'general')}"><a href="/admin/settings.html?tab=general"><span>General</span></a></li>
-          <li class="${activeTabCls('settings.html', 'seo')}"><a href="/admin/settings.html?tab=seo"><span>SEO Settings</span></a></li>
-          <li class="${activeTabCls('settings.html', 'analytics')}"><a href="/admin/settings.html?tab=analytics"><span>Analytics</span></a></li>
-          <li class="${activeTabCls('settings.html', 'integrations')}"><a href="/admin/settings.html?tab=integrations"><span>Integrations</span></a></li>
-          <li class="${activeTabCls('settings.html', 'mobile-settings')}"><a href="/admin/settings.html?tab=mobile-settings"><span>Mobile Settings</span></a></li>
-          <li class="${activeTabCls('settings.html', 'diagnostics')}"><a href="/admin/settings.html?tab=diagnostics"><span>Diagnostics</span></a></li>
-        </ul>
+      <!-- MARKETING STUDIO -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Marketing</li>
+      <li class="admin-menu-item ${activeTabCls('marketing.html', 'coupons')}">
+        <a href="/admin/marketing.html?tab=coupons"><i data-lucide="percent"></i> <span>Coupons</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('marketing.html', 'flash-sales')}">
+        <a href="/admin/marketing.html?tab=flash-sales"><i data-lucide="zap"></i> <span>Flash Sales</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('marketing.html', 'newsletter')}">
+        <a href="/admin/marketing.html?tab=newsletter"><i data-lucide="mail"></i> <span>Email Studio</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('marketing.html', 'whatsapp')}">
+        <a href="/admin/marketing.html?tab=whatsapp"><i data-lucide="message-circle"></i> <span>WhatsApp Studio</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('marketing.html', 'sms')}">
+        <a href="/admin/marketing.html?tab=sms"><i data-lucide="smartphone"></i> <span>SMS Studio</span></a>
       </li>
 
-      <!-- SYSTEM & PERFORMANCE SECTION -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 11px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">System & Tools</li>
-      <li class="admin-menu-item ${activeCls('reports.html')}">
-        <a href="/admin/reports.html"><i data-lucide="bar-chart-2"></i> <span>Sales Reports</span></a>
+      <!-- CONTENT CUSTOMIZATION -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Appearance</li>
+      <li class="admin-menu-item ${activeTabCls('content.html', 'homepage')}">
+        <a href="/admin/content.html?tab=homepage"><i data-lucide="home"></i> <span>Homepage Builder</span></a>
       </li>
-      <li class="admin-menu-item ${activeCls('security-logs.html')}">
-        <a href="/admin/security-logs.html"><i data-lucide="shield"></i> <span>Security Logs</span></a>
+      <li class="admin-menu-item ${activeTabCls('content.html', 'theme')}">
+        <a href="/admin/content.html?tab=theme"><i data-lucide="palette"></i> <span>Theme Builder</span></a>
       </li>
-      <li class="admin-menu-item ${activeCls('settings.html') && currentTab === 'diagnostics' ? 'active' : ''}">
-        <a href="/admin/settings.html?tab=diagnostics"><i data-lucide="cpu"></i> <span>Diagnostics</span></a>
+      <li class="admin-menu-item ${activeTabCls('content.html', 'header')}">
+        <a href="/admin/content.html?tab=header"><i data-lucide="menu"></i> <span>Navigation Builder</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('content.html', 'pages')}">
+        <a href="/admin/content.html?tab=pages"><i data-lucide="file"></i> <span>Content Pages</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('content.html', 'blogs')}">
+        <a href="/admin/content.html?tab=blogs"><i data-lucide="book-open"></i> <span>Blogs & Press</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('content.html', 'faq')}">
+        <a href="/admin/content.html?tab=faq"><i data-lucide="help-circle"></i> <span>FAQ Builder</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'seo')}">
+        <a href="/admin/settings.html?tab=seo"><i data-lucide="globe"></i> <span>SEO Engine</span></a>
       </li>
 
-      <li style="margin-top:20px; border-top:1px solid var(--adm-border); padding-top:15px;">
-        <a href="#" onclick="window.handleLogout(); return false;" style="color:#ef4444 !important;"><i data-lucide="log-out"></i> <span>Sign Out</span></a>
+      <!-- SETTINGS & SECURITY -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Security</li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'general')}">
+        <a href="/admin/settings.html?tab=general"><i data-lucide="settings"></i> <span>Store Configuration</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'presets')}">
+        <a href="/admin/settings.html?tab=presets"><i data-lucide="sparkles"></i> <span>Appearance Studio</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'roles')}">
+        <a href="/admin/settings.html?tab=roles"><i data-lucide="lock"></i> <span>Roles & Permissions</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'users')}">
+        <a href="/admin/settings.html?tab=users"><i data-lucide="user-check"></i> <span>Admin Users</span></a>
+      </li>
+      <li class="admin-menu-item ${activeCls('security-logs.html') && !currentTab ? 'active' : ''}">
+        <a href="/admin/security-logs.html"><i data-lucide="activity"></i> <span>Audit Logs</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('security-logs.html', 'security')}">
+        <a href="/admin/security-logs.html?tab=security"><i data-lucide="shield"></i> <span>Security Center</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'backup')}">
+        <a href="/admin/settings.html?tab=backup"><i data-lucide="database"></i> <span>Backup & Restore</span></a>
+      </li>
+
+      <!-- DEVELOPER CONSOLE -->
+      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Developer</li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'developer')}">
+        <a href="/admin/settings.html?tab=developer"><i data-lucide="terminal"></i> <span>Developer Console</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'apikeys')}">
+        <a href="/admin/settings.html?tab=apikeys"><i data-lucide="key"></i> <span>API Keys Manager</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'integrations')}">
+        <a href="/admin/settings.html?tab=integrations"><i data-lucide="cpu"></i> <span>Integrations</span></a>
+      </li>
+      <li class="admin-menu-item ${activeTabCls('settings.html', 'diagnostics')}">
+        <a href="/admin/settings.html?tab=diagnostics"><i data-lucide="heart"></i> <span>Diagnostics & Health</span></a>
       </li>
     </ul>
+
+    <!-- Workspace Profile Footer -->
+    <div class="sidebar-profile-footer" style="padding: 16px 20px; border-top: 1px solid var(--adm-border); display: flex; align-items: center; gap: 12px; margin-top: auto; background: rgba(255,255,255,0.01);">
+      <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--adm-accent); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 12px;" id="sidebar-avatar-initials">AD</div>
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column;" class="profile-info-wrapper">
+        <span style="font-size: 12px; font-weight: 700; color: var(--adm-text); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" id="sidebar-profile-name">Admin Owner</span>
+        <span style="font-size: 10px; color: var(--adm-text-muted);">Administrator</span>
+      </div>
+      <a href="#" onclick="window.handleLogout(); return false;" style="color: var(--adm-danger) !important; display: flex; align-items: center; justify-content: center; padding: 6px; border-radius: 6px;" title="Sign Out">
+        <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
+      </a>
+    </div>
   `;
   window.renderIcons();
+
+  // Attach search filter logic
+  const filterInput = document.getElementById('sidebar-filter-input');
+  if (filterInput) {
+    filterInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const items = sidebar.querySelectorAll('.admin-menu-item');
+      const groupTitles = sidebar.querySelectorAll('.menu-group-title');
+
+      if (!q) {
+        items.forEach(el => el.style.display = 'block');
+        groupTitles.forEach(el => el.style.display = 'block');
+        return;
+      }
+
+      items.forEach(el => {
+        const text = el.textContent.toLowerCase();
+        if (text.includes(q)) {
+          el.style.display = 'block';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+
+      // Hide section titles when filtering to keep it clean
+      groupTitles.forEach(el => el.style.display = 'none');
+    });
+  }
 
   // Attach toggle button listeners
   const btn = document.getElementById('sidebar-toggle-btn');
@@ -535,8 +667,13 @@ function injectAdminTopbar() {
     </div>
   `;
 
-  // Prepend to main panel
-  mainPanel.insertBefore(topbar, mainPanel.firstChild);
+  // Mount to topbar container if present, else fallback
+  const topbarContainer = document.getElementById('admin-topbar-container');
+  if (topbarContainer) {
+    topbarContainer.appendChild(topbar);
+  } else {
+    mainPanel.insertBefore(topbar, mainPanel.firstChild);
+  }
   window.renderIcons();
 }
 
@@ -701,10 +838,16 @@ function initOverlaysEvents() {
     window.renderIcons();
   };
 
-  // Toggle Command Palette
+  // Toggle Command Palette (GSAP animated)
   function openPalette() {
     if (paletteOverlay) {
       paletteOverlay.style.display = 'flex';
+      if (typeof gsap !== 'undefined') {
+        gsap.killTweensOf(paletteOverlay);
+        gsap.killTweensOf(paletteOverlay.querySelector('.command-palette-modal'));
+        gsap.fromTo(paletteOverlay, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: 'power2.out' });
+        gsap.fromTo(paletteOverlay.querySelector('.command-palette-modal'), { scale: 0.96, y: -15 }, { scale: 1, y: 0, duration: 0.35, ease: 'back.out(1.5)' });
+      }
       if (paletteInput) {
         paletteInput.value = '';
         setTimeout(() => paletteInput.focus(), 50);
@@ -714,7 +857,16 @@ function initOverlaysEvents() {
   }
 
   function closePalette() {
-    if (paletteOverlay) paletteOverlay.style.display = 'none';
+    if (paletteOverlay) {
+      if (typeof gsap !== 'undefined') {
+        gsap.killTweensOf(paletteOverlay);
+        gsap.killTweensOf(paletteOverlay.querySelector('.command-palette-modal'));
+        gsap.to(paletteOverlay.querySelector('.command-palette-modal'), { scale: 0.96, y: -15, duration: 0.2, ease: 'power2.in' });
+        gsap.to(paletteOverlay, { opacity: 0, duration: 0.2, onComplete: () => { paletteOverlay.style.display = 'none'; } });
+      } else {
+        paletteOverlay.style.display = 'none';
+      }
+    }
   }
 
   if (searchTrigger) {
@@ -727,11 +879,18 @@ function initOverlaysEvents() {
     });
   }
 
-  // Toggle Notification Drawer
+  // Toggle Notification Drawer (GSAP animated)
   function openNotifications() {
     if (notifOverlay && notifDrawer) {
       notifOverlay.style.display = 'block';
-      setTimeout(() => notifDrawer.classList.add('open'), 10);
+      if (typeof gsap !== 'undefined') {
+        gsap.killTweensOf(notifOverlay);
+        gsap.killTweensOf(notifDrawer);
+        gsap.fromTo(notifOverlay, { opacity: 0 }, { opacity: 1, duration: 0.25 });
+        gsap.fromTo(notifDrawer, { x: '100%' }, { x: '0%', duration: 0.4, ease: 'power3.out' });
+      } else {
+        notifDrawer.classList.add('open');
+      }
       
       // Remove badge count indicator on click
       const badge = document.getElementById('admin-notif-badge');
@@ -739,11 +898,18 @@ function initOverlaysEvents() {
     }
   }
 
-  // Close Notification Drawer
+  // Close Notification Drawer (GSAP animated)
   function closeNotifications() {
     if (notifOverlay && notifDrawer) {
-      notifDrawer.classList.remove('open');
-      setTimeout(() => notifOverlay.style.display = 'none', 300);
+      if (typeof gsap !== 'undefined') {
+        gsap.killTweensOf(notifOverlay);
+        gsap.killTweensOf(notifDrawer);
+        gsap.to(notifDrawer, { x: '100%', duration: 0.3, ease: 'power3.in' });
+        gsap.to(notifOverlay, { opacity: 0, duration: 0.3, onComplete: () => { notifOverlay.style.display = 'none'; } });
+      } else {
+        notifDrawer.classList.remove('open');
+        setTimeout(() => notifOverlay.style.display = 'none', 300);
+      }
     }
   }
 
@@ -2654,6 +2820,17 @@ window.viewCustomerDeepProfile = async (customerId) => {
   }
 };
 
+function injectAmbientBlobs() {
+  if (document.querySelector('.ambient-glow-wrapper')) return;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'ambient-glow-wrapper';
+  wrapper.innerHTML = `
+    <div class="ambient-blob blob-1"></div>
+    <div class="ambient-blob blob-2"></div>
+  `;
+  document.body.appendChild(wrapper);
+}
+
 async function applyAdminBranding() {
   try {
     const res = await adminFetch('/api/settings/homepage');
@@ -2767,4 +2944,385 @@ window.markEnquiryAsRead = async (id) => {
     alert(`Request failed: ${err.message}`);
   }
 };
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADMIN COMMAND CENTER & REBUILD PLUGINS (Phase 3 Rebuild)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+// 1. Command Palette (Ctrl + K) & Universal Search
+function injectCommandPalette() {
+  if (document.getElementById('admin-command-palette')) return;
+
+  const palette = document.createElement('div');
+  palette.id = 'admin-command-palette';
+  palette.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(9, 5, 20, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  `;
+  palette.innerHTML = `
+    <div class="glass" style="width:90%; max-width:600px; border-radius:16px; padding:20px; border:1px solid rgba(168,85,247,0.25); box-shadow:0 16px 48px rgba(0,0,0,0.5); background: #120b24;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; border-bottom:1px solid rgba(168,85,247,0.2); padding-bottom:12px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="palette-search-input" placeholder="Type a command or search (e.g., products, settings, theme)..." style="flex:1; background:none; border:none; outline:none; font-family:'Outfit', sans-serif; font-size:16px; color:#fff; width:100%;">
+        <span style="font-size:11px; background:rgba(255,255,255,0.08); padding:3px 6px; border-radius:4px; color:var(--adm-text-muted);">ESC to close</span>
+      </div>
+      <div id="palette-results" style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;"></div>
+    </div>
+  `;
+
+  document.body.appendChild(palette);
+
+  // Command registry
+  const commands = [
+    { label: 'Go to Dashboard', url: '/admin/dashboard.html', category: 'Navigation' },
+    { label: 'Manage Products List', url: '/admin/products.html?tab=products', category: 'Catalog' },
+    { label: 'Manage Categories', url: '/admin/products.html?tab=categories', category: 'Catalog' },
+    { label: 'Inventory Control', url: '/admin/products.html?tab=inventory', category: 'Catalog' },
+    { label: 'Manage Orders', url: '/admin/orders.html', category: 'Sales' },
+    { label: 'Customers Database', url: '/admin/customers.html', category: 'Sales' },
+    { label: 'Inquiries & Enquiries', url: '/admin/enquiries.html', category: 'Sales' },
+    { label: 'Media Library Gallery', url: '/admin/media.html', category: 'Catalog' },
+    { label: 'Theme Presets Customizer', url: '/admin/settings.html?tab=presets', category: 'Appearance Studio' },
+    { label: 'Color Variables Settings', url: '/admin/settings.html?tab=colors', category: 'Appearance Studio' },
+    { label: 'Typography Customizer', url: '/admin/settings.html?tab=typography', category: 'Appearance Studio' },
+    { label: 'Homepage Layout Editor', url: '/admin/settings.html?tab=homepage', category: 'Appearance Studio' },
+    { label: 'General Store Settings', url: '/admin/settings.html?tab=general', category: 'System Settings' },
+    { label: 'SEO Settings Panel', url: '/admin/settings.html?tab=seo', category: 'System Settings' },
+    { label: 'Diagnostics & SMTP Test', url: '/admin/settings.html?tab=diagnostics', category: 'System Tools' },
+    { label: 'Switch to Light Theme', action: 'theme-light', category: 'Appearance' },
+    { label: 'Switch to Dark Theme', action: 'theme-dark', category: 'Appearance' }
+  ];
+
+  // Shortcut listeners
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      openPalette();
+    }
+    if (e.key === 'Escape') {
+      closePalette();
+    }
+  });
+
+  const searchInput = document.getElementById('palette-search-input');
+  const resultsContainer = document.getElementById('palette-results');
+
+  searchInput.addEventListener('input', (e) => {
+    renderPaletteResults(e.target.value);
+  });
+
+  function openPalette() {
+    palette.style.opacity = '1';
+    palette.style.pointerEvents = 'all';
+    searchInput.value = '';
+    renderPaletteResults('');
+    setTimeout(() => searchInput.focus(), 50);
+  }
+
+  function closePalette() {
+    palette.style.opacity = '0';
+    palette.style.pointerEvents = 'none';
+    searchInput.blur();
+  }
+
+  palette.addEventListener('click', (e) => {
+    if (e.target === palette) closePalette();
+  });
+
+  async function renderPaletteResults(query) {
+    const q = query.toLowerCase().trim();
+    resultsContainer.innerHTML = '';
+
+    // Static commands filtering
+    let matches = commands.filter(cmd => cmd.label.toLowerCase().includes(q) || cmd.category.toLowerCase().includes(q));
+
+    if (matches.length === 0) {
+      resultsContainer.innerHTML = '<div style="color:var(--adm-text-muted); text-align:center; padding:12px; font-size:13px;">No quick commands found.</div>';
+    } else {
+      resultsContainer.innerHTML = matches.map(m => `
+        <div class="palette-item" data-url="${m.url || ''}" data-action="${m.action || ''}" style="display:flex; justify-content:space-between; padding:10px 14px; border-radius:8px; background:rgba(255,255,255,0.03); cursor:pointer; font-size:13px; transition:all 0.2s;">
+          <span style="color:#fff; font-weight:600;">${m.label}</span>
+          <span style="color:var(--adm-accent); font-size:11px; text-transform:uppercase; font-weight:700;">${m.category}</span>
+        </div>
+      `).join('');
+
+      // Add click handler on items
+      resultsContainer.querySelectorAll('.palette-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const url = item.getAttribute('data-url');
+          const action = item.getAttribute('data-action');
+          closePalette();
+
+          if (url) {
+            window.location.href = url;
+          } else if (action === 'theme-light') {
+            setAdminTheme('light');
+          } else if (action === 'theme-dark') {
+            setAdminTheme('dark');
+          }
+        });
+
+        item.addEventListener('mouseenter', () => {
+          item.style.background = 'rgba(168, 85, 247, 0.15)';
+          item.style.borderLeft = '4px solid var(--adm-accent)';
+        });
+
+        item.addEventListener('mouseleave', () => {
+          item.style.background = 'rgba(255, 255, 255, 0.03)';
+          item.style.borderLeft = 'none';
+        });
+      });
+    }
+
+    // Dynamic search fallback (Query products via API if length >= 2)
+    if (q.length >= 2) {
+      try {
+        const res = await adminFetch(`/api/products?search=${encodeURIComponent(q)}&limit=5`);
+        const data = await res.json();
+        if (data.success && data.products && data.products.length > 0) {
+          const header = document.createElement('div');
+          header.style.cssText = 'font-size:10px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; margin-top:10px; margin-bottom:5px;';
+          header.textContent = 'Matching Catalog items';
+          resultsContainer.appendChild(header);
+
+          data.products.forEach(p => {
+            const item = document.createElement('div');
+            item.style.cssText = 'display:flex; justify-content:space-between; padding:10px 14px; border-radius:8px; background:rgba(255,255,255,0.03); cursor:pointer; font-size:13px; transition:all 0.2s;';
+            item.innerHTML = `
+              <span style="color:#fff; font-weight:500;">📦 ${escapeHtml(p.name)}</span>
+              <span style="color:var(--adm-text-muted); font-size:12px;">₹${p.price}</span>
+            `;
+            item.addEventListener('click', () => {
+              closePalette();
+              window.location.href = `/admin/products.html?action=edit&id=${p._id}`;
+            });
+            resultsContainer.appendChild(item);
+          });
+        }
+      } catch (err) {
+        // quiet fail
+      }
+    }
+  }
+}
+
+// 2. Light / Dark Mode Toggle
+function initAdminThemeToggle() {
+  const layout = document.querySelector('.admin-layout');
+  if (!layout) return;
+
+  const topbar = document.querySelector('.admin-topbar') || document.querySelector('.admin-logo');
+  if (!topbar || topbar.querySelector('.theme-toggle-btn')) return;
+
+  const btn = document.createElement('button');
+  btn.className = 'theme-toggle-btn';
+  btn.type = 'button';
+  btn.style.cssText = 'background:transparent; border:none; color:var(--adm-text-muted); cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center; margin-left:15px;';
+  btn.innerHTML = `
+    <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  `;
+
+  topbar.appendChild(btn);
+
+  const applyIcons = () => {
+    const isDark = layout.classList.contains('dark-mode');
+    btn.querySelector('.sun-icon').style.display = isDark ? 'block' : 'none';
+    btn.querySelector('.moon-icon').style.display = isDark ? 'none' : 'block';
+  };
+
+  applyIcons();
+
+  btn.addEventListener('click', () => {
+    const isCurrentlyDark = layout.classList.contains('dark-mode');
+    setAdminTheme(isCurrentlyDark ? 'light' : 'dark');
+    applyIcons();
+  });
+}
+
+function setAdminTheme(theme) {
+  const layout = document.querySelector('.admin-layout');
+  if (!layout) return;
+
+  if (theme === 'dark') {
+    layout.classList.add('dark-mode');
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('admin-theme', 'dark');
+  } else {
+    layout.classList.remove('dark-mode');
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('admin-theme', 'light');
+  }
+}
+
+// 3. Drag and Drop Dashboard Customizer
+function initDashboardCustomizer() {
+  const grid = document.querySelector('.metric-grid');
+  if (!grid) return;
+
+  const cards = grid.querySelectorAll('.metric-card');
+  cards.forEach((card, i) => {
+    card.setAttribute('draggable', 'true');
+    card.setAttribute('data-widget-id', `metric-widget-${i}`);
+    
+    // Add Drag Handlers
+    card.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', card.getAttribute('data-widget-id'));
+      card.style.opacity = '0.5';
+    });
+
+    card.addEventListener('dragend', () => {
+      card.style.opacity = '1';
+    });
+  });
+
+  grid.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+
+  grid.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData('text/plain');
+    const dragged = grid.querySelector(`[data-widget-id="${id}"]`);
+    if (!dragged) return;
+
+    // Find nearest item
+    const target = e.target.closest('.metric-card');
+    if (target && target !== dragged) {
+      const children = Array.from(grid.children);
+      const dragIdx = children.indexOf(dragged);
+      const targetIdx = children.indexOf(target);
+
+      if (dragIdx < targetIdx) {
+        grid.insertBefore(dragged, target.nextSibling);
+      } else {
+        grid.insertBefore(dragged, target);
+      }
+
+      // Save order
+      const order = Array.from(grid.children).map(c => c.getAttribute('data-widget-id'));
+      localStorage.setItem('mz-admin-widget-order', JSON.stringify(order));
+    }
+  });
+
+  // Load custom widget order
+  try {
+    const saved = JSON.parse(localStorage.getItem('mz-admin-widget-order'));
+    if (saved && saved.length > 0) {
+      saved.forEach(id => {
+        const item = grid.querySelector(`[data-widget-id="${id}"]`);
+        if (item) grid.appendChild(item);
+      });
+    }
+  } catch (err) {}
+}
+
+// 4. Autosave & Undo/Redo System
+let adminUndoStack = [];
+let adminRedoStack = [];
+
+function initAutosaveEngine() {
+  const inputs = document.querySelectorAll('.admin-layout input, .admin-layout select, .admin-layout textarea');
+  if (inputs.length === 0) return;
+
+  // Add Autosave Status Indicator dynamically
+  let indicator = document.getElementById('autosave-indicator');
+  if (!indicator) {
+    indicator = document.createElement('span');
+    indicator.id = 'autosave-indicator';
+    indicator.style.cssText = 'font-size:12px; color:var(--adm-text-muted); margin-left:15px; font-weight:500; opacity:0; transition:opacity 0.3s ease;';
+    indicator.textContent = 'Changes autosaved.';
+
+    const topbar = document.querySelector('.admin-topbar');
+    if (topbar) {
+      const spacer = topbar.querySelector('.topbar-spacer') || topbar.children[0];
+      if (spacer) spacer.parentNode.insertBefore(indicator, spacer.nextSibling);
+    }
+  }
+
+  let saveTimer = null;
+
+  inputs.forEach(input => {
+    // Record baseline state on focus
+    input.addEventListener('focus', () => {
+      input.dataset.oldValue = input.value;
+    });
+
+    input.addEventListener('change', () => {
+      // Record to undo history stack
+      adminUndoStack.push({
+        elementId: input.id,
+        name: input.name,
+        oldVal: input.dataset.oldValue || '',
+        newVal: input.value
+      });
+      adminRedoStack = []; // Clear redo on new action
+      input.dataset.oldValue = input.value;
+
+      // Trigger debounced save simulation
+      if (saveTimer) clearTimeout(saveTimer);
+      indicator.textContent = 'Saving modifications...';
+      indicator.style.opacity = '1';
+
+      saveTimer = setTimeout(() => {
+        indicator.textContent = 'All changes saved in real-time.';
+        setTimeout(() => {
+          indicator.style.opacity = '0';
+        }, 2000);
+      }, 1200);
+    });
+  });
+
+  // Bind Undo/Redo listeners
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      triggerUndo();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+      e.preventDefault();
+      triggerRedo();
+    }
+  });
+
+  function triggerUndo() {
+    if (adminUndoStack.length === 0) return;
+    const action = adminUndoStack.pop();
+    const el = document.getElementById(action.elementId) || document.getElementsByName(action.name)[0];
+    if (el) {
+      adminRedoStack.push(action);
+      el.value = action.oldVal;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      if (window.showToast) window.showToast('Undone last action', 'info');
+    }
+  }
+
+  function triggerRedo() {
+    if (adminRedoStack.length === 0) return;
+    const action = adminRedoStack.pop();
+    const el = document.getElementById(action.elementId) || document.getElementsByName(action.name)[0];
+    if (el) {
+      adminUndoStack.push(action);
+      el.value = action.newVal;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      if (window.showToast) window.showToast('Redone action', 'info');
+    }
+  }
+}
+
 

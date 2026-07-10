@@ -1,0 +1,397 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                        String        @id @default(uuid())
+  name                      String
+  email                     String        @unique
+  password                  String
+  passwordHash              String?
+  role                      String        @default("customer")
+  emailVerified             Boolean       @default(false)
+  accountActive             Boolean       @default(false)
+  isActive                  Boolean       @default(false)
+  verificationOtp           String?
+  verificationOtpExpires    DateTime?
+  resetPasswordToken        String?
+  resetPasswordExpires      DateTime?
+  loginAttempts             Int           @default(0)
+  lockUntil                 DateTime?
+  profilePicture            String        @default("https://res.cloudinary.com/demo/image/upload/v1/avatar.png")
+  lastLoginIP               String?
+  lastLoginTimestamp        DateTime?
+  phone                     String        @default("")
+  phoneVerified             Boolean       @default(false)
+  address1                  String        @default("")
+  city                      String        @default("")
+  state                     String        @default("")
+  pincode                   String        @default("")
+  refreshToken              String?
+  twoFactorEnabled          Boolean       @default(false)
+  passwordChangedAt         DateTime?
+  loginOtpHash              String?
+  loginOtpExpires           DateTime?
+  loginOtpAttempts          Int           @default(0)
+  loginOtpSentAt            DateTime?
+  emailChangeNewEmail       String?
+  emailChangeCurrentOtpHash String?
+  emailChangeCurrentOtpExpires DateTime?
+  emailChangeCurrentVerified Boolean       @default(false)
+  emailChangeNewOtpHash     String?
+  emailChangeNewOtpExpires  DateTime?
+  emailChangeAttempts       Int           @default(0)
+  rememberDeviceTokens      Json          @default("[]")
+  createdAt                 DateTime      @default(now())
+  updatedAt                 DateTime      @updatedAt
+
+  addresses                 Address[]
+  cartItems                 CartItem[]
+  wishlistItems             WishlistItem[]
+  sessions                  UserSession[]
+  orders                    Order[]
+  auditLogs                 AuditLog[]
+
+  @@map("users")
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  fullName  String   @default("")
+  phone     String   @default("")
+  street    String   @default("")
+  street2   String   @default("")
+  city      String   @default("")
+  state     String   @default("")
+  zipCode   String   @default("")
+  country   String   @default("India")
+  isDefault Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  name      String
+  price     Float
+  image     String   @default("/assets/images/default-product.webp")
+  quantity  Int      @default(1)
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("cart_items")
+}
+
+model WishlistItem {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  name      String
+  price     Float
+  image     String   @default("/assets/images/default-product.webp")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("wishlist_items")
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  image    String
+  slug     String    @unique
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id             String         @id @default(uuid())
+  name           String
+  description    String
+  price          Float
+  discountPrice  Float?
+  stock          Int            @default(0)
+  categoryId     String
+  imageFolder    String?
+  tags           String[]       @default([])
+  averageRating  Float          @default(0)
+  totalReviews   Int            @default(0)
+  isFeatured     Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+
+  // Specifications
+  material       String         @default("")
+  dimensions     String         @default("")
+  weight         String         @default("")
+  color          String         @default("")
+
+  category       Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  images         ProductImage[]
+  cartItems      CartItem[]
+  wishlistItems  WishlistItem[]
+  orderItems     OrderItem[]
+
+  @@map("products")
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  productId String
+  url       String
+  publicId  String?
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+model Order {
+  id                   String      @id @default(uuid())
+  userId               String?
+  guestFullName        String?
+  guestEmail           String?
+  guestPhone           String?
+  shippingFullName     String
+  shippingPhone        String
+  shippingStreet       String
+  shippingCity         String
+  shippingState        String
+  shippingZipCode      String
+  paymentMethod        String
+  paymentStatus        String      @default("Pending")
+  paymentTransactionId String?
+  summarySubtotal      Float
+  summaryTax           Float
+  summaryShipping      Float
+  summaryDiscount      Float       @default(0)
+  summaryTotal         Float
+  couponCode           String?
+  status               String      @default("Pending")
+  orderId              String      @unique
+  createdAt            DateTime    @default(now())
+
+  user                 User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items                OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  productId String
+  name      String
+  price     Float
+  quantity  Int
+  image     String
+
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model SiteSettings {
+  id         String   @id @default("active")
+  version    Int      @default(0)
+  updatedAt  DateTime @default(now())
+  updatedBy  String?
+  theme      Json
+  typography Json
+  layout     Json
+  meta       Json
+  customCss  String   @default("")
+
+  @@map("site_settings")
+}
+
+model FooterConfig {
+  id          String   @id @default("active")
+  version     Int      @default(0)
+  updatedAt   DateTime @default(now())
+  updatedBy   String?
+  brand       Json
+  columnCount Int      @default(3)
+  columns     Json
+  social      Json
+  contact     Json
+  newsletter  Json
+  copyright   Json
+
+  @@map("footer_configs")
+}
+
+model AboutPage {
+  id             String   @id @default(uuid())
+  storyHeading   String   @default("")
+  storyIntro     String   @default("")
+  leftHeading    String   @default("")
+  leftParagraph1 String   @default("")
+  leftParagraph2 String   @default("")
+  image          String   @default("")
+  updatedAt      DateTime @default(now())
+
+  @@map("about_pages")
+}
+
+model AnimationConfig {
+  id        String   @id @default("active")
+  version   Int      @default(0)
+  updatedAt DateTime @default(now())
+  updatedBy String?
+  preset    String   @default("elevated")
+  overrides Json
+
+  @@map("animation_configs")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  email     String
+  action    String
+  details   String   @default("")
+  ipAddress String   @default("")
+  userAgent String   @default("")
+  timestamp DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
+
+model Coupon {
+  id            String   @id @default(uuid())
+  code          String   @unique
+  discountType  String
+  discountValue Float
+  minOrderValue Float    @default(0)
+  expiresAt     DateTime
+  active        Boolean  @default(true)
+
+  @@map("coupons")
+}
+
+model HomepageSections {
+  id        String   @id @default("active")
+  version   Int      @default(0)
+  updatedAt DateTime @default(now())
+  updatedBy String?
+  sections  Json
+
+  @@map("homepage_sections")
+}
+
+model MediaAsset {
+  id           String   @id @default(uuid())
+  filename     String
+  originalName String
+  url          String
+  mimeType     String   @default("image/webp")
+  size         Int      @default(0)
+  width        Int?
+  height       Int?
+  alt          String   @default("")
+  tags         String[] @default([])
+  uploadedBy   String?
+  folder       String   @default("media")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("media_assets")
+}
+
+model NavigationConfig {
+  id        String   @id @default("active")
+  version   Int      @default(0)
+  updatedAt DateTime @default(now())
+  updatedBy String?
+  desktop   Json
+  mobile    Json
+
+  @@map("navigation_configs")
+}
+
+model Setting {
+  id                  String    @id @default(uuid())
+  key                 String    @unique
+  value               Json
+  flashSaleActive     Boolean   @default(false)
+  flashSaleText       String    @default("Mega Flash Sale! Get 20% off all return gifts!")
+  flashSaleTargetDate DateTime?
+
+  @@map("settings")
+}
+
+model SiteSettingsHistory {
+  id               String   @id @default(uuid())
+  savedAt          DateTime @default(now())
+  savedBy          String?
+  configCollection String
+  version          Int
+  snapshot         Json
+
+  @@map("site_settings_history")
+}
+
+model UnverifiedStage {
+  id                       String   @id @default(uuid())
+  name                     String
+  email                    String   @unique
+  phone                    String
+  password                 String
+  passwordHash             String?
+  address1                 String   @default("")
+  city                     String   @default("")
+  state                    String   @default("")
+  pincode                  String   @default("")
+  verificationToken        String
+  verificationTokenExpires DateTime
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@map("unverified_stages")
+}
+
+model UserSession {
+  id           String   @id @default(uuid())
+  userId       String
+  refreshToken String   @unique
+  userAgent    String   @default("")
+  ipAddress    String   @default("")
+  browser      String   @default("Unknown")
+  os           String   @default("Unknown")
+  device       String   @default("Unknown")
+  country      String   @default("Unknown")
+  loginTime    DateTime @default(now())
+  lastActivity DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+model Enquiry {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    String   @default("unread")
+  createdAt DateTime @default(now())
+
+  @@map("enquiries")
+}

@@ -24,7 +24,7 @@ async function main() {
   };
 
   const email = process.env.ADMIN_EMAIL || 'admin@magizhvagam.com';
-  const password = process.env.ADMIN_PASSWORD || 'AdminPass123!';
+  const password = process.env.ADMIN_PASSWORD || 'MagizhvagamSecure2026!';
 
   const login = await req('/api/auth/admin/login', {
     method: 'POST',

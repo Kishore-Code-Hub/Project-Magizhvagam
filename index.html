@@ -44,7 +44,7 @@
         <h1 class="hero-headline">Welcome To Magizhvagam</h1>
         <p class="hero-subtext">Curated Premium Return Gifts for Every Celebration</p>
         <div class="hero-cta-action-row">
-          <a href="/products.html" class="btn btn-primary">Order & Inquire</a>
+          <a href="/products" class="btn btn-primary">Order & Inquire</a>
           <a href="#categories" class="btn btn-secondary">Explore Collections</a>
         </div>
       </div>
@@ -84,8 +84,118 @@
     <div class="layout-grid-structure" id="featured-products-mount">
     </div>
     <div style="text-align: center; margin-top: 32px; margin-bottom: 8px;">
-      <a href="/products.html" class="btn btn-ghost" style="display: inline-block;">View All Collections</a>
+      <a href="/products" class="btn btn-ghost" style="display: inline-block;">View All Collections</a>
     </div>
+  </section>
+
+  <!-- Best Sellers Showcase -->
+  <section class="products-showcase-wrapper container" data-mz-section="bestsellers" style="margin-top:60px;">
+    <div class="section-title-center-block">
+      <h2>Our Bestsellers</h2>
+      <p>Timeless gifts loved by thousands of hosts</p>
+    </div>
+    <div class="layout-grid-structure" id="bestseller-products-grid"></div>
+  </section>
+
+  <!-- Promotional Banners -->
+  <section class="promotional-banners-wrapper container" data-mz-section="promotional_banners" style="margin-top:60px;">
+    <div class="grid grid-2" id="promotional-banners-container" style="gap:30px;"></div>
+  </section>
+
+  <!-- New Arrivals Showcase -->
+  <section class="products-showcase-wrapper container" data-mz-section="new_arrivals" style="margin-top:60px;">
+    <div class="section-title-center-block">
+      <h2>New Arrivals</h2>
+      <p>Freshly crafted traditional items for your special occasions</p>
+    </div>
+    <div class="layout-grid-structure" id="newarrival-products-grid"></div>
+  </section>
+
+  <!-- Animated Statistics Counter Section -->
+  <section class="home-stats-wrapper container glass" style="margin-top:60px; margin-bottom:60px; padding:60px 40px; border-radius:24px; text-align:center;">
+    <div class="grid grid-3" style="gap:40px;">
+      <div class="stat-item">
+        <h2 class="stat-number" style="font-size:48px; color:hsl(var(--primary-purple)); font-weight:800;" data-target="15000">0</h2>
+        <p style="font-family:'Outfit'; font-weight:600; color:var(--text-muted); margin-top:8px;">Happy Celebrations Hosted</p>
+      </div>
+      <div class="stat-item">
+        <h2 class="stat-number" style="font-size:48px; color:hsl(var(--primary-purple)); font-weight:800;" data-target="500000">0</h2>
+        <p style="font-family:'Outfit'; font-weight:600; color:var(--text-muted); margin-top:8px;">Gifts Handcrafted</p>
+      </div>
+      <div class="stat-item">
+        <h2 class="stat-number" style="font-size:48px; color:hsl(var(--primary-purple)); font-weight:800;" data-target="100">0</h2>
+        <p style="font-family:'Outfit'; font-weight:600; color:var(--text-muted); margin-top:8px;">% Safe Delivery Rate</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Brand Story Timeline -->
+  <section class="brand-story-timeline container" style="margin-top:60px; margin-bottom:60px;">
+    <div class="section-title-center-block">
+      <h2>Crafting Traditional Smiles</h2>
+      <p>The journey of Magizhvagam return gifts</p>
+    </div>
+    <div class="timeline-container" style="position:relative; margin-top:40px; padding-left:30px; border-left: 2px dashed rgba(106,13,173,0.2);">
+      <div class="timeline-item" style="position:relative; margin-bottom:40px;">
+        <span class="timeline-dot" style="position:absolute; left:-36px; top:4px; width:12px; height:12px; border-radius:50%; background:hsl(var(--primary-purple));"></span>
+        <h3 style="font-family:'Outfit'; font-size:18px; margin-bottom:8px;">2018 — The Beginning</h3>
+        <p style="color:var(--text-muted); font-size:14px;">Started with small clay crafting hampers for local family events.</p>
+      </div>
+      <div class="timeline-item" style="position:relative; margin-bottom:40px;">
+        <span class="timeline-dot" style="position:absolute; left:-36px; top:4px; width:12px; height:12px; border-radius:50%; background:hsl(var(--primary-purple));"></span>
+        <h3 style="font-family:'Outfit'; font-size:18px; margin-bottom:8px;">2022 — Expanding Nationwide</h3>
+        <p style="color:var(--text-muted); font-size:14px;">Launched bulk custom catalog and shipping directly to venues across India.</p>
+      </div>
+      <div class="timeline-item" style="position:relative;">
+        <span class="timeline-dot" style="position:absolute; left:-36px; top:4px; width:12px; height:12px; border-radius:50%; background:hsl(var(--primary-purple));"></span>
+        <h3 style="font-family:'Outfit'; font-size:18px; margin-bottom:8px;">2026 — Premium Gifting Portal</h3>
+        <p style="color:var(--text-muted); font-size:14px;">Introduced interactive live theme builder and direct premium support coordinators.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Accordion & Newsletter -->
+  <section class="faq-newsletter-wrapper container" style="margin-top:60px; margin-bottom:60px;">
+    <div class="grid grid-2" style="gap:40px;">
+      <div class="faq-accordion-block">
+        <h2 style="font-family:'Outfit'; font-size:24px; margin-bottom:20px;">Questions & Answers</h2>
+        <div class="faq-item glass" style="margin-bottom:12px; border-radius:8px; overflow:hidden;">
+          <button class="faq-trigger" style="width:100%; text-align:left; background:none; border:none; padding:16px; font-family:'Outfit'; font-weight:600; cursor:pointer; display:flex; justify-content:space-between; color:var(--text-color);">
+            <span>How is custom engraving done?</span>
+            <span class="faq-icon" style="font-size:16px; transition:transform 0.3s ease;">+</span>
+          </button>
+          <div class="faq-content" style="display:none; padding:16px; border-top:1px solid var(--card-border); color:var(--text-muted); font-size:13px; line-height:1.6;">
+            Engraving can be specified during direct WhatsApp confirmation or during order review. We provide wood branding and silver embossing.
+          </div>
+        </div>
+        <div class="faq-item glass" style="margin-bottom:12px; border-radius:8px; overflow:hidden;">
+          <button class="faq-trigger" style="width:100%; text-align:left; background:none; border:none; padding:16px; font-family:'Outfit'; font-weight:600; cursor:pointer; display:flex; justify-content:space-between; color:var(--text-color);">
+            <span>What is the minimum quantity order?</span>
+            <span class="faq-icon" style="font-size:16px; transition:transform 0.3s ease;">+</span>
+          </button>
+          <div class="faq-content" style="display:none; padding:16px; border-top:1px solid var(--card-border); color:var(--text-muted); font-size:13px; line-height:1.6;">
+            Most premium return gift boxes start with a minimum batch size of 20 pieces to preserve personalized custom-card runs.
+          </div>
+        </div>
+      </div>
+      <div class="newsletter-subscription-block glass" style="padding:40px; border-radius:16px;">
+        <h2 style="font-family:'Outfit'; font-size:24px; margin-bottom:12px;">Newsletter Digest</h2>
+        <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">Get updates on new seasonal traditional collections and premium event gifting ideas.</p>
+        <form id="newsletter-form-home" style="display:flex; gap:8px;">
+          <input type="email" placeholder="Enter your email" class="form-control" style="border:1px solid var(--card-border);" required>
+          <button type="submit" class="btn btn-primary" style="padding:8px 20px;">Join</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Showcase -->
+  <section class="testimonials-wrapper container" data-mz-section="testimonials" style="margin-bottom:60px;">
+    <div class="section-title-center-block">
+      <h2>Host Testimonials</h2>
+      <p>Read from celebratory organizers who trusted Magizhvagam return gifts</p>
+    </div>
+    <div class="grid grid-3" id="testimonials-container" style="gap:20px; margin-top:30px;"></div>
   </section>
 
   <section class="customizer-teaser-wrapper container" data-mz-section="customization_preview">
@@ -163,6 +273,10 @@
   <script src="/assets/js/animation-loader.js"></script>
   <script src="/assets/js/nav.js"></script>
   <script src="/assets/js/footer.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/motion-system.js"></script>
   <script src="/assets/js/storefront-init.js"></script>
   <script src="/assets/js/home.js"></script>
   <script src="/assets/js/store-enhancements.js"></script>

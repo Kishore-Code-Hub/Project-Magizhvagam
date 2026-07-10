@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en" data-mz-anim="elevated">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error | MAGIZHVAGAM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/assets/css/theme.defaults.css">
+  <link rel="stylesheet" href="/assets/css/design-system.css">
+  <link rel="stylesheet" href="/assets/css/typography.css">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+  
+  <style id="mz-theme-vars"></style>
+  <script src="/assets/js/theme-loader.js"></script>
+
+  <style>
+    :root {
+      --error-glow-red: rgba(239, 68, 68, 0.2);
+      --error-glow-gold: rgba(201, 145, 61, 0.2);
+      --error-glow-purple: rgba(139, 92, 246, 0.2);
+    }
+    
+    body.error-page-layout {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-main, #0D0A14);
+    }
+
+    /* Ambient Aurora Lights */
+    .aurora-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .aurora-light {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.45;
+      mix-blend-mode: screen;
+      transform-origin: center;
+    }
+    .aurora-1 {
+      top: -20%;
+      left: -20%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(circle, var(--color-brand-primary, #C9913D) 0%, rgba(201,145,61,0) 70%);
+      animation: auroraMove1 25s infinite alternate ease-in-out;
+    }
+    .aurora-2 {
+      bottom: -20%;
+      right: -20%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(circle, var(--primary-purple, #8B5CF6) 0%, rgba(139,92,246,0) 70%);
+      animation: auroraMove2 30s infinite alternate ease-in-out;
+    }
+
+    @keyframes auroraMove1 {
+      0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+      50% { transform: translate(100px, 80px) scale(1.15) rotate(180deg); }
+      100% { transform: translate(-50px, -50px) scale(0.9) rotate(360deg); }
+    }
+    @keyframes auroraMove2 {
+      0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+      50% { transform: translate(-120px, -60px) scale(0.9) rotate(-180deg); }
+      100% { transform: translate(60px, 80px) scale(1.2) rotate(-360deg); }
+    }
+
+    /* Glassmorphism Panel */
+    .error-card {
+      width: 100%;
+      max-width: 580px;
+      z-index: 5;
+      padding: 50px 40px;
+      text-align: center;
+      border-radius: 24px;
+      border: 1px solid rgba(var(--glass-border-rgb, 220, 220, 220), var(--glass-border-opacity, 0.15));
+      background: rgba(var(--glass-bg-rgb, 13, 10, 20), var(--glass-bg-opacity, 0.4));
+      backdrop-filter: blur(var(--glass-blur, 20px));
+      -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .error-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(201, 145, 61, 0.4), rgba(255, 255, 255, 0.05) 50%, rgba(139, 92, 246, 0.3));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* SVG Illustration Styling */
+    .illustration-wrap {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    .illustration-wrap svg {
+      width: 160px;
+      height: 160px;
+      filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.15));
+    }
+
+    /* SVG Animations */
+    .float-svg {
+      animation: svgFloat 4s ease-in-out infinite;
+    }
+    @keyframes svgFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .rotate-svg-slow {
+      animation: svgRotate 20s linear infinite;
+      transform-origin: center;
+    }
+    @keyframes svgRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Path self-drawing */
+    .draw-path {
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+      animation: drawLine 2.5s ease-out forwards;
+    }
+    @keyframes drawLine {
+      to { stroke-dashoffset: 0; }
+    }
+
+    .pulse-glow {
+      animation: pulseGlow 2s ease-in-out infinite alternate;
+    }
+    @keyframes pulseGlow {
+      from { opacity: 0.5; filter: drop-shadow(0 0 2px var(--color-primary)); }
+      to { opacity: 1; filter: drop-shadow(0 0 10px var(--color-primary)); }
+    }
+
+    /* Error specifics */
+    .error-code {
+      font-size: 80px;
+      font-weight: 900;
+      font-family: 'Outfit', sans-serif;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--color-primary, #C9913D), #FFFFFF, #8B5CF6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+      letter-spacing: -2px;
+    }
+
+    .error-title-en {
+      font-family: 'Outfit', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-color, #F5F0E8);
+      margin-bottom: 4px;
+    }
+
+    .error-title-ta {
+      font-family: 'Mukta Mahee', 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--color-primary, #C9913D);
+      margin-bottom: 16px;
+      opacity: 0.9;
+    }
+
+    .error-desc {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-muted, #7A6E8A);
+      max-width: 440px;
+      margin: 0 auto 32px;
+    }
+
+    .error-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .error-actions .btn {
+      min-width: 140px;
+      padding: 12px 28px;
+      font-size: 14px;
+      border-radius: 12px;
+    }
+
+    /* noise overlay */
+    .noise-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      opacity: 0.02;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Custom Cursor link support */
+    .custom-cursor, .custom-cursor-dot {
+      display: none !important; /* disabled inside error boundaries for absolute reliability */
+    }
+  </style>
+</head>
+<body class="error-page-layout">
+  
+  <div class="noise-overlay"></div>
+  <div class="aurora-bg">
+    <div class="aurora-light aurora-1"></div>
+    <div class="aurora-light aurora-2"></div>
+  </div>
+
+  <div class="error-card animated scale-in">
+    <div class="illustration-wrap" id="illustration-holder">
+      <!-- Dynamic SVG goes here -->
+    </div>
+    <div class="error-code" id="error-code-text">404</div>
+    <h2 class="error-title-en" id="error-title-en">Page Not Found</h2>
+    <div class="error-title-ta" id="error-title-ta">பக்கம் காணப்படவில்லை</div>
+    <p class="error-desc" id="error-desc-text">
+      The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+    </p>
+    <div class="error-actions" id="error-actions-container">
+      <a href="/" class="btn btn-primary btn-interactive">Go to Home</a>
+      <button onclick="window.history.back()" class="btn btn-secondary btn-interactive">Go Back</button>
+    </div>
+  </div>
+
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Parse Query Params
+      const params = new URLSearchParams(window.location.search);
+      const code = (params.get('code') || '404').toLowerCase();
+      
+      const config = {
+        '404': {
+          code: '404',
+          titleEn: 'Page Not Found',
+          titleTa: 'பக்கம் காணப்படவில்லை',
+          desc: 'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.',
+          svg: `
+            <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="45" cy="45" r="22" stroke="#C9913D" stroke-width="2" class="draw-path" />
+              <path d="M60.5 60.5 L85 85" stroke="#8B5CF6" stroke-width="3" stroke-linecap="round" class="draw-path" />
+              <circle cx="36" cy="38" r="3" fill="#C9913D" opacity="0.6" />
+              <circle cx="54" cy="42" r="2" fill="#8B5CF6" opacity="0.6" />
+              <path d="M40 54 Q45 50 50 54" stroke="#7A6E8A" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          `,
+          buttons: `
+            <a href="/" class="btn btn-primary btn-interactive">Go to Home</a>
+            <button onclick="window.history.back()" class="btn btn-secondary btn-interactive">Go Back</button>
+          `
+        },
+        '403': {
+          code: '403',
+          titleEn: 'Access Forbidden',
+          titleTa: 'அனுமதி மறுக்கப்பட்டது',
+          desc: 'You do not have the required permissions to view this secure directory or resource.',
+          svg: `
+            <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="30" y="45" width="40" height="30" rx="8" stroke="#EF4444" stroke-width="2.5" class="draw-path" />
+              <path d="M40 45 V32 A10 10 0 0 1 60 32 V45" stroke="#C9913D" stroke-width="2" class="draw-path" />
+              <circle cx="50" cy="58" r="3" fill="#EF4444" />
+              <path d="M50 61 V68" stroke="#EF4444" stroke-width="2" />
+              <circle cx="80" cy="25" r="4" fill="#C9913D" class="pulse-glow" />
+            </svg>
+          `,
+          buttons: `
+            <a href="/" class="btn btn-primary btn-interactive">Go to Home</a>
+            <a href="/login" class="btn btn-secondary btn-interactive">Sign In</a>
+          `
+        },
+        '500': {
+          code: '500',
+          titleEn: 'Internal Server Error',
+          titleTa: 'சேவையக பிழை',
+          desc: 'Our servers are experiencing an unexpected issue. We are working to resolve this as quickly as possible.',
+          svg: `
+            <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="42" cy="42" r="16" stroke="#C9913D" stroke-width="2" class="rotate-svg-slow" style="animation-duration: 8s;" />
+              <circle cx="68" cy="65" r="12" stroke="#8B5CF6" stroke-width="2" class="rotate-svg-slow" style="animation-duration: 12s; animation-direction: reverse;" />
+              <path d="M25 80 L35 70" stroke="#7A6E8A" stroke-dasharray="3 3" />
+              <path d="M75 25 L65 35" stroke="#7A6E8A" stroke-dasharray="3 3" />
+            </svg>
+          `,
+          buttons: `
+            <a href="/" class="btn btn-primary btn-interactive">Go to Home</a>
+            <button onclick="window.location.reload()" class="btn btn-secondary btn-interactive">Retry Loading</button>
+          `
+        },
+        'offline': {
+          code: 'Offline',
+          titleEn: 'No Internet Connection',
+          titleTa: 'இணைய இணைப்பு இல்லை',
+          desc: 'Please check your network cables, Wi-Fi configuration, and try reloading the page.',
+          svg: `
+            <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M30 65 A12 12 0 0 1 35 42 A15 15 0 0 1 65 38 A12 12 0 0 1 70 65 Z" stroke="#7A6E8A" stroke-width="2" class="draw-path" />
+              <path d="M20 20 L80 80" stroke="#EF4444" stroke-width="3" stroke-linecap="round" class="draw-path" />
+              <circle cx="50" cy="52" r="2.5" fill="#EF4444" class="pulse-glow" />
+            </svg>
+          `,
+          buttons: `
+            <button onclick="window.location.reload()" class="btn btn-primary btn-interactive">Check Again</button>
+            <a href="/" class="btn btn-secondary btn-interactive">Go to Home</a>
+          `
+          
+        },
+        'maintenance': {
+          code: 'Service',
+          titleEn: 'Scheduled Maintenance',
+          titleTa: 'பராமரிப்பு பணி',
+          desc: 'We are currently polishing our website experience. We will be back online shortly. Thank you for your patience.',
+          svg: `
+            <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="50" cy="50" r="35" stroke="#C9913D" stroke-width="2" class="draw-path" />
+              <polyline points="50 22 50 50 68 50" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" class="rotate-svg-slow" style="animation-duration: 20s;" />
+              <path d="M38 72 L32 78 M62 72 L68 78" stroke="#7A6E8A" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          `,
+          buttons: `
+            <a href="https://wa.me/919999999999" target="_blank" class="btn btn-primary btn-interactive">Contact WhatsApp</a>
+            <button onclick="window.location.reload()" class="btn btn-secondary btn-interactive">Check Status</button>
+          `
+        }
+      };
+
+      const selected = config[code] || config['404'];
+      
+      // Inject content
+      document.getElementById('error-code-text').innerText = selected.code;
+      document.getElementById('error-title-en').innerText = selected.titleEn;
+      document.getElementById('error-title-ta').innerText = selected.titleTa;
+      document.getElementById('error-desc-text').innerText = selected.desc;
+      document.getElementById('illustration-holder').innerHTML = selected.svg;
+      document.getElementById('error-actions-container').innerHTML = selected.buttons;
+
+      // Animate entry with GSAP
+      if (window.gsap) {
+        gsap.from('.error-card', {
+          duration: 1,
+          opacity: 0,
+          scale: 0.95,
+          y: 20,
+          ease: 'power4.out'
+        });
+        gsap.from('#illustration-holder svg', {
+          duration: 1.5,
+          delay: 0.3,
+          opacity: 0,
+          scale: 0.8,
+          ease: 'back.out(1.7)'
+        });
+      }
+    });
+  </script>
+</body>
+</html>

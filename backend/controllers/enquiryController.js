@@ -1,4 +1,4 @@
-const Enquiry = require('../models/Enquiry');
+const prisma = require('../services/prisma');
 const { logActivity } = require('../services/auditService');
 
 // @desc    Get all enquiries
@@ -6,8 +6,15 @@ const { logActivity } = require('../services/auditService');
 // @access  Private/Admin
 exports.getEnquiries = async (req, res) => {
   try {
-    const enquiries = await Enquiry.find().sort({ createdAt: -1 });
-    res.status(200).json({ success: true, enquiries });
+    const enquiries = await prisma.enquiry.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    // Map id to _id for admin panel compatibility
+    const compatEnquiries = enquiries.map(e => ({
+      ...e,
+      _id: e.id
+    }));
+    res.status(200).json({ success: true, enquiries: compatEnquiries });
   } catch (error) {
     res.status(500).json({ success: false, error: `Server error retrieving enquiries: ${error.message}` });
   }
@@ -19,16 +26,19 @@ exports.getEnquiries = async (req, res) => {
 exports.markAsRead = async (req, res) => {
   try {
     const { id } = req.params;
-    const enquiry = await Enquiry.findById(id);
+    const enquiry = await prisma.enquiry.findUnique({
+      where: { id }
+    });
 
     if (!enquiry) {
       return res.status(404).json({ success: false, error: 'Enquiry not found.' });
     }
 
-    enquiry.status = 'read';
-    await enquiry.save();
+    await prisma.enquiry.update({
+      where: { id },
+      data: { status: 'read' }
+    });
 
-    // Log the admin activity
     try {
       await logActivity(req, 'mark_enquiry_read', `Marked enquiry from ${enquiry.email} as read`);
     } catch (logErr) {

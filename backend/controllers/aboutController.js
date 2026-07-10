@@ -1,16 +1,15 @@
-const AboutPage = require('../models/AboutPage');
+const prisma = require('../services/prisma');
 
 // GET about page
 exports.getAbout = async (req, res) => {
   try {
-    let doc = await AboutPage.findOne({});
+    const doc = await prisma.aboutPage.findFirst({});
     if (!doc) {
-      // return empty structure
       return res.json({ success: true, data: {
         storyHeading: '', storyIntro: '', leftHeading: '', leftParagraph1: '', leftParagraph2: '', image: ''
       }});
     }
-    res.json({ success: true, data: doc });
+    res.json({ success: true, data: { ...doc, _id: doc.id } });
   } catch (err) {
     console.error('About GET error', err);
     res.status(500).json({ success: false, error: 'Failed to load about page' });
@@ -29,16 +28,23 @@ exports.updateAbout = async (req, res) => {
       image: req.body.image || ''
     };
 
-    let doc = await AboutPage.findOne({});
+    let doc = await prisma.aboutPage.findFirst({});
+    let updated;
     if (!doc) {
-      doc = new AboutPage(payload);
+      updated = await prisma.aboutPage.create({
+        data: payload
+      });
     } else {
-      Object.assign(doc, payload);
-      doc.updatedAt = Date.now();
+      updated = await prisma.aboutPage.update({
+        where: { id: doc.id },
+        data: {
+          ...payload,
+          updatedAt: new Date()
+        }
+      });
     }
-    await doc.save();
     console.log('About PUT saved image:', payload.image);
-    res.json({ success: true, data: doc });
+    res.json({ success: true, data: { ...updated, _id: updated.id } });
   } catch (err) {
     console.error('About PUT error', err);
     res.status(500).json({ success: false, error: 'Failed to update about page' });

@@ -5,6 +5,9 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BASE = process.env.BASE_URL || 'http://localhost:5000';
@@ -12,14 +15,14 @@ const OUT = path.join(__dirname, '..', 'audit-results.json');
 
 const PAGES = [
   { path: '/', name: 'Home' },
-  { path: '/products.html', name: 'Products' },
-  { path: '/product-details.html?id=seed', name: 'Product Details', dynamicId: true },
-  { path: '/profile.html', name: 'Profile', needsCustomer: true },
-  { path: '/wishlist.html', name: 'Wishlist', needsCustomer: true },
-  { path: '/cart.html', name: 'Cart', needsCustomer: true },
-  { path: '/checkout.html', name: 'Checkout', needsCustomer: true },
-  { path: '/login.html', name: 'Login' },
-  { path: '/register.html', name: 'Register' },
+  { path: '/products', name: 'Products' },
+  { path: '/product/seed', name: 'Product Details', dynamicId: true },
+  { path: '/account', name: 'Profile', needsCustomer: true },
+  { path: '/wishlist', name: 'Wishlist', needsCustomer: true },
+  { path: '/cart', name: 'Cart', needsCustomer: true },
+  { path: '/checkout', name: 'Checkout', needsCustomer: true },
+  { path: '/login', name: 'Login' },
+  { path: '/register', name: 'Register' },
   { path: '/admin/dashboard.html', name: 'Admin Dashboard', needsAdmin: true },
   { path: '/admin/products.html', name: 'Admin Products', needsAdmin: true },
   { path: '/admin/orders.html', name: 'Admin Orders', needsAdmin: true },
@@ -46,6 +49,8 @@ async function main() {
   const browser = await chromium.launch({ headless: true });
   const ctx = await browser.newContext();
 
+  const domain = new URL(BASE).hostname;
+
   async function apiPost(path, body) {
     const res = await fetch(`${BASE}${path}`, {
       method: 'POST',
@@ -56,7 +61,13 @@ async function main() {
     let json = {};
     try { json = JSON.parse(text); } catch { /* ignore */ }
     const setCookie = res.headers.getSetCookie ? res.headers.getSetCookie() : [];
-    const cookie = setCookie.map((c) => c.split(';')[0]).join('; ');
+    let cookie = setCookie.map((c) => c.split(';')[0]).join('; ');
+    if (!cookie) {
+      const rawSetCookie = res.headers.get('set-cookie') || '';
+      if (rawSetCookie) {
+        cookie = rawSetCookie.split(',').map((c) => c.split(';')[0].trim()).join('; ');
+      }
+    }
     return { status: res.status, json, cookie, headers: res.headers };
   }
 
@@ -69,27 +80,37 @@ async function main() {
   const customerEmail = `audit${Date.now()}@test.com`;
   const customerPass = 'AuditPass123!';
 
-  await apiPost('/api/auth/register', { name: 'Audit Customer', email: customerEmail, password: customerPass });
+  const regRes = await apiPost('/api/auth/register', { name: 'Audit Customer', email: customerEmail, phone: '9876543210', password: customerPass });
+  
+  // Auto-verify email in database
+  await prisma.user.update({
+    where: { email: customerEmail },
+    data: { emailVerified: true, isActive: true, accountActive: true }
+  });
+
   const custLogin = await apiPost('/api/auth/login', { email: customerEmail, password: customerPass });
   const custCookie = custLogin.cookie;
+  console.log('Customer Register Status:', regRes.status, 'Body:', regRes.json);
+  console.log('Customer Login Status:', custLogin.status, 'Cookie:', custCookie);
 
-  const adminLogin = await apiPost('/api/auth/admin/login', { email: 'admin@magizhvagam.com', password: 'AdminPass123!' });
+  const adminLogin = await apiPost('/api/auth/admin/login', { email: 'admin@magizhvagam.com', password: 'MagizhvagamSecure2026!' });
   const adminCookie = adminLogin.cookie;
+  console.log('Admin Login Status:', adminLogin.status, 'Cookie:', adminCookie);
 
   const prodRes = await apiGet('/api/products?limit=1', adminCookie);
   const productId = prodRes.json.products?.[0]?._id || '';
+  console.log('Products API Status:', prodRes.status, 'Product ID:', productId);
 
-  // --- Profile tab audit (customer) ---
   const profileCtx = await browser.newContext();
   if (custCookie) await profileCtx.addCookies(custCookie.split('; ').filter(Boolean).map((pair) => {
     const [name, value] = pair.split('=');
-    return { name, value, domain: 'localhost', path: '/' };
+    return { name, value, domain: domain, path: '/' };
   }));
   const profilePage = await profileCtx.newPage();
   const profileErrors = [];
   profilePage.on('pageerror', (e) => profileErrors.push(e.message));
   profilePage.on('console', (msg) => { if (msg.type() === 'error') profileErrors.push(msg.text()); });
-  await profilePage.goto(`${BASE}/profile.html`, { waitUntil: 'networkidle', timeout: 45000 });
+  await profilePage.goto(`${BASE}/account`, { waitUntil: 'networkidle', timeout: 45000 });
   await profilePage.waitForSelector('.profile-ready', { timeout: 15000 }).catch(() => {});
 
   const profileTabs = [
@@ -131,15 +152,17 @@ async function main() {
   }
   await profileCtx.close();
 
-  // --- Admin products audit ---
   const adminCtx = await browser.newContext();
   if (adminCookie) {
     await adminCtx.addCookies(adminCookie.split('; ').filter(Boolean).map((pair) => {
       const [name, value] = pair.split('=');
-      return { name, value, domain: 'localhost', path: '/' };
+      return { name, value, domain: domain, path: '/' };
     }));
   }
   const adminProducts = await adminCtx.newPage();
+  await adminProducts.addInitScript(() => {
+    localStorage.setItem('adminAuth', 'true');
+  });
   adminProducts.on('pageerror', (e) => results.consoleErrors.push({ page: 'Admin Products', error: e.message }));
   await adminProducts.goto(`${BASE}/admin/products.html`, { waitUntil: 'networkidle', timeout: 45000 });
   await adminProducts.waitForTimeout(2000);
@@ -164,15 +187,17 @@ async function main() {
   }
   await adminCtx.close();
 
-  // --- Admin reports export ---
   const reportsCtx = await browser.newContext();
   if (adminCookie) {
     await reportsCtx.addCookies(adminCookie.split('; ').filter(Boolean).map((pair) => {
       const [name, value] = pair.split('=');
-      return { name, value, domain: 'localhost', path: '/' };
+      return { name, value, domain: domain, path: '/' };
     }));
   }
   const reportsPage = await reportsCtx.newPage();
+  await reportsPage.addInitScript(() => {
+    localStorage.setItem('adminAuth', 'true');
+  });
   await reportsPage.goto(`${BASE}/admin/reports.html`, { waitUntil: 'networkidle', timeout: 45000 });
   const hasExportFn = await reportsPage.evaluate(() => typeof window.exportReportsCSV === 'function');
   results.elements.push({ page: 'Admin Reports', element: 'Export CSV Log', status: hasExportFn ? 'WORKING' : 'BROKEN', note: hasExportFn ? '' : 'exportReportsCSV not defined' });
@@ -189,11 +214,16 @@ async function main() {
     if (cookieStr) {
       await context.addCookies(cookieStr.split('; ').filter(Boolean).map((pair) => {
         const [name, value] = pair.split('=');
-        return { name, value, domain: 'localhost', path: '/' };
+        return { name, value, domain: domain, path: '/' };
       }));
     }
 
     const page = await context.newPage();
+    if (pg.needsAdmin) {
+      await page.addInitScript(() => {
+        localStorage.setItem('adminAuth', 'true');
+      });
+    }
     const pageResult = { name: pg.name, path: pagePath, consoleErrors: [], networkFailures: [], status: 'PASS' };
     page.on('pageerror', (e) => pageResult.consoleErrors.push(e.message));
     page.on('console', (msg) => { if (msg.type() === 'error') pageResult.consoleErrors.push(msg.text()); });
@@ -221,6 +251,7 @@ async function main() {
   }
 
   await browser.close();
+  await prisma.$disconnect();
 
   fs.writeFileSync(OUT, JSON.stringify(results, null, 2));
   const broken = results.elements.filter((e) => e.status === 'BROKEN');

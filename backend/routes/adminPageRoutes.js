@@ -2,10 +2,8 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const prisma = require('../services/prisma');
 const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = require('../config/jwt');
-
-const UserSession = require('../models/UserSession');
 
 const ALLOWED_ADMIN_PAGES = new Set([
   'dashboard.html',
@@ -32,7 +30,9 @@ const checkAdminPageAuth = async (req, res, next) => {
   const page = req.params.page || 'dashboard.html';
 
   if (refreshToken) {
-    const session = await UserSession.findOne({ refreshToken });
+    const session = await prisma.userSession.findUnique({
+      where: { refreshToken }
+    });
     if (!session) {
       res.clearCookie('admin_accessToken');
       res.clearCookie('admin_refreshToken');
@@ -46,7 +46,9 @@ const checkAdminPageAuth = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_ACCESS_SECRET);
-    const user = await User.findById(decoded.id);
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id }
+    });
     if (!user) {
       return handleHtmlAuthFailure(req, res, page);
     }
@@ -75,8 +77,12 @@ const tryHtmlAutoRefresh = async (req, res, next, page) => {
 
   try {
     const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
-    const user = await User.findById(decoded.id);
-    const session = await UserSession.findOne({ refreshToken });
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id }
+    });
+    const session = await prisma.userSession.findUnique({
+      where: { refreshToken }
+    });
 
     if (!user || !session || user.role !== 'admin') {
       res.clearCookie('admin_accessToken');
@@ -86,7 +92,7 @@ const tryHtmlAutoRefresh = async (req, res, next, page) => {
 
     // Generate new access token
     const newAccessToken = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
+      { id: user.id, email: user.email, role: user.role },
       JWT_ACCESS_SECRET,
       { expiresIn: '3m' }
     );
@@ -94,7 +100,7 @@ const tryHtmlAutoRefresh = async (req, res, next, page) => {
     // Set cookie
     res.cookie('admin_accessToken', newAccessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'strict',
       maxAge: 3 * 60 * 1000 // 3 mins
     });

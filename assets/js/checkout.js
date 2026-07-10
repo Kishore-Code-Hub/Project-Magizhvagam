@@ -92,6 +92,7 @@ function initCheckout() {
     if (form) {
       form.addEventListener('submit', handleCheckoutSubmit);
     }
+    initCheckoutStepsTracker();
   } catch (err) {
     console.error('Error initializing checkout:', err);
     // Gracefully hide any potential loader overlay
@@ -327,4 +328,103 @@ async function handleCheckoutSubmit(e) {
       submitBtn.textContent = 'Place Order';
     }
   }
+}
+
+// Checkout Steps Progress Tracker Logic
+function initCheckoutStepsTracker() {
+  const inputs = ['shipping-name', 'shipping-phone', 'shipping-street', 'shipping-city', 'shipping-state', 'shipping-zip'];
+
+  function updateProgress() {
+    const stepFill = document.getElementById('step-progress-fill');
+    const node1 = document.getElementById('step-node-1');
+    const node2 = document.getElementById('step-node-2');
+    const node3 = document.getElementById('step-node-3');
+
+    // Check if account details are valid
+    const guestEmail = document.getElementById('guest-email')?.value;
+    const isLoggedIn = localStorage.getItem('magizhvagam_user') !== null;
+    const step1Done = isLoggedIn || (guestEmail && guestEmail.includes('@'));
+
+    // Check if shipping details are valid
+    let step2Done = true;
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el || !el.value.trim()) step2Done = false;
+    });
+
+    // Check if payment option is selected
+    const paymentSelected = document.querySelector('input[name="payment-method"]:checked') !== null;
+
+    let progressPercent = 0;
+    if (step1Done) {
+      progressPercent = 50;
+      if (node2) {
+        node2.querySelector('.step-circle').style.background = 'hsl(var(--primary-purple))';
+        node2.querySelector('.step-circle').style.color = 'white';
+        const label2 = document.getElementById('step-label-2');
+        if (label2) {
+          label2.style.color = 'var(--text-color)';
+          label2.style.fontWeight = '700';
+        }
+      }
+    } else {
+      if (node2) {
+        node2.querySelector('.step-circle').style.background = 'rgba(255,255,255,0.1)';
+        node2.querySelector('.step-circle').style.color = 'var(--text-muted)';
+        const label2 = document.getElementById('step-label-2');
+        if (label2) {
+          label2.style.color = 'var(--text-muted)';
+          label2.style.fontWeight = '600';
+        }
+      }
+    }
+
+    if (step1Done && step2Done) {
+      progressPercent = 100;
+      if (node3) {
+        node3.querySelector('.step-circle').style.background = 'hsl(var(--primary-purple))';
+        node3.querySelector('.step-circle').style.color = 'white';
+        const label3 = document.getElementById('step-label-3');
+        if (label3) {
+          label3.style.color = 'var(--text-color)';
+          label3.style.fontWeight = '700';
+        }
+      }
+    } else {
+      if (node3) {
+        node3.querySelector('.step-circle').style.background = 'rgba(255,255,255,0.1)';
+        node3.querySelector('.step-circle').style.color = 'var(--text-muted)';
+        const label3 = document.getElementById('step-label-3');
+        if (label3) {
+          label3.style.color = 'var(--text-muted)';
+          label3.style.fontWeight = '600';
+        }
+      }
+    }
+
+    if (stepFill) {
+      stepFill.style.width = `${progressPercent}%`;
+    }
+  }
+
+  // Register listeners on input fields
+  inputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', updateProgress);
+    }
+  });
+
+  const guestEmailEl = document.getElementById('guest-email');
+  if (guestEmailEl) {
+    guestEmailEl.addEventListener('input', updateProgress);
+  }
+
+  const paymentInputs = document.querySelectorAll('input[name="payment-method"]');
+  paymentInputs.forEach(input => {
+    input.addEventListener('change', updateProgress);
+  });
+
+  // Run initial state check
+  setTimeout(updateProgress, 200);
 }

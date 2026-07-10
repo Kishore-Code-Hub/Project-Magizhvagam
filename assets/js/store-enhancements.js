@@ -201,6 +201,22 @@
             <line x1="7" y1="7" x2="7.01" y2="7" stroke-width="2" stroke-linecap="round"></line>
           </svg>
         `;
+      } else if (type === 'cart') {
+        svgContent = `
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="url(#goldGradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 4px 10px rgba(201,145,61,0.25)); margin-bottom: 16px;">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+        `;
+      } else if (type === 'orders') {
+        svgContent = `
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="url(#goldGradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 4px 10px rgba(201,145,61,0.25)); margin-bottom: 16px;">
+            <polyline points="21 8 21 21 3 21 3 8"></polyline>
+            <rect x="1" y="3" width="22" height="5" rx="1"></rect>
+            <line x1="12" y1="3" x2="12" y2="21"></line>
+          </svg>
+        `;
       } else {
         svgContent = `
           <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="url(#goldGradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 4px 10px rgba(201,145,61,0.25)); margin-bottom: 16px;">
@@ -453,7 +469,197 @@
     if (productId && window.location.pathname.includes('product-details')) {
       MZRecentlyViewed.add(productId);
     }
+
+    // Init touch gestures (Phase 2 mobile optimization)
+    MZTouchGestures.init();
   }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // TOUCH GESTURES SYSTEM (Phase 2 Mobile Optimization)
+  // ═══════════════════════════════════════════════════════════════════════
+  window.MZTouchGestures = {
+    init() {
+      this.initCartSwipeDismiss();
+      this.initGallerySwipe();
+      this.initPullToRefresh();
+    },
+
+    initCartSwipeDismiss() {
+      const drawer = document.getElementById('mini-cart-drawer');
+      if (!drawer) return;
+
+      let startX = 0;
+      let currentX = 0;
+      let isDragging = false;
+
+      drawer.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        isDragging = true;
+      }, { passive: true });
+
+      drawer.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        currentX = e.touches[0].clientX;
+        const diff = currentX - startX;
+        if (diff > 0) {
+          drawer.style.transform = `translateX(${diff}px)`;
+        }
+      }, { passive: true });
+
+      drawer.addEventListener('touchend', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        const diff = currentX - startX;
+        if (diff > 100) {
+          if (typeof gsap !== 'undefined') {
+            gsap.to(drawer, {
+              x: '100%',
+              duration: 0.3,
+              ease: 'power2.out',
+              onComplete: () => {
+                drawer.classList.remove('open');
+                document.body.classList.remove('drawer-open');
+                drawer.style.transform = '';
+              }
+            });
+          } else {
+            drawer.classList.remove('open');
+            document.body.classList.remove('drawer-open');
+            drawer.style.transform = '';
+          }
+        } else {
+          if (typeof gsap !== 'undefined') {
+            gsap.to(drawer, { x: '0%', duration: 0.25, ease: 'power2.out', onComplete: () => { drawer.style.transform = ''; } });
+          } else {
+            drawer.style.transform = '';
+          }
+        }
+      });
+    },
+
+    initGallerySwipe() {
+      const pImages = document.querySelectorAll('.product-detail-images, .pdp-main-image-wrap');
+      pImages.forEach(gallery => {
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+
+        gallery.addEventListener('touchstart', (e) => {
+          startX = e.touches[0].clientX;
+          isDragging = true;
+        }, { passive: true });
+
+        gallery.addEventListener('touchend', (e) => {
+          if (!isDragging) return;
+          isDragging = false;
+          currentX = e.changedTouches[0].clientX;
+          const diff = currentX - startX;
+
+          const activeThumb = document.querySelector('.thumbnail-btn.active, .spec-thumb.active');
+          if (!activeThumb) return;
+
+          const parent = activeThumb.parentNode;
+          const thumbs = Array.from(parent.querySelectorAll('.thumbnail-btn, .spec-thumb'));
+          const activeIdx = thumbs.indexOf(activeThumb);
+
+          if (Math.abs(diff) > 50) {
+            if (diff < 0) {
+              const nextIdx = (activeIdx + 1) % thumbs.length;
+              thumbs[nextIdx]?.click();
+            } else {
+              const prevIdx = (activeIdx - 1 + thumbs.length) % thumbs.length;
+              thumbs[prevIdx]?.click();
+            }
+          }
+        });
+      });
+    },
+
+    initPullToRefresh() {
+      if (window.location.pathname.includes('/admin')) return;
+
+      let startY = 0;
+      let currentY = 0;
+      let isDragging = false;
+      const pullThreshold = 80;
+
+      const ptr = document.createElement('div');
+      ptr.className = 'pull-to-refresh-indicator';
+      ptr.innerHTML = `
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 4v6h-6"></path>
+          <path d="M1 20v-6h6"></path>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      `;
+      ptr.style.cssText = `
+        position: fixed;
+        top: -50px;
+        left: 50%;
+        transform: translateX(-50%) scale(0.8);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(var(--glass-bg-rgb, 26, 21, 35), 0.95);
+        border: 1px solid rgba(var(--glass-border-rgb, 255, 255, 255), 0.15);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-brand-primary, #C9913D);
+        z-index: 999999;
+        opacity: 0;
+        transition: opacity 0.2s ease, top 0.1s ease, transform 0.1s ease;
+      `;
+      document.body.appendChild(ptr);
+
+      window.addEventListener('touchstart', (e) => {
+        if (window.scrollY === 0) {
+          startY = e.touches[0].clientY;
+          isDragging = true;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+
+        if (diff > 0 && window.scrollY === 0) {
+          ptr.style.opacity = Math.min(diff / pullThreshold, 1);
+          ptr.style.top = `${Math.min(diff / 2 - 20, 24)}px`;
+          ptr.style.transform = `translateX(-50%) scale(${Math.min(0.8 + (diff / pullThreshold) * 0.2, 1)}) rotate(${diff * 2}deg)`;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchend', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        const diff = currentY - startY;
+
+        if (diff >= pullThreshold && window.scrollY === 0) {
+          ptr.style.top = '24px';
+          ptr.style.opacity = '1';
+          
+          if (typeof gsap !== 'undefined') {
+            gsap.to(ptr.querySelector('svg'), {
+              rotation: 360,
+              repeat: -1,
+              ease: 'none',
+              duration: 1
+            });
+          }
+
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          ptr.style.opacity = 0;
+          ptr.style.top = '-50px';
+        }
+      });
+    }
+  };
 
   // Wait for DOM then initialize
   if (document.readyState === 'loading') {

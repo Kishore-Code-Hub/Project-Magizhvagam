@@ -127,7 +127,8 @@
       <div class="footer-inner">
         <div class="footer-top">
           ${brandHtml}
-          <div class="footer-columns">${columnsHtml}${contactHtml}</div>
+          ${columnsHtml}
+          ${contactHtml}
         </div>
         ${newsletterHtml}
         <div class="footer-divider"></div>
@@ -196,7 +197,7 @@
 
   window.__mzFooter = {
     render: async function (footerEl) {
-      if (!footerEl) return;
+      if (!footerEl || footerEl.classList.contains('footer-v4-loaded')) return;
       const config = await fetchFooterConfig();
       if (config) {
         footerEl.innerHTML = renderFooter(config);
@@ -205,5 +206,19 @@
       }
     }
   };
+
+  // Auto-render self-invocation on DOM loading
+  async function autoRender() {
+    const footerEl = document.getElementById('main-footer');
+    if (footerEl) {
+      await window.__mzFooter.render(footerEl);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', autoRender);
+  } else {
+    autoRender();
+  }
 
 })();

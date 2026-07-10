@@ -1,11 +1,7 @@
-/**
- * MAGIZHVAGAM — Media Library Controller
- */
-
 const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
-const MediaAsset = require('../models/MediaAsset');
+const prisma = require('../services/prisma');
 const { isCloudinaryConfigured, uploadToCloudinary } = require('../services/cloudinary');
 
 const UPLOAD_DIR = path.join(__dirname, '../../uploads/media');
@@ -22,27 +18,39 @@ function ensureUploadDir() {
 exports.listMedia = async (req, res) => {
   try {
     const { search, page = 1, limit = 48 } = req.query;
-    const query = {};
+    const where = {};
     if (search && search.trim()) {
       const term = search.trim();
-      query.$or = [
-        { filename: new RegExp(term, 'i') },
-        { originalName: new RegExp(term, 'i') },
-        { alt: new RegExp(term, 'i') },
-        { tags: new RegExp(term, 'i') }
+      where.OR = [
+        { filename: { contains: term, mode: 'insensitive' } },
+        { originalName: { contains: term, mode: 'insensitive' } },
+        { alt: { contains: term, mode: 'insensitive' } },
+        { tags: { has: term } }
       ];
     }
 
     const skip = (Math.max(1, parseInt(page, 10)) - 1) * parseInt(limit, 10);
+    const take = parseInt(limit, 10);
+
     const [items, total] = await Promise.all([
-      MediaAsset.find(query).sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit, 10)),
-      MediaAsset.countDocuments(query)
+      prisma.mediaAsset.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take
+      }),
+      prisma.mediaAsset.count({ where })
     ]);
+
+    const compatItems = items.map(item => ({
+      ...item,
+      _id: item.id
+    }));
 
     res.status(200).json({
       success: true,
-      data: items,
-      pagination: { total, page: parseInt(page, 10), limit: parseInt(limit, 10) }
+      data: compatItems,
+      pagination: { total, page: parseInt(page, 10), limit: take }
     });
   } catch (error) {
     res.status(500).json({ success: false, error: `Error listing media: ${error.message}` });
@@ -54,11 +62,13 @@ exports.listMedia = async (req, res) => {
  */
 exports.getMedia = async (req, res) => {
   try {
-    const item = await MediaAsset.findById(req.params.id);
+    const item = await prisma.mediaAsset.findUnique({
+      where: { id: req.params.id }
+    });
     if (!item) {
       return res.status(404).json({ success: false, error: 'Media asset not found' });
     }
-    res.status(200).json({ success: true, data: item });
+    res.status(200).json({ success: true, data: { ...item, _id: item.id } });
   } catch (error) {
     res.status(500).json({ success: false, error: `Error fetching media: ${error.message}` });
   }
@@ -103,20 +113,24 @@ exports.uploadMedia = async (req, res) => {
       publicUrl = `/uploads/media/${uniqueName}`;
     }
 
-    const asset = await MediaAsset.create({
-      filename: uniqueName,
-      originalName: req.file.originalname,
-      url: publicUrl,
-      mimeType: 'image/webp',
-      size: optimized.length,
-      width: meta.width || null,
-      height: meta.height || null,
-      alt: req.body.alt || baseName,
-      tags: req.body.tags ? String(req.body.tags).split(',').map(t => t.trim()).filter(Boolean) : [],
-      uploadedBy: req.user?._id || null
+    const tagsList = req.body.tags ? String(req.body.tags).split(',').map(t => t.trim()).filter(Boolean) : [];
+
+    const asset = await prisma.mediaAsset.create({
+      data: {
+        filename: uniqueName,
+        originalName: req.file.originalname,
+        url: publicUrl,
+        mimeType: 'image/webp',
+        size: optimized.length,
+        width: meta.width || null,
+        height: meta.height || null,
+        alt: req.body.alt || baseName,
+        tags: tagsList,
+        uploadedBy: req.user?.id || null
+      }
     });
 
-    res.status(201).json({ success: true, message: 'Image uploaded successfully', data: asset });
+    res.status(201).json({ success: true, message: 'Image uploaded successfully', data: { ...asset, _id: asset.id } });
   } catch (error) {
     res.status(500).json({ success: false, error: `Upload failed: ${error.message}` });
   }
@@ -127,7 +141,9 @@ exports.uploadMedia = async (req, res) => {
  */
 exports.deleteMedia = async (req, res) => {
   try {
-    const item = await MediaAsset.findById(req.params.id);
+    const item = await prisma.mediaAsset.findUnique({
+      where: { id: req.params.id }
+    });
     if (!item) {
       return res.status(404).json({ success: false, error: 'Media asset not found' });
     }
@@ -139,7 +155,9 @@ exports.deleteMedia = async (req, res) => {
       }
     }
 
-    await MediaAsset.findByIdAndDelete(req.params.id);
+    await prisma.mediaAsset.delete({
+      where: { id: req.params.id }
+    });
     res.status(200).json({ success: true, message: 'Media deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, error: `Delete failed: ${error.message}` });
@@ -156,7 +174,9 @@ exports.bulkDeleteMedia = async (req, res) => {
       return res.status(400).json({ success: false, error: 'No media IDs provided' });
     }
 
-    const items = await MediaAsset.find({ _id: { $in: ids } });
+    const items = await prisma.mediaAsset.findMany({
+      where: { id: { in: ids } }
+    });
     for (const item of items) {
       if (item.url.startsWith('/uploads/')) {
         const localPath = path.join(__dirname, '../..', item.url);
@@ -164,7 +184,9 @@ exports.bulkDeleteMedia = async (req, res) => {
       }
     }
 
-    await MediaAsset.deleteMany({ _id: { $in: ids } });
+    await prisma.mediaAsset.deleteMany({
+      where: { id: { in: ids } }
+    });
     res.status(200).json({ success: true, message: `${items.length} media item(s) deleted` });
   } catch (error) {
     res.status(500).json({ success: false, error: `Bulk delete failed: ${error.message}` });
@@ -184,12 +206,13 @@ exports.replaceMedia = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Only image files are allowed' });
     }
 
-    const asset = await MediaAsset.findById(req.params.id);
+    const asset = await prisma.mediaAsset.findUnique({
+      where: { id: req.params.id }
+    });
     if (!asset) {
       return res.status(404).json({ success: false, error: 'Media asset not found' });
     }
 
-    // Delete old local file if present
     if (asset.url && asset.url.startsWith('/uploads/')) {
       const oldPath = path.join(__dirname, '../..', asset.url);
       if (fs.existsSync(oldPath)) {
@@ -227,17 +250,20 @@ exports.replaceMedia = async (req, res) => {
       publicUrl = `/uploads/media/${uniqueName}`;
     }
 
-    // Update fields
-    asset.filename = uniqueName;
-    asset.originalName = req.file.originalname;
-    asset.url = publicUrl;
-    asset.mimeType = 'image/webp';
-    asset.size = optimized.length;
-    asset.width = meta.width || null;
-    asset.height = meta.height || null;
-    await asset.save();
+    const updated = await prisma.mediaAsset.update({
+      where: { id: asset.id },
+      data: {
+        filename: uniqueName,
+        originalName: req.file.originalname,
+        url: publicUrl,
+        mimeType: 'image/webp',
+        size: optimized.length,
+        width: meta.width || null,
+        height: meta.height || null
+      }
+    });
 
-    res.status(200).json({ success: true, message: 'Image replaced successfully', data: asset });
+    res.status(200).json({ success: true, message: 'Image replaced successfully', data: { ...updated, _id: updated.id } });
   } catch (error) {
     res.status(500).json({ success: false, error: `Replace failed: ${error.message}` });
   }

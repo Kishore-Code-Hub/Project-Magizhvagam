@@ -318,10 +318,44 @@ async function loadCatalogProducts() {
     grid.innerHTML = data.products.map(p => createProductCardHTML(p)).join('');
     renderPagination(data.page || 1, data.pages || 1);
 
+    // Staggered entrance animation for product cards
+    const newlyAddedCards = grid.querySelectorAll('.product-card');
+    if (newlyAddedCards.length > 0 && typeof gsap !== 'undefined') {
+      gsap.fromTo(newlyAddedCards,
+        { opacity: 0, y: 30, scale: 0.95 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          stagger: 0.08,
+          ease: 'power2.out',
+          clearProps: 'transform' // Avoid conflicts with neomorphism tilt hover transforms
+        }
+      );
+    }
+
   } catch (error) {
     console.warn('Catalog API failed, rendering fallback products:', error);
     grid.innerHTML = FALLBACK_PRODUCTS.map(p => createProductCardHTML(p)).join('');
     renderPagination(1, 1);
+    
+    const newlyAddedCards = grid.querySelectorAll('.product-card');
+    if (newlyAddedCards.length > 0 && typeof gsap !== 'undefined') {
+      gsap.fromTo(newlyAddedCards,
+        { opacity: 0, y: 30, scale: 0.95 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          stagger: 0.08,
+          ease: 'power2.out',
+          clearProps: 'transform'
+        }
+      );
+    }
+
     if (typeof showToast === 'function') {
       showToast('Loaded local fallback catalog products.', 'warning');
     }

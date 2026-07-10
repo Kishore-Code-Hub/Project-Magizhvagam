@@ -1,6 +1,13 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
-Disallow: /api/admin/
+Disallow: /api/
+Disallow: /uploads/
+Disallow: /backend/
+Disallow: /prisma/
+Disallow: /node_modules/
+Disallow: /*.json$
+Disallow: /.env
+Disallow: /.git/
 
 Sitemap: https://magizhvagam.com/sitemap.xml

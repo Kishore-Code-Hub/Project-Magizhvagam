@@ -53,25 +53,35 @@ function renderCart() {
   const cart = getCart();
 
   if (cart.length === 0) {
-    container.innerHTML = `
-      <div style="text-align:center; padding:50px 20px;">
-        <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:12px;">Your Shopping Cart is Empty</h3>
-        <p style="color:var(--text-muted); font-size:14px; margin-bottom:24px;">Add premium return gifts to begin your celebration planning.</p>
-        <a href="/products.html" class="btn btn-primary">Browse Catalog</a>
-      </div>
-    `;
+    if (window.MZError && typeof window.MZError.showEmptyState === 'function') {
+      window.MZError.showEmptyState('cart-items-container', {
+        type: 'cart',
+        title: 'Your Shopping Cart is Empty',
+        message: 'Add premium return gifts to begin your celebration planning.',
+        ctaLabel: 'Browse Catalog',
+        ctaHref: '/products'
+      });
+    } else {
+      container.innerHTML = `
+        <div style="text-align:center; padding:50px 20px;">
+          <h3 style="font-family:'Outfit'; font-size:22px; margin-bottom:12px;">Your Shopping Cart is Empty</h3>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:24px;">Add premium return gifts to begin your celebration planning.</p>
+          <a href="/products.html" class="btn btn-primary">Browse Catalog</a>
+        </div>
+      `;
+    }
     updateSummary(0);
     return;
   }
 
   container.innerHTML = cart.map(item => `
-    <div class="glass" style="display:flex; justify-content:space-between; align-items:center; padding:16px; margin-bottom:16px; border-radius:12px; flex-wrap:wrap; gap:16px;">
+    <div class="glass cart-item-row" data-product-id="${item.productId}" style="display:flex; justify-content:space-between; align-items:center; padding:16px; margin-bottom:16px; border-radius:12px; flex-wrap:wrap; gap:16px;">
       <div style="display:flex; align-items:center; gap:16px; min-width:260px;">
         <div style="width:70px; height:70px; border-radius:8px; overflow:hidden; border:1px solid var(--card-border);">
           <img src="${item.image || '/assets/images/default-product.webp'}" alt="${item.name}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" onerror="this.src='/assets/images/default-product.webp'">
         </div>
         <div>
-          <h4 style="font-family:'Outfit'; font-size:15px; font-weight:600;"><a href="/product-details.html?id=${item.productId}">${item.name}</a></h4>
+          <h4 style="font-family:'Outfit'; font-size:15px; font-weight:600;"><a href="/product/${item.productId}">${item.name}</a></h4>
           <span style="font-size:13px; color:hsl(var(--primary-purple)); font-weight:700;">${formatPrice(item.price)} each</span>
         </div>
       </div>
@@ -87,11 +97,20 @@ function renderCart() {
       <div style="display:flex; align-items:center; gap:20px; min-width:180px; justify-content:flex-end;">
         <strong style="font-size:16px; color:var(--text-color);">${formatPrice(item.price * item.quantity)}</strong>
         <button class="cart-remove-btn" data-id="${item.productId}" style="background:transparent; cursor:pointer; display:flex; border:none;" title="Remove Item">
-          <svg style="width:18px; height:18px; fill:#ef4444; pointer-events:none;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
+          <svg style="width:18px; height:18px; fill:#ef4444; pointer-events:none;" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
         </button>
       </div>
     </div>
   `).join('');
+
+  // Staggered GSAP reveal for cart item rows
+  const rows = container.querySelectorAll('.cart-item-row');
+  if (rows.length > 0 && typeof gsap !== 'undefined') {
+    gsap.fromTo(rows,
+      { opacity: 0, x: -20 },
+      { opacity: 1, x: 0, duration: 0.45, stagger: 0.08, ease: 'power2.out' }
+    );
+  }
 
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   updateSummary(subtotal);
@@ -146,46 +165,66 @@ window.changeCartQty = async (productId, val) => {
 };
 
 window.removeFromCart = async (productId) => {
-  const user = JSON.parse(localStorage.getItem('magizhvagam_user') || 'null');
-
-  if (user && user.role === 'customer') {
-    try {
-      const res = await fetch(`/api/cart/items/${productId}`, {
-        method: 'DELETE',
-        credentials: 'same-origin'
-      });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const data = await res.json();
-      if (data && data.success) {
-        if (typeof window.setCartCache === 'function') {
-          window.setCartCache(data.cart || []);
-        } else {
-          localStorage.setItem('magizhvagam_cart', JSON.stringify(data.cart || []));
-        }
-        renderCart();
-        syncCartCounters();
-        window.dispatchEvent(new Event('cartUpdated'));
-        showToast('Item removed from cart', 'success');
-        return;
+  const row = document.querySelector(`.cart-item-row[data-product-id="${productId}"]`);
+  if (row && typeof gsap !== 'undefined') {
+    gsap.to(row, {
+      opacity: 0,
+      x: -60,
+      height: 0,
+      padding: 0,
+      margin: 0,
+      duration: 0.35,
+      ease: 'power2.in',
+      onComplete: () => {
+        executeRemove();
       }
-    } catch (err) {
-      console.error('Failed to remove cart item:', err);
-      if (typeof showToast === 'function') {
-        showToast('Connection error removing cart item', 'error');
+    });
+  } else {
+    executeRemove();
+  }
+
+  async function executeRemove() {
+    const user = JSON.parse(localStorage.getItem('magizhvagam_user') || 'null');
+
+    if (user && user.role === 'customer') {
+      try {
+        const res = await fetch(`/api/cart/items/${productId}`, {
+          method: 'DELETE',
+          credentials: 'same-origin'
+        });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
+        if (data && data.success) {
+          if (typeof window.setCartCache === 'function') {
+            window.setCartCache(data.cart || []);
+          } else {
+            localStorage.setItem('magizhvagam_cart', JSON.stringify(data.cart || []));
+          }
+          renderCart();
+          syncCartCounters();
+          window.dispatchEvent(new Event('cartUpdated'));
+          showToast('Item removed from cart', 'success');
+          return;
+        }
+      } catch (err) {
+        console.error('Failed to remove cart item:', err);
+        if (typeof showToast === 'function') {
+          showToast('Connection error removing cart item', 'error');
+        }
       }
     }
-  }
 
-  let cart = getCart().filter(item => item.productId !== productId);
-  if (typeof window.setCartCache === 'function') {
-    window.setCartCache(cart);
-  } else {
-    localStorage.setItem('magizhvagam_cart', JSON.stringify(cart));
+    let cart = getCart().filter(item => item.productId !== productId);
+    if (typeof window.setCartCache === 'function') {
+      window.setCartCache(cart);
+    } else {
+      localStorage.setItem('magizhvagam_cart', JSON.stringify(cart));
+    }
+    renderCart();
+    syncCartCounters();
+    window.dispatchEvent(new Event('cartUpdated'));
+    showToast('Item removed from cart', 'success');
   }
-  renderCart();
-  syncCartCounters();
-  window.dispatchEvent(new Event('cartUpdated'));
-  showToast('Item removed from cart', 'success');
 };
 
 function updateSummary(subtotal) {

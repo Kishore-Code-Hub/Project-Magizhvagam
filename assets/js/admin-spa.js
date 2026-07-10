@@ -1,9 +1,12 @@
 /**
  * MAGIZHVAGAM - Admin SPA Route Engine
  * Intercepts page-level shifts, fetches targets, injects content wrappers, and triggers controller scripts.
+ * Employs sequential script loaders to prevent out-of-order execution race conditions.
  */
 
 (function() {
+  'use strict';
+
   const ALLOWED_SPA_PAGES = [
     'dashboard.html',
     'products.html',
@@ -18,7 +21,20 @@
     'media.html'
   ];
 
-  // Intercepts click events on layout link tags
+  const SHELL_SCRIPTS = [
+    'admin-guard.js',
+    'app.js',
+    'auth.js',
+    'admin-api.js',
+    'admin.js',
+    'contrast-engine.js',
+    'workspace-engine.js',
+    'gsap.min.js',
+    'ScrollTrigger.min.js',
+    'lenis.min.js'
+  ];
+
+  // Intercept click events on administrative layout links
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a');
     if (!link || !link.href) return;
@@ -28,7 +44,7 @@
       const url = new URL(link.href);
       const filename = url.pathname.split('/').pop();
 
-      // Check if target is a whitelisted SPA workspace page
+      // Check if target is a whitelisted SPA page
       if (ALLOWED_SPA_PAGES.includes(filename)) {
         e.preventDefault();
         navigateTo(link.href);
@@ -49,15 +65,40 @@
     await loadWorkspace(url);
   }
 
+  // Clean up any active module router running on the page
+  function cleanupActiveRouter() {
+    const cleanupFns = [
+      'destroySettingsRouter',
+      'destroyMarketingRouter',
+      'destroyContentRouter',
+      'destroyMediaRouter',
+      'destroySecurityLogsRouter',
+      'destroyEnquiriesRouter'
+    ];
+
+    cleanupFns.forEach(fn => {
+      if (typeof window[fn] === 'function') {
+        try {
+          window[fn]();
+        } catch (e) {
+          console.warn(`[SPA Router] Error executing cleanup fn ${fn}:`, e);
+        }
+      }
+    });
+  }
+
   // Load and inject workspace fragment
   async function loadWorkspace(urlStr, triggerTransition = true) {
     const mainContent = document.querySelector('.admin-main');
     if (!mainContent) return;
 
+    // Clean up current active controller and its event listeners
+    cleanupActiveRouter();
+
     // Show loading state spinner
     mainContent.innerHTML = `
       <div style="display:flex; justify-content:center; align-items:center; height:60vh;">
-        <div class="spinner"></div>
+        <div class="spinner" style="width:36px; height:36px; border:3px solid var(--adm-border); border-top-color:var(--adm-accent); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
       </div>
     `;
 
@@ -71,7 +112,7 @@
       
       const newMain = doc.querySelector('.admin-main');
       if (!newMain) {
-        // Fallback reload if layout is corrupted
+        // Fallback hard reload if layout is corrupted
         window.location.reload();
         return;
       }
@@ -86,11 +127,11 @@
         mainContent.removeAttribute('style');
       }
 
-      // Sync active state in sidebar navigation menu
+      // Sync active highlights in flat sidebar
       syncSidebarActiveState();
 
-      // Parse and execute script tags from the entire fetched page
-      executeScripts(doc);
+      // Execute scripts in sequential order to prevent race conditions
+      await executeScriptsSequentially(doc);
 
       // Re-trigger global routing initializers
       if (window.initAdminRouterPage && typeof window.initAdminRouterPage === 'function') {
@@ -103,110 +144,87 @@
     } catch (err) {
       console.error('SPA Loading Failure:', err);
       mainContent.innerHTML = `
-        <div class="glass-panel" style="padding:40px; border-radius:12px; text-align:center; max-width:500px; margin:40px auto; border:1px solid #ef444433;">
-          <h3 style="color:#ef4444; font-family:'Outfit'; font-size:22px; margin-bottom:12px;">Workspace Loading Failed</h3>
-          <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Connection failed while shifting views.</p>
-          <button onclick="window.location.reload()" class="btn btn-primary">Reload Page</button>
+        <div class="glass" style="padding:40px; text-align:center; max-width:500px; margin:40px auto; border:1px solid rgba(239,68,68,0.2) !important;">
+          <h3 style="color:var(--adm-danger); font-family:'Outfit'; font-size:22px; margin-bottom:12px; margin-top:0;">Workspace Loading Failed</h3>
+          <p style="color:var(--adm-text-muted); font-size:14px; margin-bottom:20px;">Connection failed while shifting views.</p>
+          <button onclick="window.location.reload()" class="btn btn-secondary" style="padding:10px 20px;">Reload Dashboard</button>
         </div>
       `;
     }
   }
 
-  // Force duplicate script tags execution except global shell scripts
-  function executeScripts(doc) {
-    const shellScripts = [
-      'admin-guard.js',
-      'app.js',
-      'auth.js',
-      'admin-api.js',
-      'admin.js',
-      'contrast-engine.js'
-    ];
-
-    const scripts = doc.querySelectorAll('script');
-    scripts.forEach(oldScript => {
+  // Force sequential script tags execution to prevent async out-of-order locks
+  async function executeScriptsSequentially(doc) {
+    const scripts = Array.from(doc.querySelectorAll('script'));
+    
+    for (const oldScript of scripts) {
+      // 1. Skip core shell and library scripts
       if (oldScript.src) {
         const srcFilename = oldScript.src.split('/').pop().split('?')[0];
-        if (shellScripts.includes(srcFilename)) {
-          return; // skip shell script
+        if (SHELL_SCRIPTS.includes(srcFilename)) {
+          continue;
         }
       }
-      
-      const newScript = document.createElement('script');
-      Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-      if (oldScript.src) {
-        newScript.src = oldScript.src;
-      } else {
-        newScript.textContent = oldScript.textContent;
-      }
-      document.body.appendChild(newScript);
-      
-      if (!oldScript.src) {
-        newScript.remove(); // Clean up dynamic inline scripts to keep DOM tidy
-      }
-    });
+
+      // 2. Wait for loading script before starting next in queue
+      await new Promise((resolve) => {
+        const newScript = document.createElement('script');
+        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+        
+        if (oldScript.src) {
+          newScript.src = oldScript.src;
+          newScript.onload = () => resolve();
+          newScript.onerror = () => {
+            console.warn(`[SPA Router] Failed to load external script: ${oldScript.src}`);
+            resolve();
+          };
+          document.body.appendChild(newScript);
+        } else {
+          newScript.textContent = oldScript.textContent;
+          document.body.appendChild(newScript);
+          newScript.remove(); // tidy up
+          resolve();
+        }
+      });
+    }
   }
 
-  // Update classes for sidebar items
+  // Sync active class highlights on flat workspace elements
   function syncSidebarActiveState() {
     const path = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
-    
-    // Determine active tab correctly based on path
-    const getActiveTab = (p, params) => {
-      const tab = params.get('tab');
-      if (tab) return tab;
-      if (p.includes('products.html')) return 'products';
-      if (p.includes('marketing.html')) return 'coupons';
-      if (p.includes('content.html')) return 'homepage';
-      if (p.includes('settings.html')) return 'general';
-      return '';
-    };
+    const currentTab = urlParams.get('tab') || '';
 
-    const currentTab = getActiveTab(path, urlParams);
-
-    // Remove active state classes
-    document.querySelectorAll('.admin-menu-item, .admin-menu-submenu li').forEach(el => {
+    // Remove active class from all items
+    document.querySelectorAll('.admin-menu-item').forEach(el => {
       el.classList.remove('active');
-      el.classList.remove('expanded');
     });
 
-    document.querySelectorAll('.admin-menu-submenu').forEach(el => {
-      el.classList.remove('open');
-    });
+    let matched = false;
 
-    // Match submenu links first to avoid double activation
-    let matchedSubmenu = false;
-    document.querySelectorAll('.admin-menu-submenu a').forEach(a => {
+    // Exact matches by pathname and query parameter
+    document.querySelectorAll('.admin-menu-item > a').forEach(a => {
       const url = new URL(a.href, window.location.origin);
-      const tabParam = url.searchParams.get('tab');
+      const tabParam = url.searchParams.get('tab') || '';
+      
       if (url.pathname === path && tabParam === currentTab) {
-        a.closest('li').classList.add('active');
-        matchedSubmenu = true;
-        
-        // Expand the parent submenu
-        const parentMenu = a.closest('.has-submenu');
-        if (parentMenu) {
-          parentMenu.classList.add('active');
-          parentMenu.classList.add('expanded');
-          const submenu = parentMenu.querySelector('.admin-menu-submenu');
-          if (submenu) submenu.classList.add('open');
-        }
+        a.closest('.admin-menu-item').classList.add('active');
+        matched = true;
       }
     });
 
-    // Match top level items (only if no submenu item was matched)
-    if (!matchedSubmenu) {
+    // Fallback: match by pathname only if no exact match was resolved
+    if (!matched) {
       document.querySelectorAll('.admin-menu-item > a').forEach(a => {
         const url = new URL(a.href, window.location.origin);
-        if (url.pathname === path) {
+        if (url.pathname === path && !url.searchParams.get('tab')) {
           a.closest('.admin-menu-item').classList.add('active');
         }
       });
     }
   }
 
-  // Bind active highlights
+  // Expose triggers
   window.navigateToWorkspace = navigateTo;
   window.syncSPASidebarActive = syncSidebarActiveState;
 })();

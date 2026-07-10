@@ -39,100 +39,100 @@ object {
 /* --- Base Glassmorphism Panels --- */
 .glass-panel,
 .glass {
-  background: rgba(26, 21, 35, 0.5) !important;
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+  background: rgba(var(--glass-bg-rgb, 26, 21, 35), var(--glass-bg-opacity, 0.5)) !important;
+  backdrop-filter: blur(var(--glass-blur, 16px)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px)) saturate(180%) !important;
+  border: 1px solid rgba(var(--glass-border-rgb, 255, 255, 255), var(--glass-border-opacity, 0.08)) !important;
+  box-shadow: 0 8px 32px var(--glass-shadow-color, rgba(0, 0, 0, 0.25)),
+    inset 0 1px 0 rgba(var(--glass-border-rgb, 255, 255, 255), 0.04) !important;
 }
 
 /* Light theme glassmorphism */
 :root[data-theme="light"] .glass-panel,
 :root[data-theme="light"] .glass {
-  background: rgba(255, 255, 255, 0.72) !important;
-  border-color: rgba(181, 128, 52, 0.12) !important;
-  box-shadow: 0 8px 32px rgba(181, 128, 52, 0.06),
+  background: rgba(var(--glass-bg-rgb, 255, 255, 255), var(--glass-bg-opacity, 0.72)) !important;
+  border-color: rgba(var(--glass-border-rgb, 181, 128, 52), var(--glass-border-opacity, 0.12)) !important;
+  box-shadow: 0 8px 32px var(--glass-shadow-color, rgba(181, 128, 52, 0.06)),
     inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 /* --- Header Glassmorphism --- */
 #main-header {
-  background: rgba(13, 10, 20, 0.75) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: rgba(var(--glass-bg-rgb, 13, 10, 20), 0.75) !important;
+  backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  border-bottom: 1px solid rgba(var(--glass-border-rgb, 255, 255, 255), 0.06) !important;
 }
 
 #main-header.scrolled {
-  background: rgba(13, 10, 20, 0.92) !important;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4) !important;
+  background: rgba(var(--glass-bg-rgb, 13, 10, 20), 0.92) !important;
+  box-shadow: 0 4px 30px var(--glass-shadow-color, rgba(0, 0, 0, 0.4)) !important;
 }
 
 :root[data-theme="light"] #main-header {
-  background: rgba(250, 249, 245, 0.82) !important;
-  border-bottom-color: rgba(181, 128, 52, 0.1) !important;
+  background: rgba(var(--glass-bg-rgb, 250, 249, 245), 0.82) !important;
+  border-bottom-color: rgba(var(--glass-border-rgb, 181, 128, 52), 0.1) !important;
 }
 
 :root[data-theme="light"] #main-header.scrolled {
-  background: rgba(250, 249, 245, 0.95) !important;
-  box-shadow: 0 4px 30px rgba(181, 128, 52, 0.08) !important;
+  background: rgba(var(--glass-bg-rgb, 250, 249, 245), 0.95) !important;
+  box-shadow: 0 4px 30px var(--glass-shadow-color, rgba(181, 128, 52, 0.08)) !important;
 }
 
 /* --- Navigation Glassmorphism --- */
 .nav-dropdown,
 .mega-panel {
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
 }
 
 .mobile-sidebar {
-  background: var(--nav-mobile-bg, rgba(13, 10, 20, 0.96)) !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
+  background: var(--nav-mobile-bg, rgba(var(--glass-bg-rgb, 13, 10, 20), 0.96)) !important;
+  backdrop-filter: blur(var(--glass-blur, 24px)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 24px)) !important;
 }
 
 :root[data-theme="light"] .mobile-sidebar {
-  background: var(--nav-mobile-bg, rgba(250, 249, 245, 0.97)) !important;
+  background: var(--nav-mobile-bg, rgba(var(--glass-bg-rgb, 250, 249, 245), 0.97)) !important;
 }
 
 /* --- Search Glassmorphism --- */
 #search-autocomplete-box {
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px)) saturate(180%) !important;
 }
 
 .mobile-search-overlay {
-  background: rgba(13, 10, 20, 0.95) !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
+  background: rgba(var(--glass-bg-rgb, 13, 10, 20), 0.95) !important;
+  backdrop-filter: blur(var(--glass-blur, 24px)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 24px)) !important;
 }
 
 :root[data-theme="light"] .mobile-search-overlay {
-  background: rgba(250, 249, 245, 0.97) !important;
+  background: rgba(var(--glass-bg-rgb, 250, 249, 245), 0.97) !important;
 }
 
 /* --- Hero Card Glassmorphism --- */
 .hero-content-card {
-  background: rgba(26, 21, 35, 0.45) !important;
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  background: rgba(var(--glass-bg-rgb, 26, 21, 35), 0.45) !important;
+  backdrop-filter: blur(var(--glass-blur, 16px)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px)) saturate(180%) !important;
+  border: 1px solid rgba(var(--glass-border-rgb, 255, 255, 255), 0.1) !important;
+  box-shadow: 0 20px 60px var(--glass-shadow-color, rgba(0, 0, 0, 0.4)),
+    inset 0 1px 0 rgba(var(--glass-border-rgb, 255, 255, 255), 0.06) !important;
 }
 
 /* --- Product Card Glassmorphism --- */
 .product-card {
-  background: rgba(26, 21, 35, 0.6) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+  background: rgba(var(--glass-bg-rgb, 26, 21, 35), var(--glass-bg-opacity, 0.6)) !important;
+  backdrop-filter: blur(var(--glass-blur, 8px)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 8px)) !important;
+  border: 1px solid rgba(var(--glass-border-rgb, 255, 255, 255), var(--glass-border-opacity, 0.06)) !important;
+  box-shadow: 0 4px 20px var(--glass-shadow-color, rgba(0, 0, 0, 0.2)) !important;
 }
 
 .product-card:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35),
+  box-shadow: 0 12px 40px var(--glass-shadow-color, rgba(0, 0, 0, 0.35)),
     inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
   border-color: rgba(201, 145, 61, 0.25) !important;
 }
@@ -792,7 +792,7 @@ object {
   .wishlist-layout,
   .details-layout,
   .profile-layout {
-    padding: 24px 0 40px !important;
+    padding: 84px 16px 40px !important;
   }
 
   .cart-items-table {
@@ -1851,7 +1851,147 @@ textarea:focus-visible {
   }
 }
 
-/* Remove unwanted things (redundant newsletter capture block in footer) */
-.footer-newsletter {
-  display: none !important;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE BOTTOM NAVIGATION BAR STYLING OVERRIDES
+   ═══════════════════════════════════════════════════════════════════════════ */
+.mobile-bottom-nav-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  background: rgba(var(--glass-bg-rgb, 13, 10, 20), 0.88) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-top: 1px solid rgba(var(--glass-border-rgb, 255, 255, 255), 0.08) !important;
+  z-index: 99999 !important;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 10px;
+}
+
+.mobile-bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted, #B8B0C8) !important;
+  text-decoration: none !important;
+  font-size: 10px !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-weight: 600 !important;
+  gap: 4px !important;
+  flex: 1;
+  height: 100%;
+  transition: color 0.3s ease !important;
+}
+
+.mobile-bottom-nav-item svg {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.mobile-bottom-nav-item:active svg {
+  transform: scale(0.85);
+}
+
+.mobile-bottom-nav-item.active,
+.mobile-bottom-nav-item:hover {
+  color: var(--color-brand-primary, #C9913D) !important;
+}
+
+.bottom-nav-badge {
+  position: absolute !important;
+  top: -6px !important;
+  right: -10px !important;
+  background: var(--badge-sale-bg, #C0392B) !important;
+  color: #fff !important;
+  border-radius: 50% !important;
+  width: 16px !important;
+  height: 16px !important;
+  font-size: 9px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 700 !important;
+}
+
+/* Show bottom navigation on mobile devices */
+@media (max-width: 768px) {
+  .mobile-bottom-nav-bar {
+    display: flex !important;
+  }
+  /* Adjust body padding-bottom so content isn't covered by bottom nav */
+  body {
+    padding-bottom: 74px !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HOME HERO CARD PERFECT CENTER-ALIGNMENT FIX
+   ═══════════════════════════════════════════════════════════════════════════ */
+.hero-central-layout {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  min-height: 100% !important;
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 24px !important;
+  box-sizing: border-box !important;
+}
+
+.hero-content-card {
+  width: 100% !important;
+  max-width: 640px !important; /* Never exceeds 640px on mobile, responsive container */
+  margin: 20px auto !important;
+  padding: 40px 30px !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  border-radius: 20px !important;
+}
+
+.hero-cta-action-row {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+  width: 100% !important;
+}
+
+.hero-cta-action-row .btn {
+  margin: 0 !important;
+  width: auto !important;
+  min-width: 160px !important;
+  display: inline-flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+@media (max-width: 576px) {
+  .hero-content-card {
+    padding: 24px 16px !important;
+    width: 92% !important;
+    max-width: 640px !important;
+    margin: 10px auto !important;
+  }
+  
+  .hero-cta-action-row {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 12px !important;
+  }
+
+  .hero-cta-action-row .btn {
+    width: 100% !important;
+  }
 }

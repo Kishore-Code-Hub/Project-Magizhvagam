@@ -1,6 +1,5 @@
-const Order = require('../models/Order');
-const Product = require('../models/Product');
-const User = require('../models/User');
+const prisma = require('../services/prisma');
+const { logActivity } = require('../services/auditService');
 
 // @desc    Get dashboard metrics & sales trend logs
 // @route   GET /api/reports/dashboard
@@ -8,29 +7,56 @@ const User = require('../models/User');
 exports.getDashboardStats = async (req, res) => {
   try {
     // 1. Core Metrics
-    const totalOrders = await Order.countDocuments({});
+    const totalOrders = await prisma.order.count({});
     
     // Revenue is sum of all order totals where payment is Paid
-    const paidOrders = await Order.find({ 'payment.status': 'Paid' });
-    const totalRevenue = paidOrders.reduce((sum, ord) => sum + ord.summary.total, 0);
+    const paidOrders = await prisma.order.findMany({
+      where: { paymentStatus: 'Paid' }
+    });
+    const totalRevenue = paidOrders.reduce((sum, ord) => sum + ord.summaryTotal, 0);
 
-    const totalCustomers = await User.countDocuments({ role: 'customer' });
-    const totalProducts = await Product.countDocuments({});
+    const totalCustomers = await prisma.user.count({
+      where: { role: 'customer' }
+    });
+    const totalProducts = await prisma.product.count({});
 
     // 2. Recent Orders (Last 5)
-    const recentOrders = await Order.find({})
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .populate('userId', 'name email');
+    const recentOrders = await prisma.order.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: {
+        user: {
+          select: { name: true, email: true }
+        }
+      }
+    });
+
+    const compatRecentOrders = recentOrders.map(ord => ({
+      ...ord,
+      _id: ord.id,
+      userId: ord.user ? {
+        _id: ord.userId,
+        ...ord.user
+      } : null,
+      summary: {
+        total: ord.summaryTotal
+      }
+    }));
 
     // 3. Top Selling Products (Aggregated)
-    // Simply fetch orders, tally item purchases
-    const orders = await Order.find({ status: { $ne: 'Cancelled' } });
+    const orders = await prisma.order.findMany({
+      where: {
+        NOT: { status: 'Cancelled' }
+      },
+      include: {
+        items: true
+      }
+    });
     const productSales = {};
 
     orders.forEach(order => {
       order.items.forEach(item => {
-        const prodId = item.productId.toString();
+        const prodId = item.productId;
         if (!productSales[prodId]) {
           productSales[prodId] = {
             id: prodId,
@@ -65,7 +91,7 @@ exports.getDashboardStats = async (req, res) => {
       const date = new Date(order.createdAt);
       const label = `${months[date.getMonth()]} ${date.getFullYear().toString().substr(-2)}`;
       if (monthlySales[label] !== undefined) {
-        monthlySales[label] += order.summary.total;
+        monthlySales[label] += order.summaryTotal;
       }
     });
 
@@ -82,7 +108,7 @@ exports.getDashboardStats = async (req, res) => {
         totalCustomers,
         totalProducts
       },
-      recentOrders,
+      recentOrders: compatRecentOrders,
       topSellingProducts,
       chartData
     });
@@ -96,14 +122,16 @@ exports.getDashboardStats = async (req, res) => {
 // @access  Private (Admin Only)
 exports.resetStats = async (req, res) => {
   try {
-    // Import Order model and audit service logging helper
-    const { logActivity } = require('../services/auditService');
+    // 1. Clear out all system transactions
+    await prisma.order.deleteMany({});
 
-    // 1. Clear out all system test transactions and digital invoice records (Orders)
-    await Order.deleteMany({});
-
-    // 2. Wipe out all customer directory dummy testing customer profiles, preserving administrator accounts
-    await User.deleteMany({ role: 'customer', email: { $ne: 'admin@magizhvagam.com' } });
+    // 2. Wipe out all customer directory profiles, preserving admin accounts
+    await prisma.user.deleteMany({
+      where: {
+        role: 'customer',
+        NOT: { email: 'admin@magizhvagam.com' }
+      }
+    });
 
     // Log reset action in audit trail
     await logActivity(req, 'stats_reset', 'Store statistics were reset, orders cleared, and customer profiles wiped by admin');

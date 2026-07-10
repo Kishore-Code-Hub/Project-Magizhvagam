@@ -1,28 +1,26 @@
-const Setting = require('../models/Setting');
-const Coupon = require('../models/Coupon');
-const SiteSettingsV4 = require('../models/SiteSettings');
+const prisma = require('../services/prisma');
 
-// Helper to synchronize flat homepage settings to SiteSettingsV4 document
+// Helper to synchronize flat homepage settings to SiteSettings document
 async function syncSettingsToV4(homepageSettings) {
   try {
-    let siteSettings = await SiteSettingsV4.findOne({ _id: 'active' });
-    if (!siteSettings) {
-      siteSettings = new SiteSettingsV4({ _id: 'active' });
-    }
+    let siteSettings = await prisma.siteSettings.findUnique({
+      where: { id: 'active' }
+    });
 
     const v = homepageSettings;
     if (v) {
-      // Sync meta information
-      siteSettings.meta = siteSettings.meta || {};
-      if (v.brandName) siteSettings.meta.storeName = v.brandName;
-      if (v.contactDetails) siteSettings.meta.contactAddress = v.contactDetails;
-      if (v.whatsappContact) {
-        siteSettings.meta.socialLinks = siteSettings.meta.socialLinks || {};
-        siteSettings.meta.socialLinks.whatsapp = v.whatsappContact;
-      }
+      const theme = siteSettings ? (typeof siteSettings.theme === 'string' ? JSON.parse(siteSettings.theme) : siteSettings.theme) : {};
+      const typography = siteSettings ? (typeof siteSettings.typography === 'string' ? JSON.parse(siteSettings.typography) : siteSettings.typography) : {};
+      const layout = siteSettings ? (typeof siteSettings.layout === 'string' ? JSON.parse(siteSettings.layout) : siteSettings.layout) : {};
+      const meta = siteSettings ? (typeof siteSettings.meta === 'string' ? JSON.parse(siteSettings.meta) : siteSettings.meta) : {};
 
-      siteSettings.theme = siteSettings.theme || {};
-      const theme = siteSettings.theme;
+      // Sync meta information
+      meta.storeName = v.brandName || meta.storeName;
+      meta.contactAddress = v.contactDetails || meta.contactAddress;
+      if (v.whatsappContact) {
+        meta.socialLinks = meta.socialLinks || {};
+        meta.socialLinks.whatsapp = v.whatsappContact;
+      }
 
       // Ensure sections are initialized
       theme.hdr = theme.hdr || {};
@@ -202,31 +200,32 @@ async function syncSettingsToV4(homepageSettings) {
 
       // Font Family
       if (v.fontFamily) {
-        siteSettings.typography = siteSettings.typography || {};
-        siteSettings.typography.body = siteSettings.typography.body || {};
-        siteSettings.typography.body.family = v.fontFamily;
-        siteSettings.typography.heading = siteSettings.typography.heading || {};
-        siteSettings.typography.heading.family = v.fontFamily;
+        typography.body = typography.body || {};
+        typography.body.family = v.fontFamily;
+        typography.heading = typography.heading || {};
+        typography.heading.family = v.fontFamily;
       }
 
       // Button Style
       if (v.buttonStyle) {
-        siteSettings.layout = siteSettings.layout || {};
-        let r = 10;
-        if (v.buttonStyle === 'sharp') r = 0;
-        if (v.buttonStyle === 'pill') r = 30;
-        siteSettings.layout.btnRadius = r;
-        theme.btn.primary_radius = String(r);
+        layout.btnRadius = v.buttonStyle === 'sharp' ? 0 : (v.buttonStyle === 'pill' ? 30 : 10);
+        theme.btn.primary_radius = String(layout.btnRadius);
       }
 
-      siteSettings.theme = theme;
-      siteSettings.version = (siteSettings.version || 0) + 1;
-      siteSettings.updatedAt = new Date();
-      siteSettings.markModified('theme');
-      siteSettings.markModified('typography');
-      siteSettings.markModified('layout');
-      siteSettings.markModified('meta');
-      await siteSettings.save();
+      const updateData = {
+        theme,
+        typography,
+        layout,
+        meta,
+        version: (siteSettings ? siteSettings.version : 0) + 1,
+        updatedAt: new Date()
+      };
+
+      await prisma.siteSettings.upsert({
+        where: { id: 'active' },
+        update: updateData,
+        create: { id: 'active', ...updateData }
+      });
     }
   } catch (err) {
     console.error('[syncSettingsToV4] Error synchronizing settings:', err.message);
@@ -255,9 +254,11 @@ const DEFAULT_FEATURE_TOGGLES = {
 // @access  Internal
 const getFeatureToggleValues = async () => {
   try {
-    const setting = await Setting.findOne({ key: 'featureToggles' });
+    const setting = await prisma.setting.findUnique({
+      where: { key: 'featureToggles' }
+    });
     if (setting && setting.value) {
-      return { ...DEFAULT_FEATURE_TOGGLES, ...setting.value };
+      return { ...DEFAULT_FEATURE_TOGGLES, ...(typeof setting.value === 'string' ? JSON.parse(setting.value) : setting.value) };
     }
     return { ...DEFAULT_FEATURE_TOGGLES };
   } catch (err) {
@@ -272,7 +273,9 @@ exports.getFeatureToggleValues = getFeatureToggleValues;
 exports.getFeatureToggles = async (req, res) => {
   try {
     const toggles = await getFeatureToggleValues();
-    const settingObj = await Setting.findOne({ key: 'allowSignup' });
+    const settingObj = await prisma.setting.findUnique({
+      where: { key: 'allowSignup' }
+    });
     toggles.allowSignup = settingObj ? settingObj.value === true : true;
     res.status(200).json({ success: true, toggles });
   } catch (error) {
@@ -290,7 +293,6 @@ exports.updateFeatureToggles = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please provide toggles object' });
     }
 
-    // Only allow known toggle keys
     const sanitized = {};
     if (toggles.wishlistEnabled !== undefined) sanitized.wishlistEnabled = !!toggles.wishlistEnabled;
     if (toggles.couponsEnabled !== undefined) sanitized.couponsEnabled = !!toggles.couponsEnabled;
@@ -307,16 +309,16 @@ exports.updateFeatureToggles = async (req, res) => {
     if (toggles.flashSaleText !== undefined) sanitized.flashSaleText = String(toggles.flashSaleText || '').trim();
     if (toggles.flashSaleTargetDate !== undefined) sanitized.flashSaleTargetDate = toggles.flashSaleTargetDate ? new Date(toggles.flashSaleTargetDate) : null;
 
-    let setting = await Setting.findOne({ key: 'featureToggles' });
-    if (!setting) {
-      setting = await Setting.create({ key: 'featureToggles', value: { ...DEFAULT_FEATURE_TOGGLES, ...sanitized } });
-    } else {
-      setting.value = { ...DEFAULT_FEATURE_TOGGLES, ...setting.value, ...sanitized };
-      setting.markModified('value');
-      await setting.save();
-    }
+    const existing = await prisma.setting.findUnique({ where: { key: 'featureToggles' } });
+    const currentValue = existing ? (typeof existing.value === 'string' ? JSON.parse(existing.value) : existing.value) : {};
 
-    res.status(200).json({ success: true, message: 'Feature toggles updated successfully!', toggles: setting.value });
+    const updated = await prisma.setting.upsert({
+      where: { key: 'featureToggles' },
+      update: { value: { ...DEFAULT_FEATURE_TOGGLES, ...currentValue, ...sanitized } },
+      create: { key: 'featureToggles', value: { ...DEFAULT_FEATURE_TOGGLES, ...sanitized } }
+    });
+
+    res.status(200).json({ success: true, message: 'Feature toggles updated successfully!', toggles: updated.value });
   } catch (error) {
     res.status(500).json({ success: false, error: `Error updating feature toggles: ${error.message}` });
   }
@@ -327,18 +329,19 @@ exports.updateFeatureToggles = async (req, res) => {
 // @access  Public
 exports.getSetting = async (req, res) => {
   try {
-    const setting = await Setting.findOne({ key: req.params.key });
+    const setting = await prisma.setting.findUnique({
+      where: { key: req.params.key }
+    });
     if (!setting) {
       return res.status(404).json({ success: false, error: 'Setting not found' });
     }
 
-    let val = setting.value;
+    let val = typeof setting.value === 'string' ? JSON.parse(setting.value) : setting.value;
     if (req.params.key === 'homepage' && process.env.WHATSAPP_PHONE) {
       let phone = process.env.WHATSAPP_PHONE.trim();
       if (phone.length === 10 && /^\d+$/.test(phone)) {
         phone = '91' + phone;
       }
-      // Shallow clone and override
       val = JSON.parse(JSON.stringify(val));
       val.whatsappContact = phone;
     }
@@ -349,7 +352,7 @@ exports.getSetting = async (req, res) => {
   }
 };
 
-// @desc    Update setting by key (Admin Homepage Builder)
+// @desc    Update setting by key
 // @route   PUT /api/settings/:key
 // @access  Private (Admin Only)
 exports.updateSetting = async (req, res) => {
@@ -359,21 +362,13 @@ exports.updateSetting = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please provide setting value' });
     }
 
-    let setting = await Setting.findOne({ key: req.params.key });
-    if (!setting) {
-      setting = await Setting.create({ key: req.params.key, value });
-    } else {
-      setting.value = value;
-      setting.markModified('value');
-      await setting.save();
-    }
+    const updated = await prisma.setting.upsert({
+      where: { key: req.params.key },
+      update: { value },
+      create: { key: req.params.key, value }
+    });
 
-    // Legacy homepage -> V4 sync removed to prevent overwriting Appearance Studio / HomepageSectionsV4
-    // if (req.params.key === 'homepage') {
-    //   await syncSettingsToV4(setting.value);
-    // }
-
-    res.status(200).json({ success: true, message: 'Settings updated successfully!', setting: setting.value });
+    res.status(200).json({ success: true, message: 'Settings updated successfully!', setting: updated.value });
   } catch (error) {
     res.status(500).json({ success: false, error: `Error updating settings: ${error.message}` });
   }
@@ -384,7 +379,7 @@ exports.updateSetting = async (req, res) => {
 // @access  Private (Admin Only)
 exports.getCoupons = async (req, res) => {
   try {
-    const coupons = await Coupon.find({});
+    const coupons = await prisma.coupon.findMany({});
     res.status(200).json({ success: true, coupons });
   } catch (error) {
     res.status(500).json({ success: false, error: `Error fetching coupons: ${error.message}` });
@@ -401,13 +396,15 @@ exports.createCoupon = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please provide code, type, value and expiry date' });
     }
 
-    const coupon = await Coupon.create({
-      code: code.toUpperCase().trim(),
-      discountType,
-      discountValue: Number(discountValue),
-      minOrderValue: Number(minOrderValue) || 0,
-      expiresAt: new Date(expiresAt),
-      active: active !== undefined ? active : true
+    const coupon = await prisma.coupon.create({
+      data: {
+        code: code.toUpperCase().trim(),
+        discountType,
+        discountValue: Number(discountValue),
+        minOrderValue: Number(minOrderValue) || 0,
+        expiresAt: new Date(expiresAt),
+        active: active !== undefined ? active : true
+      }
     });
 
     res.status(201).json({ success: true, message: 'Coupon created successfully!', coupon });
@@ -421,16 +418,15 @@ exports.createCoupon = async (req, res) => {
 // @access  Private (Admin Only)
 exports.deleteCoupon = async (req, res) => {
   try {
-    const coupon = await Coupon.findById(req.params.id);
-    if (!coupon) {
-      return res.status(404).json({ success: false, error: 'Coupon not found' });
-    }
-    await Coupon.findByIdAndDelete(req.params.id);
+    await prisma.coupon.delete({
+      where: { id: req.params.id }
+    });
     res.status(200).json({ success: true, message: 'Coupon deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, error: `Coupon deletion error: ${error.message}` });
   }
 };
+
 // @desc    Reset setting to defaults
 // @route   POST /api/settings/:key/reset
 // @access  Private (Admin Only)
@@ -441,7 +437,6 @@ exports.resetSetting = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Only homepage settings can be reset' });
     }
 
-    // ─── Luxury Ivory Light Theme Preset ───────────────────────────────────
     const defaultValue = {
       brandName: 'MAGIZHVAGAM',
       logo: 'MAGIZHVAGAM',
@@ -598,56 +593,33 @@ exports.resetSetting = async (req, res) => {
           input_radius: '8px',
           input_placeholder_color: '#6c757d',
           input_text_color: '#111111',
-          input_error_border: '#E74C3C',
-          input_error_text: '#E74C3C',
-          input_success_border: '#2ECC71',
-          input_success_text: '#2ECC71',
-          label_color: '#111111',
-          label_weight: '500',
-          helper_text_color: '#444444',
-          strength_weak: '#E74C3C',
-          strength_fair: '#ffc107',
-          strength_strong: '#17a2b8',
-          strength_perfect: '#2ECC71'
+          label_color: '#444444',
+          helper_text_color: '#6c757d'
         },
         mod: {
-          backdrop_color: 'rgba(0, 0, 0, 0.5)',
-          backdrop_blur: '16px',
           modal_bg: '#FFFFFF',
           modal_border: 'rgba(201, 151, 46, 0.1)',
           modal_radius: '16px',
-          modal_shadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15)',
-          modal_header_bg: 'transparent',
-          modal_header_border: 'rgba(201, 151, 46, 0.05)',
+          modal_shadow: '0 20px 25px -5px rgba(201, 151, 46, 0.1)',
           modal_title_color: '#111111',
-          modal_close_color: '#444444',
-          modal_close_hover_color: '#111111',
           drawer_bg: '#FFFFFF',
-          drawer_shadow: '0 -10px 25px rgba(0, 0, 0, 0.1)',
-          toast_success_bg: '#2ECC71',
-          toast_error_bg: '#E74C3C',
-          toast_warning_bg: '#ffc107',
+          drawer_border: 'rgba(201, 151, 46, 0.1)',
           toast_info_bg: '#C9972E',
-          toast_text_color: '#ffffff'
+          toast_info_text: '#ffffff',
+          toast_success_bg: '#2ECC71',
+          toast_success_text: '#ffffff',
+          toast_error_bg: '#E74C3C',
+          toast_error_text: '#ffffff'
         },
         bdg: {
-          new_bg: 'rgba(201, 151, 46, 0.15)',
+          new_bg: 'rgba(201, 151, 46, 0.1)',
           new_text: '#C9972E',
-          sale_bg: 'rgba(231, 76, 60, 0.15)',
+          sale_bg: 'rgba(231, 76, 60, 0.1)',
           sale_text: '#E74C3C',
-          flash_bg: 'rgba(201, 151, 46, 0.15)',
-          flash_text: '#C9972E',
-          trending_bg: 'rgba(201, 151, 46, 0.15)',
-          trending_text: '#C9972E',
-          out_of_stock_bg: 'rgba(68, 68, 68, 0.15)',
-          out_of_stock_text: '#444444',
-          limited_bg: 'rgba(255, 193, 7, 0.15)',
-          limited_text: '#856404',
-          featured_bg: 'rgba(201, 151, 46, 0.15)',
-          featured_text: '#C9972E',
-          radius: '20px',
-          font_weight: '700',
-          padding: '4px 10px'
+          trending_bg: 'rgba(46, 204, 113, 0.1)',
+          trending_text: '#2ECC71',
+          featured_bg: 'rgba(201, 151, 46, 0.1)',
+          featured_text: '#C9972E'
         },
         cd: {
           container_bg: '#F7F4EE',
@@ -655,12 +627,9 @@ exports.resetSetting = async (req, res) => {
           container_radius: '12px',
           digit_bg: '#FFFFFF',
           digit_text: '#111111',
-          digit_border: 'rgba(201, 151, 46, 0.05)',
           digit_radius: '8px',
           separator_color: '#C9972E',
           label_color: '#444444',
-          expired_bg: '#f8d7da',
-          expired_text: '#721c24',
           flash_sale_accent: '#C9972E'
         },
         acc: {
@@ -668,109 +637,73 @@ exports.resetSetting = async (req, res) => {
           tab_active_color: '#C9972E',
           tab_active_border: '#C9972E',
           tab_inactive_color: '#444444',
+          tab_inactive_bg: 'transparent',
           order_card_bg: '#FFFFFF',
           order_card_border: 'rgba(201, 151, 46, 0.1)',
-          status_pending: '#ffc107',
-          status_confirmed: '#17a2b8',
-          status_shipped: '#C9972E',
-          status_delivered: '#2ECC71',
-          status_cancelled: '#E74C3C',
+          order_card_radius: '12px',
           address_card_bg: '#FFFFFF',
           address_card_border: 'rgba(201, 151, 46, 0.1)',
-          address_cap_warning_bg: '#f8d7da',
-          address_cap_warning_text: '#721c24'
+          address_card_selected_border: '#C9972E',
+          status_pending: '#F39C12',
+          status_processing: '#3498DB',
+          status_shipped: '#9B59B6',
+          status_delivered: '#2ECC71',
+          status_cancelled: '#E74C3C'
         },
         st: {
-          empty_icon_color: '#444444',
+          skeleton_base_color: '#FFFFFF',
+          skeleton_highlight_color: '#F7F4EE',
+          empty_icon_color: '#C9972E',
           empty_heading_color: '#111111',
           empty_text_color: '#444444',
           empty_cta_bg: '#C9972E',
+          empty_cta_text: '#FFFFFF',
+          loading_spinner_color: '#C9972E',
           error_icon_color: '#E74C3C',
           error_heading_color: '#111111',
           error_text_color: '#444444',
           success_icon_color: '#2ECC71',
           success_heading_color: '#111111',
-          success_text_color: '#444444',
-          loading_spinner_color: '#C9972E',
-          skeleton_base_color: '#F7F4EE',
-          skeleton_shimmer_color: '#FFFFFF'
+          success_text_color: '#444444'
         },
         adm: {
-          sidebar_bg: '#1B0F26',
-          sidebar_border: 'rgba(255, 255, 255, 0.1)',
-          sidebar_link_color: '#cccccc',
-          sidebar_link_hover_bg: 'rgba(255, 255, 255, 0.05)',
-          sidebar_link_active_bg: '#C9972E',
-          sidebar_link_active_text: '#ffffff',
+          sidebar_bg: '#1e1e1e',
+          sidebar_border: '#2e2e2e',
+          sidebar_link_color: '#888888',
+          sidebar_link_hover_bg: '#2d2d2d',
+          sidebar_link_hover_text: '#ffffff',
+          sidebar_link_active_bg: '#2d2d2d',
+          sidebar_link_active_text: '#C9972E',
           topbar_bg: '#FFFFFF',
           topbar_border: 'rgba(201, 151, 46, 0.1)',
           topbar_title_color: '#111111',
           stat_card_bg: '#FFFFFF',
           stat_card_border: 'rgba(201, 151, 46, 0.1)',
-          table_header_bg: '#F7F4EE',
-          table_row_hover: 'rgba(201, 151, 46, 0.02)',
-          table_border: 'rgba(201, 151, 46, 0.05)',
-          action_btn_edit_color: '#17a2b8',
-          action_btn_delete_color: '#E74C3C',
-          toggle_active_bg: '#2ECC71',
-          toggle_inactive_bg: '#E74C3C',
+          toggle_bg: '#e0e0e0',
+          toggle_active_bg: '#C9972E',
           settings_tab_active: '#C9972E'
         }
-      },
-      layout_config: {
-        containerMaxWidth: '1200px',
-        sectionPaddingY: '60px',
-        sectionPaddingX: '24px',
-        gridGap: '30px',
-        cardRadius: '16px',
-        btnRadius: '30px',
-        inputRadius: '8px',
-        borderWidth: '1px',
-        shadowStrength: '0.1',
-        glassOpacity: '0.85',
-        glassBlur: '16px',
-        animationSpeed: '1.0'
-      },
-      animation_config: {
-        speed_mode: 'elevated',
-        card_hover_style: 'lift'
-      },
-      customCSS: '',
-      heroBanners: [],
-      promotionalBanners: [],
-      featuredProductIds: [],
-      bestSellerProductIds: [],
-      newArrivalProductIds: [],
-      trendingProductIds: [],
-      recommendedProductIds: [],
-      categoryHighlights: [],
-      testimonials: [],
-      whatsappContact: process.env.WHATSAPP_PHONE || '919876543210'
+      }
     };
 
-    // 1. Reset the homepage setting document
-    let setting = await Setting.findOne({ key });
-    if (!setting) {
-      setting = await Setting.create({ key, value: defaultValue });
-    } else {
-      setting.value = defaultValue;
-      setting.markModified('value');
-      await setting.save();
-    }
+    const setting = await prisma.setting.upsert({
+      where: { key },
+      update: { value: defaultValue },
+      create: { key, value: defaultValue }
+    });
 
-    // 2. Reset the V4 site_settings document to Ivory Light defaults
     try {
-      const siteSettings = await SiteSettingsV4.findOne({ _id: 'active' });
-      if (siteSettings) {
-        siteSettings.theme = defaultValue.theme_tokens;
-        siteSettings.version = (siteSettings.version || 0) + 1;
-        siteSettings.updatedAt = new Date();
-        siteSettings.updatedBy = req.user?._id || null;
-        siteSettings.markModified('theme');
-        await siteSettings.save();
-      }
+      await prisma.siteSettings.update({
+        where: { id: 'active' },
+        data: {
+          theme: defaultValue.theme_tokens,
+          version: { increment: 1 },
+          updatedAt: new Date(),
+          updatedBy: req.user ? req.user.id : null
+        }
+      });
     } catch (v4Err) {
-      console.warn('[resetSetting] V4 site settings reset failed:', v4Err.message);
+      console.warn('[resetSetting] Site settings reset failed:', v4Err.message);
     }
 
     res.status(200).json({ success: true, message: 'Settings reset to Luxury Ivory Light defaults', setting: setting.value });
@@ -794,7 +727,6 @@ exports.uploadSettingsImage = async (req, res) => {
     const path = require('path');
     const { isCloudinaryConfigured, uploadToCloudinary } = require('../services/cloudinary');
 
-    // Process with sharp (Resize max width 1920, compress to webp format)
     const optimizedBuffer = await sharp(req.file.buffer)
       .resize({ width: 1920, height: 1920, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 80 })
@@ -834,17 +766,17 @@ exports.subscribeNewsletter = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please provide a valid email address.' });
     }
 
-    let setting = await Setting.findOne({ key: 'subscribers' });
-    if (!setting) {
-      setting = await Setting.create({ key: 'subscribers', value: [email] });
-    } else {
-      let subscribers = Array.isArray(setting.value) ? setting.value : [];
-      if (!subscribers.includes(email)) {
-        subscribers.push(email);
-        setting.value = subscribers;
-        setting.markModified('value');
-        await setting.save();
-      }
+    const setting = await prisma.setting.findUnique({
+      where: { key: 'subscribers' }
+    });
+    let subscribers = setting ? (Array.isArray(setting.value) ? setting.value : []) : [];
+    if (!subscribers.includes(email)) {
+      subscribers.push(email);
+      await prisma.setting.upsert({
+        where: { key: 'subscribers' },
+        update: { value: subscribers },
+        create: { key: 'subscribers', value: subscribers }
+      });
     }
     res.status(200).json({ success: true, message: 'Subscribed successfully!' });
   } catch (error) {
