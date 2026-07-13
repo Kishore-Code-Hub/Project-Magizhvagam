@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Gateways Settings | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">System Coordinates</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Payment Gateways Settings</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Verify and configure Razorpay API credentials and Stripe gateway integration keys.</p>
+      </section>
+
+      
+
+      <div class="glass" style="max-width:650px; padding:25px; border-radius:12px; margin:0 auto;">
+        <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:20px;">API Keys & Gateways</h3>
+        <form id="payments-settings-form" onsubmit="event.preventDefault();">
+          <div class="admin-form-group">
+            <label>Razorpay Key ID</label>
+            <input type="text" id="set-razorpay-key" class="admin-form-control" placeholder="rzp_test_...">
+          </div>
+          <div class="admin-form-group">
+            <label>Stripe Publishable Key</label>
+            <input type="text" id="set-stripe-key" class="admin-form-control" placeholder="pk_test_...">
+          </div>
+          <button id="save-payments-settings-btn" type="button" class="btn btn-primary" style="width:100%; border-radius:8px;">Save Gateway Keys</button>
+        </form>
+      </div>
+    
+    
+
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+
+      window.updateAdminBreadcrumbs('Settings', 'Payment Settings');
+      
+      document.getElementById('set-razorpay-key').value = localStorage.getItem('settings_razorpay_key') || '';
+      document.getElementById('set-stripe-key').value = localStorage.getItem('settings_stripe_key') || '';
+
+      document.getElementById('save-payments-settings-btn').addEventListener('click', () => {
+        localStorage.setItem('settings_razorpay_key', document.getElementById('set-razorpay-key').value.trim());
+        localStorage.setItem('settings_stripe_key', document.getElementById('set-stripe-key').value.trim());
+        showToast('Payment gateway keys updated successfully!', 'success');
+      });
+    
+    
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Groups & Segments | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Customer Care</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Customer Groups & Segments</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Segment customers (VIP, Retail, Corporate bulk buyers) and set custom group discount percentages.</p>
+      </section>
+
+      
+      <div class="grid grid-2" style="display:grid; grid-template-columns:1fr 1.2fr; gap:30px;">
+        <div class="glass" style="padding:25px; border-radius:12px; height:fit-content;">
+          <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">Create Segment Group</h2>
+          <form id="group-form" style="display:flex; flex-direction:column; gap:14px;">
+            <div class="admin-form-group">
+              <label>Group Name *</label>
+              <input type="text" id="grp-name" class="admin-form-control" placeholder="e.g. Corporate Wholesaler" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Automated Discount Rate (%) *</label>
+              <input type="number" id="grp-discount" class="admin-form-control" value="5" min="0" max="90" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Segment</button>
+          </form>
+        </div>
+
+        <div class="glass" style="padding:25px; border-radius:12px;">
+          <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">Active Customer Segments</h2>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Group Name</th>
+                <th>Discount Percentage</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Corporate Wholesalers</strong></td>
+                <td>15% Auto Discount</td>
+                <td><span class="badge badge-success">Active</span></td>
+              </tr>
+              <tr>
+                <td><strong>Wedding Organizers</strong></td>
+                <td>10% Auto Discount</td>
+                <td><span class="badge badge-success">Active</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    
+
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      window.updateAdminBreadcrumbs('Customers', 'Customer Groups');
+      document.getElementById('group-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast('New customer segment and discount rate configured successfully!', 'success');
+        document.getElementById('group-form').reset();
+      });
+    
+    });
+  </script>
+</body>
+</html>

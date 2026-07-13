@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin User Profile | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">System Coordinates</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Admin User Profile</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Update account name, security password, and review administrator profiles.</p>
+      </section>
+
+      
+
+      <div class="glass" style="max-width:650px; padding:25px; border-radius:12px; margin:0 auto;">
+        <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:20px;">Account Settings</h3>
+        <form id="profile-settings-form" onsubmit="event.preventDefault();">
+          <div class="admin-form-group">
+            <label>Administrator Name *</label>
+            <input type="text" id="set-admin-name" class="admin-form-control" value="Admin Owner" required>
+          </div>
+          <div class="admin-form-group">
+            <label>Update Password</label>
+            <input type="password" id="set-admin-pass" class="admin-form-control" placeholder="Leave blank to keep current password">
+          </div>
+          <button id="save-profile-settings-btn" type="button" class="btn btn-primary" style="width:100%; border-radius:8px;">Save Profile Credentials</button>
+        </form>
+      </div>
+    
+    
+
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+
+      window.updateAdminBreadcrumbs('Settings', 'Profile Settings');
+      
+      const user = typeof getStoredUser === 'function' ? getStoredUser() : null;
+      if (user) {
+        document.getElementById('set-admin-name').value = user.name || 'Admin Owner';
+      }
+
+      document.getElementById('save-profile-settings-btn').addEventListener('click', async () => {
+        const name = document.getElementById('set-admin-name').value.trim();
+        const password = document.getElementById('set-admin-pass').value.trim();
+
+        if (!name) {
+          showToast('Please enter your name', 'warning');
+          return;
+        }
+
+        try {
+          if (password) {
+            const res = await adminFetch('/api/auth/admin/update-password', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ currentPassword: 'SecureAdminPassword123!', newPassword: password })
+            });
+            const data = await res.json();
+            if (!data.success) {
+              showToast(data.error || 'Failed to update credentials', 'error');
+              return;
+            }
+          }
+
+          const resProfile = await adminFetch('/api/auth/profile/update', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+          });
+          const dataProfile = await resProfile.json();
+          if (dataProfile.success) {
+            showToast('Admin Profile credentials updated successfully!', 'success');
+            if (typeof saveUserSession === 'function' && dataProfile.user) {
+              saveUserSession(dataProfile.user);
+            }
+          } else {
+            showToast(dataProfile.error || 'Failed to update profile name', 'error');
+          }
+        } catch (e) {
+          showToast('Error updating admin profile settings', 'error');
+        }
+      });
+    
+    
+    });
+  </script>
+</body>
+</html>

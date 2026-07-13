@@ -424,11 +424,12 @@
       </div>
       </div>
 
-      <!-- Tabs Section: Description, Specifications, Reviews -->
+      <!-- Tabs Section: Description, Specifications, 360 View, Product Video -->
       <div class="tab-header">
         <div class="tab-link active" onclick="switchTab(this, 'tab-desc')">Description</div>
         <div class="tab-link" onclick="switchTab(this, 'tab-specs')">Specifications</div>
-
+        <div class="tab-link" onclick="switchTab(this, 'tab-360')">Interactive 360° View</div>
+        <div class="tab-link" onclick="switchTab(this, 'tab-video')">Product Video</div>
       </div>
 
       <!-- Description tab -->
@@ -462,7 +463,30 @@
         </div>
       </div>
 
+      <!-- 360 View tab -->
+      <div class="tab-panel" id="tab-360">
+        <div class="glass" style="padding:30px; border-radius:12px; display:flex; flex-direction:column; align-items:center; gap:20px;">
+          <h3 style="font-family:'Outfit'; font-size:18px; color:var(--text-color); margin:0;">Interactive 3D Virtual Showcase</h3>
+          <p style="font-size:13px; color:var(--text-muted); text-align:center; max-width:500px; margin:0;">Move your mouse or drag your finger across the box to rotate the product and explore it from all angles.</p>
+          <div id="mz-360-container" style="position:relative; width:100%; max-width:400px; height:320px; overflow:hidden; border-radius:12px; border:1px solid var(--card-border); background:#FAF9F6; display:flex; align-items:center; justify-content:center; cursor:grab; perspective: 1000px;">
+            <img id="mz-360-img" src="" style="width:75%; height:75%; object-fit:contain; pointer-events:none; transition: transform 0.1s ease;">
+            <div style="position:absolute; bottom:12px; background:rgba(0,0,0,0.6); color:white; font-size:11px; padding:4px 10px; border-radius:20px; pointer-events:none;">↔ Drag to Rotate 3D</div>
+          </div>
+        </div>
+      </div>
 
+      <!-- Video tab -->
+      <div class="tab-panel" id="tab-video">
+        <div class="glass" style="padding:30px; border-radius:12px; display:flex; flex-direction:column; align-items:center; gap:20px;">
+          <h3 style="font-family:'Outfit'; font-size:18px; color:var(--text-color); margin:0;">Artisanal Showcase & Demo Video</h3>
+          <div style="position:relative; width:100%; max-width:640px; border-radius:12px; overflow:hidden; border:1px solid var(--card-border); aspect-ratio:16/9; background:#000;">
+            <video id="mz-demo-video" style="width:100%; height:100%;" poster="/assets/images/default-product.webp" controls>
+              <source src="https://assets.mixkit.co/videos/preview/mixkit-handcrafted-wooden-toys-in-a-workshop-41712-large.mp4" type="video/mp4">
+              Your browser does not support HTML5 video.
+            </video>
+          </div>
+        </div>
+      </div>
 
       <!-- Frequently Bought Together -->
       <section id="fbt-section" style="margin-top:60px; border-top:1px solid var(--card-border); padding-top:50px; display: none;">
@@ -535,24 +559,77 @@
   <script src="/assets/js/store-enhancements.js"></script>
   <script src="/assets/js/app.js"></script>
   <script>
-    let activeProduct = null;
-    let selectedVariantMultiplier = 1;
-    let productReviews = [];
-    let reviewsLimit = 5;
-    let currentReviewsPage = 1;
-    let currentReviewSort = 'newest';
+    (function () {
+      'use strict';
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      loadProductDetails();
+      let activeProduct = null;
+      let selectedVariantMultiplier = 1;
+      let productReviews = [];
+      let reviewsLimit = 5;
+      let currentReviewsPage = 1;
+      let currentReviewSort = 'newest';
 
-      // Mobile Swipe Gestures for Gallery
-      initMobileSwipeGestures();
+      let abortController = null;
+      let scrollHandler = null;
+      let mouseupHandler = null;
 
-      // Mobile Swipe Gestures for Gallery
-      initMobileSwipeGestures();
-    });
+      async function initPage() {
+        if (abortController) abortController.abort();
+        abortController = new AbortController();
+        const signal = abortController.signal;
 
-    async function loadProductDetails() {
+        try {
+          await loadProductDetails({ signal });
+          initMobileSwipeGestures();
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            console.log('[MZPage] Product details load aborted.');
+          } else {
+            console.error('Failed to load product details:', err);
+          }
+        }
+      }
+
+      function destroyPage() {
+        if (abortController) {
+          abortController.abort();
+          abortController = null;
+        }
+        if (scrollHandler) {
+          window.removeEventListener('scroll', scrollHandler);
+          scrollHandler = null;
+        }
+        if (mouseupHandler) {
+          window.removeEventListener('mouseup', mouseupHandler);
+          mouseupHandler = null;
+        }
+
+        // Clear global function attachments
+        window.updateFbtPrice = null;
+        window.addAllFbtToCart = null;
+        window.buyViaWhatsApp = null;
+        window.scrollCarousel = null;
+        window.shareViaWhatsApp = null;
+        window.shareViaCopyLink = null;
+        window.shareViaEmail = null;
+      }
+
+      window.MZPageRegistry = window.MZPageRegistry || {};
+      window.MZPageRegistry['product-details'] = {
+        init: initPage,
+        destroy: destroyPage
+      };
+
+      // Expose handlers to window for inline onclick/onchange attributes
+      window.updateFbtPrice = updateFbtPrice;
+      window.addAllFbtToCart = addAllFbtToCart;
+      window.buyViaWhatsApp = buyViaWhatsApp;
+      window.scrollCarousel = scrollCarousel;
+      window.shareViaWhatsApp = shareViaWhatsApp;
+      window.shareViaCopyLink = shareViaCopyLink;
+      window.shareViaEmail = shareViaEmail;
+
+      async function loadProductDetails(options = {}) {
       let id = getQueryParam('id');
       if (!id) {
         const pathParts = window.location.pathname.split('/');
@@ -567,7 +644,7 @@
       }
 
       try {
-        const res = await fetch(`/api/products/${id}`);
+        const res = await fetch(`/api/products/${id}`, options);
         const data = await res.json();
 
         if (!data.success || !data.product) {
@@ -696,6 +773,75 @@
 
         // Recently Viewed Carousel
         loadRecentlyViewedProducts();
+
+        // Initialize 360 View image source
+        const threeSixtyImg = document.getElementById('mz-360-img');
+        if (threeSixtyImg) {
+          threeSixtyImg.src = activeProduct.images[0] ? activeProduct.images[0].url : '/assets/images/default-product.webp';
+        }
+
+        // Bind 360 drag/tilt interactions
+        const container360 = document.getElementById('mz-360-container');
+        const img360 = document.getElementById('mz-360-img');
+        if (container360 && img360) {
+          let isDragging = false;
+          let startX = 0;
+          let currentRotation = 0;
+
+          container360.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            container360.style.cursor = 'grabbing';
+          });
+
+          mouseupHandler = () => {
+            isDragging = false;
+            if (container360) container360.style.cursor = 'grab';
+          };
+          window.addEventListener('mouseup', mouseupHandler);
+
+          container360.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+              const deltaX = e.clientX - startX;
+              currentRotation += deltaX * 0.5; // Sensitivity
+              startX = e.clientX;
+              img360.style.transform = `rotateY(${currentRotation}deg)`;
+            } else {
+              // Ambient tilt based on cursor position relative to center
+              const rect = container360.getBoundingClientRect();
+              const x = e.clientX - rect.left - (rect.width / 2);
+              const y = e.clientY - rect.top - (rect.height / 2);
+              const rotateY = (x / (rect.width / 2)) * 25; // max 25deg
+              const rotateX = -(y / (rect.height / 2)) * 25; // max 25deg
+              img360.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            }
+          });
+
+          container360.addEventListener('mouseleave', () => {
+            if (!isDragging) {
+              img360.style.transform = 'rotateX(0) rotateY(0)';
+            }
+          });
+
+          // Touch support
+          container360.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+          });
+
+          container360.addEventListener('touchend', () => {
+            isDragging = false;
+          });
+
+          container360.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length > 0) {
+              const deltaX = e.touches[0].clientX - startX;
+              currentRotation += deltaX * 0.5;
+              startX = e.touches[0].clientX;
+              img360.style.transform = `rotateY(${currentRotation}deg)`;
+            }
+          });
+        }
 
       } catch (err) {
         showToast('Error loading details', 'error');
@@ -958,7 +1104,7 @@
 
       let number = '919876543210';
       try {
-        const setting = await window.fetchSettings();
+        const setting = await window.fetchSettings(options);
         if (setting && setting.whatsappContact) {
           number = setting.whatsappContact;
         }
@@ -1175,8 +1321,7 @@
 
 
 
-    // Sticky summary bar toggling on mobile
-    window.addEventListener('scroll', () => {
+    scrollHandler = () => {
       if (window.innerWidth > 768) {
         const stickyBar = document.getElementById('mobile-sticky-bar');
         if (stickyBar) stickyBar.style.display = 'none';
@@ -1202,7 +1347,10 @@
           stickyBar.style.display = 'none';
         }
       }
-    });
+    };
+    window.addEventListener('scroll', scrollHandler);
+
+  })();
   </script>
 </body>
 

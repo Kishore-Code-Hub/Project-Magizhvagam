@@ -38,7 +38,8 @@ const protect = async (req, res, next) => {
   // Enforce session check if a refresh token exists
   if (refreshToken) {
     const session = await prisma.userSession.findUnique({
-      where: { refreshToken }
+      where: { refreshToken },
+      include: { user: true }
     });
     if (!session) {
       // Invalidate cookies immediately if the session has been revoked/deleted
@@ -46,6 +47,16 @@ const protect = async (req, res, next) => {
       res.clearCookie('admin_refreshToken');
       return res.status(401).json({ success: false, error: 'Session has been revoked or logged out' });
     }
+
+    // Inactivity check for admin users (30 minutes)
+    const INACTIVE_LIMIT = 30 * 60 * 1000;
+    if (session.user.role === 'admin' && (Date.now() - new Date(session.lastActivity).getTime()) > INACTIVE_LIMIT) {
+      await prisma.userSession.delete({ where: { id: session.id } });
+      res.clearCookie('admin_accessToken');
+      res.clearCookie('admin_refreshToken');
+      return res.status(401).json({ success: false, error: 'Session expired due to inactivity' });
+    }
+
     // Update last activity
     await prisma.userSession.update({
       where: { refreshToken },
@@ -100,13 +111,23 @@ const tryAutoRefresh = async (req, res, next) => {
     });
 
     const session = await prisma.userSession.findUnique({
-      where: { refreshToken }
+      where: { refreshToken },
+      include: { user: true }
     });
     
     if (!userDoc || !session) {
       res.clearCookie('admin_accessToken');
       res.clearCookie('admin_refreshToken');
       return res.status(401).json({ success: false, error: 'Session expired or revoked, please login again' });
+    }
+
+    // Inactivity check for admin users (30 minutes)
+    const INACTIVE_LIMIT = 30 * 60 * 1000;
+    if (session.user.role === 'admin' && (Date.now() - new Date(session.lastActivity).getTime()) > INACTIVE_LIMIT) {
+      await prisma.userSession.delete({ where: { id: session.id } });
+      res.clearCookie('admin_accessToken');
+      res.clearCookie('admin_refreshToken');
+      return res.status(401).json({ success: false, error: 'Session expired due to inactivity' });
     }
 
     // Update last activity

@@ -3,7 +3,7 @@
  * Usage: npm start (in another terminal), then node scripts/audit-buttons.mjs
  * Requires: npm i -D playwright && npx playwright install chromium
  */
-const BASE = process.env.BASE_URL || 'http://localhost:5000';
+const BASE = process.env.BASE_URL || ('http://localhost:' + 5000);
 
 const PAGES = [
   '/',

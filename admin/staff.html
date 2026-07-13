@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Directory & Roles | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Customer Care</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Staff Directory & Roles</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Manage admin roles, catalog specialists, customer care agents, and verify login sessions.</p>
+      </section>
+
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+        <div>
+          <h2 style="font-family:'Outfit'; font-size:24px; color:var(--text-color); margin:0;">Staff Members</h2>
+          <p style="color:var(--text-muted); font-size:12px; margin:4px 0 0 0;">Manage store staff access logs.</p>
+        </div>
+        <button onclick="showToast('Staff invitations feature requires enterprise key setup.', 'warning')" class="btn btn-primary">Invite Staff</button>
+      </div>
+
+      <div class="glass table-responsive" style="padding:25px; border-radius:12px;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Avatar</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div style="width:30px; height:30px; border-radius:50%; background:var(--adm-accent); display:flex; align-items:center; justify-content:center; color:white; font-weight:700;">AO</div></td>
+              <td><strong>Admin Owner</strong></td>
+              <td>admin@magizhvagam.com</td>
+              <td>Super Administrator</td>
+              <td><span class="badge badge-success">Active</span></td>
+            </tr>
+            <tr>
+              <td><div style="width:30px; height:30px; border-radius:50%; background:#2563eb; display:flex; align-items:center; justify-content:center; color:white; font-weight:700;">KM</div></td>
+              <td><strong>Kishore Kumar</strong></td>
+              <td>kishore@magizhvagam.com</td>
+              <td>Catalog Manager</td>
+              <td><span class="badge badge-success">Active</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    
+
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      window.updateAdminBreadcrumbs('Customers', 'Staff');
+    
+    });
+  </script>
+</body>
+</html>

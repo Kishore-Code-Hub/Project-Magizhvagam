@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Affiliate Marketing & Referrals | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Affiliates Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Marketing Operations</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Affiliate Referrals Program</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Register marketing partners, track referral codes, and configure commission payouts.</p>
+      </section>
+
+      <div class="grid grid-2" style="display:grid; grid-template-columns: 1fr 1.35fr; gap:30px;">
+        <!-- Affiliate Register Form -->
+        <div class="glass" style="padding:25px; border-radius:12px; height:fit-content;">
+          <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:15px;">Register Affiliate Partner</h3>
+          <form id="affiliate-creator-form" onsubmit="event.preventDefault();">
+            <div class="admin-form-group">
+              <label>Partner Name *</label>
+              <input type="text" id="aff-name" class="admin-form-control" placeholder="e.g. Ramesh Kumar (Influencer)" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Affiliate Promo Code *</label>
+              <input type="text" id="aff-code" class="admin-form-control" placeholder="RAMESH15" style="text-transform:uppercase;" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Commission Percentage (%) *</label>
+              <input type="number" id="aff-rate" class="admin-form-control" value="5" min="1" max="100" required>
+            </div>
+            <button id="add-affiliate-btn" type="button" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:10px;">Register Partner</button>
+          </form>
+        </div>
+
+        <!-- Active Affiliate Directory -->
+        <div class="glass" style="padding:25px; border-radius:12px;">
+          <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:15px;">Affiliate Partners Directory</h3>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Code</th>
+                  <th>Commission</th>
+                  <th>Total Earnings</th>
+                </tr>
+              </thead>
+              <tbody id="affiliates-list-tbody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderAffiliatesList();
+      window.updateAdminBreadcrumbs('Marketing', 'Affiliates');
+    });
+
+    let mockAffiliates = [
+      { id: '1092', name: 'Manoj Kumar (Gift Blogger)', code: 'MANOJ10', rate: 8, earnings: 14500 },
+      { id: '2809', name: 'Chennai Wedding Planners', code: 'CWP12', rate: 12, earnings: 38400 }
+    ];
+
+    function renderAffiliatesList() {
+      const container = document.getElementById('affiliates-list-tbody');
+      if (!container) return;
+
+      container.innerHTML = mockAffiliates.map(a => `
+        <tr>
+          <td><strong>#${a.id}</strong></td>
+          <td><strong>${a.name}</strong></td>
+          <td><code>${a.code}</code></td>
+          <td><strong>${a.rate}%</strong></td>
+          <td><strong>₹${a.earnings.toLocaleString()}</strong></td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('add-affiliate-btn').addEventListener('click', () => {
+      const name = document.getElementById('aff-name').value.trim();
+      const code = document.getElementById('aff-code').value.trim().toUpperCase();
+      const rate = parseInt(document.getElementById('aff-rate').value) || 5;
+
+      if (!name || !code) {
+        showToast('Please enter name and promo code', 'warning');
+        return;
+      }
+
+      const newA = {
+        id: Math.floor(1000 + Math.random() * 9000).toString(),
+        name,
+        code,
+        rate,
+        earnings: 0
+      };
+
+      mockAffiliates.push(newA);
+      showToast('Affiliate partner added successfully!', 'success');
+      
+      document.getElementById('aff-name').value = '';
+      document.getElementById('aff-code').value = '';
+      document.getElementById('aff-rate').value = '5';
+      renderAffiliatesList();
+    });
+  </script>
+</body>
+</html>

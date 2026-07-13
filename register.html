@@ -145,48 +145,83 @@
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script>
-    // Real-time Password Strength Meter
-    const passwordInput = document.getElementById('password');
-    const strengthBar = document.getElementById('strength-bar');
-    const strengthText = document.getElementById('strength-text');
+    (function () {
+      'use strict';
+      let abortController = null;
+      let otpTimerInterval = null;
 
-    passwordInput.addEventListener('input', () => {
-      const val = passwordInput.value;
-      let score = 0;
-      if (val.length >= 8) score++;
-      if (/[A-Z]/.test(val)) score++;
-      if (/[a-z]/.test(val)) score++;
-      if (/[0-9]/.test(val)) score++;
-      if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(val)) score++;
+      async function initPage() {
+        if (abortController) abortController.abort();
+        abortController = new AbortController();
+        const signal = abortController.signal;
 
-      let percent = (score / 5) * 100;
-      strengthBar.style.width = percent + '%';
-
-      if (score <= 1) {
-        strengthBar.style.background = '#ef4444';
-        strengthText.textContent = 'Very Weak';
-        strengthText.style.color = '#ef4444';
-      } else if (score <= 3) {
-        strengthBar.style.background = '#f59e0b';
-        strengthText.textContent = 'Medium';
-        strengthText.style.color = '#f59e0b';
-      } else if (score === 4) {
-        strengthBar.style.background = '#3b82f6';
-        strengthText.textContent = 'Strong';
-        strengthText.style.color = '#3b82f6';
-      } else {
-        strengthBar.style.background = '#10b981';
-        strengthText.textContent = 'Enterprise Secure';
-        strengthText.style.color = '#10b981';
+        try {
+          initRegister({ signal });
+        } catch (e) {
+          console.error('[MZPage] Register init failed:', e);
+        }
       }
-    });
 
-    let otpTimerInterval = null;
-    function startOtpTimer() {
-      if (otpTimerInterval) clearInterval(otpTimerInterval);
-      const resendBtn = document.getElementById('resend-otp-btn');
-      const timerClock = document.getElementById('otp-timer-clock');
-      resendBtn.setAttribute('disabled', 'true');
+      function destroyPage() {
+        if (abortController) {
+          abortController.abort();
+          abortController = null;
+        }
+        if (otpTimerInterval) {
+          clearInterval(otpTimerInterval);
+          otpTimerInterval = null;
+        }
+      }
+
+      window.MZPageRegistry = window.MZPageRegistry || {};
+      window.MZPageRegistry['register'] = {
+        init: initPage,
+        destroy: destroyPage
+      };
+
+      function initRegister(options = {}) {
+        // Real-time Password Strength Meter
+        const passwordInput = document.getElementById('password');
+        const strengthBar = document.getElementById('strength-bar');
+        const strengthText = document.getElementById('strength-text');
+        if (!passwordInput) return;
+
+        passwordInput.addEventListener('input', () => {
+          const val = passwordInput.value;
+          let score = 0;
+          if (val.length >= 8) score++;
+          if (/[A-Z]/.test(val)) score++;
+          if (/[a-z]/.test(val)) score++;
+          if (/[0-9]/.test(val)) score++;
+          if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(val)) score++;
+
+          let percent = (score / 5) * 100;
+          strengthBar.style.width = percent + '%';
+
+          if (score <= 1) {
+            strengthBar.style.background = '#ef4444';
+            strengthText.textContent = 'Very Weak';
+            strengthText.style.color = '#ef4444';
+          } else if (score <= 3) {
+            strengthBar.style.background = '#f59e0b';
+            strengthText.textContent = 'Medium';
+            strengthText.style.color = '#f59e0b';
+          } else if (score === 4) {
+            strengthBar.style.background = '#3b82f6';
+            strengthText.textContent = 'Strong';
+            strengthText.style.color = '#3b82f6';
+          } else {
+            strengthBar.style.background = '#10b981';
+            strengthText.textContent = 'Enterprise Secure';
+            strengthText.style.color = '#10b981';
+          }
+        });
+
+        function startOtpTimer() {
+          if (otpTimerInterval) clearInterval(otpTimerInterval);
+          const resendBtn = document.getElementById('resend-otp-btn');
+          const timerClock = document.getElementById('otp-timer-clock');
+          resendBtn.setAttribute('disabled', 'true');
       resendBtn.setAttribute('style', 'width: 100%; margin-top: 14px; border-radius: 8px; font-size: 12px; padding: 8px 0; opacity: 0.5; pointer-events: none; cursor: not-allowed;');
       
       const duration = 180; // 3 minutes in seconds
@@ -215,17 +250,18 @@
       otpTimerInterval = setInterval(updateTimer, 1000);
     }
 
-    document.getElementById('otp-verify-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const otp = document.getElementById('otp-code').value.trim();
-      const email = window.registeredEmail;
-      
-      try {
-        const res = await fetch('/api/auth/verify-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, otp })
-        });
+        document.getElementById('otp-verify-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const otp = document.getElementById('otp-code').value.trim();
+          const email = window.registeredEmail;
+          
+          try {
+            const res = await fetch('/api/auth/verify-otp', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, otp }),
+              ...options
+            });
         const data = await res.json();
         if (data.success) {
           showToast('Email verified successfully! Redirecting to login...', 'success');
@@ -240,14 +276,15 @@
       }
     });
 
-    document.getElementById('resend-otp-btn').addEventListener('click', async () => {
-      const email = window.registeredEmail;
-      try {
-        const res = await fetch('/api/auth/resend-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        });
+        document.getElementById('resend-otp-btn').addEventListener('click', async () => {
+          const email = window.registeredEmail;
+          try {
+            const res = await fetch('/api/auth/resend-otp', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email }),
+              ...options
+            });
         const data = await res.json();
         if (data.success) {
           showToast('A new OTP code has been sent to your email.', 'success');
@@ -260,60 +297,61 @@
       }
     });
 
-    document.getElementById('register-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const password = document.getElementById('password').value;
-      const confirmPassword = document.getElementById('confirm-password').value;
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const name = document.getElementById('name').value.trim();
+          const email = document.getElementById('email').value.trim();
+          const phone = document.getElementById('phone').value.trim();
+          const password = document.getElementById('password').value;
+          const confirmPassword = document.getElementById('confirm-password').value;
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        showToast('Please enter a valid email address format.', 'error');
-        return;
-      }
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(email)) {
+            showToast('Please enter a valid email address format.', 'error');
+            return;
+          }
 
-      const phoneRegex = /^[0-9]{10}$/;
-      if (!phoneRegex.test(phone)) {
-        showToast('Please enter a valid 10 digit mobile number.', 'error');
-        return;
-      }
+          const phoneRegex = /^[0-9]{10}$/;
+          if (!phoneRegex.test(phone)) {
+            showToast('Please enter a valid 10 digit mobile number.', 'error');
+            return;
+          }
 
-      if (password !== confirmPassword) {
-        showToast('Passwords do not match!', 'error');
-        return;
-      }
+          if (password !== confirmPassword) {
+            showToast('Passwords do not match!', 'error');
+            return;
+          }
 
-      // Enterprise password strength check
-      const strengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
-      if (!strengthRegex.test(password)) {
-        showToast('Password does not meet enterprise security requirements: minimum 8 characters, at least 1 uppercase letter, 1 lowercase letter, 1 numerical digit, and 1 special symbol.', 'error');
-        return;
-      }
+          // Enterprise password strength check
+          const strengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+          if (!strengthRegex.test(password)) {
+            showToast('Password does not meet enterprise security requirements: minimum 8 characters, at least 1 uppercase letter, 1 lowercase letter, 1 numerical digit, and 1 special symbol.', 'error');
+            return;
+          }
 
-      // Lock form inputs
-      ['name', 'email', 'phone', 'password', 'confirm-password'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.disabled = true;
-      });
-      
-      // Disable main Register submit button and show loading state
-      const submitBtn = e.target.querySelector('button[type="submit"]');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.style.opacity = '0.6';
-        submitBtn.style.cursor = 'not-allowed';
-        submitBtn.innerHTML = '<span class="spinner" style="display:inline-block; width:12px; height:12px; border:2px solid rgba(255,255,255,0.3); border-left-color:#fff; border-radius:50%; animation:spin 1s linear infinite; margin-right:8px; vertical-align:middle;"></span>Processing Registration...';
-      }
+          // Lock form inputs
+          ['name', 'email', 'phone', 'password', 'confirm-password'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.disabled = true;
+          });
+          
+          // Disable main Register submit button and show loading state
+          const submitBtn = e.target.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+            submitBtn.style.cursor = 'not-allowed';
+            submitBtn.innerHTML = '<span class="spinner" style="display:inline-block; width:12px; height:12px; border:2px solid rgba(255,255,255,0.3); border-left-color:#fff; border-radius:50%; animation:spin 1s linear infinite; margin-right:8px; vertical-align:middle;"></span>Processing Registration...';
+          }
 
-      showToast('Creating account and sending verification email...', 'info');
-      try {
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, phone, password })
-        });
+          showToast('Creating account and sending verification email...', 'info');
+          try {
+            const res = await fetch('/api/auth/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, email, phone, password }),
+              ...options
+            });
         const data = await res.json();
         if (!data.success) {
           showToast(data.error || 'Registration failed', 'error');
@@ -358,7 +396,11 @@
           submitBtn.innerHTML = 'Register';
         }
       }
-    });
+        });
+      }
+    }
+
+  })();
   </script>
 </body>
 </html>

@@ -1,7 +1,54 @@
+// Centralized listener interceptor
+if (!window.MZ_INTERCEPTOR_ACTIVE) {
+  window.MZ_INTERCEPTOR_ACTIVE = true;
+  window.MZ_DOMContentLoaded_Listeners = [];
+  window.MZ_Load_Listeners = [];
+
+  const origDocAdd = document.addEventListener;
+  document.addEventListener = function (type, listener, options) {
+    if (type === 'DOMContentLoaded') {
+      window.MZ_DOMContentLoaded_Listeners.push(listener);
+    } else {
+      origDocAdd.call(this, type, listener, options);
+    }
+  };
+
+  const origWinAdd = window.addEventListener;
+  window.addEventListener = function (type, listener, options) {
+    if (type === 'DOMContentLoaded') {
+      window.MZ_DOMContentLoaded_Listeners.push(listener);
+    } else if (type === 'load') {
+      window.MZ_Load_Listeners.push(listener);
+    } else {
+      origWinAdd.call(this, type, listener, options);
+    }
+  };
+}
+
 console.log("APP LOADED");
 window.addEventListener("error", (e) => {
   console.log("ERROR:", e.message);
 });
+
+// Auto-load/inject Page Transition System CSS & JS
+(function() {
+  if (typeof window.MZNavigate === 'undefined') {
+    if (!document.getElementById('mz-transition-styles')) {
+      const link = document.createElement('link');
+      link.id = 'mz-transition-styles';
+      link.rel = 'stylesheet';
+      link.href = '/assets/css/page-transitions.css';
+      document.head.appendChild(link);
+    }
+    if (!document.getElementById('mz-transition-script')) {
+      const script = document.createElement('script');
+      script.id = 'mz-transition-script';
+      script.src = '/assets/js/page-transition.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+  }
+})();
 
 /**
  * MAGIZHVAGAM E-Commerce Platform - Global Script
@@ -164,7 +211,7 @@ window.resolveProductImage = (url) => {
 
 // Dynamic settings fetcher
 let settingsPromise = null;
-async function fetchSettings() {
+async function fetchSettings(options = {}) {
   if (globalSettings) return globalSettings;
   // Prefer fresh API data; fall back to cached value only on network failure.
   if (settingsPromise) return settingsPromise;
@@ -172,7 +219,7 @@ async function fetchSettings() {
   settingsPromise = (async () => {
     // Try API first (no-store to avoid returning stale caches)
     try {
-      const res = await fetch('/api/settings/homepage', { cache: 'no-store' });
+      const res = await fetch('/api/settings/homepage', { cache: 'no-store', ...options });
       if (res && res.ok) {
         const text = await res.text();
         let data;
@@ -472,7 +519,7 @@ function isStandaloneAdminLoginPage() {
 window.featureToggles = null;
 let featureTogglesPromise = null;
 
-async function fetchFeatureToggles() {
+async function fetchFeatureToggles(options = {}) {
   if (window.featureToggles) return window.featureToggles;
   try {
     const cached = localStorage.getItem('mz-feature-toggles');
@@ -486,7 +533,7 @@ async function fetchFeatureToggles() {
 
   featureTogglesPromise = (async () => {
     try {
-      const res = await fetch('/api/settings/feature-toggles');
+      const res = await fetch('/api/settings/feature-toggles', options);
       const data = await res.json();
       if (data.success) {
         window.featureToggles = data.toggles;
@@ -624,7 +671,7 @@ function initIcons() {
     return;
   }
   const script = document.createElement('script');
-  script.src = 'https://unpkg.com/lucide@latest';
+  script.src = '/assets/vendor/lucide.min.js';
   script.onload = () => {
     window.renderIcons();
   };

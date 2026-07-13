@@ -148,100 +148,155 @@
   <script src="/assets/js/storefront-init.js"></script>
   <script src="/assets/js/app.js"></script>
   <script>
-    // Auto-populate email from query param (e.g. redirected from register.html)
     (function () {
-      const params = new URLSearchParams(window.location.search);
-      const emailParam = params.get('email');
-      if (emailParam) {
-        const emailInput = document.getElementById('email');
-        if (emailInput) {
-          emailInput.value = decodeURIComponent(emailParam);
-          emailInput.readOnly = true;
-          emailInput.style.opacity = '0.7';
+      'use strict';
+      let abortController = null;
+      let resendCooldownTimeout = null;
+      let redirectTimeout = null;
+
+      async function initPage() {
+        if (abortController) abortController.abort();
+        abortController = new AbortController();
+        const signal = abortController.signal;
+
+        try {
+          initVerify({ signal });
+        } catch (e) {
+          console.error('[MZPage] Verify init failed:', e);
+        }
+      }
+
+      function destroyPage() {
+        if (abortController) {
+          abortController.abort();
+          abortController = null;
+        }
+        if (resendCooldownTimeout) {
+          clearTimeout(resendCooldownTimeout);
+          resendCooldownTimeout = null;
+        }
+        if (redirectTimeout) {
+          clearTimeout(redirectTimeout);
+          redirectTimeout = null;
+        }
+      }
+
+      window.MZPageRegistry = window.MZPageRegistry || {};
+      window.MZPageRegistry['verify-email'] = {
+        init: initPage,
+        destroy: destroyPage
+      };
+
+      function initVerify(options = {}) {
+        // Auto-populate email from query param
+        const params = new URLSearchParams(window.location.search);
+        const emailParam = params.get('email');
+        if (emailParam) {
+          const emailInput = document.getElementById('email');
+          if (emailInput) {
+            emailInput.value = decodeURIComponent(emailParam);
+            emailInput.readOnly = true;
+            emailInput.style.opacity = '0.7';
+          }
+        }
+
+        function showStatus(msg, type) {
+          const el = document.getElementById('status-msg');
+          if (el) {
+            el.textContent = msg;
+            el.className = type; // 'error' or 'success'
+            el.style.display = 'block';
+          }
+        }
+
+        const verifyBtn = document.getElementById('verify-btn');
+        if (verifyBtn) {
+          verifyBtn.addEventListener('click', async () => {
+            const email = document.getElementById('email').value.trim();
+            const otp = document.getElementById('otp').value.trim();
+
+            if (!email || !otp) {
+              showStatus('Please enter your email address and the 6-digit OTP code.', 'error');
+              return;
+            }
+            if (!/^\d{6}$/.test(otp)) {
+              showStatus('OTP must be exactly 6 digits.', 'error');
+              return;
+            }
+
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Verifying...';
+
+            try {
+              const res = await fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp }),
+                ...options
+              });
+              const data = await res.json();
+
+              if (res.ok && data.success) {
+                showStatus('Email verified successfully! Redirecting to login...', 'success');
+                if (redirectTimeout) clearTimeout(redirectTimeout);
+                redirectTimeout = setTimeout(() => {
+                  window.location.href = data.redirect || '/login.html?verified=true';
+                }, 1500);
+              } else {
+                showStatus(data.error || 'Verification failed. Please check your OTP and try again.', 'error');
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify & Activate Account';
+              }
+            } catch (e) {
+              showStatus('Network error. Please check your connection and try again.', 'error');
+              verifyBtn.disabled = false;
+              verifyBtn.textContent = 'Verify & Activate Account';
+            }
+          });
+        }
+
+        const resendBtn = document.getElementById('resend-btn');
+        if (resendBtn) {
+          resendBtn.addEventListener('click', async () => {
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+              showStatus('Please enter your email address first.', 'error');
+              return;
+            }
+
+            resendBtn.disabled = true;
+            resendBtn.textContent = 'Sending...';
+
+            try {
+              const res = await fetch('/api/auth/resend-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+                ...options
+              });
+              const data = await res.json();
+
+              if (res.ok && data.success) {
+                showStatus('A new 6-digit OTP has been sent to your email address.', 'success');
+              } else {
+                showStatus(data.error || 'Failed to resend OTP. Please try again.', 'error');
+              }
+            } catch (e) {
+              showStatus('Network error. Please check your connection and try again.', 'error');
+            }
+
+            if (resendCooldownTimeout) clearTimeout(resendCooldownTimeout);
+            resendCooldownTimeout = setTimeout(() => {
+              const rBtn = document.getElementById('resend-btn');
+              if (rBtn) {
+                rBtn.disabled = false;
+                rBtn.textContent = 'Resend OTP';
+              }
+            }, 30000);
+          });
         }
       }
     })();
-
-    function showStatus(msg, type) {
-      const el = document.getElementById('status-msg');
-      el.textContent = msg;
-      el.className = type; // 'error' or 'success'
-      el.style.display = 'block';
-    }
-
-    document.getElementById('verify-btn').addEventListener('click', async () => {
-      const email = document.getElementById('email').value.trim();
-      const otp = document.getElementById('otp').value.trim();
-
-      if (!email || !otp) {
-        showStatus('Please enter your email address and the 6-digit OTP code.', 'error');
-        return;
-      }
-      if (!/^\d{6}$/.test(otp)) {
-        showStatus('OTP must be exactly 6 digits.', 'error');
-        return;
-      }
-
-      document.getElementById('verify-btn').disabled = true;
-      document.getElementById('verify-btn').textContent = 'Verifying...';
-
-      try {
-        const res = await fetch('/api/auth/verify-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, otp })
-        });
-        const data = await res.json();
-
-        if (res.ok && data.success) {
-          showStatus('Email verified successfully! Redirecting to login...', 'success');
-          setTimeout(() => {
-            window.location.href = data.redirect || '/login.html?verified=true';
-          }, 1500);
-        } else {
-          showStatus(data.error || 'Verification failed. Please check your OTP and try again.', 'error');
-          document.getElementById('verify-btn').disabled = false;
-          document.getElementById('verify-btn').textContent = 'Verify & Activate Account';
-        }
-      } catch (e) {
-        showStatus('Network error. Please check your connection and try again.', 'error');
-        document.getElementById('verify-btn').disabled = false;
-        document.getElementById('verify-btn').textContent = 'Verify & Activate Account';
-      }
-    });
-
-    document.getElementById('resend-btn').addEventListener('click', async () => {
-      const email = document.getElementById('email').value.trim();
-      if (!email) {
-        showStatus('Please enter your email address first.', 'error');
-        return;
-      }
-
-      document.getElementById('resend-btn').disabled = true;
-      document.getElementById('resend-btn').textContent = 'Sending...';
-
-      try {
-        const res = await fetch('/api/auth/resend-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        });
-        const data = await res.json();
-
-        if (res.ok && data.success) {
-          showStatus('A new 6-digit OTP has been sent to your email address.', 'success');
-        } else {
-          showStatus(data.error || 'Failed to resend OTP. Please try again.', 'error');
-        }
-      } catch (e) {
-        showStatus('Network error. Please check your connection and try again.', 'error');
-      }
-
-      setTimeout(() => {
-        document.getElementById('resend-btn').disabled = false;
-        document.getElementById('resend-btn').textContent = 'Resend OTP';
-      }, 30000); // 30-second cooldown on resend button
-    });
   </script>
 </body>
 </html>

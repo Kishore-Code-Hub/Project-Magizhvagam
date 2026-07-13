@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homepage Layout Builder | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Homepage Builder Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Content Operations</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Homepage Builder</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Arrange home components order, toggle feature layouts, and manage custom hero slider banners.</p>
+      </section>
+
+      <div class="grid grid-2" style="display:grid; grid-template-columns: 1fr 1.25fr; gap:30px;">
+        
+        <!-- Section layout sort manager -->
+        <div class="glass" style="padding:25px; border-radius:12px; height:fit-content;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="font-family:'Outfit'; font-size:18px; color:var(--text-color); margin:0;">Homepage Sections</h3>
+            <button id="save-sections-order-btn" class="btn btn-secondary" style="font-size:11px; padding:6px 12px;">Save Order</button>
+          </div>
+          <div id="homepage-sections-manager" style="display:flex; flex-direction:column; gap:10px;">
+            <div style="text-align:center;"><div class="spinner" style="margin:auto;"></div></div>
+          </div>
+        </div>
+
+        <!-- Banners manager -->
+        <div class="glass" style="padding:25px; border-radius:12px;">
+          <h3 style="font-family:'Outfit'; font-size:18px; color:var(--text-color); margin-top:0; margin-bottom:15px;">Hero Carousel Banners</h3>
+          <div id="hero-slides-container" style="display:flex; flex-direction:column; gap:15px; margin-bottom:20px;">
+            <!-- Loaded dynamically -->
+          </div>
+          <button id="save-hero-banners-btn" class="btn btn-primary" style="width:100%; border-radius:8px; font-weight:700;">Save Carousel Banners</button>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadHomepageContent();
+      window.updateAdminBreadcrumbs('Content', 'Homepage Builder');
+    });
+
+    let homepageData = null;
+
+    async function loadHomepageContent() {
+      try {
+        const res = await adminFetch('/api/site-settings/homepage');
+        const data = await res.json();
+        if (data.success && data.data) {
+          homepageData = data.data;
+          renderSectionsList(data.data.sections);
+          renderHeroSlides(data.data.sections.find(s => s.id === 'hero')?.config?.banners || []);
+        }
+      } catch (err) {
+        showToast('Failed to load homepage setup', 'error');
+      }
+    }
+
+    function renderSectionsList(sections) {
+      const container = document.getElementById('homepage-sections-manager');
+      if (!container) return;
+
+      const sorted = [...sections].sort((a, b) => a.order - b.order);
+      container.innerHTML = sorted.map((s, index) => `
+        <div class="glass-panel" style="padding:12px; border-radius:8px; border:1px solid var(--card-border); display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.01);">
+          <div>
+            <strong style="text-transform:capitalize; font-size:13px; color:var(--text-color);">${s.id.replace(/_/g, ' ')}</strong>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Position: ${s.order}</div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <label class="toggle-switch" style="transform:scale(0.85);">
+              <input type="checkbox" class="sec-toggle" data-id="${s.id}" ${s.enabled ? 'checked' : ''}>
+              <span class="toggle-slider"></span>
+            </label>
+            ${index > 0 ? `<button onclick="moveSection('${s.id}', -1)" class="btn btn-secondary" style="padding:2px 6px; font-size:10px;">↑</button>` : ''}
+            ${index < sorted.length - 1 ? `<button onclick="moveSection('${s.id}', 1)" class="btn btn-secondary" style="padding:2px 6px; font-size:10px;">↓</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function moveSection(id, direction) {
+      if (!homepageData) return;
+      const sections = homepageData.sections;
+      const sorted = [...sections].sort((a, b) => a.order - b.order);
+      const index = sorted.findIndex(s => s.id === id);
+      if (index === -1) return;
+
+      const swapIndex = index + direction;
+      if (swapIndex < 0 || swapIndex >= sorted.length) return;
+
+      // Swap orders
+      const tempOrder = sorted[index].order;
+      sorted[index].order = sorted[swapIndex].order;
+      sorted[swapIndex].order = tempOrder;
+
+      renderSectionsList(sections);
+    }
+    window.moveSection = moveSection;
+
+    function renderHeroSlides(banners) {
+      const container = document.getElementById('hero-slides-container');
+      if (!container) return;
+
+      container.innerHTML = banners.map((b, index) => `
+        <div class="glass-panel" style="padding:15px; border-radius:10px; border:1px solid var(--card-border); background:rgba(255,255,255,0.01);">
+          <div style="font-size:12px; font-weight:700; color:var(--adm-accent); margin-bottom:8px;">Slide #${index + 1}</div>
+          <div class="admin-form-group">
+            <label style="font-size:11px;">Image URL</label>
+            <input type="text" class="admin-form-control slide-img" data-idx="${index}" value="${b.imageUrl}" style="font-size:12px;">
+          </div>
+          <div class="admin-form-group">
+            <label style="font-size:11px;">Title Headline</label>
+            <input type="text" class="admin-form-control slide-title" data-idx="${index}" value="${b.title || ''}" style="font-size:12px;">
+          </div>
+          <div class="admin-form-group" style="margin:0;">
+            <label style="font-size:11px;">Subtitle / Tagline</label>
+            <input type="text" class="admin-form-control slide-sub" data-idx="${index}" value="${b.subtitle || ''}" style="font-size:12px;">
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('save-sections-order-btn').addEventListener('click', saveHomepageConfig);
+    document.getElementById('save-hero-banners-btn').addEventListener('click', saveHomepageConfig);
+
+    async function saveHomepageConfig() {
+      if (!homepageData) return;
+
+      // Read toggles
+      document.querySelectorAll('.sec-toggle').forEach(chk => {
+        const sec = homepageData.sections.find(s => s.id === chk.dataset.id);
+        if (sec) sec.enabled = chk.checked;
+      });
+
+      // Read slide values
+      const banners = [];
+      const slides = document.querySelectorAll('.slide-img');
+      slides.forEach(img => {
+        const idx = img.dataset.idx;
+        banners.push({
+          imageUrl: img.value,
+          title: document.querySelector(`.slide-title[data-idx="${idx}"]`).value,
+          subtitle: document.querySelector(`.slide-sub[data-idx="${idx}"]`).value
+        });
+      });
+
+      const hero = homepageData.sections.find(s => s.id === 'hero');
+      if (hero) {
+        hero.config = hero.config || {};
+        hero.config.banners = banners;
+      }
+
+      try {
+        const res = await adminFetch('/api/site-settings/homepage', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(homepageData)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Homepage layout config updated successfully!', 'success');
+          loadHomepageContent();
+        } else {
+          showToast(data.error || 'Failed to save layout', 'error');
+        }
+      } catch (e) {
+        showToast('Connection error updating homepage layout', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

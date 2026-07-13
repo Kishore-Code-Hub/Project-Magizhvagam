@@ -1,21 +1,77 @@
-/**
- * MAGIZHVAGAM - Homepage Script
- * Dynamically binds banners, collections, best sellers, and testimonials from the setting endpoint
- */
+(function () {
+  'use strict';
+  
+  let abortController = null;
+  let tickerMouseEnterHandler = null;
+  let tickerMouseLeaveHandler = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadHomepageData();
-  initProductTicker();
-});
+  async function initHomePage() {
+    if (abortController) abortController.abort();
+    abortController = new AbortController();
+    const signal = abortController.signal;
 
-async function initProductTicker() {
+    // Run ticker initialization concurrently for instant page rendering
+    initProductTicker({ signal }).catch(err => {
+      console.error('[home.js] Product ticker failure:', err);
+    });
+
+    try {
+      await loadHomepageData({ signal });
+      
+      // Trigger premium visual features after data rendering
+      animateHeroText();
+      initHeroParallax();
+      injectHeroDecorations();
+      initStatsCounters();
+      initFaqAccordion();
+      initTimelineReveal();
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        console.log('[MZPage] Homepage load aborted.');
+      } else {
+        console.error('Homepage load failed:', err);
+      }
+    }
+  }
+
+  function destroyHomePage() {
+    if (abortController) {
+      abortController.abort();
+      abortController = null;
+    }
+    if (window.mzHeroSliderTimer) {
+      clearInterval(window.mzHeroSliderTimer);
+      window.mzHeroSliderTimer = null;
+    }
+    if (window.mzHomepageCountdownInterval) {
+      clearInterval(window.mzHomepageCountdownInterval);
+      window.mzHomepageCountdownInterval = null;
+    }
+
+    // Clean up product ticker hover listeners to avoid memory leaks
+    const track = document.getElementById('infinite-ticker-track');
+    if (track) {
+      if (tickerMouseEnterHandler) track.removeEventListener('mouseenter', tickerMouseEnterHandler);
+      if (tickerMouseLeaveHandler) track.removeEventListener('mouseleave', tickerMouseLeaveHandler);
+    }
+    tickerMouseEnterHandler = null;
+    tickerMouseLeaveHandler = null;
+  }
+
+  window.MZPageRegistry = window.MZPageRegistry || {};
+  window.MZPageRegistry['home'] = {
+    init: initHomePage,
+    destroy: destroyHomePage
+  };
+
+async function initProductTicker(options = {}) {
   const track = document.getElementById('infinite-ticker-track');
   const g1 = document.getElementById('ticker-group-1');
   const g2 = document.getElementById('ticker-group-2');
   if (!track || !g1 || !g2) return;
   
   try {
-    const res = await fetch('/api/products?limit=30');
+    const res = await fetch('/api/products?limit=30', options);
     const data = await res.json();
     if (data.success && data.products && data.products.length > 0) {
       const list = data.products;
@@ -60,6 +116,22 @@ async function initProductTicker() {
           track.style.animation = `ticker-scroll-infinite ${duration}s linear infinite`;
         }
       });
+
+      // Desktop only: hover pause. Resume from the exact paused position when cursor leaves.
+      tickerMouseEnterHandler = () => {
+        if (window.innerWidth > 1024) {
+          track.style.animationPlayState = 'paused';
+        }
+      };
+      
+      tickerMouseLeaveHandler = () => {
+        if (window.innerWidth > 1024) {
+          track.style.animationPlayState = 'running';
+        }
+      };
+
+      track.addEventListener('mouseenter', tickerMouseEnterHandler);
+      track.addEventListener('mouseleave', tickerMouseLeaveHandler);
       
       // Touch support for mobile swipe
       let touchStartX = 0;
@@ -99,9 +171,9 @@ async function initProductTicker() {
 // Configurable hero slide interval (ms)
 const HERO_SLIDE_INTERVAL = 5000;
 
-async function loadHomepageV4Sections() {
+async function loadHomepageV4Sections(options = {}) {
   try {
-    const res = await fetch('/api/site-settings/homepage');
+    const res = await fetch('/api/site-settings/homepage', options);
     if (res.status !== 200) {
       console.log('[HERO] API failed, fallback retained');
       return false;
@@ -236,13 +308,13 @@ function applyHeroSectionConfig(config) {
 
 
 
-async function loadHomepageData() {
+async function loadHomepageData(options = {}) {
   try {
     console.log('[HERO] Using fallback content');
-    const usedV4 = await loadHomepageV4Sections();
+    const usedV4 = await loadHomepageV4Sections(options);
     // Do NOT hide static hero card. Keep fallback content visible at all times.
 
-    const config = await window.fetchSettings();
+    const config = await window.fetchSettings(options);
 
     if (!config) {
       console.error('Failed to load homepage settings');
@@ -250,7 +322,7 @@ async function loadHomepageData() {
       return;
     }
 
-    const toggles = window.featureToggles || await window.fetchFeatureToggles();
+    const toggles = window.featureToggles || await window.fetchFeatureToggles(options);
 
     // Defensive: ensure legacy cached homepage settings do not override V4 rendering
     try { localStorage.removeItem('mz-homepage-settings'); } catch (e) { /* ignore */ }
@@ -272,7 +344,7 @@ async function loadHomepageData() {
         const observer = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
-              loadProductSection(sec.ids, sec.elementId);
+              loadProductSection(sec.ids, sec.elementId, options);
               observer.unobserve(grid);
             }
           });
@@ -280,9 +352,9 @@ async function loadHomepageData() {
         observer.observe(grid);
       });
     } else {
-      await loadProductSection(config.featuredProductIds, 'featured-products-mount');
-      await loadProductSection(config.bestSellerProductIds, 'bestseller-products-grid');
-      await loadProductSection(config.newArrivalProductIds, 'newarrival-products-grid');
+      await loadProductSection(config.featuredProductIds, 'featured-products-mount', options);
+      await loadProductSection(config.bestSellerProductIds, 'bestseller-products-grid', options);
+      await loadProductSection(config.newArrivalProductIds, 'newarrival-products-grid', options);
     }
 
 
@@ -381,12 +453,12 @@ async function loadHomepageData() {
 
 
 // 2. Category Highlights Renderer
-async function renderCategoryHighlights(catIds) {
+async function renderCategoryHighlights(catIds, options = {}) {
   const container = document.getElementById('category-highlights-mount');
   if (!container) return;
 
   try {
-    const res = await fetch('/api/products/categories');
+    const res = await fetch('/api/products/categories', options);
     const data = await res.json();
     if (data.success) {
       let filtered = data.categories;
@@ -423,9 +495,9 @@ async function renderCategoryHighlights(catIds) {
 let wideCatalogPromise = null;
 let hasShownHomeErrorToast = false;
 
-function fetchWideCatalog() {
+function fetchWideCatalog(options = {}) {
   if (!wideCatalogPromise) {
-    wideCatalogPromise = fetch('/api/products?limit=50')
+    wideCatalogPromise = fetch('/api/products?limit=50', options)
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch wide catalog');
         return res.json();
@@ -438,7 +510,7 @@ function fetchWideCatalog() {
   return wideCatalogPromise;
 }
 
-async function loadProductSection(productIds, elementId) {
+async function loadProductSection(productIds, elementId, options = {}) {
   const grid = document.getElementById(elementId);
   if (!grid) return;
 
@@ -448,11 +520,11 @@ async function loadProductSection(productIds, elementId) {
     let products = [];
 
     // Feature D: If loading featured products, check the live database attribute first
-    const toggles = window.featureToggles || await window.fetchFeatureToggles();
+    const toggles = window.featureToggles || await window.fetchFeatureToggles(options);
     const isFeaturedLayoutEnabled = !(toggles && toggles.homepageLayoutFeatured === false);
     if (elementId === 'featured-products-mount' && isFeaturedLayoutEnabled) {
       try {
-        const res = await fetch('/api/products?isFeatured=true&limit=4');
+        const res = await fetch('/api/products?isFeatured=true&limit=4', options);
         const data = await res.json();
         if (data.success && data.products && data.products.length > 0) {
           products = data.products;
@@ -465,7 +537,7 @@ async function loadProductSection(productIds, elementId) {
     // Fallback/standard flow if not featured or if live query returned no products
     if (products.length === 0 && productIds && productIds.length > 0) {
       const url = `/api/products?ids=${productIds.map(id => id.toString()).join(',')}&limit=${productIds.length}`;
-      const res = await fetch(url);
+      const res = await fetch(url, options);
       const data = await res.json();
       if (data.success) {
         products = data.products || [];
@@ -885,15 +957,5 @@ function initTimelineReveal() {
   }
 }
 
-// Call premium features on load
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    animateHeroText();
-    initHeroParallax();
-    injectHeroDecorations();
-    initStatsCounters();
-    initFaqAccordion();
-    initTimelineReveal();
-  }, 100);
-});
+})();
 

@@ -6,20 +6,67 @@ const prisma = require('../services/prisma');
 const { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } = require('../config/jwt');
 
 const ALLOWED_ADMIN_PAGES = new Set([
-  'dashboard.html',
-  'products.html',
-  'orders.html',
+  'about-builder.html',
+  'affiliates.html',
+  'api-keys.html',
+  'backups.html',
+  'blogs.html',
+  'brands.html',
+  'campaigns.html',
+  'categories.html',
+  'collections.html',
+  'contact-builder.html',
+  'content-pages.html',
+  'coupons.html',
+  'courier.html',
+  'credit-notes.html',
+  'customer-groups.html',
   'customers.html',
-  'settings.html',
-  'media.html',
-  'reports.html',
+  'dashboard.html',
+  'email-studio.html',
+  'faq.html',
+  'flash-sales.html',
+  'homepage-builder.html',
+  'inventory.html',
   'invoices.html',
+  'media-manager.html',
+  'media.html',
+  'navigation-builder.html',
+  'newsletter.html',
+  'orders.html',
+  'payment-gateway.html',
+  'payment-settings.html',
+  'payments.html',
+  'permissions.html',
+  'popup-builder.html',
+  'products.html',
+  'profile-settings.html',
+  'purchase-orders.html',
+  'referrals.html',
+  'refunds.html',
+  'reports.html',
+  'returns.html',
+  'reviews.html',
+  'roles.html',
+  'security.html',
+  'seo.html',
+  'settings.html',
+  'shipping-settings.html',
+  'shipping.html',
+  'sms-studio.html',
+  'smtp-settings.html',
+  'staff.html',
+  'store-settings.html',
+  'support-tickets.html',
+  'support.html',
   'system-diagnostics.html',
-  'security-logs.html',
-  'appearance.html',
-  'marketing.html',
-  'content.html',
-  'enquiries.html'
+  'taxes.html',
+  'theme-builder.html',
+  'users.html',
+  'variants.html',
+  'vendors.html',
+  'warehouse.html',
+  'whatsapp-studio.html'
 ]);
 
 // Authenticate helper for HTML pages (redirect-based instead of JSON error responses)
@@ -116,7 +163,7 @@ const tryHtmlAutoRefresh = async (req, res, next, page) => {
 
 const handleHtmlAuthFailure = (req, res, page) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  return res.redirect(`/admin/login?redirect=admin/${page}`);
+  return res.status(404).sendFile(path.join(__dirname, '../../error.html'));
 };
 
 // Route for dedicated admin login page
@@ -132,14 +179,14 @@ router.use('/admin/workspaces', checkAdminPageAuth, express.static(path.join(__d
 router.get('/admin/:page', checkAdminPageAuth, (req, res) => {
   const filename = path.basename(req.params.page);
   if (filename !== req.params.page || !ALLOWED_ADMIN_PAGES.has(filename)) {
-    return res.status(404).send('Admin page not found.');
+    return res.status(404).sendFile(path.join(__dirname, '../../error.html'));
   }
   const filePath = path.join(__dirname, '../../admin', filename);
 
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.sendFile(filePath, (err) => {
     if (err) {
-      res.status(404).send('Admin page not found.');
+      res.status(404).sendFile(path.join(__dirname, '../../error.html'));
     }
   });
 });

@@ -193,10 +193,40 @@
   <script src="/assets/js/store-enhancements.js"></script>
   <script src="/assets/js/app.js"></script>
   <script>
-    // Route "Drop us a Message" form to backend SMTP API
-    const contactForm = document.getElementById('contact-form');
-    if (contactForm) {
-      contactForm.addEventListener('submit', async (e) => {
+    (function () {
+      'use strict';
+      let abortController = null;
+
+      async function initPage() {
+        if (abortController) abortController.abort();
+        abortController = new AbortController();
+        const signal = abortController.signal;
+
+        try {
+          initContact({ signal });
+        } catch (e) {
+          console.error('[MZPage] Contact init failed:', e);
+        }
+      }
+
+      function destroyPage() {
+        if (abortController) {
+          abortController.abort();
+          abortController = null;
+        }
+      }
+
+      window.MZPageRegistry = window.MZPageRegistry || {};
+      window.MZPageRegistry['contact'] = {
+        init: initPage,
+        destroy: destroyPage
+      };
+
+      function initContact(options = {}) {
+        // Route "Drop us a Message" form to backend SMTP API
+        const contactForm = document.getElementById('contact-form');
+        if (contactForm) {
+          contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const name = document.getElementById('c-name').value.trim();
@@ -230,7 +260,8 @@
           const res = await fetch('/api/contact', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, subject, message })
+            body: JSON.stringify({ name, email, subject, message }),
+            ...options
           });
           const data = await res.json();
 
@@ -308,6 +339,9 @@
         card.style.transform = 'scale(1)';
       });
     }
+  }
+
+  })();
   </script>
 </body>
 

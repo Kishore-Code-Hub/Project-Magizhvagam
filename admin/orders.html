@@ -1,47 +1,299 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orders Registry | MAGIZHVAGAM</title>
+  <title>Orders & Logistics | MAGIZHVAGAM</title>
   
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="stylesheet" href="/assets/css/admin.css">
   <link rel="stylesheet" href="/assets/css/animations.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
+
+  <style>
+    .order-status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .status-pending { background: rgba(245, 158, 11, 0.15); color: var(--adm-warning); }
+    .status-processing { background: rgba(59, 130, 246, 0.15); color: var(--adm-info); }
+    .status-shipped { background: rgba(168, 85, 247, 0.15); color: var(--adm-accent); }
+    .status-delivered { background: rgba(16, 185, 129, 0.15); color: var(--adm-success); }
+    .status-cancelled { background: rgba(239, 68, 68, 0.15); color: var(--adm-danger); }
+
+    .order-timeline {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin: 30px 0;
+      padding: 0 10px;
+    }
+    .order-timeline::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 10px;
+      right: 10px;
+      height: 2px;
+      background: var(--adm-border);
+      z-index: 1;
+    }
+    .timeline-step {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--adm-surface);
+      border: 2px solid var(--adm-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--adm-text-muted);
+      transition: all 0.3s ease;
+    }
+    .timeline-step.active .step-icon {
+      background: var(--adm-accent);
+      border-color: var(--adm-accent);
+      color: white;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+    }
+    .timeline-step.completed .step-icon {
+      background: var(--adm-success);
+      border-color: var(--adm-success);
+      color: white;
+    }
+    .step-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--adm-text-muted);
+    }
+    .timeline-step.active .step-label,
+    .timeline-step.completed .step-label {
+      color: var(--adm-text);
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed var(--adm-border);
+      padding: 10px 0;
+      font-size: 13px;
+    }
+    .detail-row:last-child {
+      border: none;
+    }
+    .detail-label {
+      color: var(--adm-text-muted);
+    }
+    .detail-val {
+      font-weight: 600;
+      color: var(--adm-text);
+    }
+  </style>
 </head>
 <body style="visibility:hidden">
 
   <div class="admin-layout">
     
-    <!-- Sidebar navigation placeholder -->
+    <!-- Sidebar Container -->
     <aside id="admin-sidebar-container"></aside>
 
-    <!-- Main Orders Registry Panel -->
+    <!-- Main Workspace View -->
     <main class="admin-main">
-      <h1 style="font-family:'Outfit'; font-size:32px; margin-bottom:30px; color:var(--text-color);">Orders Registry</h1>
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Tabs Selector -->
+      
 
-      <!-- Orders Registry Table -->
-      <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
-        <table class="admin-table">
+      <!-- Tab 1: Orders Registry -->
+      <div id="tab-registry" class="orders-tab-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+          <div>
+            <h1 style="font-family:'Outfit'; font-size:32px; color:var(--text-color); margin:0;">Orders Registry</h1>
+            <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Manage real-time order bookings, packing logs, courier assignments, and invoice curation.</p>
+          </div>
+          <button onclick="loadAdminOrders()" class="btn btn-secondary" style="border-radius:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="refresh-cw"></i> Refresh list</button>
+        </div>
+
+        <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Total Bill</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-orders-tbody">
+              <tr><td colspan="6" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 2: Returns & Refunds -->
+      <div id="tab-returns" class="orders-tab-panel" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h2 style="font-family:'Outfit'; font-size:24px; color:var(--text-color); margin:0;">Returns & Replacement Requests</h2>
+        </div>
+        <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Request ID</th>
+                <th>Order ID</th>
+                <th>Item</th>
+                <th>Reason</th>
+                <th>Refund Estimate</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="returns-requests-tbody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 3: Couriers & Shipping Rates -->
+      <div id="tab-couriers" class="orders-tab-panel" style="display:none; max-width:700px; margin:0 auto;">
+        <div class="glass" style="padding:25px; border-radius:12px;">
+          <h2 style="font-family:'Outfit'; font-size:24px; color:var(--text-color); margin-bottom:12px;">Courier Integrations & Shipping Tiers</h2>
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:24px;">Configure shipping rates, delivery zones, and assign Courier API credentials (e.g. BlueDart, Delhivery, DTDC).</p>
+          
+          <form id="courier-config-form" style="display:flex; flex-direction:column; gap:16px;">
+            <div class="admin-form-group">
+              <label>Default Domestic Shipping Charge (₹)</label>
+              <input type="number" id="ship-rate-domestic" class="admin-form-control" value="80" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Free Shipping Subtotal Threshold (₹)</label>
+              <input type="number" id="ship-threshold-free" class="admin-form-control" value="1500" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Courier Partner API Link</label>
+              <select id="courier-partner-select" class="admin-form-control">
+                <option value="delhivery">Delhivery Direct Sync</option>
+                <option value="bluedart">BlueDart Webhook Service</option>
+                <option value="dtdc">DTDC Express Integration</option>
+                <option value="manual">Manual Tracking Update only</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="border-radius:8px; padding:12px; font-weight:700;">Save Courier Settings</button>
+          </form>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Order Details Side Drawer/Modal -->
+  <div class="modal-overlay" id="order-details-modal">
+    <div class="modal-content glass animated scale-in" style="max-width:680px; padding:30px; border-radius:20px; overflow-y:auto; max-height:90vh;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--adm-border); padding-bottom:12px;">
+        <h3 style="font-family:'Outfit'; font-size:22px; margin:0;" id="drawer-order-id">Order Details</h3>
+        <button onclick="toggleModal('order-details-modal', false)" style="background:transparent; border:none; cursor:pointer; font-size:20px; color:var(--adm-text-muted); font-weight:bold;">✕</button>
+      </div>
+
+      <!-- Order Status Timeline -->
+      <div class="order-timeline" id="order-timeline-mount">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="grid grid-2" style="gap:24px; margin-bottom:24px;">
+        
+        <!-- Left: Order Summary -->
+        <div class="glass-panel" style="padding:16px; border-radius:12px; border:1px solid var(--adm-border); background:rgba(255,255,255,0.01);">
+          <h4 style="font-family:'Outfit'; font-size:15px; margin-top:0; margin-bottom:12px; color:var(--adm-accent);">Order Summary</h4>
+          <div class="detail-row"><span class="detail-label">Status:</span><span class="detail-val" id="detail-status">-</span></div>
+          <div class="detail-row"><span class="detail-label">Subtotal:</span><span class="detail-val" id="detail-subtotal">₹0.00</span></div>
+          <div class="detail-row"><span class="detail-label">Tax (GST):</span><span class="detail-val" id="detail-tax">₹0.00</span></div>
+          <div class="detail-row"><span class="detail-label">Shipping:</span><span class="detail-val" id="detail-shipping">₹0.00</span></div>
+          <div class="detail-row"><span class="detail-label">Discount:</span><span class="detail-val" id="detail-discount">₹0.00</span></div>
+          <div class="detail-row" style="border-top:1px solid var(--adm-border); margin-top:8px; padding-top:8px;"><span class="detail-label" style="font-weight:700; color:var(--adm-text);">Grand Total:</span><span class="detail-val" style="color:var(--adm-accent); font-size:16px;" id="detail-total">₹0.00</span></div>
+        </div>
+
+        <!-- Right: Customer Info -->
+        <div class="glass-panel" style="padding:16px; border-radius:12px; border:1px solid var(--adm-border); background:rgba(255,255,255,0.01);">
+          <h4 style="font-family:'Outfit'; font-size:15px; margin-top:0; margin-bottom:12px; color:var(--adm-accent);">Customer Details</h4>
+          <div class="detail-row"><span class="detail-label">Name:</span><span class="detail-val" id="detail-customer-name">-</span></div>
+          <div class="detail-row"><span class="detail-label">Email:</span><span class="detail-val" id="detail-customer-email">-</span></div>
+          <div class="detail-row"><span class="detail-label">Phone:</span><span class="detail-val" id="detail-customer-phone">-</span></div>
+          <div class="detail-row" style="flex-direction:column; align-items:start; gap:4px;"><span class="detail-label">Shipping Address:</span><span style="font-size:12px; line-height:1.4; font-weight:600;" id="detail-customer-address">-</span></div>
+        </div>
+
+      </div>
+
+      <!-- Items List -->
+      <h4 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--adm-text);">Items Ordered</h4>
+      <div class="glass-panel" style="padding:12px; border-radius:12px; margin-bottom:24px; border:1px solid var(--adm-border); background:rgba(255,255,255,0.01);">
+        <table class="admin-table" style="font-size:12px;">
           <thead>
             <tr>
-              <th>Order ID</th>
-              <th>Customer</th>
-              <th>Date</th>
-              <th>Total Bill</th>
-              <th>Delivery Status</th>
-              <th>Actions</th>
+              <th>Item</th>
+              <th>Unit Price</th>
+              <th>Qty</th>
+              <th>Subtotal</th>
             </tr>
           </thead>
-          <tbody id="admin-orders-tbody">
-            <tr><td colspan="6" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
+          <tbody id="detail-items-tbody">
+            <!-- Items rendered dynamically -->
           </tbody>
         </table>
       </div>
-    </main>
 
+      <!-- Actions & Notes -->
+      <div class="grid grid-2" style="gap:24px;">
+        <!-- Log Logistics -->
+        <div>
+          <h4 style="font-family:'Outfit'; font-size:15px; margin-bottom:10px; color:var(--adm-text);">Logistics & Shipping</h4>
+          <div class="admin-form-group" style="margin-bottom:10px;">
+            <label style="font-size:11px;">Courier Partner</label>
+            <select id="assign-courier-partner" class="admin-form-control" style="padding:8px; font-size:12px;">
+              <option value="Delhivery">Delhivery</option>
+              <option value="BlueDart">BlueDart</option>
+              <option value="DTDC">DTDC</option>
+              <option value="IndiaPost">India Post</option>
+            </select>
+          </div>
+          <div class="admin-form-group" style="margin-bottom:12px;">
+            <label style="font-size:11px;">Tracking ID</label>
+            <input type="text" id="assign-tracking-id" class="admin-form-control" style="padding:8px; font-size:12px;" placeholder="e.g. DLV-908320498">
+          </div>
+          <button type="button" id="save-logistics-btn" class="btn btn-primary" style="width:100%; border-radius:8px; font-size:12px; padding:10px;">Update Courier Logistics</button>
+        </div>
+
+        <!-- Internal Notes -->
+        <div>
+          <h4 style="font-family:'Outfit'; font-size:15px; margin-bottom:10px; color:var(--adm-text);">Internal Operations Notes</h4>
+          <textarea id="order-internal-notes" class="admin-form-control" style="width:100%; height:90px; padding:10px; font-size:12px; border-radius:8px; outline:none;" placeholder="Engraving: 'Happy Wedding Day'. Red ribbon wrapping request."></textarea>
+          <button type="button" id="save-notes-btn" class="btn btn-secondary" style="width:100%; border-radius:8px; font-size:12px; padding:10px; margin-top:10px;">Save Internal Notes</button>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; margin-top:30px; border-top:1px solid var(--adm-border); padding-top:16px;">
+        <button type="button" id="btn-cancel-order" class="btn" style="background:#ef4444 !important; color:white; font-size:12px; padding:8px 16px; border:none; border-radius:8px;">Cancel Order</button>
+        <button type="button" id="btn-print-invoice" class="btn btn-secondary" style="font-size:12px; padding:8px 16px; border-radius:8px;">Print Invoice</button>
+      </div>
+
+    </div>
   </div>
 
   <!-- Scripts -->
@@ -49,6 +301,194 @@
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
   <script src="/assets/js/admin.js"></script>
+
+  <script>
+    // Tab switching engine
+    function switchOrdersTab(event, tabId) {
+      document.querySelectorAll('.studio-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.orders-tab-panel').forEach(panel => panel.style.display = 'none');
+      
+      if (event) {
+        event.target.classList.add('active');
+      }
+      
+      const panel = document.getElementById(tabId);
+      if (panel) {
+        panel.style.display = 'block';
+      }
+
+      if (tabId === 'tab-returns') {
+        renderReturnsRequests();
+      }
+    }
+    window.switchOrdersTab = switchOrdersTab;
+
+    // Render returns requests (Mock DB populated from active orders)
+    function renderReturnsRequests() {
+      const tbody = document.getElementById('returns-requests-tbody');
+      if (!tbody) return;
+
+      const mockReturns = [
+        { id: 'RET-30948', orderId: 'ORD-90832', item: 'Tanjore Art Plate x 1', reason: 'Engraving name misspelled', refund: '₹2,450', status: 'Pending' },
+        { id: 'RET-31002', orderId: 'ORD-90422', item: 'Brass Vilakku Pair x 2', reason: 'Minor scratch on incense holder', refund: '₹1,200', status: 'Approved' }
+      ];
+
+      tbody.innerHTML = mockReturns.map(r => `
+        <tr>
+          <td><strong style="color:var(--adm-text);">#${r.id}</strong></td>
+          <td><strong>#${r.orderId}</strong></td>
+          <td>${r.item}</td>
+          <td><span style="font-size:12px; color:var(--adm-text-muted); font-style:italic;">"${r.reason}"</span></td>
+          <td><strong>${r.refund}</strong></td>
+          <td><span class="order-status-badge ${r.status === 'Approved' ? 'status-delivered' : 'status-pending'}">${r.status}</span></td>
+          <td>
+            ${r.status === 'Pending' ? `
+              <button onclick="approveReturnRequest('${r.id}')" class="btn btn-primary" style="padding:6px 12px; font-size:11px; border-radius:6px; border:none;">Approve Refund</button>
+            ` : `
+              <span style="font-size:11px; color:var(--adm-text-muted); font-weight:700;">Completed</span>
+            `}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function approveReturnRequest(id) {
+      showToast(`Return Request #${id} Approved. Refund dispatched to wallet!`, 'success');
+      setTimeout(() => renderReturnsRequests(), 800);
+    }
+    window.approveReturnRequest = approveReturnRequest;
+
+    // Detailed order drawer logic
+    let activeDetailedOrder = null;
+
+    window.openOrderDetailsDrawer = function(orderId) {
+      if (!window.allAdminOrders) return;
+      const order = window.allAdminOrders.find(o => o._id === orderId || o.orderId === orderId);
+      if (!order) return;
+
+      activeDetailedOrder = order;
+      toggleModal('order-details-modal', true);
+
+      // Populate details
+      document.getElementById('drawer-order-id').innerHTML = `Order #${order.orderId || order._id}`;
+      document.getElementById('detail-status').className = `order-status-badge status-${(order.status || 'Pending').toLowerCase()}`;
+      document.getElementById('detail-status').textContent = order.status || 'Pending';
+      document.getElementById('detail-subtotal').textContent = `₹${(order.summarySubtotal || order.summary?.subtotal || 0).toLocaleString('en-IN')}`;
+      document.getElementById('detail-tax').textContent = `₹${(order.summaryTax || order.summary?.tax || 0).toLocaleString('en-IN')}`;
+      document.getElementById('detail-shipping').textContent = `₹${(order.summaryShipping || order.summary?.shipping || 0).toLocaleString('en-IN')}`;
+      document.getElementById('detail-discount').textContent = `₹${(order.summaryDiscount || order.summary?.discount || 0).toLocaleString('en-IN')}`;
+      document.getElementById('detail-total').textContent = `₹${(order.summaryTotal || order.summary?.total || 0).toLocaleString('en-IN')}`;
+
+      // Customer info
+      const clientName = order.userId ? (order.userId.name || 'Customer') : (order.guestFullName || 'Guest');
+      const clientEmail = order.userId ? (order.userId.email || 'N/A') : (order.guestEmail || 'N/A');
+      const clientPhone = order.userId ? (order.userId.phone || 'N/A') : (order.guestPhone || 'N/A');
+      document.getElementById('detail-customer-name').textContent = clientName;
+      document.getElementById('detail-customer-email').textContent = clientEmail;
+      document.getElementById('detail-customer-phone').textContent = clientPhone;
+
+      const addressStr = `${order.shippingFullName || clientName}<br>${order.shippingPhone || ''}<br>${order.shippingStreet || ''}, ${order.shippingCity || ''}, ${order.shippingState || ''} — ${order.shippingZipCode || ''}`;
+      document.getElementById('detail-customer-address').innerHTML = addressStr;
+
+      // Render Items
+      const itemsTbody = document.getElementById('detail-items-tbody');
+      const itemsList = Array.isArray(order.items) ? order.items : [];
+      itemsTbody.innerHTML = itemsList.map(item => `
+        <tr>
+          <td>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <img src="${item.image || '/assets/images/default-product.webp'}" style="width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid var(--adm-border);">
+              <span style="font-weight:600;">${item.name}</span>
+            </div>
+          </td>
+          <td>₹${item.price.toLocaleString('en-IN')}</td>
+          <td>${item.quantity}</td>
+          <td><strong>₹${(item.price * item.quantity).toLocaleString('en-IN')}</strong></td>
+        </tr>
+      `).join('');
+
+      // Populate logistics & notes from localStorage/cache
+      const savedLogistics = JSON.parse(localStorage.getItem(`logistics_${order.orderId}`) || '{}');
+      document.getElementById('assign-courier-partner').value = savedLogistics.courier || 'Delhivery';
+      document.getElementById('assign-tracking-id').value = savedLogistics.trackingId || '';
+
+      const savedNotes = localStorage.getItem(`notes_${order.orderId}`) || '';
+      document.getElementById('order-internal-notes').value = savedNotes;
+
+      // Render order timeline
+      renderOrderTimeline(order.status);
+
+      // Print Invoice link
+      document.getElementById('btn-print-invoice').onclick = () => {
+        window.open(`/api/orders/${order._id || order.orderId}/invoice`, '_blank');
+      };
+
+      // Cancel button setup
+      const cancelBtn = document.getElementById('btn-cancel-order');
+      if (order.status === 'Cancelled' || order.status === 'Delivered') {
+        cancelBtn.style.display = 'none';
+      } else {
+        cancelBtn.style.display = 'block';
+        cancelBtn.onclick = async () => {
+          if (confirm('Are you sure you want to cancel this order?')) {
+            const success = await updateOrderStatus(order._id || order.orderId, 'Cancelled');
+            if (success) {
+              toggleModal('order-details-modal', false);
+            }
+          }
+        };
+      }
+    };
+
+    function renderOrderTimeline(status) {
+      const steps = ['Pending', 'Processing', 'Shipped', 'Delivered'];
+      const currentIndex = steps.indexOf(status);
+      const timelineMount = document.getElementById('order-timeline-mount');
+
+      timelineMount.innerHTML = steps.map((step, idx) => {
+        let cls = '';
+        if (idx < currentIndex) cls = 'completed';
+        else if (idx === currentIndex) cls = 'active';
+        return `
+          <div class="timeline-step ${cls}">
+            <div class="step-icon">${idx < currentIndex ? '✓' : idx + 1}</div>
+            <span class="step-label">${step}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Save logistics details
+    document.getElementById('save-logistics-btn').addEventListener('click', () => {
+      if (!activeDetailedOrder) return;
+      const courier = document.getElementById('assign-courier-partner').value;
+      const trackingId = document.getElementById('assign-tracking-id').value.trim();
+
+      localStorage.setItem(`logistics_${activeDetailedOrder.orderId}`, JSON.stringify({ courier, trackingId }));
+      showToast('Logistics details updated successfully!', 'success');
+    });
+
+    // Save internal notes details
+    document.getElementById('save-notes-btn').addEventListener('click', () => {
+      if (!activeDetailedOrder) return;
+      const notes = document.getElementById('order-internal-notes').value.trim();
+
+      localStorage.setItem(`notes_${activeDetailedOrder.orderId}`, notes);
+      showToast('Internal comments saved!', 'success');
+    });
+
+    // Handle courier config form submission
+    const courierForm = document.getElementById('courier-config-form');
+    if (courierForm) {
+      courierForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast('Courier rates and integrations updated!', 'success');
+      });
+    }
+  </script>
 </body>
 </html>

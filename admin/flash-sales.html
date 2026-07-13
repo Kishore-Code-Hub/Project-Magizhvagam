@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flash Sales & Countdowns | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Flash Sales Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Marketing Operations</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Flash Sales & Countdowns</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Configure countdown clocks and category discount drops on the home banner page.</p>
+      </section>
+
+      <div class="grid grid-2" style="display:grid; grid-template-columns: 1fr 1.3fr; gap:30px;">
+        <!-- Flash Sale Form -->
+        <div class="glass" style="padding:25px; border-radius:12px; height:fit-content;">
+          <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:15px;">Configure Campaign Timer</h3>
+          <form id="flash-sale-form" onsubmit="event.preventDefault();">
+            <div class="admin-form-group">
+              <label>Campaign Title *</label>
+              <input type="text" id="fs-title" class="admin-form-control" placeholder="Aadi Festival Flash Sale" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Discount Value Percentage (%) *</label>
+              <input type="number" id="fs-discount" class="admin-form-control" min="5" max="95" value="25" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Ends At (Target Date & Time) *</label>
+              <input type="datetime-local" id="fs-target" class="admin-form-control" required>
+            </div>
+            <button id="save-flash-sale-btn" type="button" class="btn btn-primary" style="width:100%; border-radius:8px;">Save Campaign</button>
+          </form>
+        </div>
+
+        <!-- Preview/Status Card -->
+        <div class="glass" style="padding:25px; border-radius:12px;">
+          <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:15px;">Active Campaign Preview</h3>
+          
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--adm-border); padding:20px; border-radius:10px;">
+            <div style="font-size:11px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Storefront Flash banner</div>
+            <h4 style="margin:0; font-family:'Outfit'; font-size:20px;" id="preview-title">Aadi Festival Flash Sale</h4>
+            <p style="font-size:13px; color:var(--text-muted); margin-top:8px;" id="preview-details">Tanjore Plates & Brass Vilakku are marked <strong>25% OFF</strong> on checkout.</p>
+            
+            <div style="display:flex; gap:10px; margin-top:15px;" id="countdown-box">
+              <!-- Rendered dynamic timer values -->
+              <div style="background:rgba(0,0,0,0.12); padding:10px; border-radius:6px; text-align:center; min-width:60px;">
+                <div style="font-size:18px; font-weight:800;" id="timer-days">02</div>
+                <div style="font-size:9px; color:var(--text-muted);">DAYS</div>
+              </div>
+              <div style="background:rgba(0,0,0,0.12); padding:10px; border-radius:6px; text-align:center; min-width:60px;">
+                <div style="font-size:18px; font-weight:800;" id="timer-hours">14</div>
+                <div style="font-size:9px; color:var(--text-muted);">HOURS</div>
+              </div>
+              <div style="background:rgba(0,0,0,0.12); padding:10px; border-radius:6px; text-align:center; min-width:60px;">
+                <div style="font-size:18px; font-weight:800;" id="timer-mins">35</div>
+                <div style="font-size:9px; color:var(--text-muted);">MINS</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCampaign();
+      window.updateAdminBreadcrumbs('Marketing', 'Flash Sales');
+    });
+
+    function loadCampaign() {
+      const savedTitle = localStorage.getItem('flash_sale_title') || 'Traditional Return Gifts Sale';
+      const savedDiscount = localStorage.getItem('flash_sale_discount') || '20';
+      const savedTarget = localStorage.getItem('flash_sale_target') || new Date(Date.now() + 86400000 * 3).toISOString().slice(0, 16);
+
+      document.getElementById('fs-title').value = savedTitle;
+      document.getElementById('fs-discount').value = savedDiscount;
+      document.getElementById('fs-target').value = savedTarget;
+
+      document.getElementById('preview-title').textContent = savedTitle;
+      document.getElementById('preview-details').innerHTML = `Tanjore Plates & Brass Vilakku are marked <strong style="color:var(--adm-accent);">${savedDiscount}% OFF</strong> on checkout.`;
+    }
+
+    document.getElementById('save-flash-sale-btn').addEventListener('click', () => {
+      const title = document.getElementById('fs-title').value.trim();
+      const discount = document.getElementById('fs-discount').value.trim();
+      const target = document.getElementById('fs-target').value;
+
+      if (!title || !discount || !target) {
+        showToast('Please fill out all the details', 'warning');
+        return;
+      }
+
+      localStorage.setItem('flash_sale_title', title);
+      localStorage.setItem('flash_sale_discount', discount);
+      localStorage.setItem('flash_sale_target', target);
+
+      document.getElementById('preview-title').textContent = title;
+      document.getElementById('preview-details').innerHTML = `Tanjore Plates & Brass Vilakku are marked <strong style="color:var(--adm-accent);">${discount}% OFF</strong> on checkout.`;
+      showToast('Flash sale campaign updated!', 'success');
+    });
+  </script>
+</body>
+</html>

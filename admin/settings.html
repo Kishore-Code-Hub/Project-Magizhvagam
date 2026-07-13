@@ -4,66 +4,242 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>System Settings | MAGIZHVAGAM</title>
-
+  
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="stylesheet" href="/assets/css/admin.css">
   <link rel="stylesheet" href="/assets/css/animations.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
-  <style>
-    .studio-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 25px;
-      border-bottom: 1px solid var(--card-border);
-      padding-bottom: 10px;
-    }
-    pre {
-      background: rgba(0, 0, 0, 0.2);
-      padding: 12px;
-      border-radius: 8px;
-      margin-top: 10px;
-      max-height: 250px;
-      overflow: auto;
-      font-family: monospace;
-      font-size: 12px;
-      border: 1px solid var(--card-border);
-      color: var(--text-color);
-    }
-  </style>
 </head>
 <body style="visibility:hidden">
+
   <div class="admin-layout">
+    
+    <!-- Sidebar navigation -->
     <aside id="admin-sidebar-container"></aside>
 
-    <main class="admin-main" style="padding: 24px !important;">
-      <h1 style="font-family:'Outfit'; font-size:32px; color:var(--text-color); margin-bottom:10px;">System Settings</h1>
-      <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Manage general store options, SEO metadata, tracking codes, payment integrations, mobile scaling, and SMTP server diagnostics.</p>
+    <!-- Main Settings Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">System Coordinates</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Store Settings</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Configure general settings, payment integration keys, and SMTP server diagnostics.</p>
+      </section>
 
-      <div class="studio-tabs">
-        <button type="button" class="studio-tab-btn active" data-workspace-tab="general">General</button>
-        <button type="button" class="studio-tab-btn" data-workspace-tab="seo">SEO Tags</button>
-        <button type="button" class="studio-tab-btn" data-workspace-tab="analytics">Analytics</button>
-        <button type="button" class="studio-tab-btn" data-workspace-tab="integrations">Integrations</button>
-        <button type="button" class="studio-tab-btn" data-workspace-tab="mobile-settings">Mobile Offset</button>
-        <button type="button" class="studio-tab-btn" data-workspace-tab="diagnostics">Diagnostics</button>
-        <button type="button" class="studio-tab-btn" data-workspace-tab="profile">Account Profile</button>
-        <button type="button" class="studio-tab-btn" data-workspace-tab="security">Security & 2FA</button>
-        <button type="button" class="studio-tab-btn" data-workspace-tab="api-panel">API Panel</button>
+      <!-- Tabs Row -->
+      
+
+      <!-- Tab 1: General Store Settings -->
+      <div id="tab-general" class="settings-tab-panel">
+        <div class="glass" style="max-width:650px; padding:25px; border-radius:12px;">
+          <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:20px;">General Store Options</h3>
+          <form id="general-settings-form" onsubmit="event.preventDefault();">
+            <div class="admin-form-group">
+              <label>Store Name *</label>
+              <input type="text" id="set-store-name" class="admin-form-control" value="MAGIZHVAGAM" required>
+            </div>
+            <div class="grid grid-2" style="gap:15px;">
+              <div class="admin-form-group">
+                <label>Timezone *</label>
+                <select id="set-timezone" class="admin-form-control">
+                  <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                  <option value="UTC">UTC / GMT</option>
+                </select>
+              </div>
+              <div class="admin-form-group">
+                <label>Default Currency *</label>
+                <select id="set-currency" class="admin-form-control">
+                  <option value="INR">Indian Rupee (₹)</option>
+                  <option value="USD">US Dollar ($)</option>
+                </select>
+              </div>
+            </div>
+            <div class="admin-form-group">
+              <label>Store GST Rate (%) *</label>
+              <input type="number" id="set-gst-rate" class="admin-form-control" value="18" min="0" max="100" required>
+            </div>
+            <button id="save-general-settings-btn" type="button" class="btn btn-primary" style="width:100%; border-radius:8px;">Save General Settings</button>
+          </form>
+        </div>
       </div>
 
-      <div id="workspace-container"></div>
+      <!-- Tab 2: Payment Gateways -->
+      <div id="tab-payments" class="settings-tab-panel" style="display:none;">
+        <div class="glass" style="max-width:650px; padding:25px; border-radius:12px;">
+          <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:20px;">API Keys & Gateways</h3>
+          <form id="payments-settings-form" onsubmit="event.preventDefault();">
+            <div class="admin-form-group">
+              <label>Razorpay Key ID</label>
+              <input type="text" id="set-razorpay-key" class="admin-form-control" placeholder="rzp_test_...">
+            </div>
+            <div class="admin-form-group">
+              <label>Stripe Publishable Key</label>
+              <input type="text" id="set-stripe-key" class="admin-form-control" placeholder="pk_test_...">
+            </div>
+            <button id="save-payments-settings-btn" type="button" class="btn btn-primary" style="width:100%; border-radius:8px;">Save Gateway Keys</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Tab 3: SMTP Settings -->
+      <div id="tab-smtp" class="settings-tab-panel" style="display:none;">
+        <div class="glass" style="max-width:650px; padding:25px; border-radius:12px;">
+          <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:20px;">Email Server Configuration</h3>
+          <form id="smtp-settings-form" onsubmit="event.preventDefault();">
+            <div class="grid grid-2" style="gap:15px;">
+              <div class="admin-form-group">
+                <label>SMTP Host *</label>
+                <input type="text" id="set-smtp-host" class="admin-form-control" value="smtp.gmail.com" required>
+              </div>
+              <div class="admin-form-group">
+                <label>SMTP Port *</label>
+                <input type="number" id="set-smtp-port" class="admin-form-control" value="587" required>
+              </div>
+            </div>
+            <div class="admin-form-group">
+              <label>SMTP User / Email *</label>
+              <input type="email" id="set-smtp-user" class="admin-form-control" value="hellomagizhvagam@gmail.com" required>
+            </div>
+            <button id="save-smtp-settings-btn" type="button" class="btn btn-primary" style="width:100%; border-radius:8px;">Save SMTP Setup</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Tab 4: Admin Profile -->
+      <div id="tab-profile" class="settings-tab-panel" style="display:none;">
+        <div class="glass" style="max-width:650px; padding:25px; border-radius:12px;">
+          <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:20px;">Account Settings</h3>
+          <form id="profile-settings-form" onsubmit="event.preventDefault();">
+            <div class="admin-form-group">
+              <label>Administrator Name *</label>
+              <input type="text" id="set-admin-name" class="admin-form-control" value="Admin Owner" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Update Password</label>
+              <input type="password" id="set-admin-pass" class="admin-form-control" placeholder="Leave blank to keep current password">
+            </div>
+            <button id="save-profile-settings-btn" type="button" class="btn btn-primary" style="width:100%; border-radius:8px;">Save Profile Profile</button>
+          </form>
+        </div>
+      </div>
+
     </main>
   </div>
 
+  <!-- Scripts -->
   <script src="/assets/js/admin-guard.js"></script>
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
   <script src="/assets/js/admin.js"></script>
-  <script src="/assets/js/workspace-engine.js"></script>
-  <script src="/assets/js/modules/settings/settings.controllers.js"></script>
-  <script src="/assets/js/modules/settings/profile.controller.js"></script>
-  <script src="/assets/js/modules/settings/security.controller.js"></script>
-  <script src="/assets/js/modules/settings/settings.router.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadSettingsContent();
+      window.updateAdminBreadcrumbs('Management', 'Settings');
+    });
+
+    function switchSettingsTab(event, tabId) {
+      document.querySelectorAll('.studio-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.settings-tab-panel').forEach(panel => panel.style.display = 'none');
+      
+      if (event) {
+        event.target.classList.add('active');
+        const tabTitle = event.target.textContent;
+        window.updateAdminBreadcrumbs('Management', tabTitle);
+      }
+      
+      const panel = document.getElementById(tabId);
+      if (panel) {
+        panel.style.display = 'block';
+      }
+    }
+    window.switchSettingsTab = switchSettingsTab;
+
+    function loadSettingsContent() {
+      const setField = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      };
+      setField('set-store-name', localStorage.getItem('settings_store_name') || 'MAGIZHVAGAM');
+      setField('set-timezone', localStorage.getItem('settings_timezone') || 'Asia/Kolkata');
+      setField('set-currency', localStorage.getItem('settings_currency') || 'INR');
+      setField('set-gst-rate', localStorage.getItem('settings_gst_rate') || '18');
+    }
+    }
+
+    document.getElementById('save-general-settings-btn').addEventListener('click', () => {
+      localStorage.setItem('settings_store_name', document.getElementById('set-store-name').value.trim());
+      localStorage.setItem('settings_timezone', document.getElementById('set-timezone').value);
+      localStorage.setItem('settings_currency', document.getElementById('set-currency').value);
+      localStorage.setItem('settings_gst_rate', document.getElementById('set-gst-rate').value.trim());
+      showToast('General Store settings updated successfully!', 'success');
+    });
+
+    document.getElementById('save-payments-settings-btn').addEventListener('click', () => {
+      localStorage.setItem('settings_razorpay_key', document.getElementById('set-razorpay-key').value.trim());
+      localStorage.setItem('settings_stripe_key', document.getElementById('set-stripe-key').value.trim());
+      showToast('Payment gateway keys updated successfully!', 'success');
+    });
+
+    document.getElementById('save-smtp-settings-btn').addEventListener('click', () => {
+      localStorage.setItem('settings_smtp_host', document.getElementById('set-smtp-host').value.trim());
+      localStorage.setItem('settings_smtp_port', document.getElementById('set-smtp-port').value.trim());
+      localStorage.setItem('settings_smtp_user', document.getElementById('set-smtp-user').value.trim());
+      showToast('SMTP credentials settings updated successfully!', 'success');
+    });
+
+    document.getElementById('save-profile-settings-btn').addEventListener('click', async () => {
+      const name = document.getElementById('set-admin-name').value.trim();
+      const password = document.getElementById('set-admin-pass').value.trim();
+
+      if (!name) {
+        showToast('Please enter your name', 'warning');
+        return;
+      }
+
+      // Hit API to update
+      try {
+        if (password) {
+          // If updating password
+          const res = await adminFetch('/api/auth/admin/update-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currentPassword: 'SecureAdminPassword123!', newPassword: password })
+          });
+          const data = await res.json();
+          if (!data.success) {
+            showToast(data.error || 'Failed to update credentials', 'error');
+            return;
+          }
+        }
+
+        // Save new name to profile
+        const resProfile = await adminFetch('/api/auth/profile/update', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        const dataProfile = await resProfile.json();
+        if (dataProfile.success) {
+          showToast('Admin Profile credentials updated successfully!', 'success');
+          if (typeof saveUserSession === 'function' && dataProfile.user) {
+            saveUserSession(dataProfile.user);
+          }
+          loadSettingsContent();
+        } else {
+          showToast(dataProfile.error || 'Failed to update profile name', 'error');
+        }
+
+      } catch (e) {
+        showToast('Error updating admin profile settings', 'error');
+      }
+    });
+  </script>
 </body>
 </html>

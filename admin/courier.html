@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courier Management | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Sales Operations</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Courier Management</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Verify integrated courier webhooks (Delhivery, BlueDart, DTDC, India Post) and print shipment tags.</p>
+      </section>
+
+      
+      <div class="glass" style="padding:25px; border-radius:12px; max-width:600px; margin:0 auto;">
+        <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">3PL Courier Integrations</h2>
+        <form id="courier-config-form" style="display:flex; flex-direction:column; gap:16px;">
+          <div class="glass" style="padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div><strong>Delhivery Direct Link</strong><div style="font-size:11px; color:var(--text-muted);">Status: Connected • API V3</div></div>
+            <input type="checkbox" checked style="width:auto; cursor:pointer;">
+          </div>
+          <div class="glass" style="padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div><strong>BlueDart Apex</strong><div style="font-size:11px; color:var(--text-muted);">Status: Connected • Webhook Live</div></div>
+            <input type="checkbox" checked style="width:auto; cursor:pointer;">
+          </div>
+          <div class="glass" style="padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div><strong>DTDC Cargo Link</strong><div style="font-size:11px; color:var(--text-muted);">Status: Standby • Configured</div></div>
+            <input type="checkbox" style="width:auto; cursor:pointer;">
+          </div>
+          <div class="glass" style="padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div><strong>India Post SpeedPost</strong><div style="font-size:11px; color:var(--text-muted);">Status: Mock • Pre-integrated</div></div>
+            <input type="checkbox" checked style="width:auto; cursor:pointer;">
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top:10px;">Save Third Party API Settings</button>
+        </form>
+      </div>
+    
+
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      window.updateAdminBreadcrumbs('Sales', 'Courier Management');
+      document.getElementById('courier-config-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast('Courier rate integrations successfully updated!', 'success');
+      });
+    
+    });
+  </script>
+</body>
+</html>

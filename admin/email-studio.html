@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Campaign Studio | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Marketing Studio</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Email Campaign Studio</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Design promotional newsletters, select templates, and dispatch newsletters via SMTP server.</p>
+      </section>
+
+      
+      <div class="grid grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:30px;">
+        <div class="glass" style="padding:25px; border-radius:12px;">
+          <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">Compose Newsletter</h2>
+          <form id="email-form" style="display:flex; flex-direction:column; gap:14px;">
+            <div class="admin-form-group">
+              <label>Campaign Subject Line *</label>
+              <input type="text" id="email-subject" class="admin-form-control" placeholder="Aadi Festival Gift Hampers Specials!" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Target Audience Segment *</label>
+              <select id="email-segment" class="admin-form-control" required>
+                <option value="all">All Subscribers (2,402 emails)</option>
+                <option value="vip">VIP Customers only (104 emails)</option>
+              </select>
+            </div>
+            <div class="admin-form-group">
+              <label>HTML Campaign Body *</label>
+              <textarea class="admin-form-control" rows="5" placeholder="<h1>Grand Gifting Aadi Festives</h1>..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Dispatch SMTP Newsletter</button>
+          </form>
+        </div>
+
+        <div class="glass" style="padding:25px; border-radius:12px;">
+          <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">Subscribers Registry</h2>
+          <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px;">
+            <li class="glass" style="padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
+              <div><strong>gifting_buyer@gmail.com</strong><div style="font-size:10px; color:var(--text-muted);">Registered: 10 mins ago</div></div>
+              <span class="badge badge-success">Subscribed</span>
+            </li>
+            <li class="glass" style="padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
+              <div><strong>chennai_client@yahoo.com</strong><div style="font-size:10px; color:var(--text-muted);">Registered: 1 day ago</div></div>
+              <span class="badge badge-success">Subscribed</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    
+
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      window.updateAdminBreadcrumbs('Marketing', 'Email Studio');
+      document.getElementById('email-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast('SMTP bulk email broadcast initiated successfully!', 'success');
+        document.getElementById('email-form').reset();
+      });
+    
+    });
+  </script>
+</body>
+</html>

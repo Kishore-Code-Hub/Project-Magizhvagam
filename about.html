@@ -194,10 +194,41 @@
   <script>
     // Load About page content dynamically from API
     (function () {
-      async function loadAbout() {
+      let abortController = null;
+
+      async function initPage() {
+        if (abortController) abortController.abort();
+        abortController = new AbortController();
+        const signal = abortController.signal;
+
+        try {
+          await loadAbout({ signal });
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            console.log('[MZPage] About load aborted.');
+          } else {
+            console.error('About page load failed:', err);
+          }
+        }
+      }
+
+      function destroyPage() {
+        if (abortController) {
+          abortController.abort();
+          abortController = null;
+        }
+      }
+
+      window.MZPageRegistry = window.MZPageRegistry || {};
+      window.MZPageRegistry['about'] = {
+        init: initPage,
+        destroy: destroyPage
+      };
+
+      async function loadAbout(options = {}) {
         try {
           // cache-bust to ensure storefront fetches latest saved image after admin updates
-          const res = await fetch('/api/about-page?_=' + Date.now());
+          const res = await fetch('/api/about-page?_=' + Date.now(), options);
           const json = await res.json();
           console.log('About API:', json);
           if (!json.success || !json.data) return;
@@ -223,7 +254,6 @@
           console.error('Failed to load about page content', err);
         }
       }
-      document.addEventListener('DOMContentLoaded', loadAbout);
     })();
   </script>
   <script src="/assets/js/animation-loader.js"></script>

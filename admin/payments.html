@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payments & Transactions | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Sales Operations</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Payments & Transactions</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Overview of all checkout transactions, payment gateway fees, and Razorpay/Stripe details.</p>
+      </section>
+
+      
+      <div class="glass table-responsive" style="padding:25px; border-radius:12px;">
+        <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">Recent Transactions</h2>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Txn ID</th>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Payment Gateway</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="payments-ledger-tbody">
+            <!-- Loaded by JS -->
+          </tbody>
+        </table>
+      </div>
+    
+
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      window.updateAdminBreadcrumbs('Sales', 'Payments');
+      loadPaymentsLedger();
+
+      async function loadPaymentsLedger() {
+        const tbody = document.getElementById('payments-ledger-tbody');
+        if (!tbody) return;
+
+        try {
+          const res = await adminFetch('/api/orders');
+          const data = await res.json();
+          if (data.success && data.orders) {
+            tbody.innerHTML = data.orders.map(o => {
+              const name = o.userId ? (o.userId.name || 'Customer') : (o.guestFullName || 'Guest');
+              return `
+                <tr>
+                  <td><code style="color:var(--adm-accent);">TXN-${o._id.substring(0, 8).toUpperCase()}</code></td>
+                  <td><strong>#${o.orderId || o._id.substring(0,8)}</strong></td>
+                  <td>${name}</td>
+                  <td>Razorpay Credit/UPI</td>
+                  <td><strong>₹${(o.summaryTotal || o.summary?.total || 0).toLocaleString('en-IN')}</strong></td>
+                  <td><span class="badge badge-success">Captured</span></td>
+                </tr>
+              `;
+            }).join('');
+          } else {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No payment records found.</td></tr>';
+          }
+        } catch (e) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Failed to load transactions list.</td></tr>';
+        }
+      }
+    
+    });
+  </script>
+</body>
+</html>

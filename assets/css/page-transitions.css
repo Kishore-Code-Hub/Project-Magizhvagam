@@ -1,0 +1,113 @@
+/* 
+ * MAGIZHVAGAM — Global Page Transition Styles 
+ * Curated HSL-tailored colors, smooth animations, and top progress bar.
+ */
+
+:root {
+  --mz-transition-duration: 150ms;
+  --mz-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hide storefront content and admin content before wrapper creation on initial load */
+html.mz-loading .admin-main > *:not(#admin-topbar-container) {
+  opacity: 0 !important;
+}
+html.mz-loading body > *:not(#main-header):not(#main-footer):not(#mz-progress-bar-container):not(#mini-cart-drawer):not(.toast-container):not(.mobile-bottom-navbar):not(.transition-curtain-overlay) {
+  opacity: 0 !important;
+}
+
+/* Dynamic content wrapper transition states */
+.mz-transition-content {
+  opacity: 0;
+  transform: translateY(6px);
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+/* Rendering state: swap HTML and run API fetches in the background (invisible) */
+.mz-transition-content.mz-rendering {
+  opacity: 0 !important;
+  transform: translateY(6px) !important;
+  transition: none !important;
+  pointer-events: none !important;
+}
+
+/* Exit: translate up by 6px and fade out */
+.mz-transition-content.mz-exit {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity var(--mz-transition-duration) var(--mz-transition-easing),
+              transform var(--mz-transition-duration) var(--mz-transition-easing);
+}
+
+/* Entry starting point: translate down by 6px and start at 0 opacity */
+.mz-transition-content.mz-enter-start {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: none !important;
+}
+
+/* Entry active state (animates back to normal) */
+.mz-transition-content.mz-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--mz-transition-duration) var(--mz-transition-easing),
+              transform var(--mz-transition-duration) var(--mz-transition-easing);
+}
+
+/* Static ready state (when no transition styles are active) */
+.mz-transition-content:not(.mz-rendering):not(.mz-exit):not(.mz-enter-start):not(.mz-enter-active) {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Thin Top Progress Bar Container (YouTube/GitHub style) */
+#mz-progress-bar-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 999999;
+  pointer-events: none;
+  background: transparent;
+  opacity: 0;
+  transition: opacity 150ms linear;
+}
+
+#mz-progress-bar-container.active {
+  opacity: 1;
+}
+
+#mz-progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary, #C9913D) 0%, var(--rose-pink, #E0A84A) 100%);
+  box-shadow: 0 0 10px rgba(201, 145, 61, 0.6), 0 0 5px rgba(201, 145, 61, 0.4);
+  transition: width 200ms cubic-bezier(0.08, 0.8, 0.1, 1);
+  will-change: width;
+}
+
+/* Keep topbar sticky relative to layout even during transition */
+#admin-topbar-container,
+.mz-storefront-header {
+  z-index: 1000;
+}
+
+/* Preferences for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .mz-transition-content {
+    transition: opacity var(--mz-transition-duration) ease-in-out !important;
+    transform: none !important;
+  }
+  .mz-transition-content.mz-exit,
+  .mz-transition-content.mz-enter-start {
+    opacity: 0 !important;
+    transform: none !important;
+  }
+  .mz-transition-content.mz-enter-active {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

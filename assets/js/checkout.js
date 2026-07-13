@@ -1,35 +1,52 @@
-/**
- * MAGIZHVAGAM - Checkout JS Client
- * Handles forms steps, checkout totals calculation, mock payment triggers, and API order post
- */
+(function () {
+  'use strict';
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const hideLoader = () => {
-    const spinner = document.getElementById('loading-overlay') || document.querySelector('.spinner') || document.querySelector('.loading');
-    if (spinner) spinner.style.display = 'none';
+  let abortController = null;
+
+  async function initCheckoutPage() {
+    if (abortController) abortController.abort();
+    abortController = new AbortController();
+    const signal = abortController.signal;
+
+    const hideLoader = () => {
+      const spinner = document.getElementById('loading-overlay') || document.querySelector('.spinner') || document.querySelector('.loading');
+      if (spinner) spinner.style.display = 'none';
+    };
+
+    try {
+      // Await session validation to avoid empty cart redirect race condition
+      if (typeof window.validateUserSession === 'function') {
+        await window.validateUserSession();
+      }
+    } catch (err) {
+      console.error('Session validation failed during checkout start:', err);
+    }
+
+    try {
+      initCheckout({ signal });
+    } catch (error) {
+      console.error('CRITICAL CHECKOUT INITIALIZATION FAILURE:', error);
+      hideLoader();
+      if (typeof showToast === 'function') {
+        showToast('Checkout loading encountered an issue. Please check your profile details.', 'error');
+      }
+    }
+  }
+
+  function destroyCheckoutPage() {
+    if (abortController) {
+      abortController.abort();
+      abortController = null;
+    }
+  }
+
+  window.MZPageRegistry = window.MZPageRegistry || {};
+  window.MZPageRegistry['checkout'] = {
+    init: initCheckoutPage,
+    destroy: destroyCheckoutPage
   };
 
-  try {
-    // Await session validation to avoid empty cart redirect race condition
-    if (typeof window.validateUserSession === 'function') {
-      await window.validateUserSession();
-    }
-  } catch (err) {
-    console.error('Session validation failed during checkout start:', err);
-  }
-
-  try {
-    initCheckout();
-  } catch (error) {
-    console.error('CRITICAL CHECKOUT INITIALIZATION FAILURE:', error);
-    hideLoader();
-    if (typeof showToast === 'function') {
-      showToast('Checkout loading encountered an issue. Please check your profile details.', 'error');
-    }
-  }
-});
-
-function initCheckout() {
+function initCheckout(options = {}) {
   try {
     const cart = getCart() || [];
     if (!Array.isArray(cart) || cart.length === 0) {
@@ -274,7 +291,8 @@ async function handleCheckoutSubmit(e) {
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      ...options
     });
 
     const data = await res.json();
@@ -428,3 +446,5 @@ function initCheckoutStepsTracker() {
   // Run initial state check
   setTimeout(updateProgress, 200);
 }
+
+})();

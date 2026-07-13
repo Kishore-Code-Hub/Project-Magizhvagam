@@ -49,12 +49,12 @@ Start the Node.js Express server:
 ```bash
 npm start
 ```
-The server will run on `http://localhost:5000`. You can visit the homepage directly at `http://localhost:5000`.
+The server will run on port 5000. You can visit the homepage directly at `http://localhost : 5000`.
 
 ---
 
 ## Running Automated Endpoints Verification Tests
-Ensure the server is running on `localhost:5000` via `npm start`, then in a separate terminal execute:
+Ensure the server is running on port 5000 via `npm start`, then in a separate terminal execute:
 ```bash
 npm test
 ```

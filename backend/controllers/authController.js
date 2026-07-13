@@ -68,12 +68,13 @@ exports.adminLogin = async (req, res) => {
 
     if (!user) {
       await logActivity(req, 'login_failure', `Invalid email attempt for: ${email}`);
+      await new Promise(resolve => setTimeout(resolve, 1000));
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
     if (user.role !== 'admin') {
       await logActivity(req, 'admin_login_failure', `Unauthorized admin login attempt for: ${email}`);
-      return res.status(403).json({ success: false, error: 'Access denied. Administrator account required.' });
+      return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
     if (user.lockUntil && user.lockUntil > new Date()) {
@@ -102,6 +103,10 @@ exports.adminLogin = async (req, res) => {
         where: { id: user.id },
         data: { loginAttempts, lockUntil }
       });
+
+      // Progressive delay (1 second per failed attempt, max 5s)
+      const delayMs = Math.min(loginAttempts * 1000, 5000);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
 
       return res.status(401).json({ success: false, error: msg });
     }
@@ -144,6 +149,11 @@ exports.adminLogin = async (req, res) => {
           tempToken
         });
       }
+    }
+
+    const oldRefreshToken = req.cookies ? req.cookies.admin_refreshToken : null;
+    if (oldRefreshToken) {
+      await prisma.userSession.deleteMany({ where: { refreshToken: oldRefreshToken } }).catch(() => {});
     }
 
     const accessToken = generateAccessToken(user);
@@ -249,6 +259,14 @@ exports.refresh = async (req, res) => {
     }
 
     const accessToken = generateAccessToken(user);
+    const newRefreshToken = generateRefreshToken(user);
+
+    await prisma.userSession.delete({ where: { refreshToken } }).catch(() => {});
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken: newRefreshToken }
+    });
+    await createUserSession(req, user.id, newRefreshToken);
 
     res.cookie('admin_accessToken', accessToken, {
       httpOnly: true,
@@ -257,7 +275,14 @@ exports.refresh = async (req, res) => {
       maxAge: 3 * 60 * 1000
     });
 
-    return res.status(200).json({ success: true, accessToken });
+    res.cookie('admin_refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    return res.status(200).json({ success: true, accessToken, refreshToken: newRefreshToken });
   } catch (error) {
     return res.status(401).json({ success: false, error: 'Refresh failed, login required' });
   }
@@ -314,8 +339,16 @@ exports.updateProfile = async (req, res) => {
 // @access  Private/Admin
 exports.getCustomers = async (req, res) => {
   try {
+    const { role, all } = req.query;
+    const where = {};
+    if (role) {
+      where.role = role;
+    } else if (all !== 'true') {
+      where.role = 'customer';
+    }
+
     const users = await prisma.user.findMany({
-      where: { role: 'customer' },
+      where,
       include: { addresses: true },
       orderBy: { createdAt: 'desc' }
     });
@@ -477,7 +510,7 @@ exports.handleLocalRegister = async (req, res) => {
       return res.status(400).json({ success: false, error: 'User already exists with this email' });
     }
 
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(passwordStr, salt);
 
     const verificationOtp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -532,7 +565,8 @@ exports.handleLocalLogin = async (req, res) => {
 
     if (!user) {
       await logActivity(req, 'login_failure', `Invalid email attempt for: ${email}`);
-      return res.status(401).json({ success: false, error: 'Email address not registered.' });
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return res.status(401).json({ success: false, error: 'Invalid email or password.' });
     }
 
     if (user.lockUntil && user.lockUntil > new Date()) {
@@ -545,11 +579,11 @@ exports.handleLocalLogin = async (req, res) => {
     if (!isMatch) {
       const loginAttempts = (user.loginAttempts || 0) + 1;
       let lockUntil = null;
-      let msg = 'Incorrect password.';
+      let msg = 'Invalid email or password.';
 
       if (loginAttempts >= 5) {
         lockUntil = new Date(Date.now() + 30 * 60 * 1000);
-        msg = 'Account locked for 30 minutes.';
+        msg = 'Account locked. Try again in 30 minutes.';
         await logActivity(req, 'account_locked', `Account locked after 5 failures: ${email}`);
       } else {
         await logActivity(req, 'login_failure', `Failed login attempt ${loginAttempts}/5 for: ${email}`);
@@ -560,7 +594,11 @@ exports.handleLocalLogin = async (req, res) => {
         data: { loginAttempts, lockUntil }
       });
 
-      return res.status(401).json({ success: false, error: msg });
+      // Progressive delay (1 second per failed attempt, max 5s)
+      const delayMs = Math.min(loginAttempts * 1000, 5000);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+
+      return res.status(401).json({ success: false, error: 'Invalid email or password.' });
     }
 
     if (user.role === 'admin') {
@@ -587,6 +625,11 @@ exports.handleLocalLogin = async (req, res) => {
         lastLoginTimestamp: new Date()
       }
     });
+
+    const oldRefreshToken = req.cookies ? req.cookies.admin_refreshToken : null;
+    if (oldRefreshToken) {
+      await prisma.userSession.deleteMany({ where: { refreshToken: oldRefreshToken } }).catch(() => {});
+    }
 
     const accessToken = generateAccessToken(updatedUser);
     const refreshToken = generateRefreshToken(updatedUser);
@@ -781,7 +824,7 @@ exports.resetPasswordWithOtp = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid or expired OTP' });
     }
 
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     await prisma.user.update({
@@ -817,7 +860,7 @@ exports.processSecurePasswordUpdate = async (req, res) => {
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) return res.status(400).json({ success: false, error: 'Current password incorrect' });
 
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     await prisma.user.update({
@@ -917,7 +960,7 @@ exports.adminForceResetPassword = async (req, res) => {
     const { customerId, password } = req.body;
     if (!password) return res.status(400).json({ success: false, error: 'Password required' });
 
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await prisma.user.update({
@@ -1174,7 +1217,7 @@ exports.updateAdminPassword = async (req, res) => {
     const isReused = await bcrypt.compare(newPassword, user.password);
     if (isReused) return res.status(400).json({ success: false, error: 'Cannot reuse current password' });
 
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     await prisma.user.update({

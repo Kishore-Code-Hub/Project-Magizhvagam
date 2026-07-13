@@ -210,6 +210,19 @@
             </svg>
             Sort
           </button>
+
+          <!-- Mobile Sort Dropdown overlay -->
+          <div class="mobile-sort-dropdown" id="mobile-sort-dropdown">
+            <button type="button" class="sort-option-btn" data-value="mostPopular">Recommended / Featured <span class="checkmark">✓</span></button>
+            <button type="button" class="sort-option-btn" data-value="newest">Newest First <span class="checkmark">✓</span></button>
+            <button type="button" class="sort-option-btn" data-value="bestSelling">Best Selling <span class="checkmark">✓</span></button>
+            <button type="button" class="sort-option-btn" data-value="priceLowHigh">Price: Low to High <span class="checkmark">✓</span></button>
+            <button type="button" class="sort-option-btn" data-value="priceHighLow">Price: High to Low <span class="checkmark">✓</span></button>
+            <button type="button" class="sort-option-btn" data-value="highestRated">Highest Rated <span class="checkmark">✓</span></button>
+            <button type="button" class="sort-option-btn" data-value="oldest">Oldest First <span class="checkmark">✓</span></button>
+            <button type="button" class="sort-option-btn" data-value="alphabetical">Alphabetical (A-Z) <span class="checkmark">✓</span></button>
+          </div>
+
           <div class="mobile-bar-divider"></div>
           <button type="button" class="mobile-bar-btn" id="mobile-filter-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px; vertical-align:middle;">
@@ -237,27 +250,6 @@
 
   <!-- Mobile Filter Backdrop -->
   <div class="mobile-filter-backdrop" id="mobile-filter-backdrop"></div>
-
-  <!-- Mobile Sort Bottom Sheet -->
-  <div class="mobile-sort-sheet" id="mobile-sort-sheet">
-    <div class="mobile-sort-sheet-backdrop" id="mobile-sort-backdrop"></div>
-    <div class="mobile-sort-sheet-content">
-      <div class="mobile-sort-sheet-header">
-        <h4>Sort By</h4>
-        <button type="button" class="mobile-sort-close-btn" id="mobile-sort-close">✕</button>
-      </div>
-      <div class="mobile-sort-sheet-options">
-        <button type="button" class="sort-option-btn" data-value="mostPopular">Recommended / Featured</button>
-        <button type="button" class="sort-option-btn" data-value="newest">Newest First</button>
-        <button type="button" class="sort-option-btn" data-value="bestSelling">Best Selling</button>
-        <button type="button" class="sort-option-btn" data-value="priceLowHigh">Price: Low to High</button>
-        <button type="button" class="sort-option-btn" data-value="priceHighLow">Price: High to Low</button>
-        <button type="button" class="sort-option-btn" data-value="highestRated">Highest Rated</button>
-        <button type="button" class="sort-option-btn" data-value="oldest">Oldest First</button>
-        <button type="button" class="sort-option-btn" data-value="alphabetical">Alphabetical (A-Z)</button>
-      </div>
-    </div>
-  </div>
 
   <!-- Scripts -->
   <script src="/assets/js/animation-loader.js"></script>

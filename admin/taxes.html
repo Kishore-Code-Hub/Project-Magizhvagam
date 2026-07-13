@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taxation & GST Configuration | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">System Settings</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Taxation & GST Configuration</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Manage SGST, CGST, and IGST percentages configured across catalog item prices.</p>
+      </section>
+
+      
+      <div class="glass" style="padding:25px; border-radius:12px; max-width:600px; margin:0 auto;">
+        <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">GST Zones Ledger</h2>
+        <form id="tax-form" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="glass" style="padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div><strong>CGST (Central Tax)</strong><div style="font-size:11px; color:var(--text-muted);">Applied to intra-state transactions</div></div>
+            <input type="number" class="admin-form-control" style="width:100px; margin:0;" value="9" min="0" max="45">%
+          </div>
+          <div class="glass" style="padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div><strong>SGST (State Tax)</strong><div style="font-size:11px; color:var(--text-muted);">Applied to Tamil Nadu transactions</div></div>
+            <input type="number" class="admin-form-control" style="width:100px; margin:0;" value="9" min="0" max="45">%
+          </div>
+          <div class="glass" style="padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div><strong>IGST (Inter-State Tax)</strong><div style="font-size:11px; color:var(--text-muted);">Applied outside Tamil Nadu</div></div>
+            <input type="number" class="admin-form-control" style="width:100px; margin:0;" value="18" min="0" max="45">%
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top:10px;">Update GST Rules</button>
+        </form>
+      </div>
+    
+
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      window.updateAdminBreadcrumbs('Settings', 'Taxes');
+      document.getElementById('tax-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast('Tax zones and GST percentages updated!', 'success');
+      });
+    
+    });
+  </script>
+</body>
+</html>

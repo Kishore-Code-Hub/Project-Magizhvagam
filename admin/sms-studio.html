@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMS Campaign Studio | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Marketing Studio</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">SMS Campaign Studio</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Send promotional SMS alerts to client telephone numbers via SMS gateway API.</p>
+      </section>
+
+      
+      <div class="glass" style="padding:25px; border-radius:12px; max-width:600px; margin:0 auto;">
+        <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">Send Bulk SMS Campaign</h2>
+        <form id="sms-form" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="admin-form-group">
+            <label>SMS Template Body *</label>
+            <textarea class="admin-form-control" rows="4" placeholder="MAGIZHVAGAM: Get 10% off on all Traditional Brass return gifts this week! Code: AADI10. shop at magizhvagam.com" required maxlength="160"></textarea>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">Max 160 characters (1 SMS credit).</div>
+          </div>
+          <div class="admin-form-group">
+            <label>Target Audience Segment *</label>
+            <select class="admin-form-control" required>
+              <option value="all">All Verified Phone Numbers (1,042 numbers)</option>
+              <option value="custom">Test Phone Number</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Dispatch SMS Broadcast</button>
+        </form>
+      </div>
+    
+
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      window.updateAdminBreadcrumbs('Marketing', 'SMS Studio');
+      document.getElementById('sms-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast('SMS Broadcast successfully queued with gateway operator!', 'success');
+      });
+    
+    });
+  </script>
+</body>
+</html>

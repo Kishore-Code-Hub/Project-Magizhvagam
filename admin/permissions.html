@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Feature Permissions | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">System Settings</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">System Feature Permissions</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Map feature level access permissions configured dynamically across different logins.</p>
+      </section>
+
+      
+      <div class="glass" style="padding:25px; border-radius:12px; max-width:600px; margin:0 auto;">
+        <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">Access Permissions matrix</h2>
+        <form id="perm-form" style="display:flex; flex-direction:column; gap:16px;">
+          <div class="glass" style="padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div><strong>Write Backups and SQL Exports</strong><div style="font-size:11px; color:var(--text-muted);">Required for system-diagnostics database dumps</div></div>
+            <input type="checkbox" checked style="width:auto; cursor:pointer;">
+          </div>
+          <div class="glass" style="padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div><strong>Adjust Product Catalog and Categories</strong><div style="font-size:11px; color:var(--text-muted);">Required for category structure creator forms</div></div>
+            <input type="checkbox" checked style="width:auto; cursor:pointer;">
+          </div>
+          <div class="glass" style="padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div><strong>Modify Payment Gateways Credentials</strong><div style="font-size:11px; color:var(--text-muted);">Restricted to Super Administrators</div></div>
+            <input type="checkbox" checked style="width:auto; cursor:pointer;">
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top:10px;">Update Access Matrix</button>
+        </form>
+      </div>
+    
+
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      window.updateAdminBreadcrumbs('Settings', 'Permissions');
+      document.getElementById('perm-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast('Permissions configuration matrix updated!', 'success');
+      });
+    
+    });
+  </script>
+</body>
+</html>

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Media Library | MAGIZHVAGAM Admin</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="stylesheet" href="/assets/css/admin.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
   <style>
@@ -47,16 +48,13 @@
   <div class="admin-layout">
     <aside id="admin-sidebar-container"></aside>
     <main class="admin-main">
+      <div id="admin-topbar-container"></div>
       
       <!-- Tabs Row -->
-      <div class="studio-tabs">
-        <button type="button" class="studio-tab-btn active" onclick="switchMediaTab(event, 'tab-gallery')">Gallery</button>
-        <button type="button" class="studio-tab-btn" onclick="switchMediaTab(event, 'tab-compression')">Image Compression</button>
-        <button type="button" class="studio-tab-btn" onclick="switchMediaTab(event, 'tab-limits')">Upload Limits</button>
-      </div>
+      
 
       <!-- TAB PANEL: Gallery -->
-      <div id="tab-gallery" class="media-tab-panel active">
+      <div id="tab-gallery" class="media-tab-panel" style="display: block;">
         <div class="admin-page-header">
           <div>
             <h1>Media Library</h1>

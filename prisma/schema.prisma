@@ -242,6 +242,12 @@ model AboutPage {
   leftParagraph1 String   @default("")
   leftParagraph2 String   @default("")
   image          String   @default("")
+  heroImage      String   @default("")
+  aboutBanner    String   @default("")
+  founderImage   String   @default("")
+  teamImages     String   @default("")
+  timelineImages String   @default("")
+  storyImages    String   @default("")
   updatedAt      DateTime @default(now())
 
   @@map("about_pages")

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketing Promo Popup Builder | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Popup Builder Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Marketing Operations</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Promo Popup Builder</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Create subscriber lead capture windows and flash promo announcements shown to guests.</p>
+      </section>
+
+      <div class="grid grid-2" style="display:grid; grid-template-columns: 1.1fr 1.3fr; gap:30px;">
+        <!-- Popup Creator Config Form -->
+        <div class="glass" style="padding:25px; border-radius:12px; height:fit-content;">
+          <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:15px;">Configure Popup Rules</h3>
+          <form id="popup-form" onsubmit="event.preventDefault();">
+            <div class="admin-form-group">
+              <label>Headline Title *</label>
+              <input type="text" id="pp-title" class="admin-form-control" placeholder="Unlock 10% Off Your First Gift" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Promo Code</label>
+              <input type="text" id="pp-code" class="admin-form-control" placeholder="MAGIZH10">
+            </div>
+            <div class="admin-form-group">
+              <label>Trigger Delay (seconds) *</label>
+              <input type="number" id="pp-delay" class="admin-form-control" min="1" value="5" required>
+            </div>
+            <div class="admin-form-group" style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+              <input type="checkbox" id="pp-enabled" style="width:auto; cursor:pointer;" checked>
+              <label for="pp-enabled" style="margin:0; cursor:pointer;">Activate popup globally on the storefront</label>
+            </div>
+            <button id="save-popup-btn" type="button" class="btn btn-primary" style="width:100%; border-radius:8px;">Save Popup Rules</button>
+          </form>
+        </div>
+
+        <!-- Popup Preview Frame -->
+        <div class="glass" style="padding:25px; border-radius:12px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+          <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:20px; align-self:flex-start;">Live Preview Block</h3>
+          
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--adm-border); padding:30px; border-radius:20px; text-align:center; max-width:360px; width:100%; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <div style="position:absolute; right:15px; top:15px; font-weight:bold; color:var(--text-muted); cursor:pointer;">✕</div>
+            <span style="font-size:24px;">🎁</span>
+            <h4 style="margin:10px 0; font-family:'Outfit'; font-size:18px; color:var(--text-color);" id="preview-pp-title">Unlock 10% Off Your First Gift</h4>
+            <p style="font-size:12px; color:var(--text-muted); line-height:1.4; margin-bottom:15px;">Subscribe to newsletter updates and receive a custom corporate discount coupon code.</p>
+            <div style="background:rgba(var(--adm-accent-rgb), 0.1); border:1px dashed var(--adm-accent); border-radius:8px; padding:10px; font-size:15px; font-weight:800; color:var(--adm-accent); letter-spacing:0.05em; margin-bottom:15px;" id="preview-pp-code">MAGIZH10</div>
+            
+            <input type="email" placeholder="Enter your email address..." class="admin-form-control" style="font-size:12px; text-align:center; border-radius:8px;">
+            <button class="btn btn-primary" style="width:100%; border-radius:8px; font-size:12px; padding:10px; margin-top:10px; font-weight:700;">Subscribe & Apply</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadPopupConfig();
+      window.updateAdminBreadcrumbs('Marketing', 'Popup Builder');
+    });
+
+    function loadPopupConfig() {
+      const savedTitle = localStorage.getItem('popup_promo_title') || 'Unlock 10% Off Your First Gift';
+      const savedCode = localStorage.getItem('popup_promo_code') || 'MAGIZH10';
+      const savedDelay = localStorage.getItem('popup_promo_delay') || '5';
+      const savedEnabled = localStorage.getItem('popup_promo_enabled') !== 'false';
+
+      document.getElementById('pp-title').value = savedTitle;
+      document.getElementById('pp-code').value = savedCode;
+      document.getElementById('pp-delay').value = savedDelay;
+      document.getElementById('pp-enabled').checked = savedEnabled;
+
+      document.getElementById('preview-pp-title').textContent = savedTitle;
+      document.getElementById('preview-pp-code').textContent = savedCode;
+    }
+
+    document.getElementById('save-popup-btn').addEventListener('click', () => {
+      const title = document.getElementById('pp-title').value.trim();
+      const code = document.getElementById('pp-code').value.trim().toUpperCase();
+      const delay = document.getElementById('pp-delay').value.trim();
+      const enabled = document.getElementById('pp-enabled').checked;
+
+      if (!title || !delay) {
+        showToast('Please fill out all the details', 'warning');
+        return;
+      }
+
+      localStorage.setItem('popup_promo_title', title);
+      localStorage.setItem('popup_promo_code', code);
+      localStorage.setItem('popup_promo_delay', delay);
+      localStorage.setItem('popup_promo_enabled', enabled ? 'true' : 'false');
+
+      document.getElementById('preview-pp-title').textContent = title;
+      document.getElementById('preview-pp-code').textContent = code;
+      showToast('Popup configuration updated successfully!', 'success');
+    });
+  </script>
+</body>
+</html>

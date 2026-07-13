@@ -192,15 +192,59 @@
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script>
-    const getQueryParam = window.getQueryParam || ((name) => {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(name);
-    });
+    (function () {
+      'use strict';
+      let abortController = null;
+      let forgotTimerInterval = null;
+      let resetTimerInterval = null;
 
-    let forgotTimerInterval = null;
+      async function initPage() {
+        if (abortController) abortController.abort();
+        abortController = new AbortController();
+        const signal = abortController.signal;
 
-    // Toggle back and forth between Login and Forgot containers
-    function toggleForgotForm(show) {
+        try {
+          initLogin({ signal });
+        } catch (e) {
+          console.error('[MZPage] Login init failed:', e);
+        }
+      }
+
+      function destroyPage() {
+        if (abortController) {
+          abortController.abort();
+          abortController = null;
+        }
+        if (forgotTimerInterval) {
+          clearInterval(forgotTimerInterval);
+          forgotTimerInterval = null;
+        }
+        if (resetTimerInterval) {
+          clearInterval(resetTimerInterval);
+          resetTimerInterval = null;
+        }
+
+        // Clear globally exposed helpers
+        window.toggleForgotForm = null;
+      }
+
+      window.MZPageRegistry = window.MZPageRegistry || {};
+      window.MZPageRegistry['login'] = {
+        init: initPage,
+        destroy: destroyPage
+      };
+
+      const getQueryParam = window.getQueryParam || ((name) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+      });
+
+    function initLogin(options = {}) {
+      // Expose to window for inline onclick attributes
+      window.toggleForgotForm = toggleForgotForm;
+
+      // Toggle back and forth between Login and Forgot containers
+      function toggleForgotForm(show) {
       document.getElementById('login-container').style.display = show ? 'none' : 'block';
       document.getElementById('forgot-container').style.display = show ? 'block' : 'none';
       document.getElementById('reset-container').style.display = 'none';
@@ -270,7 +314,8 @@
         const res = await fetch('/api/auth/forgot-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
+          body: JSON.stringify({ email }),
+          ...options
         });
         const data = await res.json();
         if (data.success) {
@@ -293,10 +338,11 @@
     document.getElementById('forgot-resend-otp-btn').addEventListener('click', async () => {
       const email = window.resetEmail;
       try {
-        const res = await fetch('/api/auth/forgot-password', {
+        const res = await fetch('/api/auth/forgot-resend-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
+          body: JSON.stringify({ email }),
+          ...options
         });
         const data = await res.json();
         if (data.success) {
@@ -317,10 +363,11 @@
       const email = window.resetEmail;
       
       try {
-        const res = await fetch('/api/auth/verify-reset-otp', {
+        const res = await fetch('/api/auth/verify-forgot-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, otp })
+          body: JSON.stringify({ email, otp }),
+          ...options
         });
         const data = await res.json();
         if (data.success) {
@@ -400,7 +447,8 @@
         const res = await fetch('/api/auth/reset-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, otp, password })
+          body: JSON.stringify({ email, otp, password }),
+          ...options
         });
         const data = await res.json();
         if (data.success) {
@@ -416,21 +464,16 @@
       }
     });
 
-    // Check reset password URL state
-    const resetToken = getQueryParam('resetToken');
-    if (resetToken) {
-      document.getElementById('login-container').style.display = 'none';
-      document.getElementById('forgot-container').style.display = 'none';
-      document.getElementById('reset-container').style.display = 'block';
-
       // Start the 3-minute countdown timer on the reset page
       const resetClock = document.getElementById('reset-timer-clock');
       if (resetClock) {
         let timeLeft = 180; // 3 minutes
-        const interval = setInterval(() => {
+        if (resetTimerInterval) clearInterval(resetTimerInterval);
+        resetTimerInterval = setInterval(() => {
           timeLeft--;
           if (timeLeft <= 0) {
-            clearInterval(interval);
+            clearInterval(resetTimerInterval);
+            resetTimerInterval = null;
             resetClock.textContent = "EXPIRED";
             showToast("Your password reset window has expired.", "error");
             document.getElementById('reset-password-form').querySelectorAll('input, button').forEach(el => el.disabled = true);
@@ -444,6 +487,13 @@
           }
         }, 1000);
       }
+
+    // Check reset password URL state
+    const resetToken = getQueryParam('resetToken');
+    if (resetToken) {
+      document.getElementById('login-container').style.display = 'none';
+      document.getElementById('forgot-container').style.display = 'none';
+      document.getElementById('reset-container').style.display = 'block';
     }
 
     // Verified account alert check
@@ -472,7 +522,7 @@
       }
       const redirectUrl = redirect.replace(/\/+/g, '/');
       
-      await handleLogin(email, password, redirectUrl);
+      await handleLogin(email, password, redirectUrl, options);
     });
 
     // Real-time strength checking for password reset
@@ -534,7 +584,8 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'same-origin',
-          body: JSON.stringify({ password })
+          body: JSON.stringify({ password }),
+          ...options
         });
         const data = await res.json();
         if (data.success) {
@@ -549,6 +600,9 @@
         showToast('Connection error during password reset', 'error');
       }
     });
+  }
+
+  })();
   </script>
 </body>
 </html>

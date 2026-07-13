@@ -5,7 +5,7 @@
 (function () {
   if (window.location.protocol === 'file:') {
     document.documentElement.innerHTML =
-      '<body style="font-family:sans-serif;padding:40px;"><h1>Admin access denied</h1><p>Open the site with <code>npm start</code> and visit <a href="http://localhost:5000/admin/login">/admin/login</a>.</p></body>';
+      '<body style="font-family:sans-serif;padding:40px;"><h1>Admin access denied</h1><p>Start the server with <code>npm start</code> and navigate to the admin login page.</p></body>';
     throw new Error('Admin pages cannot run from file://');
   }
 

@@ -92,11 +92,11 @@ const runTests = async () => {
     assert(cpRes.statusCode === 404, 'POST /api/orders/check-coupon with invalid code returns HTTP 404');
     assert(cpRes.body.success === false, 'Invalid coupon validation returns success: false');
 
-    // Test 5: Verify Admin static block redirects
+    // Test 5: Verify Admin static block is hidden (returns 404)
     const adminUrl = `http://localhost:${PORT}/admin/dashboard.html`;
     const admRes = await request(adminUrl);
-    // Since checkAdminPageAuth redirects unauthorized requests
-    assert(admRes.statusCode === 302, 'Serving admin files redirects unauthorized client requests with HTTP 302');
+    // Since checkAdminPageAuth blocks unauthorized requests with 404 status
+    assert(admRes.statusCode === 404, 'Serving admin files hides unauthorized client requests with HTTP 404');
 
     // Test 6: Verify Customer static block redirects
     const profileUrl = `http://localhost:${PORT}/account`;

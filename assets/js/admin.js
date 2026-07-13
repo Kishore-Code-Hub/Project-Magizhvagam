@@ -1,3 +1,24 @@
+if (typeof window.renderIcons !== 'function') {
+  window.renderIcons = function() {
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    } else {
+      if (!document.getElementById('lucide-script-fallback')) {
+        const script = document.createElement('script');
+        script.id = 'lucide-script-fallback';
+        script.src = '/assets/vendor/lucide.min.js';
+        script.onload = () => {
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+        };
+        document.head.appendChild(script);
+      }
+    }
+  };
+}
+if (typeof initIcons !== 'function') {
+  window.initIcons = window.renderIcons;
+}
+
 // Force scroll restoration to manual and scroll to top immediately to prevent auto-scrolling on admin pages
 if ('scrollRestoration' in window.history) {
   window.history.scrollRestoration = 'manual';
@@ -60,71 +81,6 @@ async function initAdminRouterPage() {
   }
 }
 window.initAdminRouterPage = initAdminRouterPage;
-
-document.addEventListener('DOMContentLoaded', async () => {
-  if (document.body) {
-    document.body.style.visibility = 'hidden';
-  }
-
-  try {
-    const res = await adminFetch('/api/auth/profile');
-    let data;
-    try {
-      data = await res.json();
-    } catch (parseErr) {
-      throw new Error('Invalid profile response');
-    }
-
-    if (data.success && data.user && data.user.role !== 'admin') {
-      document.body.innerHTML =
-        '<div style="font-family:sans-serif;padding:40px;max-width:520px;margin:80px auto;"><h1>403 Forbidden</h1><p>Your account does not have administrator access.</p><p><a href="/index.html">Return to store</a></p></div>';
-      document.body.style.visibility = 'visible';
-      return;
-    }
-
-    if (!data.success || !data.user || data.user.role !== 'admin') {
-      const redirectPath = window.location.pathname.substring(1) + window.location.search;
-      window.location.replace('/admin/login?redirect=' + encodeURIComponent(redirectPath));
-      return;
-    }
-
-    if (typeof window.setSessionUser === 'function') {
-      window.setSessionUser(data.user);
-    }
-  } catch (err) {
-    const redirectPath = window.location.pathname.substring(1) + window.location.search;
-    window.location.replace('/admin/login?redirect=' + encodeURIComponent(redirectPath));
-    return;
-  }
-
-  if (document.body) {
-    document.body.style.visibility = 'visible';
-  }
-
-  applyAdminBranding();
-  injectAmbientBlobs();
-  injectAdminSidebar();
-  injectAdminTopbar();
-  injectOverlays();
-  initSidebarResizer();
-  initOverlaysEvents();
-
-  // Trace mouse coordinates on .glass cards for Raycast-style glowing hover spotlights
-  document.addEventListener('mousemove', (e) => {
-    const cards = document.querySelectorAll('.glass, .metric-card, .admin-card, .btn');
-    cards.forEach(card => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      card.style.setProperty('--mouse-x', `${x}px`);
-      card.style.setProperty('--mouse-y', `${y}px`);
-    });
-  });
-
-  await initAdminRouterPage();
-});
-
-// Sidebar injection (reusable dry components)
 window.toggleSubmenu = function(id) {
   const menu = document.getElementById('menu-' + id);
   const submenu = document.getElementById('submenu-' + id);
@@ -135,10 +91,18 @@ window.toggleSubmenu = function(id) {
   }
 };
 
+let isUnloading = false;
+window.addEventListener('beforeunload', () => {
+  isUnloading = true;
+  const menuContainer = document.querySelector('.admin-sidebar .admin-menu');
+  if (menuContainer) {
+    localStorage.setItem('sidebar-scroll', menuContainer.scrollTop);
+  }
+});
+
 function injectAdminSidebar() {
   const layout = document.querySelector('.admin-layout');
   if (layout) {
-    // Theme setup
     const savedTheme = localStorage.getItem('admin-theme');
     if (savedTheme === 'dark') {
       layout.classList.add('dark-mode');
@@ -158,34 +122,143 @@ function injectAdminSidebar() {
   const sidebar = document.getElementById('admin-sidebar-container');
   if (!sidebar) return;
 
+  // Set opacity to 0 immediately to prevent visual flicker during scroll restoration
+  sidebar.style.opacity = '0';
+  sidebar.style.transition = 'opacity 0.15s ease';
+
   const path = window.location.pathname;
-  const urlParams = new URLSearchParams(window.location.search);
-  const currentTab = urlParams.get('tab') || 'presets';
 
   const activeCls = (file) => path.includes(file) ? 'active' : '';
-  const activeTabCls = (file, tab) => (path.includes(file) && currentTab === tab) ? 'active' : '';
-  const activeProductTabCls = (tab) => {
-    if (!path.includes('products.html')) return '';
-    const viewTab = urlParams.get('tab') || 'products';
-    return viewTab === tab ? 'active' : '';
-  };
-  const isProductsView = path.includes('products.html');
-  const isMediaView = path.includes('media.html');
-  const isMarketingView = path.includes('marketing.html');
-  const isContentView = path.includes('content.html');
-  const isSettingsView = path.includes('settings.html');
+  const isGroupActive = (files) => files.some(file => path.includes(file));
 
   sidebar.className = 'admin-sidebar';
-  sidebar.innerHTML = `
+
+  const menuGroups = [
+    {
+      id: 'catalog',
+      title: 'Catalog',
+      icon: 'gift',
+      files: ['products.html', 'categories.html', 'brands.html', 'inventory.html', 'warehouse.html', 'variants.html', 'collections.html', 'media.html', 'media-manager.html'],
+      items: [
+        { name: 'Products', file: 'products.html', icon: 'package' },
+        { name: 'Categories', file: 'categories.html', icon: 'tag' },
+        { name: 'Brands', file: 'brands.html', icon: 'award' },
+        { name: 'Inventory & Stock', file: 'inventory.html', icon: 'archive' },
+        { name: 'Warehouse Hubs', file: 'warehouse.html', icon: 'warehouse' },
+        { name: 'Product Variants', file: 'variants.html', icon: 'layers' },
+        { name: 'Collections', file: 'collections.html', icon: 'folder-heart' },
+        { name: 'Media Library', file: 'media.html', icon: 'image' },
+        { name: 'Media Manager', file: 'media-manager.html', icon: 'file-image' }
+      ]
+    },
+    {
+      id: 'sales',
+      title: 'Sales',
+      icon: 'shopping-bag',
+      files: ['orders.html', 'returns.html', 'refunds.html', 'courier.html', 'shipping.html', 'customers.html', 'customer-groups.html', 'invoices.html', 'purchase-orders.html', 'credit-notes.html', 'payments.html'],
+      items: [
+        { name: 'Orders Registry', file: 'orders.html', icon: 'shopping-bag' },
+        { name: 'Returns Registry', file: 'returns.html', icon: 'refresh-ccw' },
+        { name: 'Refunds Wallet', file: 'refunds.html', icon: 'wallet' },
+        { name: 'Courier Partners', file: 'courier.html', icon: 'truck' },
+        { name: 'Shipping Zones', file: 'shipping.html', icon: 'globe' },
+        { name: 'Customers List', file: 'customers.html', icon: 'users' },
+        { name: 'Customer Groups', file: 'customer-groups.html', icon: 'users-2' },
+        { name: 'Invoice Resolution', file: 'invoices.html', icon: 'file-text' },
+        { name: 'Purchase Orders', file: 'purchase-orders.html', icon: 'file-spreadsheet' },
+        { name: 'Credit Notes', file: 'credit-notes.html', icon: 'receipt' },
+        { name: 'Payments Logs', file: 'payments.html', icon: 'credit-card' }
+      ]
+    },
+    {
+      id: 'marketing',
+      title: 'Marketing',
+      icon: 'zap',
+      files: ['coupons.html', 'flash-sales.html', 'newsletter.html', 'popup-builder.html', 'campaigns.html', 'affiliates.html', 'email-studio.html', 'sms-studio.html', 'whatsapp-studio.html', 'referrals.html'],
+      items: [
+        { name: 'Discount Coupons', file: 'coupons.html', icon: 'percent' },
+        { name: 'Flash Promotions', file: 'flash-sales.html', icon: 'zap' },
+        { name: 'Newsletter Admin', file: 'newsletter.html', icon: 'mail' },
+        { name: 'Popup Builder', file: 'popup-builder.html', icon: 'message-circle' },
+        { name: 'Marketing Campaigns', file: 'campaigns.html', icon: 'smartphone' },
+        { name: 'Affiliate Program', file: 'affiliates.html', icon: 'users-round' },
+        { name: 'Email Studio', file: 'email-studio.html', icon: 'mail-open' },
+        { name: 'SMS Studio', file: 'sms-studio.html', icon: 'message-square' },
+        { name: 'WhatsApp Studio', file: 'whatsapp-studio.html', icon: 'messages-square' },
+        { name: 'Referral Rewards', file: 'referrals.html', icon: 'gift' }
+      ]
+    },
+    {
+      id: 'content',
+      title: 'Content',
+      icon: 'home',
+      files: ['homepage-builder.html', 'about-builder.html', 'contact-builder.html', 'navigation-builder.html', 'seo.html', 'theme-builder.html', 'content-pages.html', 'blogs.html'],
+      items: [
+        { name: 'Homepage Builder', file: 'homepage-builder.html', icon: 'home' },
+        { name: 'About Page', file: 'about-builder.html', icon: 'info' },
+        { name: 'Contact Page', file: 'contact-builder.html', icon: 'phone' },
+        { name: 'Navigation Menu', file: 'navigation-builder.html', icon: 'menu' },
+        { name: 'SEO Meta Config', file: 'seo.html', icon: 'search' },
+        { name: 'Theme Styles', file: 'theme-builder.html', icon: 'palette' },
+        { name: 'Content Pages', file: 'content-pages.html', icon: 'file-text' },
+        { name: 'Blogs & Articles', file: 'blogs.html', icon: 'book-open' }
+      ]
+    },
+    {
+      id: 'management',
+      title: 'Management',
+      icon: 'users',
+      files: ['users.html', 'roles.html', 'permissions.html', 'staff.html', 'vendors.html', 'reports.html', 'faq.html', 'support.html', 'support-tickets.html', 'reviews.html', 'security.html', 'api-keys.html', 'system-diagnostics.html', 'backups.html'],
+      items: [
+        { name: 'Users Register', file: 'users.html', icon: 'users' },
+        { name: 'RBAC Roles', file: 'roles.html', icon: 'shield' },
+        { name: 'RBAC Permissions', file: 'permissions.html', icon: 'key' },
+        { name: 'Staff Management', file: 'staff.html', icon: 'user-cog' },
+        { name: 'Vendor Directory', file: 'vendors.html', icon: 'store' },
+        { name: 'Reports & Analytics', file: 'reports.html', icon: 'bar-chart-3' },
+        { name: 'FAQ Manager', file: 'faq.html', icon: 'help-circle' },
+        { name: 'Support Desk Chat', file: 'support.html', icon: 'message-square' },
+        { name: 'Support Tickets', file: 'support-tickets.html', icon: 'ticket' },
+        { name: 'Product Reviews', file: 'reviews.html', icon: 'star' },
+        { name: 'Security Audits', file: 'security.html', icon: 'shield-alert' },
+        { name: 'API Diagnostics', file: 'api-keys.html', icon: 'key-round' },
+        { name: 'System Coordinates', file: 'system-diagnostics.html', icon: 'activity' },
+        { name: 'Database Backups', file: 'backups.html', icon: 'database' }
+      ]
+    },
+    {
+      id: 'settings',
+      title: 'Settings',
+      icon: 'settings',
+      files: ['settings.html', 'store-settings.html', 'taxes.html', 'smtp-settings.html', 'payment-gateway.html', 'payment-settings.html', 'shipping-settings.html', 'profile-settings.html'],
+      items: [
+        { name: 'General Settings', file: 'settings.html', icon: 'settings' },
+        { name: 'Store Coordinates', file: 'store-settings.html', icon: 'map-pin' },
+        { name: 'Taxes & GST rates', file: 'taxes.html', icon: 'percent' },
+        { name: 'SMTP configuration', file: 'smtp-settings.html', icon: 'mail-warning' },
+        { name: 'Payment Gateways', file: 'payment-gateway.html', icon: 'wallet-cards' },
+        { name: 'Payment Settings', file: 'payment-settings.html', icon: 'credit-card' },
+        { name: 'Shipping Settings', file: 'shipping-settings.html', icon: 'truck' },
+        { name: 'Admin Profile', file: 'profile-settings.html', icon: 'user' }
+      ]
+    }
+  ];
+
+  const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+  const toggleChevron = isCollapsed ? 'chevron-right' : 'chevron-left';
+
+  let menuHtml = `
     <!-- Workspace Selector Header -->
-    <div class="workspace-switcher" style="padding: 16px 20px; border-bottom: 1px solid var(--adm-border); display: flex; align-items: center; gap: 12px; cursor: pointer; background: rgba(255,255,255,0.01);">
-      <div style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--adm-accent) 0%, var(--adm-accent-hover) 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 14px;">M</div>
-      <div style="flex-grow: 1; min-width: 0;" class="profile-info-wrapper">
-        <h4 style="margin: 0; font-size: 13px; font-weight: 800; color: var(--adm-text); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Magizhvagam OS</h4>
-        <span style="font-size: 10px; color: var(--adm-text-muted);">Main • HQ Console</span>
+    <div class="workspace-switcher" style="padding: 16px 20px; border-bottom: 1px solid var(--adm-border); display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: rgba(255,255,255,0.01); position: relative; gap: 8px;">
+      <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex-grow: 1;">
+        <div class="workspace-logo" style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--adm-accent) 0%, var(--adm-accent-hover) 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 14px; flex-shrink: 0;">M</div>
+        <div style="min-width: 0;" class="profile-info-wrapper">
+          <h4 style="margin: 0; font-size: 13px; font-weight: 800; color: var(--adm-text); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Magizhvagam OS</h4>
+          <span style="font-size: 10px; color: var(--adm-text-muted); display: block;">Main • HQ Console</span>
+        </div>
       </div>
-      <button type="button" id="sidebar-toggle-btn" style="background:transparent; border:none; color:var(--adm-text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:4px;">
-        <i data-lucide="chevrons-left-right" style="width:14px; height:14px;"></i>
+      <button type="button" id="sidebar-toggle-btn" style="background: transparent; border: 1px solid var(--adm-border); border-radius: 6px; color: var(--adm-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; transition: all 0.2s ease; flex-shrink: 0;" aria-label="Toggle sidebar">
+        <i data-lucide="${toggleChevron}" id="toggle-btn-icon" style="width: 14px; height: 14px;"></i>
       </button>
     </div>
 
@@ -204,159 +277,37 @@ function injectAdminSidebar() {
       <li class="admin-menu-item ${activeCls('dashboard.html')}">
         <a href="/admin/dashboard.html"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a>
       </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'analytics')}">
-        <a href="/admin/settings.html?tab=analytics"><i data-lucide="trending-up"></i> <span>Analytics</span></a>
-      </li>
-      <li class="admin-menu-item ${activeCls('reports.html') && !currentTab ? 'active' : ''}">
-        <a href="/admin/reports.html"><i data-lucide="bar-chart-2"></i> <span>Reports</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('reports.html', 'revenue')}">
-        <a href="/admin/reports.html?tab=revenue"><i data-lucide="dollar-sign"></i> <span>Revenue Trend</span></a>
-      </li>
+  `;
 
-      <!-- CATALOG & MEDIA -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Catalog</li>
-      <li class="admin-menu-item ${activeProductTabCls('products')}">
-        <a href="/admin/products.html?tab=products"><i data-lucide="gift"></i> <span>Products</span></a>
-      </li>
-      <li class="admin-menu-item ${activeProductTabCls('categories')}">
-        <a href="/admin/products.html?tab=categories"><i data-lucide="tag"></i> <span>Categories</span></a>
-      </li>
-      <li class="admin-menu-item ${activeProductTabCls('collections')}">
-        <a href="/admin/products.html?tab=collections"><i data-lucide="folder"></i> <span>Collections</span></a>
-      </li>
-      <li class="admin-menu-item ${activeProductTabCls('variants')}">
-        <a href="/admin/products.html?tab=variants"><i data-lucide="award"></i> <span>Brands</span></a>
-      </li>
-      <li class="admin-menu-item ${activeProductTabCls('inventory')}">
-        <a href="/admin/products.html?tab=inventory"><i data-lucide="archive"></i> <span>Inventory</span></a>
-      </li>
-      <li class="admin-menu-item ${activeCls('media.html')}">
-        <a href="/admin/media.html"><i data-lucide="image"></i> <span>Media Library</span></a>
-      </li>
+  menuGroups.forEach(group => {
+    const isGroupActivePage = isGroupActive(group.files);
+    const savedState = localStorage.getItem('submenu_' + group.id + '_expanded');
+    const isOpen = savedState === 'true' || (savedState === null && isGroupActivePage);
 
-      <!-- SALES OPERATIONS -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Sales</li>
-      <li class="admin-menu-item ${activeCls('orders.html') && !currentTab ? 'active' : ''}">
-        <a href="/admin/orders.html"><i data-lucide="shopping-bag"></i> <span>Orders</span></a>
+    menuHtml += `
+      <li class="admin-menu-item has-submenu ${isGroupActivePage ? 'active' : ''}" style="margin-top: 10px; border-top: 1px solid var(--adm-border); padding-top: 8px;">
+        <div class="admin-menu-item-link" data-group-id="${group.id}" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; color: var(--adm-text);">
+          <span style="display: flex; align-items: center; gap: 10px;">
+            <i data-lucide="${group.icon}" style="width: 16px; height: 16px;"></i>
+            <span class="group-title-span" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">${group.title}</span>
+          </span>
+          <i data-lucide="chevron-down" class="submenu-toggle-icon ${isOpen ? 'open' : ''}" style="width: 12px; height: 12px; transition: transform 0.2s; ${isOpen ? 'transform: rotate(180deg);' : ''}"></i>
+        </div>
+        <ul class="admin-menu-submenu" id="submenu-${group.id}" style="list-style: none; padding-left: 16px; margin: 0; display: ${isOpen ? 'block' : 'none'};">
+          ${group.items.map(item => `
+            <li class="admin-menu-submenu-item ${activeCls(item.file)}" style="margin: 4px 0;">
+              <a href="/admin/${item.file}" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; font-size: 12.5px; color: var(--adm-text-muted); border-radius: var(--radius-sm); text-decoration: none; transition: all 0.2s;">
+                <i data-lucide="${item.icon}" style="width: 14px; height: 14px;"></i>
+                <span>${item.name}</span>
+              </a>
+            </li>
+          `).join('')}
+        </ul>
       </li>
-      <li class="admin-menu-item ${activeTabCls('orders.html', 'returns')}">
-        <a href="/admin/orders.html?tab=returns"><i data-lucide="rotate-ccw"></i> <span>Returns</span></a>
-      </li>
-      <li class="admin-menu-item ${activeCls('invoices.html')}">
-        <a href="/admin/invoices.html"><i data-lucide="file-text"></i> <span>Invoice Hub</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'shipping')}">
-        <a href="/admin/settings.html?tab=shipping"><i data-lucide="truck"></i> <span>Shipping</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'taxes')}">
-        <a href="/admin/settings.html?tab=taxes"><i data-lucide="receipt"></i> <span>Taxes</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'payment')}">
-        <a href="/admin/settings.html?tab=payment"><i data-lucide="credit-card"></i> <span>Payment Gateways</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'delivery')}">
-        <a href="/admin/settings.html?tab=delivery"><i data-lucide="package"></i> <span>Delivery Partners</span></a>
-      </li>
+    `;
+  });
 
-      <!-- CUSTOMERS & CRM -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Customers</li>
-      <li class="admin-menu-item ${activeCls('customers.html') && !currentTab ? 'active' : ''}">
-        <a href="/admin/customers.html"><i data-lucide="users"></i> <span>Customers</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('customers.html', 'crm')}">
-        <a href="/admin/customers.html?tab=crm"><i data-lucide="contact"></i> <span>CRM Registry</span></a>
-      </li>
-      <li class="admin-menu-item ${activeCls('enquiries.html')}">
-        <a href="/admin/enquiries.html"><i data-lucide="message-square"></i> <span>Enquiries</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('enquiries.html', 'tickets')}">
-        <a href="/admin/enquiries.html?tab=tickets"><i data-lucide="help-circle"></i> <span>Support Tickets</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'testimonials')}">
-        <a href="/admin/settings.html?tab=testimonials"><i data-lucide="star"></i> <span>Reviews</span></a>
-      </li>
-
-      <!-- MARKETING STUDIO -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Marketing</li>
-      <li class="admin-menu-item ${activeTabCls('marketing.html', 'coupons')}">
-        <a href="/admin/marketing.html?tab=coupons"><i data-lucide="percent"></i> <span>Coupons</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('marketing.html', 'flash-sales')}">
-        <a href="/admin/marketing.html?tab=flash-sales"><i data-lucide="zap"></i> <span>Flash Sales</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('marketing.html', 'newsletter')}">
-        <a href="/admin/marketing.html?tab=newsletter"><i data-lucide="mail"></i> <span>Email Studio</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('marketing.html', 'whatsapp')}">
-        <a href="/admin/marketing.html?tab=whatsapp"><i data-lucide="message-circle"></i> <span>WhatsApp Studio</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('marketing.html', 'sms')}">
-        <a href="/admin/marketing.html?tab=sms"><i data-lucide="smartphone"></i> <span>SMS Studio</span></a>
-      </li>
-
-      <!-- CONTENT CUSTOMIZATION -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Appearance</li>
-      <li class="admin-menu-item ${activeTabCls('content.html', 'homepage')}">
-        <a href="/admin/content.html?tab=homepage"><i data-lucide="home"></i> <span>Homepage Builder</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('content.html', 'theme')}">
-        <a href="/admin/content.html?tab=theme"><i data-lucide="palette"></i> <span>Theme Builder</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('content.html', 'header')}">
-        <a href="/admin/content.html?tab=header"><i data-lucide="menu"></i> <span>Navigation Builder</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('content.html', 'pages')}">
-        <a href="/admin/content.html?tab=pages"><i data-lucide="file"></i> <span>Content Pages</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('content.html', 'blogs')}">
-        <a href="/admin/content.html?tab=blogs"><i data-lucide="book-open"></i> <span>Blogs & Press</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('content.html', 'faq')}">
-        <a href="/admin/content.html?tab=faq"><i data-lucide="help-circle"></i> <span>FAQ Builder</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'seo')}">
-        <a href="/admin/settings.html?tab=seo"><i data-lucide="globe"></i> <span>SEO Engine</span></a>
-      </li>
-
-      <!-- SETTINGS & SECURITY -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Security</li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'general')}">
-        <a href="/admin/settings.html?tab=general"><i data-lucide="settings"></i> <span>Store Configuration</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'presets')}">
-        <a href="/admin/settings.html?tab=presets"><i data-lucide="sparkles"></i> <span>Appearance Studio</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'roles')}">
-        <a href="/admin/settings.html?tab=roles"><i data-lucide="lock"></i> <span>Roles & Permissions</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'users')}">
-        <a href="/admin/settings.html?tab=users"><i data-lucide="user-check"></i> <span>Admin Users</span></a>
-      </li>
-      <li class="admin-menu-item ${activeCls('security-logs.html') && !currentTab ? 'active' : ''}">
-        <a href="/admin/security-logs.html"><i data-lucide="activity"></i> <span>Audit Logs</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('security-logs.html', 'security')}">
-        <a href="/admin/security-logs.html?tab=security"><i data-lucide="shield"></i> <span>Security Center</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'backup')}">
-        <a href="/admin/settings.html?tab=backup"><i data-lucide="database"></i> <span>Backup & Restore</span></a>
-      </li>
-
-      <!-- DEVELOPER CONSOLE -->
-      <li class="menu-group-title" style="padding: 14px 16px 6px; font-size: 10px; font-weight: 700; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid var(--adm-border); margin-top: 10px;">Developer</li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'developer')}">
-        <a href="/admin/settings.html?tab=developer"><i data-lucide="terminal"></i> <span>Developer Console</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'apikeys')}">
-        <a href="/admin/settings.html?tab=apikeys"><i data-lucide="key"></i> <span>API Keys Manager</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'integrations')}">
-        <a href="/admin/settings.html?tab=integrations"><i data-lucide="cpu"></i> <span>Integrations</span></a>
-      </li>
-      <li class="admin-menu-item ${activeTabCls('settings.html', 'diagnostics')}">
-        <a href="/admin/settings.html?tab=diagnostics"><i data-lucide="heart"></i> <span>Diagnostics & Health</span></a>
-      </li>
+  menuHtml += `
     </ul>
 
     <!-- Workspace Profile Footer -->
@@ -371,47 +322,85 @@ function injectAdminSidebar() {
       </a>
     </div>
   `;
+
+  sidebar.innerHTML = menuHtml;
   window.renderIcons();
 
-  // Attach search filter logic
-  const filterInput = document.getElementById('sidebar-filter-input');
-  if (filterInput) {
-    filterInput.addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      const items = sidebar.querySelectorAll('.admin-menu-item');
-      const groupTitles = sidebar.querySelectorAll('.menu-group-title');
-
-      if (!q) {
-        items.forEach(el => el.style.display = 'block');
-        groupTitles.forEach(el => el.style.display = 'block');
-        return;
+  // Restore scroll state immediately and synchronously to eliminate visual jumping/flickering
+  const menuContainer = sidebar.querySelector('.admin-menu');
+  if (menuContainer) {
+    const savedScroll = localStorage.getItem('sidebar-scroll');
+    if (savedScroll !== null) {
+      menuContainer.scrollTop = parseInt(savedScroll, 10);
+    } else {
+      const activeItem = menuContainer.querySelector('.admin-menu-submenu-item.active, .admin-menu-item.active');
+      if (activeItem) {
+        activeItem.scrollIntoView({ block: 'nearest' });
       }
+    }
+    
+    // Save scroll on scroll events only if NOT unloading to prevent teardown scroll event (scrollTop = 0) from overwriting it
+    menuContainer.addEventListener('scroll', () => {
+      if (!isUnloading) {
+        localStorage.setItem('sidebar-scroll', menuContainer.scrollTop);
+      }
+    });
 
-      items.forEach(el => {
-        const text = el.textContent.toLowerCase();
-        if (text.includes(q)) {
-          el.style.display = 'block';
-        } else {
-          el.style.display = 'none';
+    // Save scroll on click of any sidebar link
+    menuContainer.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (!isUnloading) {
+          localStorage.setItem('sidebar-scroll', menuContainer.scrollTop);
         }
       });
-
-      // Hide section titles when filtering to keep it clean
-      groupTitles.forEach(el => el.style.display = 'none');
     });
   }
 
-  // Attach toggle button listeners
-  const btn = document.getElementById('sidebar-toggle-btn');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      const layout = document.querySelector('.admin-layout');
-      if (layout) {
+  // Restore opacity now that scroll coordinate is synchronized
+  requestAnimationFrame(() => {
+    sidebar.style.opacity = '1';
+  });
+
+  // Bind click toggle on headers
+  sidebar.querySelectorAll('.admin-menu-item-link').forEach(link => {
+    link.addEventListener('click', () => {
+      const groupId = link.getAttribute('data-group-id');
+      if (!groupId) return;
+
+      const submenu = document.getElementById('submenu-' + groupId);
+      const icon = link.querySelector('.submenu-toggle-icon');
+
+      if (submenu && icon) {
+        const isCurrentlyOpen = submenu.style.display === 'block';
+        if (isCurrentlyOpen) {
+          submenu.style.display = 'none';
+          icon.style.transform = 'none';
+          localStorage.setItem('submenu_' + groupId + '_expanded', 'false');
+        } else {
+          submenu.style.display = 'block';
+          icon.style.transform = 'rotate(180deg)';
+          localStorage.setItem('submenu_' + groupId + '_expanded', 'true');
+        }
+      }
+    });
+  });
+
+  // Attach workspace selector header toggle
+  const switcher = sidebar.querySelector('.workspace-switcher');
+  if (switcher) {
+    switcher.addEventListener('click', (e) => {
+      if (e.target.closest('#sidebar-toggle-btn') || layout.classList.contains('sidebar-collapsed')) {
         layout.classList.toggle('sidebar-collapsed');
         const isCollapsed = layout.classList.contains('sidebar-collapsed');
         localStorage.setItem('sidebar-collapsed', isCollapsed ? 'true' : 'false');
         
-        // If collapsed, remove custom width
+        // Update toggle icon
+        const icon = sidebar.querySelector('#toggle-btn-icon');
+        if (icon) {
+          icon.setAttribute('data-lucide', isCollapsed ? 'chevron-right' : 'chevron-left');
+          window.renderIcons();
+        }
+
         if (isCollapsed) {
           layout.style.removeProperty('--sidebar-width');
         } else {
@@ -423,7 +412,52 @@ function injectAdminSidebar() {
       }
     });
   }
+
+  // Attach search filter logic
+  const filterInput = document.getElementById('sidebar-filter-input');
+  if (filterInput) {
+    filterInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const items = sidebar.querySelectorAll('.admin-menu-submenu-item, .admin-menu-item');
+      const groupTitles = sidebar.querySelectorAll('.menu-group-title');
+
+      if (!q) {
+        items.forEach(el => el.style.display = 'block');
+        groupTitles.forEach(el => el.style.display = 'block');
+        sidebar.querySelectorAll('.admin-menu-submenu').forEach(el => {
+          const groupId = el.id.replace('submenu-', '');
+          const savedState = localStorage.getItem('submenu_' + groupId + '_expanded');
+          const isGroupActivePage = isGroupActive(menuGroups.find(g => g.id === groupId).files);
+          const isOpen = savedState === 'true' || (savedState === null && isGroupActivePage);
+          el.style.display = isOpen ? 'block' : 'none';
+          const icon = el.previousElementSibling.querySelector('.submenu-toggle-icon');
+          if (icon) icon.style.transform = isOpen ? 'rotate(180deg)' : 'none';
+        });
+        return;
+      }
+
+      groupTitles.forEach(el => el.style.display = 'none');
+
+      items.forEach(el => {
+        if (el.classList.contains('admin-menu-submenu-item') || (!el.classList.contains('has-submenu') && el.classList.contains('admin-menu-item'))) {
+          const text = el.textContent.toLowerCase();
+          if (text.includes(q)) {
+            el.style.display = 'block';
+            const parentSubmenu = el.closest('.admin-menu-submenu');
+            if (parentSubmenu) {
+              parentSubmenu.style.display = 'block';
+              const parentHeaderIcon = parentSubmenu.previousElementSibling.querySelector('.submenu-toggle-icon');
+              if (parentHeaderIcon) parentHeaderIcon.style.transform = 'rotate(180deg)';
+            }
+          } else {
+            el.style.display = 'none';
+          }
+        }
+      });
+    });
+  }
 }
+
 
 /* ─── Sidebar Drag-to-Resize Logic ─── */
 function initSidebarResizer() {
@@ -499,15 +533,102 @@ function injectAdminTopbar() {
   const params = new URLSearchParams(window.location.search);
   const currentTab = params.get('tab');
 
+  const pathMap = {
+    // Catalog
+    'products.html': { section: 'Catalog', name: 'Products' },
+    'categories.html': { section: 'Catalog', name: 'Categories' },
+    'brands.html': { section: 'Catalog', name: 'Brands' },
+    'inventory.html': { section: 'Catalog', name: 'Inventory & Stock' },
+    'warehouse.html': { section: 'Catalog', name: 'Warehouse Hubs' },
+    'variants.html': { section: 'Catalog', name: 'Product Variants' },
+    'collections.html': { section: 'Catalog', name: 'Collections' },
+    'media.html': { section: 'Catalog', name: 'Media Library' },
+    'media-manager.html': { section: 'Catalog', name: 'Media Manager' },
+    // Sales
+    'orders.html': { section: 'Sales', name: 'Orders Registry' },
+    'returns.html': { section: 'Sales', name: 'Returns Registry' },
+    'refunds.html': { section: 'Sales', name: 'Refunds Wallet' },
+    'courier.html': { section: 'Sales', name: 'Courier Partners' },
+    'shipping.html': { section: 'Sales', name: 'Shipping Zones' },
+    'customers.html': { section: 'Sales', name: 'Customers List' },
+    'customer-groups.html': { section: 'Sales', name: 'Customer Groups' },
+    'invoices.html': { section: 'Sales', name: 'Invoice Resolution' },
+    'purchase-orders.html': { section: 'Sales', name: 'Purchase Orders' },
+    'credit-notes.html': { section: 'Sales', name: 'Credit Notes' },
+    'payments.html': { section: 'Sales', name: 'Payments Logs' },
+    // Marketing
+    'coupons.html': { section: 'Marketing', name: 'Discount Coupons' },
+    'flash-sales.html': { section: 'Marketing', name: 'Flash Promotions' },
+    'newsletter.html': { section: 'Marketing', name: 'Newsletter Admin' },
+    'popup-builder.html': { section: 'Marketing', name: 'Popup Builder' },
+    'campaigns.html': { section: 'Marketing', name: 'Marketing Campaigns' },
+    'affiliates.html': { section: 'Marketing', name: 'Affiliate Program' },
+    'email-studio.html': { section: 'Marketing', name: 'Email Studio' },
+    'sms-studio.html': { section: 'Marketing', name: 'SMS Studio' },
+    'whatsapp-studio.html': { section: 'Marketing', name: 'WhatsApp Studio' },
+    'referrals.html': { section: 'Marketing', name: 'Referral Rewards' },
+    // Content
+    'homepage-builder.html': { section: 'Content', name: 'Homepage Builder' },
+    'about-builder.html': { section: 'Content', name: 'About Page' },
+    'contact-builder.html': { section: 'Content', name: 'Contact Page' },
+    'navigation-builder.html': { section: 'Content', name: 'Navigation Menu' },
+    'seo.html': { section: 'Content', name: 'SEO Meta Config' },
+    'theme-builder.html': { section: 'Content', name: 'Theme Styles' },
+    'content-pages.html': { section: 'Content', name: 'Content Pages' },
+    'blogs.html': { section: 'Content', name: 'Blogs & Articles' },
+    // Management
+    'users.html': { section: 'Management', name: 'Users Register' },
+    'roles.html': { section: 'Management', name: 'RBAC Roles' },
+    'permissions.html': { section: 'Management', name: 'RBAC Permissions' },
+    'staff.html': { section: 'Management', name: 'Staff Management' },
+    'vendors.html': { section: 'Management', name: 'Vendor Directory' },
+    'reports.html': { section: 'Management', name: 'Reports & Analytics' },
+    'faq.html': { section: 'Management', name: 'FAQ Manager' },
+    'support.html': { section: 'Management', name: 'Support Desk Chat' },
+    'support-tickets.html': { section: 'Management', name: 'Support Tickets' },
+    'reviews.html': { section: 'Management', name: 'Product Reviews' },
+    'security.html': { section: 'Management', name: 'Security Audits' },
+    'api-keys.html': { section: 'Management', name: 'API Diagnostics' },
+    'system-diagnostics.html': { section: 'Management', name: 'System Coordinates' },
+    'backups.html': { section: 'Management', name: 'Database Backups' },
+    // Settings
+    'settings.html': { section: 'Settings', name: 'General Settings' },
+    'store-settings.html': { section: 'Settings', name: 'Store Coordinates' },
+    'taxes.html': { section: 'Settings', name: 'Taxes & GST rates' },
+    'smtp-settings.html': { section: 'Settings', name: 'SMTP configuration' },
+    'payment-gateway.html': { section: 'Settings', name: 'Payment Gateways' },
+    'payment-settings.html': { section: 'Settings', name: 'Payment Settings' },
+    'shipping-settings.html': { section: 'Settings', name: 'Shipping Settings' },
+    'profile-settings.html': { section: 'Settings', name: 'Admin Profile' }
+  };
+
   let section = 'Admin';
   let pageName = 'Dashboard';
 
   if (path.includes('dashboard.html')) {
     section = 'General';
     pageName = 'Dashboard';
-  } else if (path.includes('products.html')) {
-    section = 'Catalog';
-    const tab = currentTab || 'products';
+  } else {
+    const filename = path.substring(path.lastIndexOf('/') + 1);
+    if (pathMap[filename]) {
+      section = pathMap[filename].section;
+      pageName = pathMap[filename].name;
+    }
+  }
+
+  // Handle settings/products tab overrides
+  if (path.includes('settings.html') && currentTab) {
+    const tabNames = {
+      general: 'General Settings',
+      seo: 'SEO Settings',
+      analytics: 'Analytics',
+      integrations: 'Integrations',
+      'mobile-settings': 'Mobile Settings',
+      diagnostics: 'Diagnostics',
+      profile: 'Admin Profile'
+    };
+    pageName = tabNames[currentTab] || pageName;
+  } else if (path.includes('products.html') && currentTab) {
     const tabNames = {
       products: 'Products List',
       categories: 'Categories',
@@ -515,76 +636,16 @@ function injectAdminTopbar() {
       variants: 'Variants',
       collections: 'Collections'
     };
-    pageName = tabNames[tab] || 'Products List';
-  } else if (path.includes('media.html')) {
-    section = 'Catalog';
-    pageName = 'Media Library';
-  } else if (path.includes('orders.html')) {
-    section = 'Sales';
-    pageName = 'Orders';
-  } else if (path.includes('customers.html')) {
-    section = 'Sales';
-    pageName = 'Customers';
-  } else if (path.includes('enquiries.html')) {
-    section = 'Sales';
-    pageName = 'Enquiries';
-  } else if (path.includes('invoices.html')) {
-    section = 'Sales';
-    pageName = 'Invoice Hub';
-  } else if (path.includes('marketing.html')) {
-    section = 'Marketing';
-    const tab = currentTab || 'coupons';
-    const tabNames = {
-      coupons: 'Coupons',
-      'flash-sales': 'Flash Sales',
-      popup: 'Popup Builder',
-      newsletter: 'Newsletter'
-    };
-    pageName = tabNames[tab] || 'Coupons';
-  } else if (path.includes('content.html')) {
-    section = 'Content';
-    const tab = currentTab || 'homepage';
-    const tabNames = {
-      homepage: 'Homepage Builder',
-      testimonials: 'Testimonials',
-      'about-page': 'About Page',
-      'contact-page': 'Contact Page',
-      'privacy-page': 'Privacy Policy',
-      'terms-page': 'Terms of Service',
-      header: 'Navigation Builder'
-    };
-    pageName = tabNames[tab] || 'Homepage Builder';
-  } else if (path.includes('reports.html')) {
-    section = 'System';
-    pageName = 'Sales Reports';
-  } else if (path.includes('settings.html')) {
-    section = 'System';
-    const tab = currentTab || 'general';
-    const tabNames = {
-      general: 'General Settings',
-      seo: 'SEO Settings',
-      analytics: 'Analytics',
-      integrations: 'Integrations',
-      'mobile-settings': 'Mobile Settings',
-      diagnostics: 'Diagnostics'
-    };
-    pageName = tabNames[tab] || 'General Settings';
-  } else if (path.includes('security-logs.html')) {
-    section = 'System';
-    pageName = 'Security Logs';
-  } else if (path.includes('system-diagnostics.html')) {
-    section = 'System';
-    pageName = 'Diagnostics';
+    pageName = tabNames[currentTab] || pageName;
   }
 
   const topbar = document.createElement('header');
   topbar.className = 'admin-topbar';
-  
-  // Set up user profile initials and theme details
+
   let userInitials = 'AD';
   let userName = 'Administrator';
   let userEmail = 'admin@magizhvagam.com';
-  
+
   try {
     const adminAuth = JSON.parse(localStorage.getItem('adminAuth') || '{}');
     if (adminAuth && adminAuth.user) {
@@ -592,7 +653,9 @@ function injectAdminTopbar() {
       userEmail = adminAuth.user.email || userEmail;
       userInitials = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('Failed to parse adminAuth profile', e);
+  }
 
   let themeIcon = 'moon';
   let themeText = 'Dark Mode';
@@ -616,20 +679,17 @@ function injectAdminTopbar() {
     </div>
 
     <div class="admin-topbar-right">
-      <!-- Search Palette Trigger -->
       <div class="admin-search-trigger" id="global-search-trigger">
         <i data-lucide="search"></i>
         <span>Search admin...</span>
         <kbd>⌘K</kbd>
       </div>
 
-      <!-- Notifications -->
       <button type="button" class="topbar-action-btn" id="notifications-trigger-btn" aria-label="View notifications">
         <i data-lucide="bell"></i>
         <span class="notification-badge" id="admin-notif-badge">3</span>
       </button>
 
-      <!-- Profile Menu -->
       <div class="admin-profile-menu">
         <div class="admin-profile-trigger" id="profile-menu-trigger">
           <div class="admin-avatar">${userInitials}</div>
@@ -640,7 +700,6 @@ function injectAdminTopbar() {
           <i data-lucide="chevron-down" style="width: 14px; height: 14px; color: var(--adm-text-muted);"></i>
         </div>
 
-        <!-- Profile Popover -->
         <div class="profile-popover" id="admin-profile-popover">
           <div class="profile-popover-header">
             <div style="font-weight: 700; font-size: 13px; color: var(--adm-text);">${userName}</div>
@@ -658,24 +717,26 @@ function injectAdminTopbar() {
           <a href="/index.html" target="_blank" class="profile-popover-item">
             <i data-lucide="external-link"></i> View Storefront
           </a>
-          <div style="border-top: 1px solid var(--adm-border); margin: 6px 0;"></div>
+          <div style="border-top: 1px solid var(--adm-border); margin: 4px 0;"></div>
           <a href="#" onclick="window.handleLogout(); return false;" class="profile-popover-item" style="color: var(--adm-danger) !important;">
-            <i data-lucide="log-out" style="color: var(--adm-danger);"></i> Sign Out
+            <i data-lucide="log-out"></i> Sign Out
           </a>
         </div>
       </div>
     </div>
   `;
 
-  // Mount to topbar container if present, else fallback
   const topbarContainer = document.getElementById('admin-topbar-container');
   if (topbarContainer) {
     topbarContainer.appendChild(topbar);
   } else {
     mainPanel.insertBefore(topbar, mainPanel.firstChild);
   }
-  window.renderIcons();
+  if (typeof window.renderIcons === 'function') {
+    window.renderIcons();
+  }
 }
+
 
 window.updateAdminBreadcrumbs = function(section, pageName) {
   const secEl = document.getElementById('breadcrumb-section');
@@ -1058,10 +1119,10 @@ async function loadDashboardData() {
   if (revEl) revEl.innerHTML = '<div class="skeleton" style="height:28px; width:120px; margin-top:8px;"></div>';
   const ordersEl = document.getElementById('metric-orders');
   if (ordersEl) ordersEl.innerHTML = '<div class="skeleton" style="height:28px; width:60px; margin-top:8px;"></div>';
-  const customersEl = document.getElementById('metric-customers');
-  if (customersEl) customersEl.innerHTML = '<div class="skeleton" style="height:28px; width:60px; margin-top:8px;"></div>';
-  const productsEl = document.getElementById('metric-products');
-  if (productsEl) productsEl.innerHTML = '<div class="skeleton" style="height:28px; width:60px; margin-top:8px;"></div>';
+  const aovEl = document.getElementById('metric-aov');
+  if (aovEl) aovEl.innerHTML = '<div class="skeleton" style="height:28px; width:60px; margin-top:8px;"></div>';
+  const stockEl = document.getElementById('metric-low-stock');
+  if (stockEl) stockEl.innerHTML = '<div class="skeleton" style="height:28px; width:60px; margin-top:8px;"></div>';
   
   const chartBox = document.getElementById('dashboard-chart-box');
   if (chartBox) {
@@ -1095,18 +1156,49 @@ async function loadDashboardData() {
     const stats = data.stats || {};
     const totalRevenue = Number(stats.totalRevenue) || 0;
     const totalOrders = Number(stats.totalOrders) || 0;
-    const totalCustomers = Number(stats.totalCustomers) || 0;
-    const totalProducts = Number(stats.totalProducts) || 0;
+
+    // Calculate AOV
+    const aov = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
+
+    // Fetch low stock items count
+    let lowStockCount = 0;
+    try {
+      const prodRes = await adminFetch('/api/products?limit=100');
+      const prodData = await prodRes.json();
+      if (prodData.success && prodData.products) {
+        lowStockCount = prodData.products.filter(p => p.stock < 15).length;
+      }
+    } catch (e) {
+      console.warn('Failed to calculate stock alerts:', e);
+    }
 
     // Set metrics
     const revEl2 = document.getElementById('metric-revenue');
     if (revEl2) revEl2.textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
     const ordersEl2 = document.getElementById('metric-orders');
     if (ordersEl2) ordersEl2.textContent = totalOrders;
-    const customersEl2 = document.getElementById('metric-customers');
-    if (customersEl2) customersEl2.textContent = totalCustomers;
-    const productsEl2 = document.getElementById('metric-products');
-    if (productsEl2) productsEl2.textContent = totalProducts;
+    const aovEl2 = document.getElementById('metric-aov');
+    if (aovEl2) aovEl2.textContent = `₹${aov.toLocaleString('en-IN')}`;
+    const stockEl2 = document.getElementById('metric-low-stock');
+    if (stockEl2) stockEl2.textContent = lowStockCount;
+
+    // Role-based visibility
+    const currentUser = typeof getStoredUser === 'function' ? getStoredUser() : null;
+    const resetBtn = document.getElementById('open-reset-modal-btn');
+    if (currentUser && currentUser.role === 'staff') {
+      if (resetBtn) resetBtn.style.display = 'none'; // Hide reset stats button for staff
+      
+      // Update welcome banner subtext
+      const bannerSubText = document.querySelector('.dashboard-hero-banner p');
+      if (bannerSubText) {
+        bannerSubText.innerHTML = `Your digital return gifts boutique is performing optimally. <strong style="color:var(--adm-accent);">Logged in as Staff (Demoted RBAC permissions)</strong>.`;
+      }
+      
+      // Disable control switches
+      document.querySelectorAll('.toggle-switch input').forEach(input => {
+        input.disabled = true;
+      });
+    }
 
     // Render Recent orders list
     const tbody2 = document.getElementById('recent-orders-tbody');
@@ -1131,7 +1223,7 @@ async function loadDashboardData() {
       }
     }
 
-    // Render Sales trend chart (Placeholder for simplicity using SVG rendering)
+    // Render Sales trend chart
     renderSvgTrendChart(data.chartData || []);
 
   } catch (err) {
@@ -1816,7 +1908,7 @@ function filterAndRenderOrders() {
 
       return `
         <tr>
-          <td><strong style="color:var(--adm-text); font-size:13px;">#${displayOrderId}</strong></td>
+          <td><strong style="color:var(--adm-text); font-size:13px; cursor:pointer;" onclick="openOrderDetailsDrawer('${o._id || o.orderId}')">#${displayOrderId}</strong></td>
           <td>${clientName}</td>
           <td>${formattedDate}</td>
           <td><strong>₹${totalAmount.toLocaleString('en-IN')}</strong></td>
@@ -1830,7 +1922,10 @@ function filterAndRenderOrders() {
             </select>
           </td>
           <td>
-            <a href="/api/orders/${o._id || o.orderId}/invoice" target="_blank" class="btn btn-secondary" style="padding:6px 12px; font-size:11px; border-radius:6px;">Invoice</a>
+            <div style="display:flex; gap:8px;">
+              <button onclick="openOrderDetailsDrawer('${o._id || o.orderId}')" class="btn btn-primary" style="padding:6px 12px; font-size:11px; border-radius:6px; border:none; cursor:pointer;">Details</button>
+              <a href="/api/orders/${o._id || o.orderId}/invoice" target="_blank" class="btn btn-secondary" style="padding:6px 12px; font-size:11px; border-radius:6px; text-decoration:none; display:inline-block; line-height:1.2;">Invoice</a>
+            </div>
           </td>
         </tr>
       `;
@@ -1852,11 +1947,14 @@ async function updateOrderStatus(orderId, status) {
     if (data.success) {
       showToast('Order status updated!', 'success');
       loadAdminOrders();
+      return true;
     } else {
       showToast(data.error || 'Failed to update order status', 'error');
+      return false;
     }
   } catch (err) {
     showToast('Error updating status', 'error');
+    return false;
   }
 }
 
@@ -1870,8 +1968,8 @@ async function loadAdminCustomers() {
     const res = await adminFetch('/api/auth/customers');
     const data = await res.json();
 
-    if (!data.success || data.customers.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No customers registered.</td></tr>';
+    if (!data.success || !data.customers || data.customers.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:40px; color:var(--adm-text-muted);">No customers registered.</td></tr>';
       return;
     }
 
@@ -1881,6 +1979,7 @@ async function loadAdminCustomers() {
     filterAndRenderCustomers();
 
   } catch (err) {
+    console.error('Failed to load customers:', err);
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:red;">Failed to load customers list.</td></tr>';
     showToast('Failed to load customers list', 'error');
   }
@@ -1966,19 +2065,22 @@ function filterAndRenderCustomers() {
       ? `<span style="color:#10b981; font-weight:700;">✓ Verified</span>` 
       : `<span style="color:#ef4444; font-weight:700;">✗ Unverified</span>`;
 
+    const orderCount = c.orderCount || 0;
+    const totalSpent = c.totalSpent || 0;
+
     return `
     <tr>
-      <td><strong>${c.name}</strong></td>
-      <td>${c.email}</td>
-      <td style="text-transform: capitalize;">${c.role}</td>
+      <td><strong>${c.name || 'Anonymous'}</strong></td>
+      <td>${c.email || 'N/A'}</td>
+      <td style="text-transform: capitalize;">${c.role || 'customer'}</td>
       <td>${verificationStatusHTML}</td>
       <td>${lockStatusHTML}</td>
-      <td>${c.orderCount} orders</td>
-      <td><strong>₹${c.totalSpent.toLocaleString('en-IN')}</strong></td>
+      <td>${orderCount} orders</td>
+      <td><strong>₹${totalSpent.toLocaleString('en-IN')}</strong></td>
       <td>
-        <button onclick="viewCustomerDeepProfile('${c._id}')" class="btn btn-secondary" style="padding:6px 12px; font-size:12px; border-radius:6px; cursor:pointer;">👁️ Profile</button>
+        <button onclick="viewCustomerDeepProfile('${c._id || c.id}')" class="btn btn-secondary" style="padding:6px 12px; font-size:12px; border-radius:6px; cursor:pointer;">👁️ Profile</button>
         
-        <select onchange="handleAdminCustomerAction('${c._id}', this.value); this.value='';" style="padding:6px; font-size:12px; border-radius:6px; cursor:pointer; background:var(--adm-bg); color:var(--adm-text); border:1px solid var(--adm-border); font-weight:600; margin-left:6px;">
+        <select onchange="handleAdminCustomerAction('${c._id || c.id}', this.value); this.value='';" style="padding:6px; font-size:12px; border-radius:6px; cursor:pointer; background:var(--adm-bg); color:var(--adm-text); border:1px solid var(--adm-border); font-weight:600; margin-left:6px;">
           <option value="">Actions</option>
           <option value="toggle-role">Toggle Permissions</option>
           <option value="force-reset">Force PW Reset</option>
@@ -2859,15 +2961,7 @@ async function applyAdminBranding() {
   }
 }
 
-// Auto-load and bootstrap client-side SPA router
-(function() {
-  if (!document.querySelector('script[src*="admin-spa.js"]')) {
-    const s = document.createElement('script');
-    s.src = '/assets/js/admin-spa.js';
-    s.defer = true;
-    document.body.appendChild(s);
-  }
-})();
+
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -3325,4 +3419,144 @@ function initAutosaveEngine() {
   }
 }
 
+/* ─── Reusable Modal Dialog Engine (Point 15 Fix) ─── */
+function toggleModal(modalId, show) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
 
+  if (show) {
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+  } else {
+    modal.classList.remove('show');
+    const openModals = document.querySelectorAll('.modal-overlay.show');
+    if (openModals.length === 0) {
+      document.body.classList.remove('modal-open');
+    }
+  }
+}
+window.toggleModal = toggleModal;
+
+// Close modals on ESC key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const openModals = document.querySelectorAll('.modal-overlay.show');
+    openModals.forEach(modal => {
+      toggleModal(modal.id, false);
+    });
+  }
+});
+
+// Close modals when clicking overlay background
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal-overlay')) {
+    toggleModal(e.target.id, false);
+  }
+});
+
+/* ─── MZPage Registry Registration ─── */
+(function () {
+  'use strict';
+
+  // Initialize global abort controller for admin panel
+  window.MZAdminAbortController = window.MZAdminAbortController || new AbortController();
+
+  let mousemoveHandler = null;
+
+  async function initAdminPage() {
+    // Reset/renew the global admin abort controller
+    if (window.MZAdminAbortController) {
+      window.MZAdminAbortController.abort();
+    }
+    window.MZAdminAbortController = new AbortController();
+
+    const sidebar = document.getElementById('admin-sidebar-container');
+    const sidebarHasContent = sidebar && sidebar.children.length > 0;
+
+    if (!sidebarHasContent) {
+      if (document.body) {
+        document.body.style.visibility = 'hidden';
+      }
+
+      try {
+        const res = await adminFetch('/api/auth/profile');
+        const data = await res.json();
+
+        if (data.success && data.user && data.user.role !== 'admin') {
+          document.body.innerHTML =
+            '<div style="font-family:sans-serif;padding:40px;max-width:520px;margin:80px auto;"><h1>403 Forbidden</h1><p>Your account does not have administrator access.</p><p><a href="/index.html">Return to store</a></p></div>';
+          document.body.style.visibility = 'visible';
+          return;
+        }
+
+        if (!data.success || !data.user || data.user.role !== 'admin') {
+          const redirectPath = window.location.pathname.substring(1) + window.location.search;
+          window.location.replace('/admin/login?redirect=' + encodeURIComponent(redirectPath));
+          return;
+        }
+
+        if (typeof window.setSessionUser === 'function') {
+          window.setSessionUser(data.user);
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        const redirectPath = window.location.pathname.substring(1) + window.location.search;
+        window.location.replace('/admin/login?redirect=' + encodeURIComponent(redirectPath));
+        return;
+      }
+
+      if (document.body) {
+        document.body.style.visibility = 'visible';
+      }
+
+      if (typeof initIcons === 'function') {
+        initIcons();
+      }
+
+      applyAdminBranding();
+      injectAmbientBlobs();
+      injectAdminSidebar();
+      injectAdminTopbar();
+      injectOverlays();
+      initSidebarResizer();
+      initOverlaysEvents();
+
+      if (mousemoveHandler) {
+        document.removeEventListener('mousemove', mousemoveHandler);
+      }
+      mousemoveHandler = (e) => {
+        const cards = document.querySelectorAll('.glass, .metric-card, .admin-card, .btn');
+        cards.forEach(card => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          card.style.setProperty('--mouse-x', `${x}px`);
+          card.style.setProperty('--mouse-y', `${y}px`);
+        });
+      };
+      document.addEventListener('mousemove', mousemoveHandler);
+    }
+
+    // Always run route-specific initializer for the current sub-page
+    await initAdminRouterPage();
+  }
+
+  function destroyAdminPage() {
+    if (window.MZAdminAbortController) {
+      window.MZAdminAbortController.abort();
+    }
+  }
+
+  window.MZPageRegistry = window.MZPageRegistry || {};
+  const adminPages = [
+    'admin-dashboard', 'admin-products', 'admin-orders', 'admin-invoices', 
+    'admin-customers', 'admin-settings', 'admin-marketing', 'admin-content', 
+    'admin-reports', 'admin-media', 'admin-security-logs', 'admin-enquiries'
+  ];
+  adminPages.forEach(pId => {
+    window.MZPageRegistry[pId] = {
+      init: initAdminPage,
+      destroy: destroyAdminPage
+    };
+  });
+})();

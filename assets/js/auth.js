@@ -6,13 +6,14 @@
 const AUTH_API = '/api/auth';
 
 // Customer login request handler
-async function handleLogin(email, password, redirectUrl = '/index.html') {
+async function handleLogin(email, password, redirectUrl = '/index.html', options = {}) {
   try {
     const res = await fetch(`${AUTH_API}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
+      ...options
     });
 
     let data;
@@ -112,9 +113,9 @@ async function handleRegister(name, email, phone, password) {
 window.handleLogout = window.handleLogout || (async () => {});
 
 // Retrieve profile info from API
-async function loadUserProfile() {
+async function loadUserProfile(options = {}) {
   try {
-    const res = await fetch(`${AUTH_API}/profile`, { credentials: 'same-origin' });
+    const res = await fetch(`${AUTH_API}/profile`, { credentials: 'same-origin', ...options });
     const data = await res.json();
     if (data.success) {
       return data.user;
@@ -126,13 +127,14 @@ async function loadUserProfile() {
 }
 
 // Edit customer profiles
-async function updateUserProfile(profileData) {
+async function updateUserProfile(profileData, options = {}) {
   try {
     const res = await fetch(`${AUTH_API}/profile`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify(profileData)
+      body: JSON.stringify(profileData),
+      ...options
     });
     const data = await res.json();
     if (data.success) {

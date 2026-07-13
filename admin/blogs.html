@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Article Publisher | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Content & Layout</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Blog Article Publisher</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Compose rich blogging documentation, promote craft stories, and sync with storefront posts feed.</p>
+      </section>
+
+      
+      <div class="grid grid-2" style="display:grid; grid-template-columns:1fr 1.3fr; gap:30px;">
+        <div class="glass" style="padding:25px; border-radius:12px; height:fit-content;">
+          <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">Write Article</h2>
+          <form id="blog-form" style="display:flex; flex-direction:column; gap:14px;">
+            <div class="admin-form-group">
+              <label>Article Title *</label>
+              <input type="text" class="admin-form-control" placeholder="The Heritage of Tanjore Art Plates" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Article Content Description *</label>
+              <textarea class="admin-form-control" rows="4" placeholder="Rich content here..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Publish Article</button>
+          </form>
+        </div>
+
+        <div class="glass table-responsive" style="padding:25px; border-radius:12px;">
+          <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">Published Articles</h2>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Crafting Brass Vilakkus</strong></td>
+                <td>Admin Owner</td>
+                <td><span class="badge badge-success">Published</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    
+
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      window.updateAdminBreadcrumbs('Content', 'Blogs');
+      document.getElementById('blog-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast('Blog article published successfully!', 'success');
+        document.getElementById('blog-form').reset();
+      });
+    
+    });
+  </script>
+</body>
+</html>

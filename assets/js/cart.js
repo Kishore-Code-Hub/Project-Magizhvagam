@@ -1,9 +1,35 @@
-/**
- * MAGIZHVAGAM - Cart JS Client
- * Handles cart item lists, quantities, taxes, coupons, and checkout totals
- */
+(function () {
+  'use strict';
 
-document.addEventListener('DOMContentLoaded', () => {
+  let cartUpdateHandler = null;
+
+  async function initCartPage() {
+    initCart();
+    
+    // Register global cart updates listener
+    if (cartUpdateHandler) {
+      window.removeEventListener('cartUpdated', cartUpdateHandler);
+    }
+    cartUpdateHandler = () => {
+      renderCart();
+    };
+    window.addEventListener('cartUpdated', cartUpdateHandler);
+  }
+
+  function destroyCartPage() {
+    if (cartUpdateHandler) {
+      window.removeEventListener('cartUpdated', cartUpdateHandler);
+      cartUpdateHandler = null;
+    }
+  }
+
+  window.MZPageRegistry = window.MZPageRegistry || {};
+  window.MZPageRegistry['cart'] = {
+    init: initCartPage,
+    destroy: destroyCartPage
+  };
+
+function initCart() {
   renderCart();
 
   // Hide coupon form if feature is disabled
@@ -39,12 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-});
+}
 
-// Listen for global cart updates
-window.addEventListener('cartUpdated', () => {
-  renderCart();
-});
+
 
 function renderCart() {
   const container = document.getElementById('cart-items-container');
@@ -434,3 +457,5 @@ window.proceedToCheckout = async () => {
 
   window.location.href = '/checkout.html';
 };
+
+})();

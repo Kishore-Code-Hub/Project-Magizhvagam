@@ -1,82 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invoice Hub | MAGIZHVAGAM</title>
-
+  <title>Document Hub & Invoices | MAGIZHVAGAM</title>
+  
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="stylesheet" href="/assets/css/admin.css">
   <link rel="stylesheet" href="/assets/css/animations.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
+
   <style>
     @media print {
-
-      /* Hide sidebar, search form, heading, and print action button */
       .admin-sidebar,
       #admin-sidebar-container,
+      .studio-tabs,
       .glass:first-of-type,
       #invoice-search-form,
       h1,
       .btn,
       button,
-      #print-invoice-btn {
+      #print-invoice-btn,
+      .po-creator-card {
         display: none !important;
       }
-
-      /* Expand result card for full width print */
       .admin-main {
         margin: 0 !important;
         padding: 0 !important;
       }
-
       #invoice-result-card,
-      #invoice-result-card .glass {
+      #po-print-area {
         border: none !important;
         box-shadow: none !important;
         background: transparent !important;
         padding: 0 !important;
+        display: block !important;
       }
     }
   </style>
 </head>
-
 <body style="visibility:hidden">
 
   <div class="admin-layout">
-
-    <!-- Sidebar navigation placeholder -->
+    
+    <!-- Sidebar navigation -->
     <aside id="admin-sidebar-container"></aside>
 
     <!-- Main Invoices Panel -->
     <main class="admin-main">
-      <h1 style="font-family:'Outfit'; font-size:32px; margin-bottom:30px; color:var(--text-color);">Invoice Resolution
-        Hub</h1>
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Sub Tabs Row -->
+      
 
-      <!-- Search Component -->
-      <div class="glass"
-        style="padding:25px; border-radius:12px; margin-bottom:30px; border:1px solid var(--card-border);">
-        <h4 style="font-family:'Outfit'; margin-bottom:15px; font-size:16px; color:var(--text-color);">Search Invoice by
-          Order ID</h4>
-        <form id="invoice-search-form" style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
+      <!-- Tab 1: Invoices Resolution Hub -->
+      <div id="tab-invoices" class="doc-tab-panel">
+        <h1 style="font-family:'Outfit'; font-size:32px; margin-bottom:10px; color:var(--text-color);">Invoice Resolution Hub</h1>
+        <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Search and retrieve legal client invoices, generate print layouts, and inspect taxes (GST).</p>
 
-          <input type="text" id="search-order-id" class="admin-form-control"
-            placeholder="Enter complete Order ID (e.g., #1024)..." required
-            style="margin:0; flex-grow:1; min-width:250px; background:rgba(0,0,0,0.02); color:var(--text-color); border:1px solid var(--card-border); border-radius:8px; padding:12px;">
+        <!-- Search Component -->
+        <div class="glass" style="padding:25px; border-radius:12px; margin-bottom:30px; border:1px solid var(--card-border);">
+          <h4 style="font-family:'Outfit'; margin-bottom:15px; font-size:16px; color:var(--text-color);">Search Invoice by Order ID</h4>
+          <form id="invoice-search-form" style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
+            <input type="text" id="search-order-id" class="admin-form-control" placeholder="Enter complete Order ID (e.g. #1024)..." required style="margin:0; flex-grow:1; min-width:250px; background:rgba(0,0,0,0.02); color:var(--text-color); border:1px solid var(--card-border); border-radius:8px; padding:12px;">
+            <button type="submit" class="btn btn-primary" style="border-radius:8px; white-space:nowrap; padding:12px 24px; font-weight:600; cursor:pointer;">Search Invoice</button>
+          </form>
+        </div>
 
-          <button type="submit" class="btn btn-primary"
-            style="border-radius:8px; white-space:nowrap; padding:12px 24px; font-weight:600; cursor:pointer;">Search
-            Invoice</button>
-        </form>
+        <!-- Invoice Content Display Area -->
+        <div id="invoice-result-card" style="display:none;" class="animated fadeIn">
+          <!-- Dynamically loaded by script -->
+        </div>
       </div>
 
-      <!-- Invoice Content Display Area -->
-      <div id="invoice-result-card" style="display:none;" class="animated fadeIn">
-        <!-- Will be compiled dynamically by Javascript -->
+      <!-- Tab 2: Purchase Orders -->
+      <div id="tab-po" class="doc-tab-panel" style="display:none;">
+        <div class="grid grid-2" style="display:grid; grid-template-columns: 1fr 1.2fr; gap:30px;">
+          
+          <!-- PO Creator Form -->
+          <div class="glass po-creator-card" style="padding:25px; border-radius:12px; height:fit-content;">
+            <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:15px;">Create Purchase Order (PO)</h3>
+            <form id="po-creator-form" onsubmit="event.preventDefault();">
+              <div class="admin-form-group">
+                <label>Supplier / Artisan Guild *</label>
+                <input type="text" id="po-vendor" class="admin-form-control" placeholder="Coimbatore Clay Potters Guild" required>
+              </div>
+              <div class="admin-form-group">
+                <label>Shipping Destination Warehouse *</label>
+                <select id="po-dest-warehouse" class="admin-form-control">
+                  <option value="hq">HQ Warehouse</option>
+                  <option value="chennai">Chennai Hub</option>
+                  <option value="cbe">Coimbatore</option>
+                </select>
+              </div>
+              <div class="admin-form-group">
+                <label>Product Items (Format: Item Name x Qty) *</label>
+                <textarea id="po-items" class="admin-form-control" rows="3" placeholder="Tanjore Brass Lamp x 50&#10;Handmade Jute Hamper Box x 100" required></textarea>
+              </div>
+              <button id="add-po-btn" type="button" class="btn btn-primary" style="width:100%; border-radius:8px;">Generate Purchase Order</button>
+            </form>
+          </div>
+
+          <!-- PO Print/Preview Area -->
+          <div class="glass" id="po-print-area" style="padding:25px; border-radius:12px;">
+            <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:15px;" class="po-creator-card">PO Registry & Preview</h3>
+            
+            <div id="po-preview-container" style="display:flex; flex-direction:column; gap:12px;">
+              <!-- Dynamic preview of active POs -->
+              <p style="color:var(--text-muted); font-size:13px;">No PO generated yet. Fill out the creator form on the left to print a purchase order request.</p>
+            </div>
+          </div>
+
+        </div>
       </div>
+
+      <!-- Tab 3: Credit Notes & Receipts -->
+      <div id="tab-credit" class="doc-tab-panel" style="display:none;">
+        <div style="margin-bottom:20px;">
+          <h2 style="font-family:'Outfit'; font-size:24px; color:var(--text-color); margin:0;">Credit Notes & Return Receipts</h2>
+          <p style="color:var(--text-muted); font-size:12px; margin:4px 0 0 0;">Retrieve legal transaction adjustments and printed credit confirmations for order cancellations.</p>
+        </div>
+
+        <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Receipt ID</th>
+                <th>Order Reference</th>
+                <th>Client Name</th>
+                <th>Refund Amount</th>
+                <th>Payment Mode</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="credit-notes-list-tbody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </main>
-
   </div>
 
   <!-- Scripts -->
@@ -84,7 +148,110 @@
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
   <script src="/assets/js/admin.js"></script>
-</body>
 
+  <script>
+    function switchDocTab(event, tabId) {
+      document.querySelectorAll('.studio-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.doc-tab-panel').forEach(panel => panel.style.display = 'none');
+      
+      if (event) {
+        event.target.classList.add('active');
+      }
+      
+      const panel = document.getElementById(tabId);
+      if (panel) {
+        panel.style.display = 'block';
+      }
+
+      if (tabId === 'tab-po') {
+        renderPoList();
+      } else if (tabId === 'tab-credit') {
+        renderCreditNotes();
+      }
+    }
+    window.switchDocTab = switchDocTab;
+
+    // PO Mock data
+    let mockPOs = [];
+
+    function renderPoList() {
+      const container = document.getElementById('po-preview-container');
+      if (!container) return;
+
+      if (mockPOs.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-muted); font-size:13px;">No PO generated yet. Fill out the creator form on the left to print a purchase order request.</p>`;
+        return;
+      }
+
+      container.innerHTML = mockPOs.map(po => `
+        <div class="glass-panel" style="padding:20px; border-radius:10px; border:1px solid var(--card-border); background:rgba(255,255,255,0.01);">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed var(--adm-border); padding-bottom:10px; margin-bottom:10px;">
+            <div>
+              <strong style="color:var(--adm-accent); font-size:14px;">PO #${po.id}</strong>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Issued on: ${po.date}</div>
+            </div>
+            <button onclick="window.print()" class="btn btn-secondary" style="padding:6px 12px; font-size:11px; border-radius:6px;">Print PO</button>
+          </div>
+          <div style="font-size:12px; margin-bottom:8px;"><strong>Supplier:</strong> ${po.vendor}</div>
+          <div style="font-size:12px; margin-bottom:12px;"><strong>Deliver to:</strong> ${po.warehouse}</div>
+          
+          <div style="background:rgba(0,0,0,0.12); padding:10px; border-radius:6px; font-family:monospace; font-size:11px; white-space:pre-wrap; line-height:1.4;">${po.items}</div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('add-po-btn').addEventListener('click', () => {
+      const vendor = document.getElementById('po-vendor').value.trim();
+      const warehouse = document.getElementById('po-dest-warehouse').value.toUpperCase();
+      const items = document.getElementById('po-items').value.trim();
+
+      if (!vendor || !items) {
+        showToast('Please enter vendor and products details', 'warning');
+        return;
+      }
+
+      const newPo = {
+        id: Math.floor(20000 + Math.random() * 9000),
+        date: new Date().toLocaleDateString('en-IN'),
+        vendor,
+        warehouse: warehouse + ' TERMINAL',
+        items
+      };
+
+      mockPOs.unshift(newPo);
+      showToast('Purchase Order generated successfully!', 'success');
+      document.getElementById('po-vendor').value = '';
+      document.getElementById('po-items').value = '';
+      renderPoList();
+    });
+
+    // Credit notes mock data
+    const mockCreditNotes = [
+      { id: 'CRN-7801', order: 'ORD-98031', name: 'Alagappan Sundaram', amount: '₹2,500', method: 'Razorpay Wallet' },
+      { id: 'CRN-9022', order: 'ORD-12002', name: 'Nalini Sekhar', amount: '₹1,200', method: 'Cash on Delivery (COD)' }
+    ];
+
+    function renderCreditNotes() {
+      const tbody = document.getElementById('credit-notes-list-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = mockCreditNotes.map(c => `
+        <tr>
+          <td><strong style="color:var(--adm-accent);">#${c.id}</strong></td>
+          <td><strong>#${c.order}</strong></td>
+          <td><strong>${c.name}</strong></td>
+          <td><strong>${c.amount}</strong></td>
+          <td>${c.method}</td>
+          <td>
+            <button onclick="showToast('Receipt printed successfully!', 'success')" class="btn btn-secondary" style="padding:6px 12px; font-size:11px; border-radius:6px;">Print Slip</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+  </script>
+</body>
 </html>

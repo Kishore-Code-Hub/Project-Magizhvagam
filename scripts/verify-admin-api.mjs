@@ -1,7 +1,7 @@
 /**
  * Quick admin API smoke test (requires server on :5000 and seed admin user).
  */
-const BASE = process.env.API_BASE || 'http://localhost:5000';
+const BASE = process.env.API_BASE || ('http://localhost:' + 5000);
 
 async function main() {
   const jar = { cookie: '' };

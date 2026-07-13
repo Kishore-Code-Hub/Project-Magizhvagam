@@ -1,20 +1,76 @@
-/**
- * MAGIZHVAGAM - Catalog Script
- * Manages search, filters sidebar, sorting, pagination, and grids bindings
- */
+(function () {
+  'use strict';
 
-let currentPage = 1;
-const limit = 9;
+  let abortController = null;
+  let debounceTimeout = null;
+  let suggestionsClickOutsideHandler = null;
+  let escKeyHandler = null;
+  let sortClickOutsideHandler = null;
+  let currentPage = 1;
+  const limit = 12;
 
-document.addEventListener('DOMContentLoaded', () => {
-  initCatalog();
-});
+  async function initCatalogPage() {
+    if (abortController) abortController.abort();
+    abortController = new AbortController();
+    const signal = abortController.signal;
+
+    try {
+      await initCatalog({ signal });
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        console.log('[MZPage] Catalog load aborted.');
+      } else {
+        console.error('Catalog page initialization failed:', err);
+      }
+    }
+  }
+
+  function destroyCatalogPage() {
+    if (abortController) {
+      abortController.abort();
+      abortController = null;
+    }
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = null;
+    }
+    if (suggestionsClickOutsideHandler) {
+      document.removeEventListener('click', suggestionsClickOutsideHandler);
+      suggestionsClickOutsideHandler = null;
+    }
+    if (escKeyHandler) {
+      document.removeEventListener('keydown', escKeyHandler);
+      escKeyHandler = null;
+    }
+    if (sortClickOutsideHandler) {
+      document.removeEventListener('click', sortClickOutsideHandler);
+      sortClickOutsideHandler = null;
+    }
+    
+    // Clear global suggester pollution
+    window.setSuggestionActive = null;
+    window.removeRecentSearchEvent = null;
+
+    // Clean up filterSidebar if appended to document.body
+    const filterSidebar = document.querySelector('.filter-sidebar');
+    if (filterSidebar && filterSidebar.parentNode === document.body) {
+      filterSidebar.parentNode.removeChild(filterSidebar);
+    }
+  }
+
+  window.MZPageRegistry = window.MZPageRegistry || {};
+  window.MZPageRegistry['products'] = {
+    init: initCatalogPage,
+    destroy: destroyCatalogPage
+  };
 
 
 
-async function initCatalog() {
+async function initCatalog(options = {}) {
+  window.MZ_InitCatalog_Count = (window.MZ_InitCatalog_Count || 0) + 1;
+  console.log(`[Forensic Instrument] initCatalog execution count: ${window.MZ_InitCatalog_Count}`);
   // 1. Populate Category dropdowns/sidebar list
-  await loadSidebarCategories();
+  await loadSidebarCategories(options);
 
   // 2. Pre-fill filters from URL parameters
   const searchParam = getQueryParam('search');
@@ -39,30 +95,30 @@ async function initCatalog() {
   initSearchSuggestions();
 
   // 3. Load catalog products
-  await loadCatalogProducts();
+  await loadCatalogProducts(options);
 
   // 4. Register filter change listeners
   document.getElementById('filter-form').addEventListener('submit', (e) => {
     e.preventDefault();
     currentPage = 1;
-    loadCatalogProducts();
+    loadCatalogProducts(options);
   });
 
   document.getElementById('filter-sort').addEventListener('change', () => {
     currentPage = 1;
-    loadCatalogProducts();
+    loadCatalogProducts(options);
   });
 
   // 5. Mobile Sort & Filter Modal Interaction Bindings
   initMobileSortFilter();
 }
 
-async function loadSidebarCategories() {
+async function loadSidebarCategories(options = {}) {
   const select = document.getElementById('filter-category');
   if (!select) return;
 
   try {
-    const res = await fetch('/api/products/categories');
+    const res = await fetch('/api/products/categories', options);
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const data = await res.json();
     if (data.success && data.categories) {
@@ -228,7 +284,7 @@ const FALLBACK_PRODUCTS = [
   }
 ];
 
-async function loadCatalogProducts() {
+async function loadCatalogProducts(options = {}) {
   const grid = document.getElementById('catalog-grid');
   if (!grid) return;
   grid.style.display = '';
@@ -274,7 +330,7 @@ async function loadCatalogProducts() {
   const isFilteredSearch = !!(search || category || minPrice || maxPrice || material || color || occasion || rating || availability || discount || featured || newArrivals);
 
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, options);
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const text = await res.text();
     let data;
@@ -550,7 +606,7 @@ function initSearchSuggestions() {
 
     debounceTimeout = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/products?search=${encodeURIComponent(val)}&limit=5`);
+        const res = await fetch(`/api/products?search=${encodeURIComponent(val)}&limit=5`, options);
         const data = await res.json();
         if (data.success && data.products) {
           renderSuggestions(data.products);
@@ -567,11 +623,12 @@ function initSearchSuggestions() {
     renderSuggestions();
   });
 
-  document.addEventListener('click', (e) => {
+  suggestionsClickOutsideHandler = (e) => {
     if (!e.target.closest('#filter-search') && !e.target.closest('#search-suggestions-box')) {
       box.style.display = 'none';
     }
-  });
+  };
+  document.addEventListener('click', suggestionsClickOutsideHandler);
 
   // Keyboard Navigation Support
   input.addEventListener('keydown', (e) => {
@@ -642,9 +699,7 @@ function initMobileSortFilter() {
   const mobileSortBtn = document.getElementById('mobile-sort-btn');
   const mobileFilterBtn = document.getElementById('mobile-filter-btn');
   
-  const sortSheet = document.getElementById('mobile-sort-sheet');
-  const sortBackdrop = document.getElementById('mobile-sort-backdrop');
-  const sortClose = document.getElementById('mobile-sort-close');
+  const sortDropdown = document.getElementById('mobile-sort-dropdown');
   
   const filterSidebar = document.querySelector('.filter-sidebar');
   const filterBackdrop = document.getElementById('mobile-filter-backdrop');
@@ -654,6 +709,20 @@ function initMobileSortFilter() {
   const sortSelect = document.getElementById('filter-sort');
 
   let savedScrollY = 0;
+
+  // Dynamically move filter-sidebar to body on mobile/tablet to bypass transformed parent block issues
+  if (filterSidebar) {
+    if (window.innerWidth <= 1024) {
+      if (filterSidebar.parentNode !== document.body) {
+        document.body.appendChild(filterSidebar);
+      }
+    } else {
+      const catalogLayout = document.querySelector('.catalog-layout');
+      if (catalogLayout && filterSidebar.parentNode !== catalogLayout) {
+        catalogLayout.insertBefore(filterSidebar, catalogLayout.firstChild);
+      }
+    }
+  }
 
   const lockScroll = () => {
     savedScrollY = window.scrollY;
@@ -673,18 +742,61 @@ function initMobileSortFilter() {
     }
   };
 
+  // Keyboard Focus Trapping for Filter Sidebar Accessibility
+  const trapFocus = (element) => {
+    const focusableEls = element.querySelectorAll('a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex="0"]');
+    if (focusableEls.length === 0) return;
+    const firstFocusableEl = focusableEls[0];
+    const lastFocusableEl = focusableEls[focusableEls.length - 1];
+
+    const keydownHandler = (e) => {
+      const isTabPressed = e.key === 'Tab' || e.keyCode === 9;
+      if (!isTabPressed) return;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstFocusableEl) {
+          lastFocusableEl.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastFocusableEl) {
+          firstFocusableEl.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    element.addEventListener('keydown', keydownHandler);
+    element.focusTrapHandler = keydownHandler;
+    if (firstFocusableEl) firstFocusableEl.focus();
+  };
+
+  const untrapFocus = (element) => {
+    if (element.focusTrapHandler) {
+      element.removeEventListener('keydown', element.focusTrapHandler);
+      delete element.focusTrapHandler;
+    }
+  };
+
   // --- Toggle Filter Sheet ---
   if (mobileFilterBtn && filterSidebar && filterBackdrop) {
     mobileFilterBtn.addEventListener('click', () => {
+      // Close sort dropdown if open
+      if (sortDropdown && sortDropdown.classList.contains('open')) {
+        closeSort();
+      }
       filterSidebar.classList.add('open');
       filterBackdrop.classList.add('open');
       lockScroll();
+      trapFocus(filterSidebar);
     });
 
     const closeFilter = () => {
       filterSidebar.classList.remove('open');
       filterBackdrop.classList.remove('open');
       unlockScroll();
+      untrapFocus(filterSidebar);
+      if (mobileFilterBtn) mobileFilterBtn.focus();
     };
 
     if (filterClose) filterClose.addEventListener('click', closeFilter);
@@ -696,34 +808,61 @@ function initMobileSortFilter() {
     });
   }
 
-  // --- Toggle Sort Sheet ---
-  if (mobileSortBtn && sortSheet && sortBackdrop) {
-    mobileSortBtn.addEventListener('click', () => {
-      // Set active class on the current sort option button
-      const currentSortVal = sortSelect.value;
-      const optionBtns = sortSheet.querySelectorAll('.sort-option-btn');
-      optionBtns.forEach(btn => {
-        if (btn.getAttribute('data-value') === currentSortVal) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
+  // --- Toggle Sort Dropdown ---
+  const closeSort = () => {
+    if (sortDropdown) {
+      sortDropdown.classList.remove('open');
+      // Wait for slide/fade animation transition then hide display
+      setTimeout(() => {
+        if (!sortDropdown.classList.contains('open')) {
+          sortDropdown.style.display = 'none';
         }
-      });
+      }, 200);
+      untrapFocus(sortDropdown);
+    }
+  };
 
-      sortSheet.classList.add('open');
-      lockScroll();
+  if (mobileSortBtn && sortDropdown) {
+    mobileSortBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // Avoid triggering outside click immediately
+      
+      const isOpen = sortDropdown.classList.contains('open');
+      if (isOpen) {
+        closeSort();
+      } else {
+        // Sync active class with filterSelect value
+        const currentSortVal = sortSelect.value;
+        const optionBtns = sortDropdown.querySelectorAll('.sort-option-btn');
+        optionBtns.forEach(btn => {
+          if (btn.getAttribute('data-value') === currentSortVal) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+
+        // Open the dropdown
+        sortDropdown.style.display = 'flex';
+        // Force reflow for CSS transitions
+        sortDropdown.offsetHeight;
+        sortDropdown.classList.add('open');
+        trapFocus(sortDropdown);
+
+        // Viewport boundary check: Ensure dropdown doesn't overflow horizontally
+        const rect = sortDropdown.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        if (rect.right > viewportWidth - 10) {
+          // Push it to the left to align safely inside the viewport
+          const offset = rect.right - viewportWidth + 10;
+          sortDropdown.style.left = `calc(16px - ${offset}px)`;
+        } else {
+          sortDropdown.style.left = '16px';
+        }
+      }
     });
 
-    const closeSort = () => {
-      sortSheet.classList.remove('open');
-      unlockScroll();
-    };
-
-    if (sortClose) sortClose.addEventListener('click', closeSort);
-    sortBackdrop.addEventListener('click', closeSort);
-
-    // Option Button Click
-    const optionBtns = sortSheet.querySelectorAll('.sort-option-btn');
+    // Close on option select
+    const optionBtns = sortDropdown.querySelectorAll('.sort-option-btn');
     optionBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const val = btn.getAttribute('data-value');
@@ -734,20 +873,35 @@ function initMobileSortFilter() {
         closeSort();
       });
     });
+
+    // Close on click outside
+    sortClickOutsideHandler = (e) => {
+      if (sortDropdown.classList.contains('open')) {
+        if (!sortDropdown.contains(e.target) && !mobileSortBtn.contains(e.target)) {
+          closeSort();
+        }
+      }
+    };
+    document.addEventListener('click', sortClickOutsideHandler);
   }
 
   // --- ESC Key to close both ---
-  document.addEventListener('keydown', (e) => {
+  escKeyHandler = (e) => {
     if (e.key === 'Escape') {
       if (filterSidebar && filterSidebar.classList.contains('open')) {
         filterSidebar.classList.remove('open');
         if (filterBackdrop) filterBackdrop.classList.remove('open');
         unlockScroll();
+        untrapFocus(filterSidebar);
+        if (mobileFilterBtn) mobileFilterBtn.focus();
       }
-      if (sortSheet && sortSheet.classList.contains('open')) {
-        sortSheet.classList.remove('open');
-        unlockScroll();
+      if (sortDropdown && sortDropdown.classList.contains('open')) {
+        closeSort();
+        if (mobileSortBtn) mobileSortBtn.focus();
       }
     }
-  });
+  };
+  document.addEventListener('keydown', escKeyHandler);
 }
+
+})();

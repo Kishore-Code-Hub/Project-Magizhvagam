@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketing Campaigns Hub | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Campaigns Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Marketing Operations</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Campaigns & Broadcasts</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Create Email and SMS campaigns and broadcast promotions to customer listings.</p>
+      </section>
+
+      <div class="grid grid-2" style="display:grid; grid-template-columns: 1.1fr 1.3fr; gap:30px;">
+        <!-- Email/SMS Broadcast Form -->
+        <div class="glass" style="padding:25px; border-radius:12px; height:fit-content;">
+          <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:15px;">Configure New Broadcast</h3>
+          <form id="campaign-form" onsubmit="event.preventDefault();">
+            <div class="admin-form-group">
+              <label>Campaign Channel *</label>
+              <select id="cmp-channel" class="admin-form-control">
+                <option value="email">Email Campaign</option>
+                <option value="sms">SMS Broadcaster</option>
+                <option value="push">Push Notification</option>
+              </select>
+            </div>
+            <div class="admin-form-group">
+              <label>Campaign Name *</label>
+              <input type="text" id="cmp-name" class="admin-form-control" placeholder="Aadi Festival Launch" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Broadcast Message Body *</label>
+              <textarea id="cmp-body" class="admin-form-control" rows="5" placeholder="Celebrate Aadi with exclusive return gifts! Apply AADI20 code on checkout to get 20% flat discount on clay vilakku combos..." required></textarea>
+            </div>
+            <button id="send-broadcast-btn" type="button" class="btn btn-primary" style="width:100%; border-radius:8px;">Send Broadcast Message</button>
+          </form>
+        </div>
+
+        <!-- Past Campaigns History -->
+        <div class="glass" style="padding:25px; border-radius:12px;">
+          <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:15px;">Campaigns History</h3>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Campaign Name</th>
+                  <th>Channel</th>
+                  <th>Status</th>
+                  <th>Sent At</th>
+                </tr>
+              </thead>
+              <tbody id="campaigns-tbody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCampaignsList();
+      window.updateAdminBreadcrumbs('Marketing', 'Campaigns');
+    });
+
+    let mockCampaigns = [
+      { name: 'Diwali Return Gifts Prebook', channel: 'Email', status: 'Sent', date: '04/07/2026' },
+      { name: 'Weekend Flash Sale Coupon Alert', channel: 'SMS', status: 'Sent', date: '28/06/2026' }
+    ];
+
+    function renderCampaignsList() {
+      const tbody = document.getElementById('campaigns-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = mockCampaigns.map(c => `
+        <tr>
+          <td><strong>${c.name}</strong></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.05); border:1px solid var(--card-border); color:var(--text-color);">${c.channel}</span></td>
+          <td><span class="badge badge-success">Dispatched</span></td>
+          <td style="font-size:12px; color:var(--text-muted);">${c.date}</td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('send-broadcast-btn').addEventListener('click', () => {
+      const name = document.getElementById('cmp-name').value.trim();
+      const channel = document.getElementById('cmp-channel').value.toUpperCase();
+      const body = document.getElementById('cmp-body').value.trim();
+
+      if (!name || !body) {
+        showToast('Please fill out campaign name and content body', 'warning');
+        return;
+      }
+
+      mockCampaigns.unshift({
+        name,
+        channel,
+        status: 'Sent',
+        date: new Date().toLocaleDateString('en-IN')
+      });
+
+      showToast(`Campaign "${name}" has been broadcasted successfully!`, 'success');
+      document.getElementById('cmp-name').value = '';
+      document.getElementById('cmp-body').value = '';
+      renderCampaignsList();
+    });
+  </script>
+</body>
+</html>

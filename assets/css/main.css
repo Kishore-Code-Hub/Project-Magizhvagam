@@ -4137,10 +4137,6 @@ h6,
   transform-style: preserve-3d;
 }
 
-.ticker-track:hover {
-  animation-play-state: paused;
-}
-
 .ticker-group {
   display: flex;
   align-items: center;

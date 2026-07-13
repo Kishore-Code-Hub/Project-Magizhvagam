@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Desk & Live Chats | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+
+  <style>
+    .chat-bubble {
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.4;
+      max-width: 80%;
+      margin-bottom: 8px;
+    }
+    .chat-bubble.customer {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--adm-text);
+      align-self: flex-start;
+    }
+    .chat-bubble.agent {
+      background: var(--adm-accent);
+      color: white;
+      align-self: flex-end;
+    }
+    
+    .ticket-priority {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .priority-high { background: rgba(239, 68, 68, 0.12); color: var(--adm-danger); }
+    .priority-medium { background: rgba(245, 158, 11, 0.12); color: var(--adm-warning); }
+    .priority-low { background: rgba(59, 130, 246, 0.12); color: var(--adm-info); }
+  </style>
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Support Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Helpdesk Portal</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Customer Support Console</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Manage contact messages, resolve customer support tickets, and edit FAQ definitions.</p>
+      </section>
+
+      <!-- Sub Tabs Row -->
+      
+
+      <!-- Tab 1: Contact Messages (Enquiries) -->
+      <div id="tab-enquiries" class="support-tab-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h2 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin:0;">Public Contact Form Queries</h2>
+          <button onclick="loadAdminEnquiries()" class="btn btn-secondary" style="border-radius:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="refresh-cw"></i> Refresh Messages</button>
+        </div>
+
+        <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Client Name</th>
+                <th>Email Address</th>
+                <th>Subject / Occasion</th>
+                <th>Message Content</th>
+                <th>Status</th>
+                <th>Submitted At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-enquiries-tbody">
+              <tr><td colspan="7" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 2: Support Tickets & Chat -->
+      <div id="tab-tickets" class="support-tab-panel" style="display:none;">
+        <div class="grid grid-2" style="display:grid; grid-template-columns: 1fr 1.3fr; gap:30px;">
+          
+          <!-- Active Tickets list -->
+          <div class="glass" style="padding:20px; border-radius:12px;">
+            <h3 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--adm-text);">Open Support Tickets</h3>
+            <div id="tickets-list-container" style="display:flex; flex-direction:column; gap:12px;">
+              <!-- Dynamic content -->
+            </div>
+          </div>
+
+          <!-- Chat Dialog Box -->
+          <div class="glass" id="chat-dialog-panel" style="padding:20px; border-radius:12px; display:none; flex-direction:column; height:500px;">
+            <div style="border-bottom:1px solid var(--adm-border); padding-bottom:12px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h4 style="margin:0; font-family:'Outfit'; font-size:16px;" id="chat-customer-name">Select Ticket</h4>
+                <span style="font-size:11px; color:var(--adm-text-muted);" id="chat-ticket-id">#TKT-0000</span>
+              </div>
+              <button onclick="resolveTicket()" class="btn btn-secondary" style="padding:6px 12px; font-size:11px; border-radius:6px;">Mark Resolved</button>
+            </div>
+
+            <!-- Messages lists -->
+            <div id="chat-messages-container" style="flex-grow:1; overflow-y:auto; display:flex; flex-direction:column; padding-right:8px;">
+              <!-- bubbles go here -->
+            </div>
+
+            <!-- Typing bar -->
+            <form id="chat-typing-form" style="display:flex; gap:10px; margin-top:15px;">
+              <input type="text" id="chat-input-message" class="admin-form-control" placeholder="Type customer reply here..." style="margin:0; flex-grow:1;" required>
+              <button type="submit" class="btn btn-primary" style="padding:10px 20px; font-weight:700;">Send</button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tab 3: AI Chatbot Logs -->
+      <div id="tab-chatbot" class="support-tab-panel" style="display:none;">
+        <div style="margin-bottom:20px;">
+          <h2 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin:0;">AI Assistant Automation Logs</h2>
+          <p style="color:var(--text-muted); font-size:12px; margin:4px 0 0 0;">Transcripts of active user sessions resolved automatically by the AI chatbot service.</p>
+        </div>
+
+        <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Session ID</th>
+                <th>Client Name</th>
+                <th>Query Intent</th>
+                <th>Handled Actions</th>
+                <th>Resolution Status</th>
+                <th>Session Time</th>
+              </tr>
+            </thead>
+            <tbody id="chatbot-logs-tbody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 4: FAQ Management -->
+      <div id="tab-faq" class="support-tab-panel" style="display:none;">
+        <div class="grid grid-2" style="display:grid; grid-template-columns: 1fr 1.2fr; gap:30px;">
+          
+          <!-- FAQ Form -->
+          <div class="glass" style="padding:25px; border-radius:12px; height:fit-content;">
+            <h3 style="font-family:'Outfit'; font-size:18px; color:var(--text-color); margin-top:0; margin-bottom:15px;">Create FAQ Entry</h3>
+            <form id="add-faq-form" onsubmit="event.preventDefault();">
+              <div class="admin-form-group">
+                <label>Question (English) *</label>
+                <input type="text" id="faq-q-en" class="admin-form-control" placeholder="What is the shipping policy?" required>
+              </div>
+              <div class="admin-form-group">
+                <label>Answer (English) *</label>
+                <textarea id="faq-a-en" class="admin-form-control" rows="3" placeholder="We ship within 24 hours of confirmation..." required></textarea>
+              </div>
+              <button id="save-faq-btn" type="button" class="btn btn-primary" style="width:100%; border-radius:8px;">Add FAQ</button>
+            </form>
+          </div>
+
+          <!-- FAQ Checklist -->
+          <div class="glass" style="padding:25px; border-radius:12px;">
+            <h3 style="font-family:'Outfit'; font-size:18px; color:var(--text-color); margin-top:0; margin-bottom:15px;">Existing FAQs Directory</h3>
+            <div id="faqs-list-container" style="display:flex; flex-direction:column; gap:12px; max-height:400px; overflow-y:auto;">
+              <!-- Dynamic list -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAdminEnquiries();
+      window.updateAdminBreadcrumbs('Support Desk', 'Messages');
+    });
+
+    function switchSupportTab(event, tabId) {
+      document.querySelectorAll('.studio-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.support-tab-panel').forEach(panel => panel.style.display = 'none');
+      
+      if (event) {
+        event.target.classList.add('active');
+        const tabTitle = event.target.textContent;
+        window.updateAdminBreadcrumbs('Support Desk', tabTitle);
+      }
+      
+      const panel = document.getElementById(tabId);
+      if (panel) {
+        panel.style.display = 'block';
+      }
+
+      if (tabId === 'tab-tickets') {
+        renderTicketsList();
+      } else if (tabId === 'tab-chatbot') {
+        renderChatbotLogs();
+      } else if (tabId === 'tab-faq') {
+        renderFaqsList();
+      } else if (tabId === 'tab-enquiries') {
+        loadAdminEnquiries();
+      }
+    }
+    window.switchSupportTab = switchSupportTab;
+
+    // Tickets & Chat Mock Data
+    let mockTickets = [
+      { id: 'TKT-8902', name: 'Ramesh Krishnan', subject: 'Late package delivery', priority: 'High', status: 'Open', messages: [
+        { sender: 'customer', text: 'I ordered the Tanjore plate package for a wedding tomorrow, but Delhivery says it is delayed in transit.' },
+        { sender: 'agent', text: 'Hello Ramesh! Let me look up the consignment status code with Delhivery immediately.' }
+      ] },
+      { id: 'TKT-4122', name: 'Devi Priya', subject: 'Custom engraving details', priority: 'Medium', status: 'Open', messages: [
+        { sender: 'customer', text: 'Can I add a custom copper blessing card to the corporate combo order?' }
+      ] }
+    ];
+
+    let activeTicketId = null;
+
+    function renderTicketsList() {
+      const container = document.getElementById('tickets-list-container');
+      if (!container) return;
+
+      container.innerHTML = mockTickets.map(t => `
+        <div onclick="selectTicketChat('${t.id}')" class="glass-panel hover-lift" style="padding:15px; border-radius:10px; border:1px solid ${t.id === activeTicketId ? 'var(--adm-accent)' : 'var(--card-border)'}; cursor:pointer; background:${t.id === activeTicketId ? 'rgba(var(--adm-accent-rgb), 0.04)' : 'rgba(255,255,255,0.01)'};">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong style="color:var(--text-color); font-size:14px;">${t.name}</strong>
+            <span class="ticket-priority priority-${t.priority.toLowerCase()}">${t.priority}</span>
+          </div>
+          <div style="font-size:12px; color:var(--text-muted);">${t.subject}</div>
+          <div style="font-size:10px; color:var(--text-muted); margin-top:8px;">ID: #${t.id} • Status: ${t.status}</div>
+        </div>
+      `).join('');
+    }
+
+    function selectTicketChat(id) {
+      activeTicketId = id;
+      renderTicketsList();
+
+      const ticket = mockTickets.find(t => t.id === id);
+      if (!ticket) return;
+
+      document.getElementById('chat-dialog-panel').style.display = 'flex';
+      document.getElementById('chat-customer-name').textContent = ticket.name;
+      document.getElementById('chat-ticket-id').textContent = '#' + ticket.id;
+
+      renderChatBubbles(ticket.messages);
+    }
+
+    function renderChatBubbles(messages) {
+      const container = document.getElementById('chat-messages-container');
+      if (!container) return;
+
+      container.innerHTML = messages.map(m => `
+        <div class="chat-bubble ${m.sender}">
+          ${m.text}
+        </div>
+      `).join('');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // Handle reply submit
+    const typingForm = document.getElementById('chat-typing-form'); if (typingForm) typingForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('chat-input-message');
+      const text = input.value.trim();
+      if (!text || !activeTicketId) return;
+
+      const ticket = mockTickets.find(t => t.id === activeTicketId);
+      if (ticket) {
+        ticket.messages.push({ sender: 'agent', text });
+        renderChatBubbles(ticket.messages);
+        input.value = '';
+      }
+    });
+
+    function resolveTicket() {
+      if (!activeTicketId) return;
+      mockTickets = mockTickets.filter(t => t.id !== activeTicketId);
+      showToast('Support ticket resolved successfully!', 'success');
+      document.getElementById('chat-dialog-panel').style.display = 'none';
+      activeTicketId = null;
+      renderTicketsList();
+    }
+
+    // AI Chatbot logs mock data
+    const mockChatbotLogs = [
+      { session: 'SES-0012', client: 'Arun Mozhi', intent: 'Check shipping rates', action: 'Returned shipping policy rates API mapping', status: 'Self-Resolved', time: '12 mins ago' },
+      { session: 'SES-0045', client: 'Guest Client', intent: 'Reset account password', action: 'Sent OTP recovery email trigger', status: 'Self-Resolved', time: '40 mins ago' },
+      { session: 'SES-0099', client: 'Vimala Sundar', intent: 'Defective product return', action: 'Transferred session to manual support agents', status: 'Escalated to Tickets', time: '2 hours ago' }
+    ];
+
+    function renderChatbotLogs() {
+      const tbody = document.getElementById('chatbot-logs-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = mockChatbotLogs.map(l => `
+        <tr>
+          <td><strong style="color:var(--adm-text);">#${l.session}</strong></td>
+          <td><strong>${l.client}</strong></td>
+          <td><code>${l.intent}</code></td>
+          <td>${l.action}</td>
+          <td>
+            <span class="status-badge" style="background:${l.status === 'Self-Resolved' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)'}; color:${l.status === 'Self-Resolved' ? 'var(--adm-success)' : 'var(--adm-warning)'}; border:none;">
+              ${l.status}
+            </span>
+          </td>
+          <td style="font-size:12px; color:var(--text-muted);">${l.time}</td>
+        </tr>
+      `).join('');
+    }
+
+    // FAQ Management
+    let mockFaqs = [
+      { q: 'What is the shipping turnaround time?', a: 'Standard packages ship in 24-48 hours. Express deliveries are delivered in Tamil Nadu within 24 hours.' },
+      { q: 'Do you accept corporate customized gifts bookings?', a: 'Yes! We customize logo engravings on Tanjore brass plates and design matching customized boxes.' }
+    ];
+
+    function renderFaqsList() {
+      const container = document.getElementById('faqs-list-container');
+      if (!container) return;
+
+      container.innerHTML = mockFaqs.map((f, index) => `
+        <div class="glass-panel" style="padding:15px; border-radius:10px; border:1px solid var(--card-border);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+            <strong style="color:var(--adm-accent); font-size:14px;">Q: ${f.q}</strong>
+            <button onclick="deleteFaq(${index})" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-weight:bold;">✕</button>
+          </div>
+          <div style="font-size:12px; color:var(--text-muted); line-height:1.4;">A: ${f.a}</div>
+        </div>
+      `).join('');
+    }
+
+    function deleteFaq(index) {
+      mockFaqs.splice(index, 1);
+      showToast('FAQ entry deleted!', 'success');
+      renderFaqsList();
+    }
+
+    // Add FAQ
+    document.getElementById('save-faq-btn').addEventListener('click', () => {
+      const q = document.getElementById('faq-q-en').value.trim();
+      const a = document.getElementById('faq-a-en').value.trim();
+      if (!q || !a) {
+        showToast('Please enter both question and answer', 'warning');
+        return;
+      }
+
+      mockFaqs.push({ q, a });
+      showToast('FAQ entry created successfully!', 'success');
+      document.getElementById('faq-q-en').value = '';
+      document.getElementById('faq-a-en').value = '';
+      renderFaqsList();
+    });
+  </script>
+</body>
+</html>

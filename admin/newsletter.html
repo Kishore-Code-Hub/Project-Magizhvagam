@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Newsletter Subscribers | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Newsletter Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Marketing Operations</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Mailing List Subscribers</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Retrieve customer emails registered for newsletter notifications and export CSV lists.</p>
+      </section>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <button onclick="exportNewsletterCSV()" class="btn btn-secondary" style="border-radius:8px;">Export Subscribers CSV</button>
+      </div>
+
+      <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Subscriber ID</th>
+              <th>Email Address</th>
+              <th>Subscribed At</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="newsletter-tbody">
+            <!-- Dynamic data -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadSubscribersList();
+      window.updateAdminBreadcrumbs('Marketing', 'Newsletter');
+    });
+
+    const mockSubscribers = [
+      { id: 'SUB-201', email: 'anitha.subramanian@gmail.com', date: '08/07/2026', status: 'Subscribed' },
+      { id: 'SUB-410', email: 'praveen.sekhar@yahoo.com', date: '06/07/2026', status: 'Subscribed' },
+      { id: 'SUB-780', email: 'vimala.velu@outlook.com', date: '02/07/2026', status: 'Subscribed' }
+    ];
+
+    function loadSubscribersList() {
+      const tbody = document.getElementById('newsletter-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = mockSubscribers.map(s => `
+        <tr>
+          <td><strong style="color:var(--adm-text);">#${s.id}</strong></td>
+          <td><strong>${s.email}</strong></td>
+          <td>${s.date}</td>
+          <td><span class="badge badge-success">Active</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function exportNewsletterCSV() {
+      const header = 'Subscriber ID,Email Address,Subscribed At\n';
+      const rows = mockSubscribers.map(s => `${s.id},${s.email},${s.date}`).join('\n');
+      
+      const blob = new Blob([header + rows], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'newsletter_subscribers.csv';
+      link.click();
+      showToast('Newsletter mailing list exported successfully!', 'success');
+    }
+  </script>
+</body>
+</html>

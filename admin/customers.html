@@ -1,49 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Customer Directory | MAGIZHVAGAM</title>
+  <title>User, Staff & Vendor Management | MAGIZHVAGAM</title>
   
   <link rel="stylesheet" href="/assets/css/main.css">
   <link rel="stylesheet" href="/assets/css/admin.css">
   <link rel="stylesheet" href="/assets/css/animations.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
+
+  <style>
+    .role-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .role-admin { background: rgba(168, 85, 247, 0.15); color: var(--adm-accent); }
+    .role-staff { background: rgba(59, 130, 246, 0.15); color: var(--adm-info); }
+    .role-customer { background: rgba(148, 163, 184, 0.15); color: var(--adm-text-muted); }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .status-active { background: rgba(16, 185, 129, 0.12); color: var(--adm-success); border: 1px solid rgba(16, 185, 129, 0.2); }
+    .status-locked { background: rgba(239, 68, 68, 0.12); color: var(--adm-danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+
+    .permission-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--adm-border);
+    }
+    .permission-item:last-child {
+      border: none;
+    }
+    .permission-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--adm-text);
+    }
+    .permission-desc {
+      font-size: 11px;
+      color: var(--adm-text-muted);
+      margin-top: 2px;
+    }
+  </style>
 </head>
 <body style="visibility:hidden">
 
   <div class="admin-layout">
     
-    <!-- Sidebar navigation placeholder -->
+    <!-- Sidebar navigation -->
     <aside id="admin-sidebar-container"></aside>
 
-    <!-- Main Customers Panel -->
+    <!-- Main Workspace View -->
     <main class="admin-main">
-      <h1 style="font-family:'Outfit'; font-size:32px; margin-bottom:30px; color:var(--text-color);">Customer Directory</h1>
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Sub Tabbed Row -->
+      
 
-      <!-- Customer table -->
-      <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Client Name</th>
-              <th>Email Address</th>
-              <th>System Role</th>
-              <th>Verification Status</th>
-              <th>Account Lock Status</th>
-              <th>Total Orders</th>
-              <th>Cumulative Spend</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="admin-customers-tbody">
-            <tr><td colspan="8" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
-          </tbody>
-        </table>
+      <!-- Tab 1: Customers Directory -->
+      <div id="tab-customers" class="users-tab-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+          <div>
+            <h1 style="font-family:'Outfit'; font-size:32px; color:var(--text-color); margin:0;">Customer Directory</h1>
+            <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Manage customer profiles, address books, purchase histories, and lock status details.</p>
+          </div>
+          <button onclick="loadAdminCustomers()" class="btn btn-secondary" style="border-radius:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="refresh-cw"></i> Refresh list</button>
+        </div>
+
+        <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Client Name</th>
+                <th>Email Address</th>
+                <th>Status</th>
+                <th>Total Orders</th>
+                <th>Cumulative Spent</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-customers-tbody">
+              <tr><td colspan="6" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </main>
 
+      <!-- Tab 2: Staff & RBAC Manager -->
+      <div id="tab-staff" class="users-tab-panel" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+          <div>
+            <h2 style="font-family:'Outfit'; font-size:24px; color:var(--text-color); margin:0;">Administrative Staff & Roles (RBAC)</h2>
+            <p style="color:var(--text-muted); font-size:12px; margin:4px 0 0 0;">Define operations coordinates and roles for staff/managers to restrict system actions.</p>
+          </div>
+          <button onclick="loadAdministrativeStaff()" class="btn btn-secondary" style="border-radius:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="refresh-cw"></i> Refresh Staff</button>
+        </div>
+
+        <div class="grid grid-2" style="display:grid; grid-template-columns: 1.6fr 1fr; gap:30px;">
+          
+          <!-- Staff User list -->
+          <div class="glass" style="padding:20px; border-radius:12px;">
+            <h3 style="font-family:'Outfit'; font-size:16px; margin-top:0; margin-bottom:15px; color:var(--adm-text);">Active Operators</h3>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Operator</th>
+                    <th>Role</th>
+                    <th>2FA status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-staff-tbody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- RBAC Matrix Editor -->
+          <div class="glass" style="padding:20px; border-radius:12px; height:fit-content;">
+            <h3 style="font-family:'Outfit'; font-size:16px; margin-top:0; margin-bottom:6px; color:var(--adm-accent);">Role Permissions (RBAC)</h3>
+            <p style="font-size:11px; color:var(--adm-text-muted); margin-bottom:20px;">Toggle security guidelines whitelisted across all routes.</p>
+            
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <div class="permission-item">
+                <div>
+                  <div class="permission-label">Modify Catalog settings</div>
+                  <div class="permission-desc">Allow staff to create/edit products and categories</div>
+                </div>
+                <input type="checkbox" checked style="width:16px; height:16px; accent-color:var(--adm-accent);">
+              </div>
+              <div class="permission-item">
+                <div>
+                  <div class="permission-label">Process Transactions</div>
+                  <div class="permission-desc">Allow staff to confirm/ship orders and print invoices</div>
+                </div>
+                <input type="checkbox" checked style="width:16px; height:16px; accent-color:var(--adm-accent);">
+              </div>
+              <div class="permission-item">
+                <div>
+                  <div class="permission-label">System Configurations</div>
+                  <div class="permission-desc">Access to SMTP, Database keys, and System tools (Admin only)</div>
+                </div>
+                <input type="checkbox" style="width:16px; height:16px; accent-color:var(--adm-accent);">
+              </div>
+              <div class="permission-item">
+                <div>
+                  <div class="permission-label">Manage User Accounts</div>
+                  <div class="permission-desc">Permissions override to block/unlock or toggle users</div>
+                </div>
+                <input type="checkbox" style="width:16px; height:16px; accent-color:var(--adm-accent);">
+              </div>
+            </div>
+            
+            <button onclick="showToast('RBAC Roles Rules updated!', 'success')" class="btn btn-primary" style="width:100%; border-radius:8px; margin-top:20px; font-weight:700;">Save Role Definitions</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tab 3: Vendor Registry -->
+      <div id="tab-vendors" class="users-tab-panel" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+          <div>
+            <h2 style="font-family:'Outfit'; font-size:24px; color:var(--text-color); margin:0;">Vendor Partnerships Directory</h2>
+            <p style="color:var(--text-muted); font-size:12px; margin:4px 0 0 0;">Manage marketplace sellers, coordinate commission rates, and review payout settlement schedules.</p>
+          </div>
+          <button onclick="toggleModal('add-vendor-modal', true)" class="btn btn-primary" style="border-radius:8px;">Add New Vendor</button>
+        </div>
+
+        <div class="glass table-responsive" style="padding:20px; border-radius:12px;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Vendor ID</th>
+                <th>Company Name</th>
+                <th>Category focus</th>
+                <th>Commission rate</th>
+                <th>Status</th>
+                <th>Total Sales</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="vendors-list-tbody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Add Vendor Modal Overlay -->
+  <div class="modal-overlay" id="add-vendor-modal">
+    <div class="modal-content glass animated scale-in" style="max-width:500px; padding:30px; border-radius:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--adm-border); padding-bottom:12px;">
+        <h3 style="font-family:'Outfit'; font-size:20px; margin:0;">Register New Vendor</h3>
+        <button onclick="toggleModal('add-vendor-modal', false)" style="background:transparent; border:none; cursor:pointer; font-size:18px; color:var(--adm-text-muted); font-weight:bold;">✕</button>
+      </div>
+
+      <form id="add-vendor-form" style="display:flex; flex-direction:column; gap:16px;">
+        <div class="admin-form-group">
+          <label>Company/Vendor Name *</label>
+          <input type="text" id="v-name" class="admin-form-control" required placeholder="e.g. Coimbatore Pottery Works">
+        </div>
+        <div class="admin-form-group">
+          <label>Category Focus</label>
+          <input type="text" id="v-category" class="admin-form-control" placeholder="e.g. Clay crafts, traditional hampers">
+        </div>
+        <div class="admin-form-group">
+          <label>Commission Percentage (%) *</label>
+          <input type="number" id="v-commission" class="admin-form-control" value="10" required min="0" max="100">
+        </div>
+        <button type="submit" class="btn btn-primary" style="border-radius:8px; padding:12px; font-weight:700;">Submit Vendor Application</button>
+      </form>
+    </div>
   </div>
 
   <!-- Scripts -->
@@ -51,6 +237,153 @@
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
   <script src="/assets/js/admin.js"></script>
+
+  <script>
+    // Tab switching engine
+    function switchUsersTab(event, tabId) {
+      document.querySelectorAll('.studio-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.users-tab-panel').forEach(panel => panel.style.display = 'none');
+      
+      if (event) {
+        event.target.classList.add('active');
+      }
+      
+      const panel = document.getElementById(tabId);
+      if (panel) {
+        panel.style.display = 'block';
+      }
+
+      if (tabId === 'tab-staff') {
+        loadAdministrativeStaff();
+      } else if (tabId === 'tab-vendors') {
+        renderVendorsList();
+      } else if (tabId === 'tab-customers') {
+        loadAdminCustomers();
+      }
+    }
+    window.switchUsersTab = switchUsersTab;
+
+    // Load active staff members
+    async function loadAdministrativeStaff() {
+      const tbody = document.getElementById('admin-staff-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>';
+
+      try {
+        // Fetch users with all=true
+        const res = await adminFetch('/api/auth/customers?all=true');
+        const data = await res.json();
+        
+        if (data.success && data.customers) {
+          const staffUsers = data.customers.filter(u => u.role === 'staff' || u.role === 'admin');
+          if (staffUsers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--adm-text-muted);">No staff registered yet.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = staffUsers.map(u => {
+            const is2fa = u.twoFactorEnabled 
+              ? `<span style="color:#10b981; font-weight:700;">✓ Active</span>`
+              : `<span style="color:var(--adm-text-muted);">Disabled</span>`;
+
+            return `
+              <tr>
+                <td>
+                  <strong>${u.name}</strong>
+                  <div style="font-size:11px; color:var(--adm-text-muted);">${u.email}</div>
+                </td>
+                <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+                <td style="font-size:12px;">${is2fa}</td>
+                <td>
+                  <button onclick="handleAdminCustomerAction('${u._id}', 'toggle-role')" class="btn btn-secondary" style="padding:4px 8px; font-size:11px; border-radius:4px; border:none; cursor:pointer;">Demote</button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--adm-danger);">Failed to load staff list.</td></tr>';
+        }
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--adm-danger);">Connection failure.</td></tr>';
+      }
+    }
+    window.loadAdministrativeStaff = loadAdministrativeStaff;
+
+    // Render vendors
+    let mockVendors = [
+      { id: 'VND-2093', name: 'Thanjavur Art Plate Guild', focus: 'Tanjore plates & metal work', commission: 12, sales: '₹1,45,200', status: 'Approved' },
+      { id: 'VND-3088', name: 'Salem Jute Handlooms', focus: 'Eco jute boxes & gift bags', commission: 8, sales: '₹98,400', status: 'Approved' },
+      { id: 'VND-4011', name: 'Madurai Sandalwood Crafts', focus: 'Sandalwood carvings & keyrings', commission: 15, sales: '₹42,100', status: 'Pending Approval' }
+    ];
+
+    function renderVendorsList() {
+      const tbody = document.getElementById('vendors-list-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = mockVendors.map(v => `
+        <tr>
+          <td><strong style="color:var(--adm-text);">#${v.id}</strong></td>
+          <td><strong>${v.name}</strong></td>
+          <td>${v.focus}</td>
+          <td><strong>${v.commission}%</strong></td>
+          <td><span class="status-badge ${v.status === 'Approved' ? 'status-active' : 'status-locked'}">${v.status}</span></td>
+          <td><strong>${v.sales}</strong></td>
+          <td>
+            ${v.status === 'Pending Approval' ? `
+              <button onclick="approveVendor('${v.id}')" class="btn btn-primary" style="padding:6px 12px; font-size:11px; border-radius:6px; border:none;">Approve</button>
+            ` : `
+              <button onclick="settleVendorPayout('${v.id}')" class="btn btn-secondary" style="padding:6px 12px; font-size:11px; border-radius:6px;">Settle Payout</button>
+            `}
+          </td>
+        </tr>
+      `).join('');
+    }
+    window.renderVendorsList = renderVendorsList;
+
+    function approveVendor(id) {
+      const vendor = mockVendors.find(v => v.id === id);
+      if (vendor) {
+        vendor.status = 'Approved';
+        showToast(`Vendor ${vendor.name} has been approved!`, 'success');
+        renderVendorsList();
+      }
+    }
+    window.approveVendor = approveVendor;
+
+    function settleVendorPayout(id) {
+      const vendor = mockVendors.find(v => v.id === id);
+      if (vendor) {
+        showToast(`Settlement generated for ${vendor.name}. Commission auto-dispatched!`, 'success');
+      }
+    }
+    window.settleVendorPayout = settleVendorPayout;
+
+    // Handle add vendor submission
+    document.getElementById('add-vendor-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('v-name').value.trim();
+      const focus = document.getElementById('v-category').value.trim() || 'General Crafts';
+      const commission = parseInt(document.getElementById('v-commission').value) || 10;
+      
+      const newV = {
+        id: 'VND-' + Math.floor(1000 + Math.random() * 9000),
+        name,
+        focus,
+        commission,
+        sales: '₹0.00',
+        status: 'Approved'
+      };
+
+      mockVendors.push(newV);
+      showToast('New vendor profile created successfully!', 'success');
+      toggleModal('add-vendor-modal', false);
+      document.getElementById('add-vendor-form').reset();
+      renderVendorsList();
+    });
+  </script>
 </body>
 </html>

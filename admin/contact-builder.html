@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Page Builder | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Contact Builder Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Content Operations</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Contact Page Settings</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Configure office coordinates, support hotline emails, and Google Maps iframe configurations.</p>
+      </section>
+
+      <div class="glass" style="max-width:700px; margin:0 auto; padding:30px; border-radius:15px;">
+        <h3 style="font-family:'Outfit'; font-size:20px; color:var(--text-color); margin-top:0; margin-bottom:20px;">Contact Information Details</h3>
+        <form id="contact-form" onsubmit="event.preventDefault();">
+          <div class="admin-form-group">
+            <label>Office Store Address *</label>
+            <input type="text" id="cn-address" class="admin-form-control" required>
+          </div>
+          <div class="grid grid-2" style="gap:15px;">
+            <div class="admin-form-group">
+              <label>Support Email *</label>
+              <input type="email" id="cn-email" class="admin-form-control" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Hotline Telephone *</label>
+              <input type="text" id="cn-phone" class="admin-form-control" required>
+            </div>
+          </div>
+          <div class="admin-form-group">
+            <label>Google Maps Embed iframe Link</label>
+            <textarea id="cn-maps" class="admin-form-control" rows="3" placeholder="Paste standard google map iframe tags here..."></textarea>
+          </div>
+          <button id="save-contact-btn" type="button" class="btn btn-primary" style="width:100%; border-radius:8px; font-weight:700;">Save Contact Settings</button>
+        </form>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadContactContent();
+      window.updateAdminBreadcrumbs('Content', 'Contact Page Details');
+    });
+
+    let contactData = null;
+
+    async function loadContactContent() {
+      try {
+        const res = await adminFetch('/api/site-settings/contact');
+        const data = await res.json();
+        if (data.success && data.data) {
+          contactData = data.data;
+          document.getElementById('cn-address').value = data.data.officeAddress || '';
+          document.getElementById('cn-email').value = data.data.supportEmail || '';
+          document.getElementById('cn-phone').value = data.data.phone || '';
+          document.getElementById('cn-maps').value = data.data.googleMapsEmbed || '';
+        }
+      } catch (err) {
+        showToast('Failed to load contact page details', 'error');
+      }
+    }
+
+    document.getElementById('save-contact-btn').addEventListener('click', async () => {
+      if (!contactData) return;
+
+      const officeAddress = document.getElementById('cn-address').value.trim();
+      const supportEmail = document.getElementById('cn-email').value.trim();
+      const phone = document.getElementById('cn-phone').value.trim();
+      const googleMapsEmbed = document.getElementById('cn-maps').value.trim();
+
+      if (!officeAddress || !supportEmail || !phone) {
+        showToast('Please fill out all the details', 'warning');
+        return;
+      }
+
+      const payload = {
+        ...contactData,
+        officeAddress,
+        supportEmail,
+        phone,
+        googleMapsEmbed
+      };
+
+      try {
+        const res = await adminFetch('/api/site-settings/contact', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Contact page details updated successfully!', 'success');
+          loadContactContent();
+        } else {
+          showToast(data.error || 'Failed to save settings', 'error');
+        }
+      } catch (e) {
+        showToast('Connection error updating settings', 'error');
+      }
+    });
+  </script>
+</body>
+</html>

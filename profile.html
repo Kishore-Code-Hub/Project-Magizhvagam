@@ -328,12 +328,52 @@
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script>
-    let activeUser = null;
+    (function () {
+      'use strict';
 
-    document.addEventListener('DOMContentLoaded', async () => {
+      let activeUser = null;
+      let abortController = null;
+      let handleHashChange = null;
+
+      async function initPage() {
+        if (abortController) abortController.abort();
+        abortController = new AbortController();
+        const signal = abortController.signal;
+
+        try {
+          await initProfile({ signal });
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            console.log('[MZPage] Profile load aborted.');
+          } else {
+            console.error('Profile initialization failed:', err);
+          }
+        }
+      }
+
+      function destroyPage() {
+        if (abortController) {
+          abortController.abort();
+          abortController = null;
+        }
+        if (handleHashChange) {
+          window.removeEventListener('hashchange', handleHashChange);
+          handleHashChange = null;
+        }
+        window.removeEventListener('wishlistUpdated', renderProfileWishlist);
+        window.switchProfileTab = null;
+      }
+
+      window.MZPageRegistry = window.MZPageRegistry || {};
+      window.MZPageRegistry['profile'] = {
+        init: initPage,
+        destroy: destroyPage
+      };
+
       let currentEditingAddressId = null;
 
-      activeUser = await loadUserProfile();
+      async function initProfile(options = {}) {
+        activeUser = await loadUserProfile(options);
       if (!activeUser || activeUser.role !== 'customer') {
         if (typeof window.setSessionUser === 'function') window.setSessionUser(null);
         window.location.replace('/login.html?redirect=profile.html');
@@ -395,15 +435,15 @@
       if (profileNameEl) profileNameEl.value = activeUser.name || '';
       if (profileEmailEl) profileEmailEl.value = activeUser.email || '';
 
-      await loadAddresses();
-      loadHistoryOrders();
+      await loadAddresses(options);
+      loadHistoryOrders(options);
       renderProfileWishlist();
 
       window.addEventListener('wishlistUpdated', renderProfileWishlist);
 
 
       // Switch tab based on URL hash
-      const handleHashChange = () => {
+      handleHashChange = () => {
         const hash = window.location.hash;
         const tabMap = {
           '#orders': 'tab-orders',
@@ -430,7 +470,7 @@
           const emailEl = document.getElementById('profile-email');
           const name = nameEl ? nameEl.value.trim() : '';
           const email = emailEl ? emailEl.value.trim() : '';
-          const updated = await updateUserProfile({ name, email });
+          const updated = await updateUserProfile({ name, email }, options);
           if (updated) activeUser = updated;
         });
       }
@@ -522,14 +562,16 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
-                body: JSON.stringify(newAddr)
+                body: JSON.stringify(newAddr),
+                ...options
               });
             } else {
               res = await fetch(`/api/auth/profile/address/${currentEditingAddressId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
-                body: JSON.stringify(newAddr)
+                body: JSON.stringify(newAddr),
+                ...options
               });
             }
             const data = await res.json();
@@ -541,7 +583,7 @@
               showToast(!currentEditingAddressId ? 'Address added successfully!' : 'Address updated successfully!', 'success');
 
               // Live Refresh
-              await loadAddresses();
+              await loadAddresses(options);
 
               // Form Reset & State Pointer Reset
               const addrForm = document.getElementById('address-edit-form');
@@ -573,7 +615,7 @@
             if (btn.classList.contains('edit-address-btn')) {
               editAddress(index);
             } else if (btn.classList.contains('delete-address-btn')) {
-              await deleteAddress(index);
+              await deleteAddress(index, options);
             }
           }
         });
@@ -581,17 +623,17 @@
         savedAddressesContainer.addEventListener('change', async (e) => {
           if (e.target.classList.contains('address-radio-selector')) {
             const index = parseInt(e.target.getAttribute('data-index'), 10);
-            await setDefaultAddress(index);
+            await setDefaultAddress(index, options);
           }
         });
       }
 
-      async function loadAddresses() {
+      async function loadAddresses(options = {}) {
         const container = document.getElementById('saved-addresses-container');
         if (!container) return;
 
         // Fetch fresh user data from server
-        const user = await loadUserProfile();
+        const user = await loadUserProfile(options);
         if (user) {
           activeUser = user;
         }
@@ -672,19 +714,14 @@
         if (addrNameEl) addrNameEl.focus();
       }
 
-      async function setDefaultAddress(index) {
-        const addresses = (activeUser.addresses || []).map((addr, i) => ({
-          ...addr,
-          isDefault: i === index
-        }));
-        const updated = await updateUserProfile({ addresses });
+        const updated = await updateUserProfile({ addresses }, options);
         if (updated) {
           activeUser = updated;
-          await loadAddresses();
+          await loadAddresses(options);
         }
       }
 
-      async function deleteAddress(index) {
+      async function deleteAddress(index, options = {}) {
         const performDelete = async () => {
           const addresses = [...activeUser.addresses];
           const wasDefault = addresses[index]?.isDefault;
@@ -692,10 +729,10 @@
           if (wasDefault && addresses.length > 0) {
             addresses[0].isDefault = true;
           }
-          const updated = await updateUserProfile({ addresses });
+          const updated = await updateUserProfile({ addresses }, options);
           if (updated) {
             activeUser = updated;
-            await loadAddresses();
+            await loadAddresses(options);
           }
         };
 
@@ -707,14 +744,14 @@
           }
         }
       }
-    });
+    }
 
-    async function loadHistoryOrders() {
+    async function loadHistoryOrders(options = {}) {
       const container = document.getElementById('orders-list-display');
       if (!container) return;
       try {
         container.innerHTML = '<div style="text-align:center; padding:30px;"><div class="spinner" style="margin:auto;"></div></div>';
-        const res = await fetch('/api/orders/history', { credentials: 'same-origin' });
+        const res = await fetch('/api/orders/history', { credentials: 'same-origin', ...options });
         const data = await res.json();
 
         if (!data.success || !data.orders || data.orders.length === 0) {
@@ -841,6 +878,8 @@
     }
 
     window.switchProfileTab = switchProfileTab;
+
+  })();
   </script>
 </body>
 

@@ -47,7 +47,7 @@
     initRippleAndElasticEffects();
     initSectionAnimations();
     initFooterAnimations();
-    initPageTransitions();
+    // initPageTransitions(); // Disabled in favor of the global page-transition system
   }
 
   // Fallback mode for users who prefer reduced motion

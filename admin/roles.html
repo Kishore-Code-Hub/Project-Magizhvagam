@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aesthetic Admin Roles | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">System Settings</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Aesthetic Admin Roles</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Verify structural definitions of roles (Super Administrator, Manager, Customer Support specialist).</p>
+      </section>
+
+      
+      <div class="glass" style="padding:25px; border-radius:12px;">
+        <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">Configured Roles</h2>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px;">
+          <div class="glass" style="padding:15px; border-radius:8px;">
+            <strong style="color:var(--adm-accent);">Super Administrator</strong>
+            <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">Full database access, backups, financial billing, API key adjustments.</p>
+          </div>
+          <div class="glass" style="padding:15px; border-radius:8px;">
+            <strong style="color:var(--adm-accent);">Catalog Manager</strong>
+            <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">Update return gift product listings, categories, inventory, and brands catalog.</p>
+          </div>
+          <div class="glass" style="padding:15px; border-radius:8px;">
+            <strong style="color:var(--adm-accent);">Sales Associate</strong>
+            <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">Shipment status updates, logistics management, invoices, support tickets.</p>
+          </div>
+        </div>
+      </div>
+    
+
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      window.updateAdminBreadcrumbs('Settings', 'Roles');
+    
+    });
+  </script>
+</body>
+</html>

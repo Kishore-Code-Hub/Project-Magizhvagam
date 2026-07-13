@@ -34,9 +34,42 @@ const contactRoutes = require('./routes/contactRoutes');
 
 const app = express();
 
+// Trust Proxy for production
+app.set('trust proxy', 1);
+
 // Hide Express/Node identity
 app.disable('x-powered-by');
 app.set('env', IS_PRODUCTION ? 'production' : 'development');
+
+// ─── SECURITY: Request ID Tracking ───
+app.use((req, res, next) => {
+  const crypto = require('crypto');
+  req.id = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
+  res.setHeader('X-Request-ID', req.id);
+  next();
+});
+
+// ─── SECURITY: Request Timeout (15 seconds limit) ───
+app.use((req, res, next) => {
+  res.setTimeout(15000, () => {
+    if (!res.headersSent) {
+      res.status(503).json({ success: false, error: 'Request timeout' });
+    }
+  });
+  next();
+});
+
+// ─── SECURITY: Slow Request Logging (duration > 5 seconds) ───
+app.use((req, res, next) => {
+  const startTime = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - startTime;
+    if (duration > 5000) {
+      console.warn(`SLOW REQUEST: [${req.id}] ${req.method} ${req.originalUrl} took ${duration}ms`);
+    }
+  });
+  next();
+});
 
 app.use(compression());
 
@@ -91,21 +124,75 @@ app.use(helmet({
 }));
 
 // ─── SECURITY: CORS ───
+const envOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()) : [];
+const TRUSTED_ORIGINS = [
+  process.env.APP_ORIGIN || 'https://magizhvagam.com',
+  'http://localhost:' + PORT,
+  'http://localhost:3000',
+  'http://127.0.0.1:' + PORT,
+  ...envOrigins
+];
 const corsOptions = {
-  origin: IS_PRODUCTION ? (process.env.APP_ORIGIN || 'https://magizhvagam.com') : true,
+  origin: (origin, callback) => {
+    if (!origin && !IS_PRODUCTION) {
+      return callback(null, true);
+    }
+    if (TRUSTED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 };
 app.use(cors(corsOptions));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(cookieParser());
 
-// ─── SECURITY: Additional headers ───
+// ─── SECURITY: Global XSS Input Sanitization ───
+const sanitizeInput = (obj) => {
+  if (typeof obj === 'string') {
+    return obj
+      .replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, '')
+      .replace(/<[^>]*>/g, '')
+      .trim();
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(sanitizeInput);
+  }
+  if (typeof obj === 'object' && obj !== null) {
+    const sanitized = {};
+    for (const key of Object.keys(obj)) {
+      sanitized[key] = sanitizeInput(obj[key]);
+    }
+    return sanitized;
+  }
+  return obj;
+};
+
 app.use((req, res, next) => {
+  if (req.body && !req.path.startsWith('/api/settings') && !req.path.startsWith('/api/site-settings')) {
+    req.body = sanitizeInput(req.body);
+  }
+  next();
+});
+
+// ─── SECURITY: Additional headers & dev shielding ───
+app.use((req, res, next) => {
+  res.removeHeader('X-Powered-By');
+  res.removeHeader('Server');
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), interest-cohort=()');
+  
+  // Shield documentation & dev routes in production
+  const urlPath = req.path.toLowerCase();
+  if (IS_PRODUCTION && (urlPath.startsWith('/docs') || urlPath.startsWith('/redoc') || urlPath === '/openapi.json')) {
+    return res.status(404).json({ success: false, error: 'Endpoint not found' });
+  }
+
   // Cache-Control for API routes
   if (req.path.startsWith('/api/')) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -159,6 +246,24 @@ app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/admin/login', authLimiter);
 app.use('/api/auth/forgot-password', rateLimit({ windowMs: 15 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false, message: { success: false, error: 'Too many password reset requests.' } }));
 app.use('/api/auth/verify-otp', rateLimit({ windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, message: { success: false, error: 'Too many OTP verification attempts.' } }));
+
+const registerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { success: false, error: 'Too many registration attempts. Please try again after 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+app.use('/api/auth/register', registerLimiter);
+
+const searchLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 30,
+  message: { success: false, error: 'Too many search requests. Please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+app.use('/api/products/search', searchLimiter);
 
 const checkoutLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -425,14 +530,22 @@ app.use((req, res) => {
 
 // ─── GLOBAL ERROR HANDLER (sanitized for production) ───
 app.use((err, req, res, next) => {
-  // Log full error for developers, never expose to client
   console.error(`SERVER ERROR: ${err.message}`);
-  if (!IS_PRODUCTION) console.error(err.stack);
+  if (!IS_PRODUCTION && err.stack) console.error(err.stack);
 
   const status = err.status || (err.name === 'ValidationError' ? 400 : 500);
-  const clientMsg = (IS_PRODUCTION && status === 500)
-    ? 'An unexpected error occurred on the server.'
-    : err.message || 'Internal Server Error';
+  let clientMsg = err.message || 'Internal Server Error';
+
+  if (IS_PRODUCTION && status === 500) {
+    clientMsg = 'An unexpected error occurred on the server.';
+  } else {
+    // Sanitize any potential internal paths or database/SQL leaks
+    if (clientMsg.includes('Prisma') || clientMsg.includes('SQL') || clientMsg.includes('database') || clientMsg.includes('pg_')) {
+      clientMsg = 'Database operation failed.';
+    }
+    // Remove directory path leaks
+    clientMsg = clientMsg.replace(/[a-zA-Z]:\\[\\\w\s\-\.]+/g, '[PATH]').replace(/\/[a-zA-Z0-9_\-\.]+\//g, '[PATH]');
+  }
 
   res.status(status).json({
     success: false,

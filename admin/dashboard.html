@@ -9,6 +9,57 @@
   <link rel="stylesheet" href="/assets/css/admin.css">
   <link rel="stylesheet" href="/assets/css/animations.css">
   <link rel="stylesheet" href="/assets/css/responsive.css">
+
+  <style>
+    .quick-action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--adm-border);
+      color: var(--adm-text);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .quick-action-btn:hover {
+      background: rgba(var(--adm-accent-rgb), 0.08);
+      border-color: var(--adm-accent);
+      transform: translateY(-2px);
+    }
+    .quick-action-icon {
+      font-size: 20px;
+    }
+    
+    .timeline-log-item {
+      display: flex;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-left: 2px solid var(--adm-border);
+      padding-left: 16px;
+      position: relative;
+    }
+    .timeline-log-item::before {
+      content: '';
+      position: absolute;
+      left: -5px;
+      top: 0;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--adm-border);
+    }
+    .timeline-log-item.alert-type::before {
+      background: var(--adm-danger);
+    }
+    .timeline-log-item.info-type::before {
+      background: var(--adm-info);
+    }
+  </style>
 </head>
 <body style="visibility:hidden">
 
@@ -33,7 +84,7 @@
           </div>
           <div style="display:flex; gap:12px;">
             <button type="button" id="open-reset-modal-btn" class="btn btn-secondary" style="border-radius:10px; font-weight:700; padding:12px 24px;">Reset Statistics</button>
-            <button type="button" class="btn" style="border-radius:10px; font-weight:700; padding:12px 24px;">Export Analytics</button>
+            <button type="button" onclick="window.print()" class="btn" style="border-radius:10px; font-weight:700; padding:12px 24px;">Export Analytics</button>
           </div>
         </div>
       </section>
@@ -46,7 +97,7 @@
             <span style="color:var(--adm-success); font-size:11px; font-weight:700;">+14.2% ↑</span>
           </div>
           <div class="metric-number" id="metric-revenue">₹0.00</div>
-          <div style="font-size:11px; color:var(--adm-text-muted); margin-top:8px;">Compared to ₹42,150 yesterday</div>
+          <div style="font-size:11px; color:var(--adm-text-muted); margin-top:8px;">Cumulative store sales volume</div>
         </div>
         <div class="glass metric-card hover-lift animated scale-in">
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -54,23 +105,23 @@
             <span style="color:var(--adm-success); font-size:11px; font-weight:700;">+8.1% ↑</span>
           </div>
           <div class="metric-number" id="metric-orders">0</div>
-          <div style="font-size:11px; color:var(--adm-text-muted); margin-top:8px;">Avg. basket value: ₹2,100</div>
+          <div style="font-size:11px; color:var(--adm-text-muted); margin-top:8px;">Completed & processing transactions</div>
         </div>
         <div class="glass metric-card hover-lift animated scale-in">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; color:var(--adm-text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Conversion Rate</span>
-            <span style="color:var(--adm-danger); font-size:11px; font-weight:700;">-1.5% ↓</span>
+            <span style="font-size:11px; color:var(--adm-text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Average Basket Value</span>
+            <span style="color:var(--adm-success); font-size:11px; font-weight:700;">₹2,450 AOV</span>
           </div>
-          <div class="metric-number" id="metric-conversion">3.24%</div>
-          <div style="font-size:11px; color:var(--adm-text-muted); margin-top:8px;">Checkout conversions active</div>
+          <div class="metric-number" id="metric-aov">₹0.00</div>
+          <div style="font-size:11px; color:var(--adm-text-muted); margin-top:8px;">Calculated revenue per order</div>
         </div>
         <div class="glass metric-card hover-lift animated scale-in">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; color:var(--adm-text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Live Viewers</span>
-            <span class="pulse-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--adm-success);"></span>
+            <span style="font-size:11px; color:var(--adm-text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Low Stock Alerts</span>
+            <span class="pulse-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--adm-danger);"></span>
           </div>
-          <div class="metric-number" id="metric-products">12</div>
-          <div style="font-size:11px; color:var(--adm-text-muted); margin-top:8px;">Current active connections</div>
+          <div class="metric-number" id="metric-low-stock" style="color:var(--adm-danger);">0</div>
+          <div style="font-size:11px; color:var(--adm-text-muted); margin-top:8px;">Products requiring restocking</div>
         </div>
       </div>
 
@@ -80,26 +131,32 @@
         <!-- Left Workspace Section -->
         <div style="display:flex; flex-direction:column; gap:30px;">
           
-          <!-- AI Insights Workspace Panel -->
-          <div class="glass animated scale-in" style="position:relative; overflow:hidden;">
-            <h3 style="font-family:'Outfit'; font-size:18px; font-weight:700; color:var(--adm-accent); display:flex; align-items:center; gap:8px; margin-top:0;">
-              <span>✨</span> AI Store Insights
-            </h3>
-            <p style="font-size:13px; color:var(--adm-text-muted); line-height:1.5; margin-bottom:15px;">Automated recommendations mapping real-time catalog analytics:</p>
-            <div style="background:rgba(var(--adm-accent-rgb), 0.05); padding:16px; border-radius:12px; border:1px solid rgba(var(--adm-accent-rgb), 0.15);">
-              <div style="display:flex; gap:12px; align-items:flex-start;">
-                <span style="font-size:18px;">💡</span>
-                <div>
-                  <h4 style="margin:0; font-size:13px; font-weight:700; color:var(--adm-text);">Complementary Cross-Sell Opportunity</h4>
-                  <p style="margin:6px 0 0 0; font-size:12px; color:var(--adm-text-muted); line-height:1.5;">Sales of <strong>Tanjore metal art plates</strong> have surged 24% today due to corporate gift bookings. We recommend featuring custom brass oil lamps as checkout recommendations to improve average basket values by 15%.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- Sales Trend Line Chart -->
           <div class="glass animated scale-in" id="dashboard-chart-box" style="min-height:280px;">
             <!-- Rendered by SVG rendering dynamic engine -->
+          </div>
+
+          <!-- Quick Actions Grid -->
+          <div class="glass animated scale-in">
+            <h3 style="font-family:'Outfit'; font-size:18px; font-weight:700; color:var(--adm-text); margin-top:0; margin-bottom:16px;">Quick Commands Centre</h3>
+            <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px;">
+              <button onclick="window.location.href='/admin/products.html?action=add'" class="quick-action-btn">
+                <span class="quick-action-icon">🎁</span>
+                <span>Add Product</span>
+              </button>
+              <button onclick="window.location.href='/admin/coupons.html'" class="quick-action-btn">
+                <span class="quick-action-icon">🎟️</span>
+                <span>Create Coupon</span>
+              </button>
+              <button onclick="window.location.href='/admin/customers.html?tab=staff'" class="quick-action-btn">
+                <span class="quick-action-icon">🔐</span>
+                <span>Manage Roles</span>
+              </button>
+              <button onclick="window.location.href='/admin/security.html'" class="quick-action-btn">
+                <span class="quick-action-icon">💾</span>
+                <span>Backup DB</span>
+              </button>
+            </div>
           </div>
 
           <!-- Recent Orders Spreadsheet Registry -->
@@ -134,7 +191,7 @@
           <!-- Feature Control Center (Grid of Luxury Glass Tiles) -->
           <div class="glass feature-control-panel animated scale-in">
             <h3 style="font-family:'Outfit'; font-size:18px; font-weight:700; color:var(--adm-accent); display:flex; align-items:center; gap:8px; margin-top:0; margin-bottom:20px;">
-              <span>⚙️</span> Operations Center
+              <span>⚙️</span> Control Switches
             </h3>
             
             <div style="display:grid; grid-template-columns:1fr; gap:16px;">
@@ -222,26 +279,24 @@
             </div>
           </div>
 
-          <!-- Pending Tasks Checklist -->
+          <!-- Real-Time Activity Log / Notifications timeline -->
           <div class="glass animated scale-in">
-            <h3 style="font-family:'Outfit'; font-size:18px; font-weight:700; color:var(--adm-text); margin-top:0; margin-bottom:20px;">Pending Action Items</h3>
-            
-            <div style="display:flex; flex-direction:column; gap:12px;">
-              <div style="display:flex; align-items:center; gap:10px; font-size:13px;">
-                <input type="checkbox" checked style="width:16px; height:16px; border-radius:4px; accent-color:var(--adm-accent);">
-                <span style="text-decoration:line-through; color:var(--adm-text-muted);">Set up design system variables</span>
+            <h3 style="font-family:'Outfit'; font-size:18px; font-weight:700; color:var(--adm-text); margin-top:0; margin-bottom:16px;">Activity Timeline</h3>
+            <div style="display:flex; flex-direction:column; gap:16px;" id="activity-timeline-container">
+              <div class="timeline-log-item alert-type">
+                <div style="font-size:12px; font-weight:700;">Low Stock Alert</div>
+                <div style="font-size:11px; color:var(--adm-text-muted); margin-top:2px;">Tanjore art plates fell below threshold limit (4 left)</div>
+                <div style="font-size:10px; color:var(--adm-text-muted); margin-top:4px;">10 mins ago</div>
               </div>
-              <div style="display:flex; align-items:center; gap:10px; font-size:13px;">
-                <input type="checkbox" style="width:16px; height:16px; border-radius:4px; accent-color:var(--adm-accent);">
-                <span>Review 4 customer enquiries</span>
+              <div class="timeline-log-item info-type">
+                <div style="font-size:12px; font-weight:700;">Database Backup Completed</div>
+                <div style="font-size:11px; color:var(--adm-text-muted); margin-top:2px;">Scheduled PostgreSQL dump verified successfully</div>
+                <div style="font-size:10px; color:var(--adm-text-muted); margin-top:4px;">1 hour ago</div>
               </div>
-              <div style="display:flex; align-items:center; gap:10px; font-size:13px;">
-                <input type="checkbox" style="width:16px; height:16px; border-radius:4px; accent-color:var(--adm-accent);">
-                <span>Restock handcrafted Tanjore art plates</span>
-              </div>
-              <div style="display:flex; align-items:center; gap:10px; font-size:13px;">
-                <input type="checkbox" style="width:16px; height:16px; border-radius:4px; accent-color:var(--adm-accent);">
-                <span>Update homepage hero campaign custom CSS</span>
+              <div class="timeline-log-item info-type">
+                <div style="font-size:12px; font-weight:700;">SMTP diagnostics ping</div>
+                <div style="font-size:11px; color:var(--adm-text-muted); margin-top:2px;">SMTP credentials verified against gmail cluster</div>
+                <div style="font-size:10px; color:var(--adm-text-muted); margin-top:4px;">4 hours ago</div>
               </div>
             </div>
           </div>

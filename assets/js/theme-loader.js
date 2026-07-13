@@ -8,10 +8,38 @@
  * LOAD ORDER: theme-loader.js → DOMContentLoaded → app.js
  */
 
+// Centralized listener interceptor
+if (!window.MZ_INTERCEPTOR_ACTIVE) {
+  window.MZ_INTERCEPTOR_ACTIVE = true;
+  window.MZ_DOMContentLoaded_Listeners = [];
+  window.MZ_Load_Listeners = [];
+
+  const origDocAdd = document.addEventListener;
+  document.addEventListener = function (type, listener, options) {
+    if (type === 'DOMContentLoaded') {
+      window.MZ_DOMContentLoaded_Listeners.push(listener);
+    } else {
+      origDocAdd.call(this, type, listener, options);
+    }
+  };
+
+  const origWinAdd = window.addEventListener;
+  window.addEventListener = function (type, listener, options) {
+    if (type === 'DOMContentLoaded') {
+      window.MZ_DOMContentLoaded_Listeners.push(listener);
+    } else if (type === 'load') {
+      window.MZ_Load_Listeners.push(listener);
+    } else {
+      origWinAdd.call(this, type, listener, options);
+    }
+  };
+}
+
 (function () {
   'use strict';
 
-  // Theme is controlled exclusively by Appearance Studio presets via API
+  // Apply root loading class to prevent initial layout flash
+  document.documentElement.classList.add('mz-loading');
   // Attempt to set `data-theme` from cached theme to avoid paint flash of an old/default theme
   try {
     const cachedTheme = localStorage.getItem('mz-theme-cache');

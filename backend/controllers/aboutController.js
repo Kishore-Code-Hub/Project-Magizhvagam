@@ -6,7 +6,8 @@ exports.getAbout = async (req, res) => {
     const doc = await prisma.aboutPage.findFirst({});
     if (!doc) {
       return res.json({ success: true, data: {
-        storyHeading: '', storyIntro: '', leftHeading: '', leftParagraph1: '', leftParagraph2: '', image: ''
+        storyHeading: '', storyIntro: '', leftHeading: '', leftParagraph1: '', leftParagraph2: '', image: '',
+        heroImage: '', aboutBanner: '', founderImage: '', teamImages: '', timelineImages: '', storyImages: ''
       }});
     }
     res.json({ success: true, data: { ...doc, _id: doc.id } });
@@ -25,7 +26,13 @@ exports.updateAbout = async (req, res) => {
       leftHeading: req.body.leftHeading || '',
       leftParagraph1: req.body.leftParagraph1 || '',
       leftParagraph2: req.body.leftParagraph2 || '',
-      image: req.body.image || ''
+      image: req.body.image || '',
+      heroImage: req.body.heroImage || '',
+      aboutBanner: req.body.aboutBanner || '',
+      founderImage: req.body.founderImage || '',
+      teamImages: req.body.teamImages || '',
+      timelineImages: req.body.timelineImages || '',
+      storyImages: req.body.storyImages || ''
     };
 
     let doc = await prisma.aboutPage.findFirst({});

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Referrals & Affiliates Program | MAGIZHVAGAM</title>
+  
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body style="visibility:hidden">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar navigation placeholder -->
+    <aside id="admin-sidebar-container"></aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main">
+      <div id="admin-topbar-container"></div>
+      
+      <!-- Top header -->
+      <section style="margin-bottom:25px;">
+        <span style="font-family:'Outfit'; font-size:12px; font-weight:700; color:var(--adm-accent); text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:6px;">Marketing Studio</span>
+        <h1 style="font-family:'Outfit'; font-size:32px; font-weight:800; color:var(--text-color); margin:0;">Referrals & Affiliates Program</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">Configure customer referral rewards and track active affiliate payout ledgers.</p>
+      </section>
+
+      
+      <div class="grid grid-2" style="display:grid; grid-template-columns:1fr 1.3fr; gap:30px;">
+        <div class="glass" style="padding:25px; border-radius:12px; height:fit-content;">
+          <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">Referral Config</h2>
+          <form id="ref-form" style="display:flex; flex-direction:column; gap:14px;">
+            <div class="admin-form-group">
+              <label>Referrer Reward (Wallet credits ₹) *</label>
+              <input type="number" class="admin-form-control" value="100" min="0" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Referee Reward (Store Discount %) *</label>
+              <input type="number" class="admin-form-control" value="10" min="0" max="90" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Referral Terms</button>
+          </form>
+        </div>
+
+        <div class="glass table-responsive" style="padding:25px; border-radius:12px;">
+          <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">Referral Commission Logs</h2>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Referrer Code</th>
+                <th>Purchased Order</th>
+                <th>Earned Reward</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>KISHORE100</code></td>
+                <td><strong>#ORD-90422</strong></td>
+                <td>₹100 credits</td>
+                <td><span class="badge badge-success">Approved</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    
+
+    </main>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/admin-guard.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/admin-api.js"></script>
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      window.updateAdminBreadcrumbs('Marketing', 'Referral Program');
+      document.getElementById('ref-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast('Referral program configurations successfully updated!', 'success');
+      });
+    
+    });
+  </script>
+</body>
+</html>

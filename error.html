@@ -258,133 +258,152 @@
 
   <script src="/assets/vendor/gsap.min.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Parse Query Params
-      const params = new URLSearchParams(window.location.search);
-      const code = (params.get('code') || '404').toLowerCase();
-      
-      const config = {
-        '404': {
-          code: '404',
-          titleEn: 'Page Not Found',
-          titleTa: 'பக்கம் காணப்படவில்லை',
-          desc: 'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.',
-          svg: `
-            <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="45" cy="45" r="22" stroke="#C9913D" stroke-width="2" class="draw-path" />
-              <path d="M60.5 60.5 L85 85" stroke="#8B5CF6" stroke-width="3" stroke-linecap="round" class="draw-path" />
-              <circle cx="36" cy="38" r="3" fill="#C9913D" opacity="0.6" />
-              <circle cx="54" cy="42" r="2" fill="#8B5CF6" opacity="0.6" />
-              <path d="M40 54 Q45 50 50 54" stroke="#7A6E8A" stroke-width="1.5" stroke-linecap="round" />
-            </svg>
-          `,
-          buttons: `
-            <a href="/" class="btn btn-primary btn-interactive">Go to Home</a>
-            <button onclick="window.history.back()" class="btn btn-secondary btn-interactive">Go Back</button>
-          `
-        },
-        '403': {
-          code: '403',
-          titleEn: 'Access Forbidden',
-          titleTa: 'அனுமதி மறுக்கப்பட்டது',
-          desc: 'You do not have the required permissions to view this secure directory or resource.',
-          svg: `
-            <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="30" y="45" width="40" height="30" rx="8" stroke="#EF4444" stroke-width="2.5" class="draw-path" />
-              <path d="M40 45 V32 A10 10 0 0 1 60 32 V45" stroke="#C9913D" stroke-width="2" class="draw-path" />
-              <circle cx="50" cy="58" r="3" fill="#EF4444" />
-              <path d="M50 61 V68" stroke="#EF4444" stroke-width="2" />
-              <circle cx="80" cy="25" r="4" fill="#C9913D" class="pulse-glow" />
-            </svg>
-          `,
-          buttons: `
-            <a href="/" class="btn btn-primary btn-interactive">Go to Home</a>
-            <a href="/login" class="btn btn-secondary btn-interactive">Sign In</a>
-          `
-        },
-        '500': {
-          code: '500',
-          titleEn: 'Internal Server Error',
-          titleTa: 'சேவையக பிழை',
-          desc: 'Our servers are experiencing an unexpected issue. We are working to resolve this as quickly as possible.',
-          svg: `
-            <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="42" cy="42" r="16" stroke="#C9913D" stroke-width="2" class="rotate-svg-slow" style="animation-duration: 8s;" />
-              <circle cx="68" cy="65" r="12" stroke="#8B5CF6" stroke-width="2" class="rotate-svg-slow" style="animation-duration: 12s; animation-direction: reverse;" />
-              <path d="M25 80 L35 70" stroke="#7A6E8A" stroke-dasharray="3 3" />
-              <path d="M75 25 L65 35" stroke="#7A6E8A" stroke-dasharray="3 3" />
-            </svg>
-          `,
-          buttons: `
-            <a href="/" class="btn btn-primary btn-interactive">Go to Home</a>
-            <button onclick="window.location.reload()" class="btn btn-secondary btn-interactive">Retry Loading</button>
-          `
-        },
-        'offline': {
-          code: 'Offline',
-          titleEn: 'No Internet Connection',
-          titleTa: 'இணைய இணைப்பு இல்லை',
-          desc: 'Please check your network cables, Wi-Fi configuration, and try reloading the page.',
-          svg: `
-            <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M30 65 A12 12 0 0 1 35 42 A15 15 0 0 1 65 38 A12 12 0 0 1 70 65 Z" stroke="#7A6E8A" stroke-width="2" class="draw-path" />
-              <path d="M20 20 L80 80" stroke="#EF4444" stroke-width="3" stroke-linecap="round" class="draw-path" />
-              <circle cx="50" cy="52" r="2.5" fill="#EF4444" class="pulse-glow" />
-            </svg>
-          `,
-          buttons: `
-            <button onclick="window.location.reload()" class="btn btn-primary btn-interactive">Check Again</button>
-            <a href="/" class="btn btn-secondary btn-interactive">Go to Home</a>
-          `
-          
-        },
-        'maintenance': {
-          code: 'Service',
-          titleEn: 'Scheduled Maintenance',
-          titleTa: 'பராமரிப்பு பணி',
-          desc: 'We are currently polishing our website experience. We will be back online shortly. Thank you for your patience.',
-          svg: `
-            <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="50" cy="50" r="35" stroke="#C9913D" stroke-width="2" class="draw-path" />
-              <polyline points="50 22 50 50 68 50" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" class="rotate-svg-slow" style="animation-duration: 20s;" />
-              <path d="M38 72 L32 78 M62 72 L68 78" stroke="#7A6E8A" stroke-width="2" stroke-linecap="round" />
-            </svg>
-          `,
-          buttons: `
-            <a href="https://wa.me/919999999999" target="_blank" class="btn btn-primary btn-interactive">Contact WhatsApp</a>
-            <button onclick="window.location.reload()" class="btn btn-secondary btn-interactive">Check Status</button>
-          `
+    (function () {
+      'use strict';
+
+      async function initPage() {
+        // Parse Query Params
+        const params = new URLSearchParams(window.location.search);
+        const code = (params.get('code') || '404').toLowerCase();
+        
+        const config = {
+          '404': {
+            code: '404',
+            titleEn: 'Page Not Found',
+            titleTa: 'பக்கம் காணப்படவில்லை',
+            desc: 'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.',
+            svg: `
+              <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="45" cy="45" r="22" stroke="#C9913D" stroke-width="2" class="draw-path" />
+                <path d="M60.5 60.5 L85 85" stroke="#8B5CF6" stroke-width="3" stroke-linecap="round" class="draw-path" />
+                <circle cx="36" cy="38" r="3" fill="#C9913D" opacity="0.6" />
+                <circle cx="54" cy="42" r="2" fill="#8B5CF6" opacity="0.6" />
+                <path d="M40 54 Q45 50 50 54" stroke="#7A6E8A" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            `,
+            buttons: `
+              <a href="/" class="btn btn-primary btn-interactive">Go to Home</a>
+              <button onclick="window.history.back()" class="btn btn-secondary btn-interactive">Go Back</button>
+            `
+          },
+          '403': {
+            code: '403',
+            titleEn: 'Access Forbidden',
+            titleTa: 'அனுமதி மறுக்கப்பட்டது',
+            desc: 'You do not have the required permissions to view this secure directory or resource.',
+            svg: `
+              <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="30" y="45" width="40" height="30" rx="8" stroke="#EF4444" stroke-width="2.5" class="draw-path" />
+                <path d="M40 45 V32 A10 10 0 0 1 60 32 V45" stroke="#C9913D" stroke-width="2" class="draw-path" />
+                <circle cx="50" cy="58" r="3" fill="#EF4444" />
+                <path d="M50 61 V68" stroke="#EF4444" stroke-width="2" />
+                <circle cx="80" cy="25" r="4" fill="#C9913D" class="pulse-glow" />
+              </svg>
+            `,
+            buttons: `
+              <a href="/" class="btn btn-primary btn-interactive">Go to Home</a>
+              <a href="/login" class="btn btn-secondary btn-interactive">Sign In</a>
+            `
+          },
+          '500': {
+            code: '500',
+            titleEn: 'Internal Server Error',
+            titleTa: 'சேவையக பிழை',
+            desc: 'Our servers are experiencing an unexpected issue. We are working to resolve this as quickly as possible.',
+            svg: `
+              <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="42" cy="42" r="16" stroke="#C9913D" stroke-width="2" class="rotate-svg-slow" style="animation-duration: 8s;" />
+                <circle cx="68" cy="65" r="12" stroke="#8B5CF6" stroke-width="2" class="rotate-svg-slow" style="animation-duration: 12s; animation-direction: reverse;" />
+                <path d="M25 80 L35 70" stroke="#7A6E8A" stroke-dasharray="3 3" />
+                <path d="M75 25 L65 35" stroke="#7A6E8A" stroke-dasharray="3 3" />
+              </svg>
+            `,
+            buttons: `
+              <a href="/" class="btn btn-primary btn-interactive">Go to Home</a>
+              <button onclick="window.location.reload()" class="btn btn-secondary btn-interactive">Retry Loading</button>
+            `
+          },
+          'offline': {
+            code: 'Offline',
+            titleEn: 'No Internet Connection',
+            titleTa: 'இணைய இணைப்பு இல்லை',
+            desc: 'Please check your network cables, Wi-Fi configuration, and try reloading the page.',
+            svg: `
+              <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M30 65 A12 12 0 0 1 35 42 A15 15 0 0 1 65 38 A12 12 0 0 1 70 65 Z" stroke="#7A6E8A" stroke-width="2" class="draw-path" />
+                <path d="M20 20 L80 80" stroke="#EF4444" stroke-width="3" stroke-linecap="round" class="draw-path" />
+                <circle cx="50" cy="52" r="2.5" fill="#EF4444" class="pulse-glow" />
+              </svg>
+            `,
+            buttons: `
+              <button onclick="window.location.reload()" class="btn btn-primary btn-interactive">Check Again</button>
+              <a href="/" class="btn btn-secondary btn-interactive">Go to Home</a>
+            `
+            
+          },
+          'maintenance': {
+            code: 'Service',
+            titleEn: 'Scheduled Maintenance',
+            titleTa: 'பராமரிப்பு பணி',
+            desc: 'We are currently polishing our website experience. We will be back online shortly. Thank you for your patience.',
+            svg: `
+              <svg class="float-svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="50" cy="50" r="35" stroke="#C9913D" stroke-width="2" class="draw-path" />
+                <polyline points="50 22 50 50 68 50" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" class="rotate-svg-slow" style="animation-duration: 20s;" />
+                <path d="M38 72 L32 78 M62 72 L68 78" stroke="#7A6E8A" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            `,
+            buttons: `
+              <a href="https://wa.me/919999999999" target="_blank" class="btn btn-primary btn-interactive">Contact WhatsApp</a>
+              <button onclick="window.location.reload()" class="btn btn-secondary btn-interactive">Check Status</button>
+            `
+          }
+        };
+
+        const selected = config[code] || config['404'];
+        
+        // Inject content
+        const codeText = document.getElementById('error-code-text');
+        const titleEn = document.getElementById('error-title-en');
+        const titleTa = document.getElementById('error-title-ta');
+        const descText = document.getElementById('error-desc-text');
+        const illHolder = document.getElementById('illustration-holder');
+        const actionsCont = document.getElementById('error-actions-container');
+
+        if (codeText) codeText.innerText = selected.code;
+        if (titleEn) titleEn.innerText = selected.titleEn;
+        if (titleTa) titleTa.innerText = selected.titleTa;
+        if (descText) descText.innerText = selected.desc;
+        if (illHolder) illHolder.innerHTML = selected.svg;
+        if (actionsCont) actionsCont.innerHTML = selected.buttons;
+
+        // Animate entry with GSAP
+        if (window.gsap) {
+          gsap.from('.error-card', {
+            duration: 1,
+            opacity: 0,
+            scale: 0.95,
+            y: 20,
+            ease: 'power4.out'
+          });
+          gsap.from('#illustration-holder svg', {
+            duration: 1.5,
+            delay: 0.3,
+            opacity: 0,
+            scale: 0.8,
+            ease: 'back.out(1.7)'
+          });
         }
-      };
-
-      const selected = config[code] || config['404'];
-      
-      // Inject content
-      document.getElementById('error-code-text').innerText = selected.code;
-      document.getElementById('error-title-en').innerText = selected.titleEn;
-      document.getElementById('error-title-ta').innerText = selected.titleTa;
-      document.getElementById('error-desc-text').innerText = selected.desc;
-      document.getElementById('illustration-holder').innerHTML = selected.svg;
-      document.getElementById('error-actions-container').innerHTML = selected.buttons;
-
-      // Animate entry with GSAP
-      if (window.gsap) {
-        gsap.from('.error-card', {
-          duration: 1,
-          opacity: 0,
-          scale: 0.95,
-          y: 20,
-          ease: 'power4.out'
-        });
-        gsap.from('#illustration-holder svg', {
-          duration: 1.5,
-          delay: 0.3,
-          opacity: 0,
-          scale: 0.8,
-          ease: 'back.out(1.7)'
-        });
       }
-    });
+
+      function destroyPage() {}
+
+      window.MZPageRegistry = window.MZPageRegistry || {};
+      window.MZPageRegistry['error'] = {
+        init: initPage,
+        destroy: destroyPage
+      };
+    })();
   </script>
 </body>
 </html>
