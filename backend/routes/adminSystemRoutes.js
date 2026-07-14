@@ -7,4 +7,9 @@ router.get('/smtp-test', protect, adminOnly, ctrl.testSmtp);
 router.post('/smtp-send-test', protect, adminOnly, ctrl.sendTestEmail);
 router.get('/audit-logs', protect, adminOnly, ctrl.getAuditLogs);
 
+// Database SQL Backups routes
+router.post('/backup', protect, adminOnly, ctrl.createBackup);
+router.get('/backup', protect, adminOnly, ctrl.listBackups);
+router.delete('/backup/:filename', protect, adminOnly, ctrl.deleteBackup);
+
 module.exports = router;

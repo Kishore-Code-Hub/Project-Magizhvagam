@@ -74,7 +74,7 @@ async function initAdminRouterPage() {
     if (typeof window.initSecurityLogsPage === 'function') {
       window.initSecurityLogsPage();
     }
-  } else if (path.includes('enquiries.html')) {
+  } else if (path.includes('enquiries.html') || path.includes('support.html')) {
     if (typeof window.loadAdminEnquiries === 'function') {
       window.loadAdminEnquiries();
     }

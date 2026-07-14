@@ -38,11 +38,8 @@
 
         <div class="glass" style="padding:25px; border-radius:12px;">
           <h2 style="font-family:'Outfit'; font-size:18px; margin-top:0; margin-bottom:15px; color:var(--text-color);">Backup History Points</h2>
-          <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px;">
-            <li class="glass" style="padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
-              <div><strong>magizhvagam_db_daily.sql</strong><div style="font-size:10px; color:var(--text-muted);">Size: 4.2 MB • 2 hours ago</div></div>
-              <span class="badge badge-success">Restorable</span>
-            </li>
+          <ul id="backups-list-container" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px;">
+            <tr><td style="text-align:center;"><div class="spinner" style="margin:auto;"></div></td></tr>
           </ul>
         </div>
       </div>
@@ -66,6 +63,41 @@
     document.addEventListener('DOMContentLoaded', () => {
       
       window.updateAdminBreadcrumbs('Settings', 'Backups');
+      loadBackups();
+
+      async function loadBackups() {
+        const container = document.getElementById('backups-list-container');
+        if (!container) return;
+        container.innerHTML = '<li style="text-align:center; padding:10px;"><div class="spinner" style="margin:auto;"></div></li>';
+
+        try {
+          const res = await adminFetch('/api/admin/system/backup');
+          const data = await res.json();
+          if (data.success && data.backups) {
+            if (data.backups.length === 0) {
+              container.innerHTML = '<li style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px;">No backup points found.</li>';
+              return;
+            }
+            container.innerHTML = data.backups.map(b => `
+              <li class="glass" style="padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <strong>${b.filename}</strong>
+                  <div style="font-size:10px; color:var(--text-muted);">Size: ${b.size} • Created: ${new Date(b.createdAt).toLocaleString('en-IN')}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span class="badge badge-success">Restorable</span>
+                  <button onclick="deleteBackupFile('${b.filename}')" class="btn" style="background:#ef4444 !important; color:white; border:none; padding:6px 12px; font-size:11px; border-radius:6px; cursor:pointer;">Delete</button>
+                </div>
+              </li>
+            `).join('');
+          } else {
+            container.innerHTML = '<li style="color:var(--adm-danger); text-align:center; padding:10px;">Failed to load backup history.</li>';
+          }
+        } catch (err) {
+          container.innerHTML = '<li style="color:var(--adm-danger); text-align:center; padding:10px;">Connection error loading backups.</li>';
+        }
+      }
+      window.loadBackups = loadBackups;
 
       window.triggerBackupsSql = async () => {
         showToast('Compiling SQL database schema backup snapshot...', 'info');
@@ -74,11 +106,28 @@
           const data = await res.json();
           if (data.success) {
             showToast('PostgreSQL SQL Schema Backup successfully created!', 'success');
+            loadBackups();
           } else {
-            showToast('Failed to write SQL backup', 'error');
+            showToast(data.error || 'Failed to write SQL backup', 'error');
           }
         } catch (e) {
           showToast('Connection error during backup', 'error');
+        }
+      };
+
+      window.deleteBackupFile = async (filename) => {
+        if (!confirm(`Are you sure you want to permanently delete backup point: ${filename}?`)) return;
+        try {
+          const res = await adminFetch(`/api/admin/system/backup/${filename}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (data.success) {
+            showToast('Backup point deleted!', 'success');
+            loadBackups();
+          } else {
+            showToast(data.error || 'Failed to delete backup file', 'error');
+          }
+        } catch (e) {
+          showToast('Connection error during deletion', 'error');
         }
       };
     
