@@ -104,8 +104,11 @@ function injectAdminSidebar() {
   const layout = document.querySelector('.admin-layout');
   if (layout) {
     const savedTheme = localStorage.getItem('admin-theme');
-    if (savedTheme === 'dark') {
-      layout.classList.add('dark-mode');
+    if (savedTheme === 'light') {
+      layout.classList.add('light-mode');
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      layout.classList.remove('light-mode');
       document.documentElement.setAttribute('data-theme', 'dark');
     }
 
@@ -657,12 +660,10 @@ function injectAdminTopbar() {
     console.warn('Failed to parse adminAuth profile', e);
   }
 
-  let themeIcon = 'moon';
-  let themeText = 'Dark Mode';
-  if (localStorage.getItem('admin-theme') === 'dark') {
-    themeIcon = 'sun';
-    themeText = 'Light Mode';
-  }
+  const savedThemeForIcon = localStorage.getItem('admin-theme');
+  const isLightMode = savedThemeForIcon === 'light';
+  let themeIcon = isLightMode ? 'moon' : 'sun';
+  let themeText = isLightMode ? 'Dark Mode' : 'Light Mode';
 
   topbar.innerHTML = `
     <div class="admin-topbar-left">
@@ -684,6 +685,10 @@ function injectAdminTopbar() {
         <span>Search admin...</span>
         <kbd>⌘K</kbd>
       </div>
+
+      <button type="button" class="topbar-action-btn" id="theme-toggle-topbar-btn" onclick="window.toggleAdminTheme(); return false;" aria-label="${themeText}" title="${themeText}">
+        <i data-lucide="${themeIcon}" style="width:18px;height:18px;"></i>
+      </button>
 
       <button type="button" class="topbar-action-btn" id="notifications-trigger-btn" aria-label="View notifications">
         <i data-lucide="bell"></i>
@@ -878,24 +883,36 @@ function initOverlaysEvents() {
   // Theme switcher function
   window.toggleAdminTheme = function() {
     const layout = document.querySelector('.admin-layout');
-    const btn = document.getElementById('theme-toggle-popover-btn');
     if (!layout) return;
 
-    const isDark = layout.classList.toggle('dark-mode');
-    localStorage.setItem('admin-theme', isDark ? 'dark' : 'light');
+    const isCurrentlyLight = layout.classList.contains('light-mode');
 
-    if (isDark) {
+    if (isCurrentlyLight) {
+      layout.classList.remove('light-mode');
       document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('admin-theme', 'dark');
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      layout.classList.add('light-mode');
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('admin-theme', 'light');
     }
 
-    if (btn) {
-      btn.innerHTML = `
-        <i data-lucide="${isDark ? 'sun' : 'moon'}"></i>
-        <span>${isDark ? 'Light Mode' : 'Dark Mode'}</span>
-      `;
+    const newThemeIsLight = layout.classList.contains('light-mode');
+    const iconName = newThemeIsLight ? 'moon' : 'sun';
+    const labelText = newThemeIsLight ? 'Dark Mode' : 'Light Mode';
+
+    const popoverBtn = document.getElementById('theme-toggle-popover-btn');
+    if (popoverBtn) {
+      popoverBtn.innerHTML = '<i data-lucide="' + iconName + '"></i> <span>' + labelText + '</span>';
     }
+
+    const topbarBtn = document.getElementById('theme-toggle-topbar-btn');
+    if (topbarBtn) {
+      topbarBtn.innerHTML = '<i data-lucide="' + iconName + '" style="width:18px;height:18px;"></i>';
+      topbarBtn.setAttribute('aria-label', labelText);
+      topbarBtn.title = labelText;
+    }
+
     window.renderIcons();
   };
 

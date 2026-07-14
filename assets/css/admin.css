@@ -64,15 +64,227 @@
 .admin-layout.light-mode {
   --adm-bg: #F8FAFC;
   --adm-surface: #FFFFFF;
-  --adm-card-bg: rgba(255, 255, 255, 0.72);
-  --adm-border: rgba(168, 85, 247, 0.08);
+  --adm-card-bg: rgba(255, 255, 255, 0.82);
+  --adm-border: rgba(148, 163, 184, 0.22);
   --adm-text: #0F172A;
   --adm-text-muted: #64748B;
-  
-  --adm-glass-border: rgba(0, 0, 0, 0.03);
-  --adm-glass-shadow: 0 20px 50px rgba(148, 163, 184, 0.1);
-  --adm-neon-glow: 0 0 25px rgba(var(--adm-accent-rgb), 0.12);
-  --adm-neon-border-glow: 0 0 8px rgba(var(--adm-accent-rgb), 0.06);
+
+  --adm-glass-blur: blur(16px) saturate(150%);
+  --adm-glass-border: rgba(0, 0, 0, 0.06);
+  --adm-glass-shadow: 0 4px 24px rgba(148, 163, 184, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --adm-neon-glow: 0 0 20px rgba(var(--adm-accent-rgb), 0.10);
+  --adm-neon-border-glow: 0 0 6px rgba(var(--adm-accent-rgb), 0.08);
+}
+
+/* ─── Smooth Theme Transition ─── */
+.admin-layout,
+.admin-layout .admin-sidebar,
+.admin-layout .admin-topbar,
+.admin-layout .admin-main,
+.admin-layout .glass,
+.admin-layout .admin-card,
+.admin-layout .metric-card,
+.admin-layout .admin-table td,
+.admin-layout .admin-table th,
+.admin-layout .admin-table tbody tr,
+.admin-layout .admin-form-control,
+.admin-layout select,
+.admin-layout textarea,
+.admin-layout input,
+.admin-layout .btn,
+.admin-layout .btn-secondary,
+.admin-layout .profile-popover,
+.admin-layout .command-palette-modal,
+.admin-layout .notification-drawer,
+.admin-layout .modal-overlay .modal-content,
+.admin-layout .admin-search-trigger,
+.admin-layout .topbar-action-btn,
+.admin-layout .admin-menu-item > a,
+.admin-layout .admin-menu-item-link,
+.admin-layout .admin-menu-submenu li a {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ─── Light Theme: Component-Level Overrides ─── */
+
+/* Search trigger */
+.admin-layout.light-mode .admin-search-trigger {
+  background: rgba(0, 0, 0, 0.04);
+}
+.admin-layout.light-mode .admin-search-trigger:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+.admin-layout.light-mode .admin-search-trigger kbd {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: var(--adm-text-muted);
+}
+
+/* Topbar action buttons */
+.admin-layout.light-mode .topbar-action-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Profile trigger hover */
+.admin-layout.light-mode .admin-profile-trigger:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Tables */
+.admin-layout.light-mode .admin-table tr {
+  background: rgba(var(--adm-accent-rgb), 0.02);
+}
+.admin-layout.light-mode .admin-table tbody tr:hover {
+  background: rgba(var(--adm-accent-rgb), 0.06) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Form inputs */
+.admin-layout.light-mode .admin-form-control,
+.admin-layout.light-mode select,
+.admin-layout.light-mode textarea,
+.admin-layout.light-mode input[type="text"],
+.admin-layout.light-mode input[type="number"],
+.admin-layout.light-mode input[type="password"],
+.admin-layout.light-mode input[type="email"],
+.admin-layout.light-mode input[type="search"],
+.admin-layout.light-mode input[type="tel"],
+.admin-layout.light-mode input[type="date"],
+.admin-layout.light-mode input[type="datetime-local"],
+.admin-layout.light-mode input[type="url"] {
+  background-color: #FFFFFF !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
+}
+.admin-layout.light-mode .admin-form-control:focus,
+.admin-layout.light-mode select:focus,
+.admin-layout.light-mode textarea:focus,
+.admin-layout.light-mode input:focus {
+  background-color: #FFFFFF !important;
+  border-color: var(--adm-accent) !important;
+}
+
+/* Skeleton shimmer for light mode */
+.admin-layout.light-mode .skeleton {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.04) 25%, rgba(0, 0, 0, 0.08) 50%, rgba(0, 0, 0, 0.04) 75%);
+  background-size: 200% 100%;
+}
+
+/* Command palette overlay */
+.admin-layout.light-mode .command-palette-overlay {
+  background: rgba(248, 250, 252, 0.80);
+}
+
+/* Notification drawer overlay */
+.admin-layout.light-mode .notification-drawer-overlay {
+  background: rgba(248, 250, 252, 0.60);
+}
+
+/* Notification items */
+.admin-layout.light-mode .notification-item {
+  background: rgba(0, 0, 0, 0.02);
+}
+.admin-layout.light-mode .notification-item:hover {
+  background: rgba(var(--adm-accent-rgb), 0.05);
+}
+
+/* Modal overlay */
+.admin-layout.light-mode .modal-overlay {
+  background: rgba(15, 23, 42, 0.35) !important;
+}
+.admin-layout.light-mode .modal-overlay .modal-content {
+  background: #FFFFFF !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15) !important;
+}
+.admin-layout.light-mode .modal-overlay .modal-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* Sidebar toggle button */
+.admin-layout.light-mode #sidebar-toggle-btn {
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+.admin-layout.light-mode #sidebar-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Sidebar search input */
+.admin-layout.light-mode #sidebar-filter-input {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+/* Sidebar profile footer */
+.admin-layout.light-mode .sidebar-profile-footer {
+  background: rgba(0, 0, 0, 0.01);
+}
+
+/* Workspace switcher */
+.admin-layout.light-mode .workspace-switcher {
+  background: rgba(0, 0, 0, 0.01);
+}
+
+/* Quick action buttons (dashboard) */
+.admin-layout.light-mode .quick-action-btn {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+.admin-layout.light-mode .quick-action-btn:hover {
+  background: rgba(var(--adm-accent-rgb), 0.06);
+}
+
+/* Ambient blobs for light mode */
+.admin-layout.light-mode .blob-1 {
+  opacity: 0.08 !important;
+}
+.admin-layout.light-mode .blob-2 {
+  opacity: 0.06 !important;
+}
+
+/* Badge status overrides for light mode */
+.admin-layout.light-mode .prod-status-badge.status-published {
+  background: rgba(16, 185, 129, 0.08);
+}
+
+/* Toast notifications in light mode */
+.admin-layout.light-mode .toast {
+  background: #FFFFFF !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Charts/SVG containers */
+.admin-layout.light-mode .chart-container svg text {
+  fill: var(--adm-text-muted) !important;
+}
+
+/* Tooltip overrides */
+.admin-layout.light-mode [data-tooltip]::after {
+  background: #0F172A;
+  color: #F8FAFC;
+}
+
+/* Pagination */
+.admin-layout.light-mode .pagination-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+.admin-layout.light-mode .pagination-btn:hover,
+.admin-layout.light-mode .pagination-btn.active {
+  background: var(--adm-accent);
+  color: #FFFFFF;
+}
+
+/* Dropdown/select styling */
+.admin-layout.light-mode select option {
+  background: #FFFFFF;
+  color: #0F172A;
+}
+
+/* Timeline items (dashboard) */
+.admin-layout.light-mode .timeline-log-item {
+  border-left-color: rgba(148, 163, 184, 0.2);
+}
+.admin-layout.light-mode .timeline-log-item::before {
+  background: rgba(148, 163, 184, 0.3);
 }
 
 /* ─── Base Styles Override ─── */
@@ -711,6 +923,19 @@ body:has(.admin-layout) {
 .topbar-action-btn:hover {
   background: rgba(255, 255, 255, 0.05);
   color: var(--adm-text);
+}
+/* Theme toggle button special styling */
+#theme-toggle-topbar-btn {
+  border: 1px solid var(--adm-border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#theme-toggle-topbar-btn:hover {
+  background: rgba(var(--adm-accent-rgb), 0.08);
+  border-color: var(--adm-accent);
+  color: var(--adm-accent);
+  transform: rotate(15deg);
 }
 .notification-badge {
   position: absolute;
