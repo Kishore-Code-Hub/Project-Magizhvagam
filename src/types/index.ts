@@ -5,6 +5,7 @@ export interface ProfileData {
   taglines: string[];
   bio: string;
   resumeUrl: string;
+  image?: string;
   socials: {
     github?: string;
     linkedin?: string;
@@ -39,6 +40,7 @@ export interface SkillData {
   name: string;
   category: 'Languages' | 'Security Tools' | 'Infra/DevOps' | 'AI/ML' | string;
   icon: string;
+  level?: string;
   order: number;
 }
 

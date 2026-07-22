@@ -2,50 +2,61 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'dark' | 'light';
+export type AccentTheme = 'cyber-green';
+
+export type PerformanceLevel = 'high' | 'medium' | 'low' | 'auto';
 
 interface ThemeContextType {
-  theme: Theme;
-  toggleTheme: () => void;
+  theme: AccentTheme;
+  performanceLevel: PerformanceLevel;
+  setPerformanceLevel: (level: PerformanceLevel) => void;
+  audioMuted: boolean;
+  setAudioMuted: (muted: boolean) => void;
+  toggleAudio: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme] = useState<AccentTheme>('cyber-green');
+  const [performanceLevel, setPerformanceLevelState] = useState<PerformanceLevel>('auto');
+  const [audioMuted, setAudioMuted] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const storedTheme = localStorage.getItem('portfolio_theme') as Theme | null;
-    if (storedTheme) {
-      setTheme(storedTheme);
-    } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
-      setTheme('light');
-    } else {
-      setTheme('dark');
+    const storedPerf = localStorage.getItem('soc_performance_level') as PerformanceLevel | null;
+    if (storedPerf) {
+      setPerformanceLevelState(storedPerf);
     }
   }, []);
 
   useEffect(() => {
     if (!mounted) return;
     const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    } else {
-      root.classList.add('light');
-      root.classList.remove('dark');
-    }
-    localStorage.setItem('portfolio_theme', theme);
-  }, [theme, mounted]);
+    root.classList.add('theme-cyber-green');
+  }, [mounted]);
 
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  const setPerformanceLevel = (level: PerformanceLevel) => {
+    setPerformanceLevelState(level);
+    localStorage.setItem('soc_performance_level', level);
+  };
+
+  const toggleAudio = () => {
+    setAudioMuted((prev) => !prev);
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        performanceLevel,
+        setPerformanceLevel,
+        audioMuted,
+        setAudioMuted,
+        toggleAudio,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

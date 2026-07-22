@@ -2,33 +2,32 @@ import type { Metadata } from 'next';
 import './globals.css';
 import SmoothScroll from '@/components/animation/SmoothScroll';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import CustomCursor from '@/components/ui/CustomCursor';
 
 export const metadata: Metadata = {
-  title: 'Soundkish | Cybersecurity Enthusiast & Full-Stack Engineer',
+  title: 'Kishore | Cybersecurity Enthusiast & Full-Stack Engineer',
   description:
-    "Official portfolio of Soundkish — CSE Student, Cybersecurity Enthusiast, and AI Full-Stack Developer specializing in secure system architecture, penetration testing, and modern web software.",
+    'Official portfolio of Kishore — CSE Student, Cybersecurity Enthusiast, and AI Full-Stack Developer specializing in secure system architecture, penetration testing, and modern web software.',
   keywords: [
     'Cybersecurity',
-    'Soundkish',
     'Kishore',
     'Penetration Testing',
     'Ethical Hacking',
     'Full-Stack Developer',
-    'FastAPI',
     'Next.js',
     'AI Developer',
   ],
-  authors: [{ name: 'Soundkish' }],
+  authors: [{ name: 'Kishore' }],
   openGraph: {
-    title: 'Soundkish | Cybersecurity Enthusiast & Full-Stack Engineer',
+    title: 'Kishore | Cybersecurity Enthusiast & Full-Stack Engineer',
     description: 'Securing Systems. Building Trust.',
     type: 'website',
     url: 'https://soundkish.dev',
-    siteName: 'Soundkish Portfolio',
+    siteName: 'Kishore Portfolio',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Soundkish | Cybersecurity Enthusiast',
+    title: 'Kishore | Cybersecurity Enthusiast',
     description: 'Securing Systems. Building Trust.',
   },
   robots: {
@@ -45,7 +44,7 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Person',
-    name: 'Soundkish',
+    name: 'Kishore',
     jobTitle: 'Cybersecurity Enthusiast & Software Engineer',
     description: 'Securing Systems. Building Trust.',
     url: 'https://soundkish.dev',
@@ -53,15 +52,16 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className="dark scroll-smooth" suppressHydrationWarning>
+    <html lang="en" className="theme-cyber-green scroll-smooth" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="antialiased min-h-screen">
+      <body className="antialiased min-h-screen bg-[#050505] text-white">
         <ThemeProvider>
+          <CustomCursor />
           <SmoothScroll>{children}</SmoothScroll>
         </ThemeProvider>
       </body>

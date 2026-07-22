@@ -1,5 +1,4 @@
 import React from 'react';
-import Navbar from '@/components/nav/Navbar';
 import Hero from '@/components/sections/Hero';
 import About from '@/components/sections/About';
 import Skills from '@/components/sections/Skills';
@@ -131,8 +130,7 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="relative min-h-screen bg-[#08080b] text-[#f5f5f7]">
-      <Navbar resumeUrl={profile.resumeUrl} />
+    <main className="relative min-h-screen bg-[#050505] text-[#f5f5f7]">
       <Hero profile={profile} />
       <About profile={profile} />
       <Skills skills={skills} />
