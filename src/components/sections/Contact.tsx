@@ -20,11 +20,11 @@ export default function Contact() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const transmissionSteps = [
-    '[1/5] Constructing Encrypted Data Payload...',
-    '[2/5] Establishing TLS 1.3 Secure Tunnel to SOC Server...',
-    '[3/5] Encrypting Packet via AES-256-GCM...',
-    '[4/5] Routing Secure Packet through Anti-Spam Firewall...',
-    '[5/5] Transmission Complete: Delivered to Kishore SOC Console.',
+    '[1/5] Encrypting Payload Transmission Data...',
+    '[2/5] Generating Ephemeral 256-bit AES Encryption Key...',
+    '[3/5] Performing TLS 1.3 Handshake with SOC Gateway...',
+    '[4/5] Establishing Authenticated SMTP Connection...',
+    '[5/5] Packet Delivered Successfully to Kishore SOC Console.',
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,7 +38,6 @@ export default function Contact() {
     setLogs([]);
     setErrorMessage('');
 
-    // Step by step realistic transmission terminal sequence
     let current = 0;
     const interval = setInterval(() => {
       if (current < transmissionSteps.length) {
@@ -47,7 +46,6 @@ export default function Contact() {
         current++;
       } else {
         clearInterval(interval);
-        // Execute real API request
         sendApiRequest();
       }
     }, 350);
@@ -78,13 +76,13 @@ export default function Contact() {
 
   return (
     <section id="contact" className="py-24 px-4 md:px-8 relative z-10 circuit-grid font-mono">
-      <div className="max-w-7xl mx-auto space-y-12 pl-0 lg:pl-16">
+      <div className="max-w-7xl mx-auto space-y-12 pl-0 lg:pl-20">
         
         {/* Section Header */}
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-accent font-semibold px-3 py-1 rounded-full bg-accent/10 border border-accent/30">
             <span className="pulse-dot" />
-            // ENCRYPTED COMMUNICATION CONSOLE
+            // ENCRYPTED MISSION TRANSMISSION CONSOLE
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
             TRANSMIT ENCRYPTED PACKET & <br />
@@ -94,14 +92,14 @@ export default function Contact() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Contact Terminal Form (7 cols) */}
+          {/* Contact Form Console (7 cols) */}
           <div className="lg:col-span-7 glass-panel p-6 sm:p-8 border-accent/40 bg-[#040705]/95 rounded-2xl shadow-2xl space-y-6">
             <div className="flex items-center justify-between border-b border-accent/25 pb-3 text-xs">
               <span className="flex items-center gap-2 font-bold text-accent">
-                <Lock className="w-4 h-4 text-accent" /> ENCRYPTED PACKET SENDER
+                <Lock className="w-4 h-4 text-accent" /> AES-256 PACKET ENCRYPTION CONSOLE
               </span>
               <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
-                <Radio className="w-3 h-3 animate-pulse" /> SOC SERVER ONLINE
+                <Radio className="w-3 h-3 animate-pulse" /> SOC GATEWAY ONLINE
               </span>
             </div>
 
@@ -123,7 +121,7 @@ export default function Contact() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Honeypot anti-spam */}
+                {/* Anti-spam honeypot */}
                 <input
                   type="text"
                   name="honeypot"
@@ -165,7 +163,7 @@ export default function Contact() {
                   <input
                     type="text"
                     required
-                    placeholder="Project Inquiry / Cybersecurity Opportunity"
+                    placeholder="Project Inquiry / Security Opportunity"
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl glass-input text-xs font-mono"
@@ -177,7 +175,7 @@ export default function Contact() {
                   <textarea
                     required
                     rows={5}
-                    placeholder="Enter your message transmission details..."
+                    placeholder="Enter message transmission details..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl glass-input text-xs font-mono resize-none"
@@ -191,11 +189,11 @@ export default function Contact() {
                   </div>
                 )}
 
-                {/* Encryption Terminal Log Sequence Output */}
+                {/* Encryption Terminal Sequence Output */}
                 {status === 'encrypting' && (
                   <div className="bg-[#020403] p-4 rounded-xl border border-accent/30 space-y-1.5 text-xs text-accent font-mono">
                     <div className="text-gray-400 font-bold border-b border-accent/20 pb-1 flex justify-between">
-                      <span>[TRANSMISSION LOG]</span>
+                      <span>[AES-256 TRANSMISSION LOG]</span>
                       <span className="animate-pulse">ENCRYPTING...</span>
                     </div>
                     {logs.map((log, idx) => (
@@ -219,7 +217,7 @@ export default function Contact() {
             )}
           </div>
 
-          {/* Direct Communication Channels Info (5 cols) */}
+          {/* Direct Communication Details (5 cols) */}
           <div className="lg:col-span-5 space-y-6">
             <div className="glass-panel p-6 border-accent/40 bg-[#040705]/90 rounded-2xl shadow-2xl space-y-4">
               <div className="flex items-center gap-2 text-accent font-bold text-xs border-b border-accent/20 pb-3">

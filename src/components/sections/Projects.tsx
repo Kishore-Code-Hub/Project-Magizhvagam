@@ -11,8 +11,8 @@ import {
   Calendar,
   LayoutDashboard,
   Brain,
+  Radio,
   CheckCircle2,
-  Code2,
 } from 'lucide-react';
 import { GithubIcon } from '@/components/ui/Icons';
 import { CyberAudio } from '@/lib/CyberAudio';
@@ -26,38 +26,34 @@ export default function Projects({ projects }: ProjectsProps) {
   const { audioMuted } = useTheme();
   const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null);
 
-  // Determine custom window personality based on project tags/title
+  // Determine domain-specific software personality
   const getProjectPersonality = (p: ProjectData) => {
     const title = p.title.toLowerCase();
     const tags = p.tags.map((t) => t.toLowerCase()).join(' ');
 
-    if (title.includes('erp') || title.includes('enterprise') || tags.includes('dashboard')) {
+    if (title.includes('erp') || title.includes('enterprise')) {
       return {
-        label: 'ENTERPRISE DASHBOARD OS',
+        label: 'SAP ENTERPRISE DASHBOARD',
         icon: LayoutDashboard,
-        accent: 'border-accent/40 bg-accent/5',
-        themeBadge: 'ENTERPRISE SYSTEM',
+        badge: 'ENTERPRISE SYSTEM',
       };
-    } else if (title.includes('timetable') || title.includes('schedule') || tags.includes('calendar')) {
+    } else if (title.includes('timetable') || title.includes('schedule')) {
       return {
-        label: 'SCHEDULING GRID UI',
+        label: 'GOOGLE CALENDAR GRID',
         icon: Calendar,
-        accent: 'border-accent/40 bg-accent/5',
-        themeBadge: 'UNIVERSITY SUITE',
+        badge: 'SCHEDULING SUITE',
       };
     } else if (title.includes('ai') || title.includes('neural') || title.includes('mangomate')) {
       return {
-        label: 'NEURAL MATRIX INSPECTOR',
+        label: 'TENSORBOARD NEURAL MATRIX',
         icon: Brain,
-        accent: 'border-accent/40 bg-accent/5',
-        themeBadge: 'AI / MACHINE LEARNING',
+        badge: 'AI / IoT SENSOR',
       };
     } else {
       return {
-        label: 'SOC COMMAND APPLICATION',
+        label: 'KALI LINUX TERMINAL',
         icon: Terminal,
-        accent: 'border-accent/40 bg-accent/5',
-        themeBadge: 'CYBERSECURITY TOOL',
+        badge: 'CYBERSECURITY TOOL',
       };
     }
   };
@@ -69,21 +65,21 @@ export default function Projects({ projects }: ProjectsProps) {
 
   return (
     <section id="projects" className="py-24 px-4 md:px-8 relative z-10 circuit-grid font-mono">
-      <div className="max-w-7xl mx-auto space-y-10 pl-0 lg:pl-16">
+      <div className="max-w-7xl mx-auto space-y-10 pl-0 lg:pl-20">
         
         {/* Section Title Header */}
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-accent font-semibold px-3 py-1 rounded-full bg-accent/10 border border-accent/30">
             <span className="pulse-dot" />
-            // SOFTWARE LAB & VIRTUAL APPLICATIONS
+            // SOFTWARE LAB & DOMAIN APPLICATIONS
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
             PRODUCTION SYSTEMS & <br />
-            <span className="text-gradient">DESKTOP SOFTWARE SHOWCASE</span>
+            <span className="text-gradient">AUTHENTIC DOMAIN SOFTWARE</span>
           </h2>
         </div>
 
-        {/* Projects Desktop Application Grid */}
+        {/* Projects Application Windows Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {projects.map((project) => {
             const personality = getProjectPersonality(project);
@@ -95,14 +91,14 @@ export default function Projects({ projects }: ProjectsProps) {
                 onClick={() => handleProjectClick(project)}
                 className="glass-panel p-0 border-accent/40 bg-[#040705]/95 rounded-2xl overflow-hidden hover:border-accent hover:-translate-y-1 transition-all cursor-pointer group shadow-2xl flex flex-col justify-between"
               >
-                {/* Virtual Desktop Application Window Bar */}
+                {/* Virtual Application Window Bar */}
                 <div className="flex items-center justify-between px-4 py-2.5 bg-[#070c08] border-b border-accent/25 text-xs">
                   <div className="flex items-center gap-2">
                     <AppIcon className="w-4 h-4 text-accent" />
                     <span className="font-bold text-white tracking-wide">{personality.label}</span>
                   </div>
                   <span className="text-[9px] px-2 py-0.5 rounded bg-accent/15 border border-accent/30 text-accent font-extrabold">
-                    {personality.themeBadge}
+                    {personality.badge}
                   </span>
                 </div>
 
@@ -231,13 +227,13 @@ export default function Projects({ projects }: ProjectsProps) {
                 </div>
               </div>
 
-              {/* Security & System Architecture Integrity */}
+              {/* Architecture Integrity */}
               <div className="bg-[#020403] p-4 rounded-xl border border-accent/30 space-y-2 text-xs">
                 <div className="flex items-center gap-2 text-emerald-400 font-bold">
                   <CheckCircle2 className="w-4 h-4" /> PRODUCTION READY ARCHITECTURE
                 </div>
                 <p className="text-gray-400 font-sans text-xs">
-                  Hardened authentication logic, optimized database indexing, responsive client layout, and strict input validation.
+                  Hardened authentication logic, optimized database query indexing, responsive UI layout, and strict input validation.
                 </p>
               </div>
             </div>

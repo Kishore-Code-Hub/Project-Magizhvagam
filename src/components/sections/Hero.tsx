@@ -3,8 +3,7 @@
 import React, { useState } from 'react';
 import Typewriter from '@/components/animation/Typewriter';
 import CyberWorkstation from '@/components/3d/CyberWorkstation';
-import MatrixRain from '@/components/animation/MatrixRain';
-import VolumetricFog from '@/components/animation/VolumetricFog';
+import AtmosphereLayers from '@/components/animation/AtmosphereLayers';
 import SessionBoot from '@/components/animation/SessionBoot';
 import SideDockNav from '@/components/nav/SideDockNav';
 import PerformanceManager from '@/components/ui/PerformanceManager';
@@ -25,23 +24,22 @@ export default function Hero({ profile }: HeroProps) {
       id="hero"
       className="relative min-h-[100dvh] w-full flex items-center justify-center pt-12 pb-8 px-4 md:px-8 circuit-grid overflow-hidden"
     >
-      {/* 1-Time Session BIOS Boot Sequence */}
+      {/* Session-Cached Loader Sequence */}
       {!bootComplete && <SessionBoot onComplete={() => setBootComplete(true)} />}
 
-      {/* 3-Layered Matrix Atmosphere & Volumetric Smoke */}
-      <MatrixRain />
-      <VolumetricFog />
+      {/* 6-Layer Background Atmosphere System */}
+      <AtmosphereLayers />
 
-      {/* Left Vertical Glowing Command Dock Navigation */}
+      {/* Left Operating Command Dock Navigation */}
       <SideDockNav resumeUrl={safeResumeUrl} />
 
-      {/* Floating GPU Performance HUD */}
+      {/* Floating Performance Profile Manager HUD */}
       <PerformanceManager />
 
-      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center z-10 py-6 pl-0 lg:pl-16">
-        {/* Left Column (5 cols / 42%): Intro & Typing Effect */}
+      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center z-10 py-6 pl-0 lg:pl-20">
+        {/* Left Column (5 cols / 42%): Intro & Terminal Typing Loop */}
         <div className="lg:col-span-5 flex flex-col gap-5 text-left">
-          {/* Status Badge */}
+          {/* Status Eyebrow Badge */}
           <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-accent/10 border border-accent/40 w-fit backdrop-blur-md">
             <span className="pulse-dot" />
             <span className="text-[11px] font-mono uppercase tracking-widest text-accent font-bold">
@@ -49,7 +47,7 @@ export default function Hero({ profile }: HeroProps) {
             </span>
           </div>
 
-          {/* Large Title */}
+          {/* Title */}
           <div className="space-y-1 font-mono">
             <h2 className="text-sm sm:text-base text-gray-400 font-medium tracking-wide">
               HELLO, I'M
@@ -71,7 +69,6 @@ export default function Hero({ profile }: HeroProps) {
 
           {/* Action Buttons Row with Neon Outlines */}
           <div className="flex flex-wrap items-center gap-3 pt-2 font-mono">
-            {/* View Projects Button */}
             <a
               href="#projects"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-accent text-accent font-extrabold text-xs hover:bg-accent hover:text-[#050505] shadow-lg shadow-accent/20 transition-all hover:scale-[1.02]"
@@ -80,7 +77,6 @@ export default function Hero({ profile }: HeroProps) {
               <ArrowRight className="w-4 h-4" />
             </a>
 
-            {/* Contact Me Button */}
             <a
               href="#contact"
               className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-accent/60 text-xs font-bold text-white hover:border-accent hover:text-accent transition-all hover:scale-[1.02]"
@@ -89,7 +85,6 @@ export default function Hero({ profile }: HeroProps) {
               <span>CONTACT ME</span>
             </a>
 
-            {/* Resume Button */}
             <a
               href={safeResumeUrl}
               target="_blank"
@@ -100,7 +95,7 @@ export default function Hero({ profile }: HeroProps) {
               <ExternalLink className="w-3.5 h-3.5 text-accent" />
             </a>
 
-            {/* Social Link Pills */}
+            {/* Social Links */}
             <div className="flex items-center gap-2 ml-auto sm:ml-1">
               {profile.socials.github && (
                 <a
@@ -129,13 +124,13 @@ export default function Hero({ profile }: HeroProps) {
           </div>
         </div>
 
-        {/* Right Column (7 cols / 58%): Real 3D Cyber Operations Workstation */}
+        {/* Right Column (7 cols / 58%): Workstation-Dominant Focal Point */}
         <div className="lg:col-span-7 flex justify-center">
           <CyberWorkstation />
         </div>
       </div>
 
-      {/* Bottom Scroll Indicator */}
+      {/* Scroll Down Indicator */}
       <a
         href="#about"
         className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-gray-400 hover:text-accent transition-colors cursor-pointer group z-10 font-mono"

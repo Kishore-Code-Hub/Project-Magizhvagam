@@ -12,8 +12,8 @@ import {
   X,
   Code2,
   CheckCircle2,
-  Terminal,
-  ExternalLink,
+  Layers,
+  Sparkles,
 } from 'lucide-react';
 import { CyberAudio } from '@/lib/CyberAudio';
 import { useTheme } from '@/components/theme/ThemeProvider';
@@ -39,46 +39,46 @@ export default function Skills({ skills }: SkillsProps) {
     const cat = (category || '').toLowerCase();
     if (cat.includes('security')) {
       return {
-        type: 'SHIELD DEFENSE PCB',
+        type: 'SECURITY MODULE PCB',
         icon: Shield,
         badge: 'CYBER DEFENSE',
-        bg: 'border-emerald-500/40 bg-emerald-950/20',
+        accentColor: 'text-emerald-400',
       };
     } else if (cat.includes('infra') || cat.includes('devops') || cat.includes('cloud')) {
       return {
-        type: 'RACK SERVER BLADE',
+        type: 'RACK SERVER CHASSIS',
         icon: Server,
         badge: 'INFRA STRUCTURE',
-        bg: 'border-accent/40 bg-accent/5',
+        accentColor: 'text-accent',
       };
     } else if (cat.includes('ai') || cat.includes('ml')) {
       return {
-        type: 'NEURAL ACCELERATOR NPU',
+        type: 'GPU ACCELERATOR NPU',
         icon: BrainCircuit,
         badge: 'NEURAL ENGINE',
-        bg: 'border-accent/40 bg-accent/5',
+        accentColor: 'text-accent',
       };
     } else if (cat.includes('database') || cat.includes('storage')) {
       return {
-        type: 'NVMe STORAGE MODULE',
+        type: 'SSD CONTROLLER MODULE',
         icon: Database,
         badge: 'DATA STORAGE',
-        bg: 'border-accent/40 bg-accent/5',
+        accentColor: 'text-accent',
       };
     } else if (cat.includes('network')) {
       return {
-        type: 'SWITCH BOARD PCB',
+        type: 'NETWORK SWITCH BOARD',
         icon: Network,
         badge: 'NETWORK HUB',
-        bg: 'border-accent/40 bg-accent/5',
+        accentColor: 'text-accent',
       };
     } else {
       // Default / Languages
       return {
-        type: 'MULTI-CORE CPU',
+        type: 'MOTHERBOARD CPU CHIP',
         icon: Cpu,
         badge: 'COMPUTE MATRIX',
-        bg: 'border-accent/40 bg-accent/5',
+        accentColor: 'text-accent',
       };
     }
   };
@@ -90,17 +90,17 @@ export default function Skills({ skills }: SkillsProps) {
 
   return (
     <section id="skills" className="py-24 px-4 md:px-8 relative z-10 circuit-grid font-mono">
-      <div className="max-w-7xl mx-auto space-y-10 pl-0 lg:pl-16">
+      <div className="max-w-7xl mx-auto space-y-10 pl-0 lg:pl-20">
         
         {/* Section Title Header */}
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-accent font-semibold px-3 py-1 rounded-full bg-accent/10 border border-accent/30">
             <span className="pulse-dot" />
-            // HARDWARE TESTBED & SKILLS LAB
+            // MOTHERBOARD HARDWARE TESTBED
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
             PCB HARDWARE MODULES & <br />
-            <span className="text-gradient">TECHNICAL CAPABILITIES</span>
+            <span className="text-gradient">MOTHERBOARD CAPABILITIES</span>
           </h2>
         </div>
 
@@ -134,7 +134,7 @@ export default function Skills({ skills }: SkillsProps) {
               <div
                 key={skill.id}
                 onClick={() => handleSkillClick(skill)}
-                className="glass-panel p-5 border-accent/40 bg-[#040705]/90 rounded-2xl hover:border-accent hover:-translate-y-1 transition-all cursor-pointer group space-y-4 shadow-xl relative overflow-hidden"
+                className="glass-panel p-5 border-accent/40 bg-[#040705]/95 rounded-2xl hover:border-accent hover:-translate-y-1 transition-all cursor-pointer group space-y-4 shadow-xl relative overflow-hidden"
               >
                 {/* Micro Circuit Lines Header */}
                 <div className="flex items-center justify-between border-b border-accent/20 pb-3">
@@ -147,7 +147,7 @@ export default function Skills({ skills }: SkillsProps) {
                   </span>
                 </div>
 
-                {/* Skill Name & Hardware Pin Aesthetic */}
+                {/* Skill Name & Pin Aesthetic */}
                 <div className="space-y-1">
                   <h3 className="text-lg font-extrabold text-white group-hover:text-accent transition-colors">
                     {skill.name}
@@ -159,12 +159,12 @@ export default function Skills({ skills }: SkillsProps) {
 
                 {/* PCB Copper Pins Visual Indicator */}
                 <div className="flex items-center justify-between border-t border-accent/15 pt-3 text-[10px] text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                    <span>STATUS: ACTIVE</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                    <span>STATUS: HARDWARE ONLINE</span>
                   </div>
                   <span className="text-accent group-hover:underline font-bold text-[9px]">
-                    EXPAND SPEC &gt;
+                    INSPECT SPEC &gt;
                   </span>
                 </div>
               </div>
@@ -173,7 +173,7 @@ export default function Skills({ skills }: SkillsProps) {
         </div>
       </div>
 
-      {/* --- DETAILED HARDWARE SPEC MODAL --- */}
+      {/* --- HARDWARE SPEC SHEET MODAL --- */}
       {selectedSkill && (
         <div className="fixed inset-0 z-50 bg-[#030504]/90 backdrop-blur-md flex items-center justify-center p-4">
           <div className="max-w-xl w-full glass-panel p-6 border-accent/60 bg-[#040805] rounded-2xl space-y-6 shadow-[0_0_60px_rgba(0,255,102,0.25)] relative animate-in fade-in zoom-in-95 duration-200">
@@ -181,7 +181,7 @@ export default function Skills({ skills }: SkillsProps) {
             <div className="flex items-center justify-between border-b border-accent/30 pb-3">
               <div className="flex items-center gap-2 text-accent font-bold text-sm">
                 <Code2 className="w-5 h-5 text-accent" />
-                <span>HARDWARE SPEC SHEET // {selectedSkill.name.toUpperCase()}</span>
+                <span>MOTHERBOARD SPEC SHEET // {selectedSkill.name.toUpperCase()}</span>
               </div>
               <button
                 onClick={() => setSelectedSkill(null)}
@@ -195,7 +195,7 @@ export default function Skills({ skills }: SkillsProps) {
             <div className="space-y-4 text-xs">
               <div className="bg-[#020403] p-4 rounded-xl border border-accent/30 space-y-2">
                 <div className="flex justify-between text-gray-300">
-                  <span className="text-gray-400">MODULE:</span>
+                  <span className="text-gray-400">HARDWARE MODULE:</span>
                   <span className="font-bold text-accent">{selectedSkill.name}</span>
                 </div>
                 <div className="flex justify-between text-gray-300">
@@ -203,19 +203,19 @@ export default function Skills({ skills }: SkillsProps) {
                   <span className="font-bold text-white">{selectedSkill.category}</span>
                 </div>
                 <div className="flex justify-between text-gray-300">
-                  <span className="text-gray-400">PRACTICAL INTEGRATION:</span>
+                  <span className="text-gray-400">SYSTEM INTEGRATION:</span>
                   <span className="font-bold text-emerald-400 flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> PRODUCTION VERIFIED
+                    <CheckCircle2 className="w-3.5 h-3.5" /> PRODUCTION READY
                   </span>
                 </div>
               </div>
 
               <div className="space-y-2 text-gray-300 font-sans text-xs">
                 <h4 className="font-mono text-accent font-bold uppercase text-[11px]">
-                  // TECHNICAL DESCRIPTION & UTILIZATION
+                  // HARDWARE SPECIFICATION & UTILIZATION
                 </h4>
                 <p className="leading-relaxed">
-                  Extensively applied across security tools, backend API architectures, AI integrations, and full-stack software. Demonstrated competence in production projects, automated scripts, and system security testing.
+                  Extensively utilized across security toolings, backend API microservices, AI pipelines, and full-stack software. Hardened in production projects and security audits.
                 </p>
               </div>
             </div>

@@ -16,6 +16,8 @@ import {
   Save,
   CheckCircle2,
   Sliders,
+  Sparkles,
+  Layers,
 } from 'lucide-react';
 
 interface Props {
@@ -36,7 +38,7 @@ export default function AdminDashboardClient({
   auditLogs,
 }: Props) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'overview' | 'profile' | 'projects' | 'messages' | 'audit'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'profile' | 'atmosphere' | 'projects' | 'messages' | 'audit'>('overview');
 
   // Form states
   const [profileForm, setProfileForm] = useState({
@@ -44,6 +46,14 @@ export default function AdminDashboardClient({
     headline: initialProfile?.headline || 'Securing Systems. Building Trust.',
     bio: initialProfile?.bio || '',
     resumeUrl: initialProfile?.resumeUrl || 'https://drive.google.com',
+  });
+
+  const [atmosphereForm, setAtmosphereForm] = useState({
+    matrixOpacity: '0.04',
+    matrixSpeed: '0.35',
+    matrixDensity: 'high',
+    fogDensity: 'medium',
+    performanceMode: 'auto',
   });
 
   const [savingProfile, setSavingProfile] = useState(false);
@@ -128,8 +138,8 @@ export default function AdminDashboardClient({
               <Shield className="w-5 h-5 text-accent" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white uppercase tracking-wider">SOC ADMIN</h2>
-              <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-mono">
+              <h2 className="text-base font-bold text-white uppercase tracking-wider">SOC ADMIN V2</h2>
+              <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-mono font-bold">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent animate-ping" />
                 AUTHENTICATED
               </span>
@@ -140,7 +150,8 @@ export default function AdminDashboardClient({
           <nav className="space-y-1.5">
             {[
               { id: 'overview', label: 'OVERVIEW', icon: LayoutDashboard },
-              { id: 'profile', label: 'PROFILE & COPY', icon: User },
+              { id: 'profile', label: 'PROFILE & HERO', icon: User },
+              { id: 'atmosphere', label: 'ATMOSPHERE & MATRIX', icon: Sliders },
               { id: 'projects', label: 'PROJECTS (CRUD)', icon: FolderGit2 },
               { id: 'messages', label: `MESSAGES (${initialMessages.length})`, icon: Mail },
               { id: 'audit', label: 'AUDIT LOGS', icon: ShieldAlert },
@@ -211,7 +222,7 @@ export default function AdminDashboardClient({
         {activeTab === 'profile' && (
           <div className="space-y-6 max-w-2xl">
             <div>
-              <h1 className="text-2xl font-extrabold text-white">EDIT PROFILE & RESUME LINK</h1>
+              <h1 className="text-2xl font-extrabold text-white">EDIT PROFILE & HERO SETTINGS</h1>
               <p className="text-xs text-gray-400">Update public copy without touching codebase</p>
             </div>
 
@@ -275,7 +286,61 @@ export default function AdminDashboardClient({
           </div>
         )}
 
-        {/* TAB 3: PROJECTS */}
+        {/* TAB 3: ATMOSPHERE & MATRIX */}
+        {activeTab === 'atmosphere' && (
+          <div className="space-y-6 max-w-2xl">
+            <div>
+              <h1 className="text-2xl font-extrabold text-white">ATMOSPHERE & MATRIX SETTINGS</h1>
+              <p className="text-xs text-gray-400">Configure Matrix Rain parameters, volumetric fog, and performance defaults</p>
+            </div>
+
+            <div className="glass-panel p-8 space-y-6 border-accent/30 bg-[#040705]/90 rounded-2xl">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-300">MATRIX OPACITY (0.01 - 0.10)</label>
+                <input
+                  type="text"
+                  value={atmosphereForm.matrixOpacity}
+                  onChange={(e) => setAtmosphereForm({ ...atmosphereForm, matrixOpacity: e.target.value })}
+                  className="w-full px-4 py-3 glass-input text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-300">MATRIX SPEED</label>
+                <input
+                  type="text"
+                  value={atmosphereForm.matrixSpeed}
+                  onChange={(e) => setAtmosphereForm({ ...atmosphereForm, matrixSpeed: e.target.value })}
+                  className="w-full px-4 py-3 glass-input text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-300">PERFORMANCE PROFILE DEFAULT</label>
+                <select
+                  value={atmosphereForm.performanceMode}
+                  onChange={(e) => setAtmosphereForm({ ...atmosphereForm, performanceMode: e.target.value })}
+                  className="w-full px-4 py-3 glass-input text-xs font-mono bg-[#050505]"
+                >
+                  <option value="auto">Auto-Scale (Target 60 FPS)</option>
+                  <option value="high">High Performance (Full Effects)</option>
+                  <option value="medium">Balanced Mode</option>
+                  <option value="low">Low GPU Battery Saver Mode</option>
+                </select>
+              </div>
+
+              <button
+                onClick={() => alert('Atmosphere parameters updated.')}
+                className="px-6 py-3 rounded-xl border border-accent text-accent font-bold text-xs hover:bg-accent hover:text-[#050505] transition-all flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                <span>SAVE ATMOSPHERE SETTINGS</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: PROJECTS */}
         {activeTab === 'projects' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -370,7 +435,7 @@ export default function AdminDashboardClient({
           </div>
         )}
 
-        {/* TAB 4: MESSAGES */}
+        {/* TAB 5: MESSAGES */}
         {activeTab === 'messages' && (
           <div className="space-y-6">
             <div>
@@ -413,7 +478,7 @@ export default function AdminDashboardClient({
           </div>
         )}
 
-        {/* TAB 5: AUDIT LOGS */}
+        {/* TAB 6: AUDIT LOGS */}
         {activeTab === 'audit' && (
           <div className="space-y-6">
             <div>

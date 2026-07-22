@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { TimelineData } from '@/types';
-import { Clock, Radio, Activity, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Clock, ChevronRight, CheckCircle2, Radio } from 'lucide-react';
 import { CyberAudio } from '@/lib/CyberAudio';
 import { useTheme } from '@/components/theme/ThemeProvider';
 
@@ -21,38 +21,38 @@ export default function Timeline({ timeline }: TimelineProps) {
 
   return (
     <section id="timeline" className="py-24 px-4 md:px-8 relative z-10 circuit-grid font-mono">
-      <div className="max-w-7xl mx-auto space-y-12 pl-0 lg:pl-16">
+      <div className="max-w-7xl mx-auto space-y-12 pl-0 lg:pl-20">
         
         {/* Section Header */}
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-accent font-semibold px-3 py-1 rounded-full bg-accent/10 border border-accent/30">
             <span className="pulse-dot" />
-            // INTERACTIVE MISSION LOG & FIBER PIPELINE
+            // FIBER-OPTIC NETWORK PIPELINE
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
             CAREER MILESTONES & <br />
-            <span className="text-gradient">FIBER-OPTIC DATA PACKETS</span>
+            <span className="text-gradient">TRAVELING DATA PACKETS</span>
           </h2>
         </div>
 
         {/* Vertical Fiber Optic Network Cable */}
-        <div className="relative pl-6 sm:pl-10 space-y-8 border-l-2 border-accent/40">
+        <div className="relative pl-6 sm:pl-10 space-y-8 border-l-2 border-accent/50 shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]">
           
           {/* Animated Glowing Packet Traveling Down the Cable */}
-          <div className="absolute top-0 -left-[5px] w-2 h-8 rounded-full bg-accent shadow-[0_0_15px_var(--accent-color)] animate-[pulse_2s_infinite]" />
+          <div className="absolute top-0 -left-[5px] w-2.5 h-10 rounded-full bg-accent shadow-[0_0_20px_var(--accent-color)] animate-[pulse_2s_infinite]" />
 
-          {timeline.map((entry, idx) => {
+          {timeline.map((entry) => {
             const isExpanded = expandedId === entry.id;
 
             return (
               <div key={entry.id} className="relative group">
                 
-                {/* Node Connection Point Dot */}
+                {/* Fiber Optic Node Connection Dot */}
                 <div
                   onClick={() => toggleExpand(entry.id)}
                   className={`absolute -left-[31px] sm:-left-[47px] top-1.5 w-6 h-6 rounded-full border-2 cursor-pointer flex items-center justify-center transition-all ${
                     isExpanded
-                      ? 'bg-accent border-accent text-[#050505] shadow-[0_0_20px_var(--accent-color)]'
+                      ? 'bg-accent border-accent text-[#050505] shadow-[0_0_25px_var(--accent-color)]'
                       : 'bg-[#050505] border-accent/60 text-accent hover:border-accent'
                   }`}
                 >
@@ -72,7 +72,8 @@ export default function Timeline({ timeline }: TimelineProps) {
                       <span className="font-bold text-white uppercase">{entry.category}</span>
                     </div>
                     <span className="text-[10px] text-accent font-bold flex items-center gap-1">
-                      {isExpanded ? 'COLLAPSE NODE' : 'EXPAND NODE'} <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                      {isExpanded ? 'PAUSE & COLLAPSE PACKET' : 'PAUSE & INSPECT PACKET'}{' '}
+                      <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                     </span>
                   </div>
 
@@ -92,10 +93,10 @@ export default function Timeline({ timeline }: TimelineProps) {
                   {isExpanded && (
                     <div className="pt-3 border-t border-accent/20 space-y-2 text-xs animate-in fade-in slide-in-from-top-2 duration-150">
                       <div className="flex items-center gap-2 text-emerald-400 font-bold">
-                        <CheckCircle2 className="w-4 h-4" /> MILESTONE COMPLETED & VERIFIED
+                        <CheckCircle2 className="w-4 h-4" /> PACKET INSPECTION COMPLETE // VERIFIED MILESTONE
                       </div>
                       <p className="text-gray-400 font-sans text-xs">
-                        Logged in the SOC mission archives. Associated repositories, project builds, and credentials indexed.
+                        Logged in the SOC mission archives. Associated code repositories, project builds, and credentials indexed.
                       </p>
                     </div>
                   )}
