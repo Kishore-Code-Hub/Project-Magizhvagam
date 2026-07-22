@@ -1,65 +1,146 @@
-import Image from "next/image";
+import React from 'react';
+import Navbar from '@/components/nav/Navbar';
+import Hero from '@/components/sections/Hero';
+import About from '@/components/sections/About';
+import Skills from '@/components/sections/Skills';
+import Projects from '@/components/sections/Projects';
+import Certifications from '@/components/sections/Certifications';
+import Timeline from '@/components/sections/Timeline';
+import Contact from '@/components/sections/Contact';
+import Footer from '@/components/sections/Footer';
 
-export default function Home() {
+import { db } from '@/lib/db';
+import { seedDatabaseIfEmpty } from '@/lib/seed-db';
+import {
+  INITIAL_PROFILE,
+  INITIAL_PROJECTS,
+  INITIAL_SKILLS,
+  INITIAL_CERTIFICATIONS,
+  INITIAL_TIMELINE,
+} from '@/lib/initial-data';
+import { ProfileData, ProjectData, SkillData, CertificationData, TimelineData } from '@/types';
+
+export const revalidate = 0;
+
+function safeJsonParse<T>(jsonString: string | null | undefined, fallback: T): T {
+  if (!jsonString) return fallback;
+  try {
+    const parsed = JSON.parse(jsonString);
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export default async function HomePage() {
+  // Ensure DB has seed data
+  await seedDatabaseIfEmpty();
+
+  let profile: ProfileData = INITIAL_PROFILE;
+  let skills: SkillData[] = INITIAL_SKILLS;
+  let projects: ProjectData[] = INITIAL_PROJECTS;
+  let certifications: CertificationData[] = INITIAL_CERTIFICATIONS;
+  let timeline: TimelineData[] = INITIAL_TIMELINE;
+
+  try {
+    const dbProfile = await db.profile.findFirst();
+    if (dbProfile) {
+      const parsedTaglines = safeJsonParse<string[]>(dbProfile.taglines, INITIAL_PROFILE.taglines);
+      const parsedSocials = safeJsonParse<any>(dbProfile.socials, INITIAL_PROFILE.socials);
+      const parsedStats = safeJsonParse<any>(dbProfile.stats, INITIAL_PROFILE.stats);
+
+      profile = {
+        id: dbProfile.id ?? 'default',
+        name: dbProfile.name || INITIAL_PROFILE.name,
+        headline: dbProfile.headline || INITIAL_PROFILE.headline,
+        taglines: Array.isArray(parsedTaglines) && parsedTaglines.length > 0 ? parsedTaglines : INITIAL_PROFILE.taglines,
+        bio: dbProfile.bio || INITIAL_PROFILE.bio,
+        resumeUrl: dbProfile.resumeUrl || INITIAL_PROFILE.resumeUrl,
+        socials: {
+          github: parsedSocials?.github || INITIAL_PROFILE.socials.github,
+          linkedin: parsedSocials?.linkedin || INITIAL_PROFILE.socials.linkedin,
+          email: parsedSocials?.email || INITIAL_PROFILE.socials.email,
+        },
+        stats: {
+          yearsLearning: parsedStats?.yearsLearning || INITIAL_PROFILE.stats.yearsLearning,
+          projects: parsedStats?.projects || INITIAL_PROFILE.stats.projects,
+          certifications: parsedStats?.certifications || INITIAL_PROFILE.stats.certifications,
+          curiosity: parsedStats?.curiosity || INITIAL_PROFILE.stats.curiosity,
+        },
+      };
+    }
+
+    const dbSkills = await db.skill.findMany({ orderBy: { order: 'asc' } });
+    if (dbSkills.length > 0) {
+      skills = dbSkills.map((s) => ({
+        id: s.id,
+        name: s.name || 'Skill',
+        category: s.category || 'Languages',
+        icon: s.icon || 'code',
+        order: s.order ?? 0,
+      }));
+    }
+
+    const dbProjects = await db.project.findMany({
+      where: { published: true },
+      orderBy: { order: 'asc' },
+    });
+    if (dbProjects.length > 0) {
+      projects = dbProjects.map((p) => ({
+        id: p.id,
+        title: p.title || 'Untitled Project',
+        description: p.description || '',
+        longDescription: p.longDescription || null,
+        image: p.image || '/images/project-placeholder.svg',
+        tags: safeJsonParse<string[]>(p.tags, []),
+        githubUrl: p.githubUrl || null,
+        liveUrl: p.liveUrl || null,
+        featured: p.featured ?? true,
+        order: p.order ?? 0,
+        published: p.published ?? true,
+      }));
+    }
+
+    const dbCerts = await db.certification.findMany({ orderBy: { order: 'asc' } });
+    if (dbCerts.length > 0) {
+      certifications = dbCerts.map((c) => ({
+        id: c.id,
+        title: c.title || 'Certification',
+        issuer: c.issuer || '',
+        issueDate: c.issueDate || '',
+        credentialUrl: c.credentialUrl || null,
+        logoUrl: c.logoUrl || null,
+        order: c.order ?? 0,
+      }));
+    }
+
+    const dbTimeline = await db.timelineEntry.findMany({ orderBy: { order: 'asc' } });
+    if (dbTimeline.length > 0) {
+      timeline = dbTimeline.map((t) => ({
+        id: t.id,
+        year: t.year || '',
+        title: t.title || '',
+        subtitle: t.subtitle || null,
+        description: t.description || '',
+        category: t.category || 'Education',
+        order: t.order ?? 0,
+      }));
+    }
+  } catch (err) {
+    console.error('Error fetching database records, using fallbacks:', err);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="relative min-h-screen bg-[#08080b] text-[#f5f5f7]">
+      <Navbar resumeUrl={profile.resumeUrl} />
+      <Hero profile={profile} />
+      <About profile={profile} />
+      <Skills skills={skills} />
+      <Projects projects={projects} />
+      <Certifications certifications={certifications} />
+      <Timeline timeline={timeline} />
+      <Contact />
+      <Footer profile={profile} />
+    </main>
   );
 }

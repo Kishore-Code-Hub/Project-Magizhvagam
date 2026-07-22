@@ -1,26 +1,171 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg-main: #08080b;
+    --bg-card: rgba(18, 18, 26, 0.75);
+    --bg-glass: rgba(255, 255, 255, 0.03);
+    
+    --border-accent: rgba(168, 85, 247, 0.38);
+    --border-accent-hover: rgba(168, 85, 247, 0.68);
+    --shadow-accent-glow: 0 0 16px rgba(168, 85, 247, 0.25);
+
+    --primary-violet: #a855f7;
+    --primary-purple: #8b5cf6;
+    --accent-blue: #3b82f6;
+
+    --text-main: #f5f5f7;
+    --text-muted: #9ca3af;
+  }
+
+  html.light {
+    --bg-main: #f8f8fa;
+    --bg-card: rgba(255, 255, 255, 0.85);
+    --bg-glass: rgba(0, 0, 0, 0.03);
+
+    --border-accent: rgba(109, 40, 217, 0.28);
+    --border-accent-hover: rgba(109, 40, 217, 0.62);
+    --shadow-accent-glow: 0 0 16px rgba(109, 40, 217, 0.2);
+
+    --primary-violet: #6d28d9;
+    --primary-purple: #7c3aed;
+    --accent-blue: #2563eb;
+
+    --text-main: #111114;
+    --text-muted: #4b5563;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    transition: background-color 0.4s ease, color 0.4s ease;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Refined Standardized Glass Panel */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-accent);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel:hover {
+  border-color: var(--border-accent-hover);
+  box-shadow: var(--shadow-accent-glow), 0 12px 40px 0 rgba(168, 85, 247, 0.12);
+}
+
+/* Glass Input */
+.glass-input {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-accent);
+  border-radius: 0.75rem;
+  color: var(--text-main);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: var(--border-accent-hover);
+  box-shadow: var(--shadow-accent-glow);
+}
+
+/* Circuit Grid & Aurora Backgrounds */
+.circuit-grid {
+  background-image: 
+    linear-gradient(to right, rgba(168, 85, 247, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(168, 85, 247, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.aurora-blob {
+  position: absolute;
+  filter: blur(120px);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.25;
+  mix-blend-mode: screen;
+  animation: floatAurora 20s ease-in-out infinite alternate;
+}
+
+html.light .aurora-blob {
+  opacity: 0.15;
+  mix-blend-mode: multiply;
+}
+
+.aurora-purple {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.8) 0%, rgba(91, 33, 182, 0.2) 70%);
+}
+
+.aurora-blue {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.7) 0%, rgba(6, 182, 212, 0.2) 70%);
+}
+
+@keyframes floatAurora {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(50px, -40px) scale(1.12); }
+  100% { transform: translate(-40px, 40px) scale(0.92); }
+}
+
+/* Status Dot */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #10b981;
+  animation: pulseDot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Gradient Text Effect */
+.text-gradient {
+  background: linear-gradient(135deg, var(--text-main) 0%, var(--primary-violet) 50%, var(--accent-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, var(--primary-violet) 0%, var(--primary-purple) 50%, var(--accent-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-accent-hover);
+}
+
+/* Reduced Motion Fallback */
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob { animation: none; }
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

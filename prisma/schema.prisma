@@ -1,0 +1,123 @@
+// Prisma Schema for Premium Cybersecurity Portfolio
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  role         String     @default("ADMIN")
+  totpSecret   String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  sessions     Session[]
+}
+
+model Session {
+  id         String    @id @default(cuid())
+  userId     String
+  user       AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  userAgent  String?
+  ipAddress  String?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Profile {
+  id        String   @id @default("default")
+  name      String   @default("Soundkish")
+  headline  String   @default("Securing Systems. Building Trust.")
+  taglines  String   @default("[\"Cybersecurity Enthusiast\", \"AI Developer\", \"Full-Stack Developer\", \"Software Engineer\"]")
+  bio       String   @default("I'm Soundkish, a CSE student passionate about Cybersecurity, AI, and building secure digital solutions for a better tomorrow.")
+  resumeUrl String   @default("https://drive.google.com")
+  socials   String   @default("{\"github\":\"https://github.com\",\"linkedin\":\"https://linkedin.com\",\"email\":\"mailto:contact@soundkish.dev\"}")
+  stats     String   @default("{\"yearsLearning\":\"2+\",\"projects\":\"15+\",\"certifications\":\"10+\",\"curiosity\":\"∞\"}")
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  longDescription String?
+  image           String
+  tags            String   @default("[]") // JSON string array e.g. ["Python", "FastAPI", "AI"]
+  githubUrl       String?
+  liveUrl         String?
+  featured        Boolean  @default(false)
+  order           Int      @default(0)
+  published       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Skill {
+  id        String   @id @default(cuid())
+  name      String
+  category  String   // Languages, Security Tools, Infra/DevOps, AI/ML
+  icon      String   // Icon key or path
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Certification {
+  id            String   @id @default(cuid())
+  title         String
+  issuer        String
+  issueDate     String
+  credentialUrl String?
+  logoUrl       String?
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+
+model TimelineEntry {
+  id          String   @id @default(cuid())
+  year        String
+  title       String
+  subtitle    String?
+  description String
+  category    String   @default("Education") // Education, Project, Milestone, Security
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model Message {
+  id           String    @id @default(cuid())
+  name         String
+  email        String
+  subject      String
+  message      String
+  ipAddress    String?
+  isRead       Boolean   @default(false)
+  repliedAt    DateTime?
+  replyMessage String?
+  createdAt    DateTime  @default(now())
+}
+
+model RateLimitBucket {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  count       Int      @default(1)
+  windowStart DateTime @default(now())
+  expiresAt   DateTime
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  actor     String
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
