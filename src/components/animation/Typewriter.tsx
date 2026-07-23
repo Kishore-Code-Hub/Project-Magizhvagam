@@ -74,9 +74,9 @@ export default function Typewriter({
   const displayedText = (currentWord ?? '').substring(0, subIndex) ?? '';
 
   return (
-    <span className="inline-flex items-center text-accent font-mono font-bold tracking-wider text-xl sm:text-2xl lg:text-3xl">
+    <span className="inline-flex items-center text-accent font-mono font-bold tracking-wider text-xl sm:text-2xl lg:text-3xl whitespace-nowrap overflow-visible">
       <span>&gt; {displayedText}</span>
-      <span className="w-[3px] h-7 bg-accent ml-1.5 animate-pulse" />
+      <span className="w-[3px] h-7 bg-accent ml-1.5 animate-pulse flex-shrink-0" />
     </span>
   );
 }

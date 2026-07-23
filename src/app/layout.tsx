@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import SmoothScroll from '@/components/animation/SmoothScroll';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
-import CustomCursor from '@/components/ui/CustomCursor';
 
 export const metadata: Metadata = {
   title: 'Kishore | Cybersecurity Enthusiast & Full-Stack Engineer',
@@ -61,7 +60,6 @@ export default function RootLayout({
       </head>
       <body className="antialiased min-h-screen bg-[#050505] text-white">
         <ThemeProvider>
-          <CustomCursor />
           <SmoothScroll>{children}</SmoothScroll>
         </ThemeProvider>
       </body>

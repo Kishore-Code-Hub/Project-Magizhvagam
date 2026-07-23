@@ -15,6 +15,7 @@ import {
   Sparkles,
   ArrowRight,
   Terminal,
+  Fingerprint,
 } from 'lucide-react';
 
 interface AboutProps {
@@ -32,38 +33,38 @@ export default function About({ profile }: AboutProps) {
   ];
 
   return (
-    <section id="about" className="py-24 px-4 md:px-8 relative z-10 circuit-grid">
-      <div className="max-w-7xl mx-auto space-y-12 pl-0 lg:pl-16">
+    <section id="about" className="py-24 px-4 md:px-8 relative z-10 circuit-grid font-mono">
+      <div className="max-w-7xl mx-auto space-y-12 pl-0 lg:pl-20">
         
         {/* Section Header */}
-        <div className="space-y-2 font-mono">
+        <div className="space-y-2">
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-accent font-semibold px-3 py-1 rounded-full bg-accent/10 border border-accent/30">
             <span className="pulse-dot" />
-            // SECURITY CLEARANCE TERMINAL
+            // SOC IDENTITY & SECURITY CLEARANCE CONSOLE
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
             BIOMETRIC IDENTITY & <br />
-            <span className="text-gradient">OPERATIVE PROFILE</span>
+            <span className="text-gradient">CLEARANCE STATUS</span>
           </h2>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Airport/SOC Security Clearance Terminal (Left Column: 5 cols) */}
+          {/* Immigration-Style Security Clearance Console (5 cols) */}
           <div className="lg:col-span-5 flex flex-col items-center">
             <div className="relative w-full max-w-md glass-panel p-6 border-accent/50 flex flex-col items-center space-y-5 bg-[#040705]/95 shadow-2xl rounded-2xl overflow-hidden font-mono">
               
-              {/* Clearance Terminal Header */}
+              {/* Terminal Header */}
               <div className="w-full flex items-center justify-between border-b border-accent/25 pb-3 text-xs">
                 <span className="flex items-center gap-2 font-bold text-accent">
-                  <ShieldCheck className="w-4 h-4 text-accent" /> ACCESS LEVEL 5
+                  <ShieldCheck className="w-4 h-4 text-accent" /> CLEARANCE LEVEL 5
                 </span>
                 <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-extrabold animate-pulse">
-                  VERIFIED
+                  IDENTITY VERIFIED
                 </span>
               </div>
 
-              {/* Holographic Face & Fingerprint Scanning Frame */}
+              {/* Holographic Avatar & Fingerprint Scanner Frame */}
               <div className="relative w-48 h-48 rounded-2xl bg-accent/5 border-2 border-accent flex flex-col items-center justify-center shadow-[0_0_35px_rgba(var(--accent-rgb),0.3)] overflow-hidden group">
                 
                 {/* HUD Rotating Scanning Rings */}
@@ -73,14 +74,14 @@ export default function About({ profile }: AboutProps) {
                 {profileImg ? (
                   <img
                     src={profileImg}
-                    alt={profile.name || 'Operative Photo'}
+                    alt={profile.name || 'Operative Avatar'}
                     className="w-full h-full object-cover rounded-xl z-10"
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center text-accent p-4 space-y-2 z-10">
-                    <Scan className="w-16 h-16 animate-pulse" />
+                    <Fingerprint className="w-16 h-16 animate-pulse" />
                     <span className="text-[9px] uppercase tracking-widest font-bold text-accent/90">
-                      OPERATIVE PHOTO
+                      BIOMETRIC SCAN
                     </span>
                   </div>
                 )}
@@ -89,10 +90,10 @@ export default function About({ profile }: AboutProps) {
                 <div className="absolute inset-x-0 h-1 bg-accent/80 shadow-[0_0_15px_var(--accent-color)] top-0 animate-[scanline_3s_ease-in-out_infinite]" />
               </div>
 
-              {/* Security Clearance Details Grid */}
+              {/* Verification Details Grid */}
               <div className="w-full space-y-2 text-xs border-t border-accent/20 pt-4">
                 <div className="flex justify-between items-center text-gray-300">
-                  <span className="text-gray-400 font-medium">NAME:</span>
+                  <span className="text-gray-400 font-medium">OPERATIVE:</span>
                   <span className="font-bold text-white uppercase">{profile.name || 'Kishore Narayanan K'}</span>
                 </div>
 
@@ -100,7 +101,7 @@ export default function About({ profile }: AboutProps) {
                   <span className="text-gray-400 font-medium flex items-center gap-1">
                     <MapPin className="w-3 h-3 text-accent" /> LOCATION:
                   </span>
-                  <span className="font-bold text-accent">INDIA // REMOTE</span>
+                  <span className="font-bold text-accent">INDIA // GLOBAL REMOTE</span>
                 </div>
 
                 <div className="flex justify-between items-center text-gray-300">
@@ -114,15 +115,15 @@ export default function About({ profile }: AboutProps) {
 
                 <div className="flex justify-between items-center text-gray-300">
                   <span className="text-gray-400 font-medium flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-accent" /> FOCUS:
+                    <Sparkles className="w-3 h-3 text-accent" /> INTEGRITY SCORE:
                   </span>
-                  <span className="font-bold text-white">CYBERSECURITY & AI</span>
+                  <span className="font-bold text-white">100% OK // VERIFIED</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Narrative Glass Terminal & Stat Tiles (Right Column: 7 cols) */}
+          {/* Narrative Glass Terminal & Stat Tiles (7 cols) */}
           <div className="lg:col-span-7 space-y-6">
             
             {/* Story Terminal */}
@@ -138,7 +139,7 @@ export default function About({ profile }: AboutProps) {
               </p>
 
               <p className="text-sm sm:text-base text-gray-400 leading-relaxed font-sans">
-                My approach combines defensive security engineering with modern full-stack application development—ensuring every project built is not only fast and intelligent, but hardened against threats.
+                My engineering approach combines defensive security architecture with modern full-stack development—ensuring every system built is fast, scalable, and hardened against vulnerabilities.
               </p>
 
               <div className="pt-2 font-mono">
@@ -146,7 +147,7 @@ export default function About({ profile }: AboutProps) {
                   href="#contact"
                   className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-accent text-accent font-bold text-xs hover:bg-accent hover:text-[#050505] transition-all"
                 >
-                  <span>INITIATE CONTACT</span>
+                  <span>INITIATE TRANSMISSION</span>
                   <ArrowRight className="w-4 h-4" />
                 </a>
               </div>

@@ -1,12 +1,20 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Terminal, Shield, CheckCircle2 } from 'lucide-react';
+import { Terminal, Shield, CheckCircle2, FastForward } from 'lucide-react';
 import { CyberAudio } from '@/lib/CyberAudio';
 
 export default function SessionBoot({ onComplete }: { onComplete: () => void }) {
   const [logs, setLogs] = useState<string[]>([]);
   const [done, setDone] = useState(false);
+
+  const skipBoot = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('soc_session_booted', 'true');
+    }
+    setDone(true);
+    onComplete();
+  };
 
   useEffect(() => {
     // Check if session boot was already shown
@@ -19,17 +27,12 @@ export default function SessionBoot({ onComplete }: { onComplete: () => void }) 
     }
 
     const bootSequence = [
-      '[ BIOS POST v3.6 ] Initializing SOC Hardware Workstation...',
-      '[ MEMORY OK ] 64GB DDR5 ECC RAM Verified',
-      '[ SECURITY ] Secure Boot: ACTIVE | TPM 2.0 Connected',
-      '[ KERNEL ] Loading Linux SOC Kernel v6.8.0-kali1...',
-      '[ MOUNT ] Mounting Encrypted Filesystem /dev/nvme0n1p2...',
-      '[ NETWORK ] Interface eth0 UP - IPv4 192.168.1.1 (ENCRYPTED)',
-      '[ SYSTEM ] Starting Docker Daemon & FastAPI SOC Engines...',
-      '[ PRISMA ] Connecting to Database Instance... OK',
-      '[ AUTH ] Verifying JWT Authorization Subsystem... PASSED',
-      '[ SOC OS ] System Integrity Check: 100% ONLINE',
-      '>> PORTFOLIO WORKSTATION READY. LAUNCHING SOC WORKSTATION...',
+      '[1/6] Initializing SOC Cyber Workspace...',
+      '[2/6] Loading AI Neural Subsystem & Engine...',
+      '[3/6] Fetching 3D Photorealistic Workstation Assets...',
+      '[4/6] Connecting PostgreSQL & Prisma Database...',
+      '[5/6] Decrypting Operative Workspace Credentials...',
+      '[6/6] System Integrity Check: 100% ONLINE. WELCOME BACK.',
     ];
 
     let currentStep = 0;
@@ -47,10 +50,10 @@ export default function SessionBoot({ onComplete }: { onComplete: () => void }) 
             sessionStorage.setItem('soc_session_booted', 'true');
           }
           setDone(true);
-          setTimeout(onComplete, 600);
-        }, 500);
+          setTimeout(onComplete, 500);
+        }, 400);
       }
-    }, 180);
+    }, 450);
 
     return () => clearInterval(interval);
   }, [onComplete]);
@@ -59,16 +62,22 @@ export default function SessionBoot({ onComplete }: { onComplete: () => void }) 
 
   return (
     <div className="fixed inset-0 z-50 bg-[#030504] flex items-center justify-center p-4 font-mono select-none">
-      <div className="max-w-xl w-full glass-panel p-6 border-accent/60 bg-[#050806] space-y-4 shadow-[0_0_60px_rgba(0,255,102,0.25)]">
+      <div className="max-w-xl w-full glass-panel p-6 border-accent/60 bg-[#040705] space-y-5 shadow-[0_0_60px_rgba(0,255,102,0.25)] relative">
         <div className="flex items-center justify-between border-b border-accent/30 pb-3 text-xs font-bold text-accent">
           <span className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-accent animate-pulse" />
-            <span>KISHORE SOC SYSTEM BOOT v3.6</span>
+            <span>KISHORE SOC SYSTEM BOOT v4.0</span>
           </span>
-          <span className="text-[10px] text-gray-400">INITIALIZING...</span>
+          <button
+            onClick={skipBoot}
+            className="flex items-center gap-1 text-[10px] px-2.5 py-1 rounded bg-accent/15 border border-accent/40 text-accent hover:bg-accent hover:text-[#050505] transition-all font-bold"
+          >
+            <FastForward className="w-3 h-3" />
+            <span>SKIP BOOT</span>
+          </button>
         </div>
 
-        <div className="h-64 overflow-y-auto space-y-1.5 text-xs text-emerald-400 font-mono scrollbar-none">
+        <div className="h-60 overflow-y-auto space-y-2 text-xs text-emerald-400 font-mono">
           {logs.map((log, idx) => (
             <div key={idx} className="flex items-start gap-2">
               <span className="text-gray-500 text-[10px]">&gt;</span>

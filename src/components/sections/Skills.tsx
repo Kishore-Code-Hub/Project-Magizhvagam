@@ -42,35 +42,30 @@ export default function Skills({ skills }: SkillsProps) {
         type: 'SECURITY MODULE PCB',
         icon: Shield,
         badge: 'CYBER DEFENSE',
-        accentColor: 'text-emerald-400',
       };
     } else if (cat.includes('infra') || cat.includes('devops') || cat.includes('cloud')) {
       return {
         type: 'RACK SERVER CHASSIS',
         icon: Server,
         badge: 'INFRA STRUCTURE',
-        accentColor: 'text-accent',
       };
     } else if (cat.includes('ai') || cat.includes('ml')) {
       return {
         type: 'GPU ACCELERATOR NPU',
         icon: BrainCircuit,
         badge: 'NEURAL ENGINE',
-        accentColor: 'text-accent',
       };
     } else if (cat.includes('database') || cat.includes('storage')) {
       return {
         type: 'SSD CONTROLLER MODULE',
         icon: Database,
         badge: 'DATA STORAGE',
-        accentColor: 'text-accent',
       };
     } else if (cat.includes('network')) {
       return {
         type: 'NETWORK SWITCH BOARD',
         icon: Network,
         badge: 'NETWORK HUB',
-        accentColor: 'text-accent',
       };
     } else {
       // Default / Languages
@@ -78,7 +73,6 @@ export default function Skills({ skills }: SkillsProps) {
         type: 'MOTHERBOARD CPU CHIP',
         icon: Cpu,
         badge: 'COMPUTE MATRIX',
-        accentColor: 'text-accent',
       };
     }
   };
