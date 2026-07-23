@@ -51,7 +51,7 @@ export default function CyberWorkstation({
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="w-full max-w-xl lg:max-w-2xl flex items-center justify-center perspective-1000 select-none py-2 transition-all duration-700 ease-out animate-in fade-in zoom-in-95 duration-1000"
+      className="w-full max-w-[92vw] sm:max-w-xl lg:max-w-2xl flex items-center justify-center perspective-1000 select-none py-2 transition-all duration-700 ease-out animate-in fade-in zoom-in-95 duration-1000 mx-auto"
     >
       {/* 3D Premium Display Frame with subtle float and hover scale */}
       <div

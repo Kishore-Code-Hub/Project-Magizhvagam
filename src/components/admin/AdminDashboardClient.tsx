@@ -494,32 +494,99 @@ export default function AdminDashboardClient({
           </div>
         )}
 
-        {/* TAB 5: ATMOSPHERE */}
+        {/* TAB 5: ATMOSPHERE & MATRIX TUNNEL ENGINE */}
         {activeTab === 'atmosphere' && (
-          <div className="space-y-6 max-w-2xl">
+          <div className="space-y-6 max-w-3xl">
             <div>
-              <h1 className="text-2xl font-extrabold text-white">ATMOSPHERE & MATRIX SETTINGS</h1>
-              <p className="text-xs text-gray-400">Configure Matrix Rain streams (12-20% opacity binary) and fog</p>
+              <h1 className="text-2xl font-extrabold text-white">WEBGL MATRIX TUNNEL ENGINE CMS</h1>
+              <p className="text-xs text-gray-400">Configure GPU-accelerated 3D Matrix camera flight, presets, and density</p>
             </div>
 
-            <div className="glass-panel p-8 space-y-6 border-accent/30 bg-[#040705]/90 rounded-2xl">
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-300">MATRIX RAIN SPEED</label>
-                <input
-                  type="text"
-                  value={atmosphereForm.matrixSpeed}
-                  onChange={(e) => setAtmosphereForm({ ...atmosphereForm, matrixSpeed: e.target.value })}
-                  className="w-full px-4 py-3 glass-input text-xs font-mono"
-                />
+            <div className="glass-panel p-8 space-y-6 border-accent/30 bg-[#040705]/90 rounded-2xl font-mono text-xs">
+              <div className="space-y-3">
+                <h4 className="font-bold text-accent">// ONE-CLICK VISUAL PRESETS</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {(['Ultra Cinematic', 'Classic Matrix', 'Cyber Tunnel', 'Dark Web', 'Neon Hacker', 'Minimal'] as const).map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => {
+                        const saved = localStorage.getItem('hk_matrix_settings');
+                        const current = saved ? JSON.parse(saved) : {};
+                        const presetData = {
+                          'Ultra Cinematic': { cameraMode: 'Fly Through', characterMode: 'binary', density: 6000, rainSpeed: 1.2, cameraSpeed: 1.5, bloomStrength: 0.6 },
+                          'Classic Matrix': { cameraMode: 'Cinematic', characterMode: 'katakana', density: 4500, rainSpeed: 1.5, cameraSpeed: 0.8, bloomStrength: 0.7 },
+                          'Cyber Tunnel': { cameraMode: 'Aggressive', characterMode: 'cyber', density: 7500, rainSpeed: 2.0, cameraSpeed: 2.5, bloomStrength: 0.85 },
+                          'Dark Web': { cameraMode: 'Fly Through', characterMode: 'hex', density: 5000, rainSpeed: 0.9, cameraSpeed: 1.0, bloomStrength: 0.4 },
+                          'Neon Hacker': { cameraMode: 'Cinematic', characterMode: 'mixed', density: 6500, rainSpeed: 1.8, cameraSpeed: 1.8, bloomStrength: 0.9 },
+                          'Minimal': { cameraMode: 'Static', characterMode: 'binary', density: 2200, rainSpeed: 0.7, cameraSpeed: 0.3, bloomStrength: 0.3 },
+                        }[preset];
+                        localStorage.setItem('hk_matrix_settings', JSON.stringify({ ...current, preset, ...presetData }));
+                        window.dispatchEvent(new Event('storage'));
+                        setHasUnsavedChanges(true);
+                      }}
+                      className="p-3 rounded-xl border border-accent/40 bg-accent/10 hover:bg-accent hover:text-[#050505] text-accent font-bold text-left transition-all"
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <button
-                onClick={() => alert('Atmosphere parameters updated.')}
-                className="px-6 py-3 rounded-xl border border-accent text-accent font-bold text-xs hover:bg-accent hover:text-[#050505] transition-all flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                <span>SAVE ATMOSPHERE SETTINGS</span>
-              </button>
+              <div className="space-y-3 pt-4 border-t border-accent/20">
+                <h4 className="font-bold text-accent">// CHARACTER MODES</h4>
+                <div className="flex flex-wrap gap-2">
+                  {(['binary', 'katakana', 'hex', 'cyber', 'mixed'] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => {
+                        const saved = localStorage.getItem('hk_matrix_settings');
+                        const current = saved ? JSON.parse(saved) : {};
+                        localStorage.setItem('hk_matrix_settings', JSON.stringify({ ...current, characterMode: mode }));
+                        window.dispatchEvent(new Event('storage'));
+                      }}
+                      className="px-3.5 py-2 rounded-xl border border-accent/40 text-accent font-bold uppercase hover:bg-accent/20"
+                    >
+                      {mode}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-4 border-t border-accent/20">
+                <h4 className="font-bold text-accent">// GPU PERFORMANCE LEVEL</h4>
+                <div className="flex flex-wrap gap-2">
+                  {(['Ultra', 'High', 'Medium', 'Low', 'auto'] as const).map((lvl) => (
+                    <button
+                      key={lvl}
+                      type="button"
+                      onClick={() => {
+                        const saved = localStorage.getItem('hk_matrix_settings');
+                        const current = saved ? JSON.parse(saved) : {};
+                        const density = lvl === 'Ultra' ? 8000 : lvl === 'High' ? 6000 : lvl === 'Medium' ? 4500 : 1800;
+                        localStorage.setItem('hk_matrix_settings', JSON.stringify({ ...current, performanceLevel: lvl, density }));
+                        window.dispatchEvent(new Event('storage'));
+                      }}
+                      className="px-3.5 py-2 rounded-xl border border-accent/40 text-accent font-bold uppercase hover:bg-accent/20"
+                    >
+                      {lvl}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-accent/20 flex items-center justify-between">
+                <span className="text-gray-400">Settings automatically persist to local state & session storage.</span>
+                <button
+                  type="button"
+                  onClick={() => alert('Matrix Engine settings saved successfully.')}
+                  className="px-5 py-2.5 rounded-xl border border-accent bg-accent text-[#050505] font-extrabold flex items-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>SAVE PARAMETERS</span>
+                </button>
+              </div>
             </div>
           </div>
         )}

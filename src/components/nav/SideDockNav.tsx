@@ -23,9 +23,13 @@ import { CyberAudio } from '@/lib/CyberAudio';
 
 interface SideDockNavProps {
   resumeUrl?: string;
+  greetingText?: string;
 }
 
-export default function SideDockNav({ resumeUrl = 'https://drive.google.com' }: SideDockNavProps) {
+export default function SideDockNav({
+  resumeUrl = 'https://drive.google.com',
+  greetingText = 'Welcome to my Hackspot',
+}: SideDockNavProps) {
   const { audioMuted, toggleAudio } = useTheme();
   const [activeSection, setActiveSection] = useState('hero');
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -71,15 +75,7 @@ export default function SideDockNav({ resumeUrl = 'https://drive.google.com' }: 
       <aside className="hidden lg:flex fixed left-5 top-1/2 -translate-y-1/2 z-50 flex-col items-start font-mono select-none">
         <div className="w-[70px] hover:w-[260px] glass-panel p-3 rounded-2xl border-accent/50 bg-[#040705]/95 backdrop-blur-2xl flex flex-col gap-2.5 shadow-[0_0_40px_rgba(0,0,0,0.95)] transition-all duration-300 ease-out group/dock overflow-hidden">
           
-          {/* Header OS Identifier */}
-          <div className="flex items-center gap-3.5 px-3 py-2 border-b border-accent/25 text-accent font-bold text-[10px]">
-            <div className="relative flex items-center justify-center flex-shrink-0">
-              <span className="w-2.5 h-2.5 rounded-full bg-accent animate-pulse" />
-            </div>
-            <span className="opacity-0 group-hover/dock:opacity-100 transition-opacity duration-200 whitespace-nowrap uppercase tracking-widest">
-              SOC OPERATING SYSTEM
-            </span>
-          </div>
+          {/* Navigation Items - Starting directly with Home */}
 
           {/* Navigation Items */}
           {dockItems.map((item) => {
@@ -167,10 +163,18 @@ export default function SideDockNav({ resumeUrl = 'https://drive.google.com' }: 
         </div>
       </aside>
 
-      {/* --- MOBILE FLOATING RADIAL MENU --- */}
-      <div className="lg:hidden fixed bottom-5 left-5 z-50 font-mono">
+      {/* --- MOBILE FLOATING MENU (Top-Left Position) --- */}
+      <div className="lg:hidden fixed top-4 left-4 sm:top-5 sm:left-5 z-50 font-mono">
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle Mobile Navigation"
+          className="w-12 h-12 rounded-2xl glass-panel border-accent text-accent flex items-center justify-center shadow-2xl bg-[#050505]/95 backdrop-blur-xl active:scale-95 transition-transform flex-shrink-0"
+        >
+          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+
         {mobileOpen && (
-          <div className="mb-3 glass-panel p-3.5 rounded-2xl border-accent/50 bg-[#040705]/95 backdrop-blur-2xl flex flex-col gap-2 shadow-2xl animate-in slide-in-from-bottom-3 duration-200">
+          <div className="mt-3 glass-panel p-3.5 rounded-2xl border-accent/50 bg-[#040705]/95 backdrop-blur-2xl flex flex-col gap-2 shadow-2xl animate-in slide-in-from-top-3 duration-200 min-w-[200px]">
             {dockItems.map((item) => {
               const IconComp = item.icon;
               const isActive = activeSection === item.id;
@@ -211,13 +215,6 @@ export default function SideDockNav({ resumeUrl = 'https://drive.google.com' }: 
             </div>
           </div>
         )}
-
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="w-13 h-13 rounded-full glass-panel border-accent text-accent flex items-center justify-center shadow-2xl bg-[#050505] active:scale-95 transition-transform"
-        >
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
       </div>
     </>
   );

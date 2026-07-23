@@ -17,7 +17,6 @@ export default function MatrixRain({ config }: { config?: MatrixConfigProps }) {
   useEffect(() => {
     if (!enabled) return;
 
-    // Check prefers-reduced-motion
     if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return;
     }
@@ -28,6 +27,12 @@ export default function MatrixRain({ config }: { config?: MatrixConfigProps }) {
     if (!ctx) return;
 
     let animId: number;
+    let isTabActive = true;
+
+    const handleVisibilityChange = () => {
+      isTabActive = !document.hidden;
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -36,62 +41,103 @@ export default function MatrixRain({ config }: { config?: MatrixConfigProps }) {
     resize();
     window.addEventListener('resize', resize);
 
-    const baseFontSize = config?.fontSize || 16;
-    const colWidth = 22;
-    const colCount = Math.floor(canvas.width / colWidth);
+    // Responsive font base sizes: Mobile (14-18px), Tablet (16-22px), Desktop (18-28px)
+    const getBaseFontSize = () => {
+      const width = window.innerWidth;
+      if (width < 640) return 15;
+      if (width < 1024) return 18;
+      return 22;
+    };
 
-    // Create column objects with independent speeds, delays, lengths, and brightnesses
-    const columns = Array.from({ length: colCount }, (_, i) => ({
-      x: i * colWidth,
-      y: Math.random() * -100,
-      speed: (0.18 + Math.random() * 0.3) * (config?.speed || 1),
-      length: Math.floor(14 + Math.random() * 22),
-      delay: Math.random() * 40,
-      brightness: 0.35 + Math.random() * 0.25, // 35% to 60% opacity for high visibility
-    }));
+    const baseFontSize = config?.fontSize || getBaseFontSize();
+
+    // 3D perspective projection columns (Z-depth 0.2 [far] to 1.5 [near])
+    const count = Math.floor((canvas.width / 24) * (config?.density || 1.2));
+
+    interface RainColumn {
+      x: number;
+      y: number;
+      z: number;
+      speed: number;
+      length: number;
+      chars: string[];
+    }
+
+    const createColumn = (randomY = false): RainColumn => {
+      const length = Math.floor(14 + Math.random() * 20);
+      const chars = Array.from({ length }, (_, idx) => (idx % 2 === 0 ? '1' : '0'));
+      return {
+        x: (Math.random() - 0.5) * canvas.width * 1.4 + canvas.width / 2,
+        y: randomY ? Math.random() * canvas.height : Math.random() * -300 - 50,
+        z: 0.3 + Math.random() * 1.2, // 3D depth scale factor
+        speed: (2 + Math.random() * 3.5) * (config?.speed || 1),
+        length,
+        chars,
+      };
+    };
+
+    const columns: RainColumn[] = Array.from({ length: count }, () => createColumn(true));
 
     const draw = () => {
-      ctx.fillStyle = 'rgba(5, 5, 5, 0.16)';
+      if (!isTabActive) {
+        animId = requestAnimationFrame(draw);
+        return;
+      }
+
+      // Pure dark matte black fade trail
+      ctx.fillStyle = 'rgba(5, 5, 5, 0.22)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.font = `bold ${baseFontSize}px monospace`;
-
-      columns.forEach((col, colIdx) => {
-        if (col.delay > 0) {
-          col.delay--;
-          return;
+      columns.forEach((col) => {
+        // Continuous camera forward movement (scale up Z-depth gradually)
+        col.z += 0.0015;
+        if (col.z > 1.6) {
+          col.z = 0.3; // Seamless recycling to distance
         }
 
-        // Draw character tail with opacity fade and head character glow
-        for (let j = 0; j < col.length; j++) {
-          const charY = col.y - j * baseFontSize;
-          if (charY < 0 || charY > canvas.height) continue;
+        const fontSize = Math.floor(baseFontSize * col.z);
+        ctx.font = `bold ${fontSize}px monospace`;
 
-          const isHead = j === 0;
-          const char = (colIdx + j) % 2 === 0 ? '1' : '0';
+        // Calculate opacity based on Z depth layer
+        // Front (z > 1.1): 0.80 - 1.0, Middle (0.6 - 1.1): 0.45 - 0.65, Back (z < 0.6): 0.20 - 0.40
+        const depthAlpha =
+          col.z > 1.1 ? 0.85 + (col.z - 1.1) * 0.3 : col.z > 0.6 ? 0.45 + (col.z - 0.6) * 0.7 : 0.2 + (col.z - 0.3) * 0.7;
+
+        for (let i = 0; i < col.length; i++) {
+          const charY = col.y - i * fontSize;
+          if (charY < -50 || charY > canvas.height + 50) continue;
+
+          const isHead = i === 0;
 
           if (isHead) {
-            ctx.fillStyle = '#FFFFFF';
+            // Bright white leading head character with green glow
+            ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, depthAlpha * 1.2)})`;
             ctx.shadowColor = '#00FF66';
-            ctx.shadowBlur = 8;
+            ctx.shadowBlur = Math.min(12, Math.floor(10 * col.z));
           } else {
-            const tailFade = 1 - j / col.length;
-            ctx.fillStyle = `rgba(0, 255, 102, ${col.brightness * tailFade})`;
+            // Neon green tail characters with distance fade
+            const tailFade = 1 - i / col.length;
+            ctx.fillStyle = `rgba(0, 255, 102, ${Math.max(0.1, depthAlpha * tailFade)})`;
             ctx.shadowBlur = 0;
           }
 
-          ctx.fillText(char, col.x, charY);
+          // Occasionally flip a binary digit randomly for dynamic movie intro feel
+          if (Math.random() < 0.02) {
+            col.chars[i] = Math.random() > 0.5 ? '1' : '0';
+          }
+
+          ctx.fillText(col.chars[i], col.x, charY);
         }
 
         ctx.shadowBlur = 0;
-        col.y += col.speed * baseFontSize;
+        col.y += col.speed * col.z;
 
-        // Reset column when it leaves screen
-        if (col.y - col.length * baseFontSize > canvas.height) {
-          col.y = 0;
-          col.speed = (0.18 + Math.random() * 0.3) * (config?.speed || 1);
-          col.length = Math.floor(14 + Math.random() * 22);
-          col.brightness = 0.35 + Math.random() * 0.25;
+        // Reset stream when it moves completely off the bottom
+        if (col.y - col.length * fontSize > canvas.height) {
+          col.y = Math.random() * -150;
+          col.x = (Math.random() - 0.5) * canvas.width * 1.4 + canvas.width / 2;
+          col.speed = (2 + Math.random() * 3.5) * (config?.speed || 1);
+          col.z = 0.3 + Math.random() * 1.2;
         }
       });
 
@@ -101,6 +147,7 @@ export default function MatrixRain({ config }: { config?: MatrixConfigProps }) {
     draw();
 
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animId);
     };
@@ -115,3 +162,4 @@ export default function MatrixRain({ config }: { config?: MatrixConfigProps }) {
     />
   );
 }
+
