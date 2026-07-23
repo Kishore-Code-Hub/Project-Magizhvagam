@@ -16,17 +16,35 @@ export function useMatrixSettings() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setSettings((prev) => ({ ...prev, ...parsed }));
+    const loadSettings = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setSettings({
+            ...DEFAULT_SETTINGS,
+            ...parsed,
+            opacity: typeof parsed.opacity === 'number' && parsed.opacity > 0 ? parsed.opacity : DEFAULT_SETTINGS.opacity,
+            enabled: parsed.enabled !== false,
+          });
+        }
+      } catch {
+        setSettings(DEFAULT_SETTINGS);
+      } finally {
+        setIsLoaded(true);
       }
-    } catch {
-      // Fallback to default settings
-    } finally {
-      setIsLoaded(true);
-    }
+    };
+
+    loadSettings();
+
+    const handleStorageChange = () => loadSettings();
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('matrix_settings_change', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('matrix_settings_change', handleStorageChange);
+    };
   }, []);
 
   const updateSettings = (updates: Partial<MatrixSettings>) => {
@@ -34,6 +52,7 @@ export function useMatrixSettings() {
       const next = { ...prev, ...updates };
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        window.dispatchEvent(new Event('matrix_settings_change'));
       } catch {
         // LocalStorage save ignore error
       }

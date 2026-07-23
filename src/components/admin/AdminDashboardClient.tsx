@@ -24,6 +24,7 @@ import {
   Activity,
   FileText,
 } from 'lucide-react';
+import { useMatrixSettings } from '@/components/background/hooks/useMatrixSettings';
 
 interface Props {
   session: { email: string };
@@ -43,6 +44,7 @@ export default function AdminDashboardClient({
   auditLogs,
 }: Props) {
   const router = useRouter();
+  const { settings: matrixSettings, updateSettings: updateMatrixSettings } = useMatrixSettings();
   const [activeTab, setActiveTab] = useState<
     'overview' | 'media' | 'profile' | 'atmosphere' | 'presets' | 'projects' | 'messages' | 'seo' | 'audit'
   >('overview');
@@ -494,38 +496,41 @@ export default function AdminDashboardClient({
           </div>
         )}
 
-        {/* TAB 5: ATMOSPHERE & MATRIX TUNNEL ENGINE */}
+        {/* TAB 5: ATMOSPHERE & MATRIX APPEARANCE CONTROL PANEL */}
         {activeTab === 'atmosphere' && (
-          <div className="space-y-6 max-w-3xl">
+          <div className="space-y-6 max-w-4xl">
             <div>
-              <h1 className="text-2xl font-extrabold text-white">WEBGL MATRIX TUNNEL ENGINE CMS</h1>
-              <p className="text-xs text-gray-400">Configure GPU-accelerated 3D Matrix camera flight, presets, and density</p>
+              <h1 className="text-2xl font-extrabold text-white">MATRIX ENGINE APPEARANCE CMS</h1>
+              <p className="text-xs text-gray-400">Fine-tune real-time digital rain density, stream spacing, layer opacity, and neon glow parameters</p>
             </div>
 
-            <div className="glass-panel p-8 space-y-6 border-accent/30 bg-[#040705]/90 rounded-2xl font-mono text-xs">
+            <div className="glass-panel p-8 space-y-8 border-accent/30 bg-[#040705]/90 rounded-2xl font-mono text-xs">
+              
+              {/* Presets Grid */}
               <div className="space-y-3">
-                <h4 className="font-bold text-accent">// ONE-CLICK VISUAL PRESETS</h4>
+                <h4 className="font-bold text-accent">// VISUAL STYLE PRESETS</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                   {(['Ultra Cinematic', 'Classic Matrix', 'Cyber Tunnel', 'Dark Web', 'Neon Hacker', 'Minimal'] as const).map((preset) => (
                     <button
                       key={preset}
                       type="button"
                       onClick={() => {
-                        const saved = localStorage.getItem('hk_matrix_settings');
-                        const current = saved ? JSON.parse(saved) : {};
                         const presetData = {
-                          'Ultra Cinematic': { cameraMode: 'Fly Through', characterMode: 'binary', density: 6000, rainSpeed: 1.2, cameraSpeed: 1.5, bloomStrength: 0.6 },
-                          'Classic Matrix': { cameraMode: 'Cinematic', characterMode: 'katakana', density: 4500, rainSpeed: 1.5, cameraSpeed: 0.8, bloomStrength: 0.7 },
-                          'Cyber Tunnel': { cameraMode: 'Aggressive', characterMode: 'cyber', density: 7500, rainSpeed: 2.0, cameraSpeed: 2.5, bloomStrength: 0.85 },
-                          'Dark Web': { cameraMode: 'Fly Through', characterMode: 'hex', density: 5000, rainSpeed: 0.9, cameraSpeed: 1.0, bloomStrength: 0.4 },
-                          'Neon Hacker': { cameraMode: 'Cinematic', characterMode: 'mixed', density: 6500, rainSpeed: 1.8, cameraSpeed: 1.8, bloomStrength: 0.9 },
-                          'Minimal': { cameraMode: 'Static', characterMode: 'binary', density: 2200, rainSpeed: 0.7, cameraSpeed: 0.3, bloomStrength: 0.3 },
+                          'Ultra Cinematic': { preset, characterMode: 'binary', opacity: 0.9, columnSpacing: 32, density: 45, fontSize: 16, rainSpeed: 1.2, glowStrength: 8, trailLength: 24, characterBrightness: 1.1, backgroundDarkness: 0.18 },
+                          'Classic Matrix': { preset, characterMode: 'katakana', opacity: 0.85, columnSpacing: 28, density: 55, fontSize: 18, rainSpeed: 1.4, glowStrength: 10, trailLength: 26, characterBrightness: 1.0, backgroundDarkness: 0.22 },
+                          'Cyber Tunnel': { preset, characterMode: 'cyber', opacity: 0.95, columnSpacing: 24, density: 65, fontSize: 15, rainSpeed: 2.0, glowStrength: 12, trailLength: 30, characterBrightness: 1.2, backgroundDarkness: 0.15 },
+                          'Dark Web': { preset, characterMode: 'hex', opacity: 0.7, columnSpacing: 40, density: 35, fontSize: 14, rainSpeed: 0.9, glowStrength: 4, trailLength: 18, characterBrightness: 0.8, backgroundDarkness: 0.25 },
+                          'Neon Hacker': { preset, characterMode: 'mixed', opacity: 0.9, columnSpacing: 30, density: 50, fontSize: 17, rainSpeed: 1.6, glowStrength: 14, trailLength: 25, characterBrightness: 1.3, backgroundDarkness: 0.16 },
+                          'Minimal': { preset, characterMode: 'binary', opacity: 0.5, columnSpacing: 48, density: 25, fontSize: 15, rainSpeed: 0.7, glowStrength: 3, trailLength: 14, characterBrightness: 0.7, backgroundDarkness: 0.3 },
                         }[preset];
-                        localStorage.setItem('hk_matrix_settings', JSON.stringify({ ...current, preset, ...presetData }));
-                        window.dispatchEvent(new Event('storage'));
+                        updateMatrixSettings(presetData as any);
                         setHasUnsavedChanges(true);
                       }}
-                      className="p-3 rounded-xl border border-accent/40 bg-accent/10 hover:bg-accent hover:text-[#050505] text-accent font-bold text-left transition-all"
+                      className={`p-3 rounded-xl border font-bold text-left transition-all ${
+                        matrixSettings.preset === preset
+                          ? 'border-accent bg-accent text-[#050505] shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]'
+                          : 'border-accent/40 bg-accent/10 hover:bg-accent/20 text-accent'
+                      }`}
                     >
                       {preset}
                     </button>
@@ -533,20 +538,23 @@ export default function AdminDashboardClient({
                 </div>
               </div>
 
+              {/* Character Mode Selection */}
               <div className="space-y-3 pt-4 border-t border-accent/20">
-                <h4 className="font-bold text-accent">// CHARACTER MODES</h4>
+                <h4 className="font-bold text-accent">// CHARACTER SET MODE</h4>
                 <div className="flex flex-wrap gap-2">
                   {(['binary', 'katakana', 'hex', 'cyber', 'mixed'] as const).map((mode) => (
                     <button
                       key={mode}
                       type="button"
                       onClick={() => {
-                        const saved = localStorage.getItem('hk_matrix_settings');
-                        const current = saved ? JSON.parse(saved) : {};
-                        localStorage.setItem('hk_matrix_settings', JSON.stringify({ ...current, characterMode: mode }));
-                        window.dispatchEvent(new Event('storage'));
+                        updateMatrixSettings({ characterMode: mode });
+                        setHasUnsavedChanges(true);
                       }}
-                      className="px-3.5 py-2 rounded-xl border border-accent/40 text-accent font-bold uppercase hover:bg-accent/20"
+                      className={`px-4 py-2 rounded-xl border font-bold uppercase transition-all ${
+                        matrixSettings.characterMode === mode
+                          ? 'border-accent bg-accent text-[#050505]'
+                          : 'border-accent/40 text-accent hover:bg-accent/20'
+                      }`}
                     >
                       {mode}
                     </button>
@@ -554,37 +562,185 @@ export default function AdminDashboardClient({
                 </div>
               </div>
 
-              <div className="space-y-3 pt-4 border-t border-accent/20">
-                <h4 className="font-bold text-accent">// GPU PERFORMANCE LEVEL</h4>
-                <div className="flex flex-wrap gap-2">
-                  {(['Ultra', 'High', 'Medium', 'Low', 'auto'] as const).map((lvl) => (
-                    <button
-                      key={lvl}
-                      type="button"
-                      onClick={() => {
-                        const saved = localStorage.getItem('hk_matrix_settings');
-                        const current = saved ? JSON.parse(saved) : {};
-                        const density = lvl === 'Ultra' ? 8000 : lvl === 'High' ? 6000 : lvl === 'Medium' ? 4500 : 1800;
-                        localStorage.setItem('hk_matrix_settings', JSON.stringify({ ...current, performanceLevel: lvl, density }));
-                        window.dispatchEvent(new Event('storage'));
-                      }}
-                      className="px-3.5 py-2 rounded-xl border border-accent/40 text-accent font-bold uppercase hover:bg-accent/20"
-                    >
-                      {lvl}
-                    </button>
-                  ))}
+              {/* 10 Real-Time Interactive Fine-Tuning Sliders */}
+              <div className="space-y-5 pt-4 border-t border-accent/20">
+                <h4 className="font-bold text-accent">// REAL-TIME ENGINE PARAMETERS</h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  
+                  {/* Slider 1: Matrix Opacity */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <label className="text-gray-300 font-bold">1. MATRIX OPACITY</label>
+                      <span className="text-accent font-bold">{Math.round((matrixSettings.opacity ?? 0.85) * 100)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={Math.round((matrixSettings.opacity ?? 0.85) * 100)}
+                      onChange={(e) => updateMatrixSettings({ opacity: Number(e.target.value) / 100 })}
+                      className="w-full accent-emerald-400 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Slider 2: Column Spacing */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <label className="text-gray-300 font-bold">2. COLUMN SPACING (LANE GAP)</label>
+                      <span className="text-accent font-bold">{matrixSettings.columnSpacing ?? 32}px</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="16"
+                      max="64"
+                      value={matrixSettings.columnSpacing ?? 32}
+                      onChange={(e) => updateMatrixSettings({ columnSpacing: Number(e.target.value) })}
+                      className="w-full accent-emerald-400 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Slider 3: Column Density */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <label className="text-gray-300 font-bold">3. COLUMN DENSITY</label>
+                      <span className="text-accent font-bold">{matrixSettings.density ?? 45}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="10"
+                      max="90"
+                      value={matrixSettings.density ?? 45}
+                      onChange={(e) => updateMatrixSettings({ density: Number(e.target.value) })}
+                      className="w-full accent-emerald-400 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Slider 4: Character Size */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <label className="text-gray-300 font-bold">4. CHARACTER SIZE</label>
+                      <span className="text-accent font-bold">{matrixSettings.fontSize ?? 16}px</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="10"
+                      max="32"
+                      value={matrixSettings.fontSize ?? 16}
+                      onChange={(e) => updateMatrixSettings({ fontSize: Number(e.target.value) })}
+                      className="w-full accent-emerald-400 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Slider 5: Character Fall Speed */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <label className="text-gray-300 font-bold">5. FALL SPEED</label>
+                      <span className="text-accent font-bold">{(matrixSettings.rainSpeed ?? 1.2).toFixed(1)}x</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="2"
+                      max="30"
+                      value={Math.round((matrixSettings.rainSpeed ?? 1.2) * 10)}
+                      onChange={(e) => updateMatrixSettings({ rainSpeed: Number(e.target.value) / 10 })}
+                      className="w-full accent-emerald-400 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Slider 6: Glow Strength */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <label className="text-gray-300 font-bold">6. GLOW STRENGTH (SHADOW BLUR)</label>
+                      <span className="text-accent font-bold">{matrixSettings.glowStrength ?? 6}px</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="24"
+                      value={matrixSettings.glowStrength ?? 6}
+                      onChange={(e) => updateMatrixSettings({ glowStrength: Number(e.target.value) })}
+                      className="w-full accent-emerald-400 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Slider 7: Trail Length */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <label className="text-gray-300 font-bold">7. TRAIL LENGTH</label>
+                      <span className="text-accent font-bold">{matrixSettings.trailLength ?? 22} chars</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="8"
+                      max="40"
+                      value={matrixSettings.trailLength ?? 22}
+                      onChange={(e) => updateMatrixSettings({ trailLength: Number(e.target.value) })}
+                      className="w-full accent-emerald-400 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Slider 8: Character Brightness */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <label className="text-gray-300 font-bold">8. CHARACTER BRIGHTNESS</label>
+                      <span className="text-accent font-bold">{Math.round((matrixSettings.characterBrightness ?? 1.0) * 100)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="50"
+                      max="150"
+                      value={Math.round((matrixSettings.characterBrightness ?? 1.0) * 100)}
+                      onChange={(e) => updateMatrixSettings({ characterBrightness: Number(e.target.value) / 100 })}
+                      className="w-full accent-emerald-400 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Slider 9: Random Seed */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <label className="text-gray-300 font-bold">9. RANDOM SEED</label>
+                      <span className="text-accent font-bold">#{matrixSettings.randomSeed ?? 42}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="100"
+                      value={matrixSettings.randomSeed ?? 42}
+                      onChange={(e) => updateMatrixSettings({ randomSeed: Number(e.target.value) })}
+                      className="w-full accent-emerald-400 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Slider 10: Background Darkness */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <label className="text-gray-300 font-bold">10. BACKGROUND DARKNESS (TRAIL FADE)</label>
+                      <span className="text-accent font-bold">{Math.round((matrixSettings.backgroundDarkness ?? 0.18) * 100)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="5"
+                      max="40"
+                      value={Math.round((matrixSettings.backgroundDarkness ?? 0.18) * 100)}
+                      onChange={(e) => updateMatrixSettings({ backgroundDarkness: Number(e.target.value) / 100 })}
+                      className="w-full accent-emerald-400 cursor-pointer"
+                    />
+                  </div>
+
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-accent/20 flex items-center justify-between">
-                <span className="text-gray-400">Settings automatically persist to local state & session storage.</span>
+              {/* Action Save Bar */}
+              <div className="pt-4 border-t border-accent/20 flex flex-wrap items-center justify-between gap-4">
+                <span className="text-gray-400">⚡ Settings update live in real-time and persist automatically to state.</span>
                 <button
                   type="button"
-                  onClick={() => alert('Matrix Engine settings saved successfully.')}
-                  className="px-5 py-2.5 rounded-xl border border-accent bg-accent text-[#050505] font-extrabold flex items-center gap-2"
+                  onClick={() => alert('Matrix Appearance parameters saved successfully.')}
+                  className="px-6 py-2.5 rounded-xl border border-accent bg-accent text-[#050505] font-extrabold flex items-center gap-2 hover:bg-accent/90 transition-all"
                 >
                   <Save className="w-4 h-4" />
-                  <span>SAVE PARAMETERS</span>
+                  <span>SAVE MATRIX PARAMETERS</span>
                 </button>
               </div>
             </div>

@@ -11,19 +11,27 @@ export interface MatrixSettings {
   cameraMode: CameraMode;
   performanceLevel: PerformanceLevel;
   characterMode: CharacterMode;
-  density: number;          // Instance count e.g. 1800 to 8000
-  rainSpeed: number;        // Stream velocity
-  cameraSpeed: number;      // Forward camera Z velocity
-  cameraDepth: number;      // Tunnel Z-depth max distance
-  characterScale: number;
-  characterSpacing: number;
-  bloomStrength: number;
+  opacity: number;            // 0.0 to 1.0 (Default 0.85)
+  columnSpacing: number;      // Distance between stream columns in px (Default 32)
+  density: number;            // Column density multiplier or count (Default 45)
+  fontSize: number;           // Font size in px (Default 16)
+  rainSpeed: number;          // Fall speed multiplier (Default 1.2)
+  glowStrength: number;       // Shadow blur intensity in px (Default 6)
+  trailLength: number;        // Number of trailing characters (Default 22)
+  characterBrightness: number;// Brightness scale 0.5 to 1.5 (Default 1.0)
+  randomSeed: number;         // Seed factor for generation (Default 42)
+  backgroundDarkness: number; // Trail fade opacity 0.05 to 0.5 (Default 0.18)
+  bloomStrength: number;      // Glow scale (Default 0.6)
   bloomThreshold: number;
   glowIntensity: number;
   fogDensity: number;
   fogColor: string;
-  backgroundColor: string;  // Default #020202
-  cameraFOV: number;        // Default 60
+  backgroundColor: string;    // Default #020202
+  cameraFOV: number;
+  cameraSpeed: number;
+  cameraDepth: number;
+  characterScale: number;
+  characterSpacing: number;
   cameraDrift: boolean;
   autoPerformance: boolean;
 }
@@ -39,68 +47,86 @@ export const PRESETS: Record<MatrixPreset, Partial<MatrixSettings>> = {
   'Ultra Cinematic': {
     cameraMode: 'Fly Through',
     characterMode: 'binary',
-    density: 6000,
+    opacity: 0.9,
+    columnSpacing: 32,
+    density: 50,
+    fontSize: 16,
     rainSpeed: 1.2,
-    cameraSpeed: 1.5,
+    glowStrength: 8,
+    trailLength: 24,
+    characterBrightness: 1.1,
+    backgroundDarkness: 0.18,
     bloomStrength: 0.6,
-    fogDensity: 0.0012,
-    backgroundColor: '#020202',
-    cameraDrift: true,
   },
   'Classic Matrix': {
     cameraMode: 'Cinematic',
     characterMode: 'katakana',
-    density: 4500,
-    rainSpeed: 1.5,
-    cameraSpeed: 0.8,
+    opacity: 0.85,
+    columnSpacing: 28,
+    density: 60,
+    fontSize: 18,
+    rainSpeed: 1.4,
+    glowStrength: 10,
+    trailLength: 26,
+    characterBrightness: 1.0,
+    backgroundDarkness: 0.22,
     bloomStrength: 0.7,
-    fogDensity: 0.0018,
-    backgroundColor: '#020402',
-    cameraDrift: true,
   },
   'Cyber Tunnel': {
     cameraMode: 'Aggressive',
     characterMode: 'cyber',
-    density: 7500,
+    opacity: 0.95,
+    columnSpacing: 24,
+    density: 70,
+    fontSize: 15,
     rainSpeed: 2.0,
-    cameraSpeed: 2.5,
+    glowStrength: 12,
+    trailLength: 30,
+    characterBrightness: 1.2,
+    backgroundDarkness: 0.15,
     bloomStrength: 0.85,
-    fogDensity: 0.001,
-    backgroundColor: '#010302',
-    cameraDrift: true,
   },
   'Dark Web': {
     cameraMode: 'Fly Through',
     characterMode: 'hex',
-    density: 5000,
+    opacity: 0.7,
+    columnSpacing: 40,
+    density: 35,
+    fontSize: 14,
     rainSpeed: 0.9,
-    cameraSpeed: 1.0,
+    glowStrength: 4,
+    trailLength: 18,
+    characterBrightness: 0.8,
+    backgroundDarkness: 0.25,
     bloomStrength: 0.4,
-    fogDensity: 0.0022,
-    backgroundColor: '#010101',
-    cameraDrift: false,
   },
   'Neon Hacker': {
     cameraMode: 'Cinematic',
     characterMode: 'mixed',
-    density: 6500,
-    rainSpeed: 1.8,
-    cameraSpeed: 1.8,
+    opacity: 0.9,
+    columnSpacing: 30,
+    density: 55,
+    fontSize: 17,
+    rainSpeed: 1.6,
+    glowStrength: 14,
+    trailLength: 25,
+    characterBrightness: 1.3,
+    backgroundDarkness: 0.16,
     bloomStrength: 0.9,
-    fogDensity: 0.0014,
-    backgroundColor: '#020503',
-    cameraDrift: true,
   },
   Minimal: {
     cameraMode: 'Static',
     characterMode: 'binary',
-    density: 2200,
+    opacity: 0.5,
+    columnSpacing: 48,
+    density: 25,
+    fontSize: 15,
     rainSpeed: 0.7,
-    cameraSpeed: 0.3,
+    glowStrength: 3,
+    trailLength: 14,
+    characterBrightness: 0.7,
+    backgroundDarkness: 0.3,
     bloomStrength: 0.3,
-    fogDensity: 0.0025,
-    backgroundColor: '#050505',
-    cameraDrift: false,
   },
 };
 
@@ -110,12 +136,16 @@ export const DEFAULT_SETTINGS: MatrixSettings = {
   cameraMode: 'Fly Through',
   performanceLevel: 'auto',
   characterMode: 'binary',
-  density: 6000,
+  opacity: 0.85,
+  columnSpacing: 32,
+  density: 45,
+  fontSize: 16,
   rainSpeed: 1.2,
-  cameraSpeed: 1.5,
-  cameraDepth: 2500,
-  characterScale: 1.0,
-  characterSpacing: 1.2,
+  glowStrength: 6,
+  trailLength: 22,
+  characterBrightness: 1.0,
+  randomSeed: 42,
+  backgroundDarkness: 0.18,
   bloomStrength: 0.6,
   bloomThreshold: 0.4,
   glowIntensity: 0.8,
@@ -123,6 +153,10 @@ export const DEFAULT_SETTINGS: MatrixSettings = {
   fogColor: '#001a08',
   backgroundColor: '#020202',
   cameraFOV: 60,
+  cameraSpeed: 1.5,
+  cameraDepth: 2500,
+  characterScale: 1.0,
+  characterSpacing: 1.2,
   cameraDrift: true,
   autoPerformance: true,
 };

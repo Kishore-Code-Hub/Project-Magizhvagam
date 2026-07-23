@@ -27,16 +27,13 @@ export default function Hero({ profile }: HeroProps) {
   return (
     <section
       id="hero"
-      className="relative min-h-[100dvh] w-full flex items-center justify-center pt-14 sm:pt-16 md:pt-20 pb-12 md:pb-20 px-4 sm:px-8 md:px-12 bg-[#050505] overflow-hidden"
+      className="relative min-h-[100dvh] w-full flex items-center justify-center pt-14 sm:pt-16 md:pt-20 pb-12 md:pb-20 px-4 sm:px-8 md:px-12 bg-transparent overflow-hidden"
     >
       {/* Session-Cached 5-Second SOC Preloader */}
       {!bootComplete && <SessionBoot onComplete={() => setBootComplete(true)} />}
 
       {/* VS Code Style Command Palette Overlay */}
       <CommandPalette />
-
-      {/* 6-Layer Atmospheric Background System */}
-      <AtmosphereLayers />
 
       {/* Left Operating Command Dock Navigation */}
       <SideDockNav resumeUrl={safeResumeUrl} greetingText={greetingText} />

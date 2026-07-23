@@ -130,7 +130,7 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="relative min-h-screen bg-[#050505] text-[#f5f5f7]">
+    <main className="relative min-h-screen bg-transparent text-[#f5f5f7]">
       <Hero profile={profile} />
       <About profile={profile} />
       <Skills skills={skills} />

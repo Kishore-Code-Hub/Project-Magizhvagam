@@ -6,10 +6,12 @@ import MatrixEngine from '@/components/background/MatrixEngine';
 export default function AtmosphereLayers() {
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {/* GPU Accelerated WebGL Cyber Matrix Tunnel Engine Backdrop */}
+      {/* Full-Page Matrix Backdrop Engine */}
       <MatrixEngine />
     </div>
   );
 }
+
+
 
 

@@ -35,6 +35,8 @@ export const metadata: Metadata = {
   },
 };
 
+import AtmosphereLayers from '@/components/animation/AtmosphereLayers';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -58,7 +60,8 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="antialiased min-h-screen bg-[#050505] text-white">
+      <body className="antialiased min-h-screen bg-[#050505] text-white relative">
+        <AtmosphereLayers />
         <ThemeProvider>
           <SmoothScroll>{children}</SmoothScroll>
         </ThemeProvider>
