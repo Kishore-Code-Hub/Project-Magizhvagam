@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Typewriter from '@/components/animation/Typewriter';
 import CyberWorkstation from '@/components/3d/CyberWorkstation';
-import AtmosphereLayers from '@/components/animation/AtmosphereLayers';
 import SessionBoot from '@/components/animation/SessionBoot';
 import SideDockNav from '@/components/nav/SideDockNav';
 import PerformanceManager from '@/components/ui/PerformanceManager';
@@ -17,20 +16,21 @@ interface HeroProps {
 }
 
 export default function Hero({ profile }: HeroProps) {
-  const [bootComplete, setBootComplete] = useState(false);
   const safeResumeUrl = profile.resumeUrl || 'https://drive.google.com';
 
   // Read hero image and greeting settings if stored in profile.stats
   const heroImage = (profile.stats as any)?.heroImage || '/Hero-section-banner.jfif';
   const greetingText = (profile.stats as any)?.greeting || 'Welcome to my Hackspot';
 
+  console.log('[Hero] Rendering Hero section containing <SessionBoot />');
+
   return (
     <section
       id="hero"
       className="relative min-h-[100dvh] w-full flex items-center justify-center pt-14 sm:pt-16 md:pt-20 pb-12 md:pb-20 px-4 sm:px-8 md:px-12 bg-transparent overflow-hidden"
     >
-      {/* Session-Cached 5-Second SOC Preloader */}
-      {!bootComplete && <SessionBoot onComplete={() => setBootComplete(true)} />}
+      {/* Cinematic Cyber Operations Center Access Sequence */}
+      <SessionBoot />
 
       {/* VS Code Style Command Palette Overlay */}
       <CommandPalette />
