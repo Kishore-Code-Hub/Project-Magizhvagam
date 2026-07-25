@@ -106,40 +106,8 @@ export default function AdminAppearancePage() {
         {/* Sliders & Parameters */}
         <GlassCard variant="default" className="space-y-4">
           <h4 className="text-sm font-bold text-white uppercase mb-2 flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-[var(--accent-color)]" /> Canvas & Matrix Parameters
+            <Sliders className="w-4 h-4 text-[var(--accent-color)]" /> Theme Glass & Radius Settings
           </h4>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">
-                MATRIX RAIN SPEED ({settings.matrixSpeed}x)
-              </label>
-              <input
-                type="range"
-                min="0.2"
-                max="3.0"
-                step="0.1"
-                value={settings.matrixSpeed}
-                onChange={(e) => setSettings({ ...settings, matrixSpeed: parseFloat(e.target.value) })}
-                className="w-full accent-[var(--accent-color)]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">
-                MATRIX RAIN DENSITY ({settings.matrixDensity}x)
-              </label>
-              <input
-                type="range"
-                min="0.2"
-                max="2.0"
-                step="0.1"
-                value={settings.matrixDensity}
-                onChange={(e) => setSettings({ ...settings, matrixDensity: parseFloat(e.target.value) })}
-                className="w-full accent-[var(--accent-color)]"
-              />
-            </div>
-          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

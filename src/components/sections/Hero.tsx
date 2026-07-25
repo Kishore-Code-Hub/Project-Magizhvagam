@@ -44,7 +44,7 @@ export default function Hero({ profile }: HeroProps) {
       <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-14 xl:gap-20 items-center z-10 pl-0 lg:pl-16">
         
         {/* Mobile View Stacking Order: Text Content FIRST (order-1), Hero Banner SECOND (order-2) */}
-        <div className="order-1 md:order-1 lg:order-1 lg:col-span-5 flex flex-col justify-center text-left max-w-[720px] w-full space-y-4 sm:space-y-5 md:space-y-6">
+        <div className="order-1 md:order-1 lg:order-1 lg:col-span-5 flex flex-col justify-center text-left max-w-[720px] w-full p-6 sm:p-8 rounded-[24px] bg-[rgba(10,12,14,0.38)] backdrop-blur-[24px] border border-[rgba(0,255,120,0.12)] shadow-[0_30px_80px_rgba(0,255,100,0.08)] space-y-4 sm:space-y-5 md:space-y-6">
           {/* Plain Text Greeting - Centered on Mobile, Left-aligned on Desktop (No Pill/Border/Background) */}
           <div className="w-full text-center md:text-left font-mono text-sm sm:text-base tracking-wide text-accent/90 font-medium select-none animate-in fade-in duration-700 mt-2 md:mt-0">
             {greetingText}

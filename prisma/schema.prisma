@@ -140,7 +140,18 @@ model Message {
   subject      String
   message      String
   ipAddress    String?
+  userAgent    String?
+  country      String?
+  city         String?
+  browser      String?
+  os           String?
+  device       String?
+  screenRes    String?
+  timezone     String?
+  submittedUrl String?
   isRead       Boolean   @default(false)
+  isStarred    Boolean   @default(false)
+  isArchived   Boolean   @default(false)
   repliedAt    DateTime?
   replyMessage String?
   createdAt    DateTime  @default(now())
@@ -204,6 +215,38 @@ model RateLimitBucket {
   count       Int      @default(1)
   windowStart DateTime @default(now())
   expiresAt   DateTime
+}
+
+model SMTPSettings {
+  id               String   @id @default("default")
+  smtpHost         String   @default("smtp.gmail.com")
+  smtpPort         Int      @default(587)
+  smtpUser         String   @default("")
+  encryptedSmtpPass String  @default("")
+  senderEmail      String   @default("noreply@soundkish.dev")
+  recipientEmail   String   @default("admin@soundkish.dev")
+  enabled          Boolean  @default(false)
+  notifyMode       String   @default("FIRST_VISIT") // EVERY_VISIT, FIRST_VISIT, DAILY_SUMMARY, DISABLED
+  updatedAt        DateTime @updatedAt
+}
+
+model VisitorSession {
+  id               String   @id @default(cuid())
+  ipAddress        String
+  country          String?  @default("Unknown")
+  city             String?  @default("Unknown")
+  browser          String?  @default("Unknown")
+  os               String?  @default("Unknown")
+  deviceType       String?  @default("Desktop")
+  screenResolution String?  @default("1920x1080")
+  language         String?  @default("en-US")
+  timezone         String?  @default("UTC")
+  referrer         String?  @default("Direct")
+  visitedUrl       String   @default("/")
+  visitCount       Int      @default(1)
+  firstVisit       DateTime @default(now())
+  lastVisit        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model AuditLog {

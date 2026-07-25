@@ -29,6 +29,10 @@ export default function Skills({ skills = [] }: SkillsProps) {
         return matchesCategory && matchesSearch;
       })
       .sort((a, b) => {
+        if (a.featured !== b.featured) return a.featured ? -1 : 1;
+        const orderA = (a as any).order ?? 0;
+        const orderB = (b as any).order ?? 0;
+        if (orderA !== orderB) return orderA - orderB;
         if (sortBy === 'proficiency') return b.proficiency - a.proficiency;
         if (sortBy === 'experience') return b.yearsExperience - a.yearsExperience;
         return a.name.localeCompare(b.name);

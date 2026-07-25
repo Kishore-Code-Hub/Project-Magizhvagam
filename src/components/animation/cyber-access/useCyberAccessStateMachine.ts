@@ -40,6 +40,14 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // Check prefers-reduced-motion media query for accessibility
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      console.log('[Phase 1 FSM] prefers-reduced-motion active -> skipping sequence');
+      markComplete();
+      return;
+    }
+
     setIsMobile(window.innerWidth < 768);
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -64,7 +72,7 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
     console.log(`[Phase 1 FSM] Current State: ${state}`);
   }, [state]);
 
-  // FSM Step Transitions (Phase 1: TRACE -> AUTHORIZE -> COMPLETE)
+  // FSM Step Transitions (TRACE 2200ms -> AUTHORIZE 700ms -> COMPLETE)
   useEffect(() => {
     if (state === 'IDLE' || state === 'COMPLETE') return;
 
@@ -72,19 +80,19 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
 
     switch (state) {
       case 'TRACE':
-        // Auto-advance to AUTHORIZE after 2000ms if user doesn't click
+        // Auto-advance to AUTHORIZE after 2200ms if user doesn't click
         timerRef.current = setTimeout(() => {
           console.log('[Phase 1 FSM] TRACE timeout reached -> AUTHORIZE');
           setState('AUTHORIZE');
-        }, 2000);
+        }, 2200);
         break;
 
       case 'AUTHORIZE':
-        // Pause 1000ms before finishing Phase 1
+        // Pause 700ms before finishing Phase 1
         timerRef.current = setTimeout(() => {
           console.log('[Phase 1 FSM] AUTHORIZE completed -> markComplete');
           markComplete();
-        }, 1000);
+        }, 700);
         break;
 
       default:

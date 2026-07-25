@@ -6,6 +6,7 @@ import { Shield, ShieldAlert, Key, Lock, UserCheck } from 'lucide-react';
 
 export default function AdminSecurityPage() {
   const [data, setData] = useState<any | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
   useEffect(() => {
     fetch('/api/admin/security')
@@ -13,6 +14,17 @@ export default function AdminSecurityPage() {
       .then((d) => setData(d))
       .catch((err) => console.error(err));
   }, []);
+
+  const categories = ['ALL', 'ADMIN_ACTIONS', 'FAILED_LOGINS', 'MATRIX_EDITS', 'MEDIA_UPLOADS'];
+
+  const filteredLogs = data?.auditLogs?.filter((log: any) => {
+    if (selectedCategory === 'ALL') return true;
+    if (selectedCategory === 'ADMIN_ACTIONS') return log.action?.includes('UPDATE') || log.action?.includes('CREATE');
+    if (selectedCategory === 'FAILED_LOGINS') return log.action?.includes('LOGIN_FAILED') || log.action?.includes('AUTH_ERROR');
+    if (selectedCategory === 'MATRIX_EDITS') return log.action?.includes('MATRIX') || log.action?.includes('APPEARANCE');
+    if (selectedCategory === 'MEDIA_UPLOADS') return log.action?.includes('UPLOAD') || log.action?.includes('MEDIA');
+    return true;
+  });
 
   return (
     <div className="space-y-8 font-mono text-left max-w-5xl">
@@ -45,20 +57,44 @@ export default function AdminSecurityPage() {
       </GlassCard>
 
       <GlassCard variant="default">
-        <h4 className="text-sm font-bold text-white uppercase mb-4 flex items-center gap-2">
-          <Lock className="w-4 h-4 text-amber-400" /> System Audit Logs
-        </h4>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+          <h4 className="text-sm font-bold text-white uppercase flex items-center gap-2">
+            <Lock className="w-4 h-4 text-amber-400" /> System Audit Logs
+          </h4>
+
+          {/* Audit Category Filter Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-2.5 py-1 text-[10px] font-mono rounded-lg border transition-all cursor-pointer whitespace-nowrap ${
+                  selectedCategory === cat
+                    ? 'bg-[var(--accent-color)] text-black font-bold border-[var(--accent-color)]'
+                    : 'bg-white/5 text-gray-400 border-white/10 hover:text-white'
+                }`}
+              >
+                {cat.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="space-y-2 max-h-96 overflow-y-auto no-scrollbar">
-          {data?.auditLogs?.map((log: any) => (
-            <div key={log.id} className="p-3 rounded-lg bg-black/40 border border-white/5 text-xs flex items-center justify-between">
-              <div>
-                <span className="font-bold text-[var(--accent-color)]">{log.action}</span>
-                <span className="text-gray-400 ml-2">by {log.actor}</span>
-                {log.details && <p className="text-[10px] text-gray-500 truncate max-w-md">{log.details}</p>}
+          {filteredLogs?.length > 0 ? (
+            filteredLogs.map((log: any) => (
+              <div key={log.id} className="p-3 rounded-lg bg-black/40 border border-white/5 text-xs flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-[var(--accent-color)]">{log.action}</span>
+                  <span className="text-gray-400 ml-2">by {log.actor}</span>
+                  {log.details && <p className="text-[10px] text-gray-500 truncate max-w-md">{log.details}</p>}
+                </div>
+                <span className="text-[10px] text-gray-500">{new Date(log.createdAt).toLocaleString()}</span>
               </div>
-              <span className="text-[10px] text-gray-500">{new Date(log.createdAt).toLocaleString()}</span>
-            </div>
-          ))}
+            ))
+          ) : (
+            <div className="p-6 text-center text-xs text-gray-500">No matching audit logs found for this filter.</div>
+          )}
         </div>
       </GlassCard>
     </div>

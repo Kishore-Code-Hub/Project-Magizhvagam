@@ -13,6 +13,12 @@ export async function GET() {
     const projectClicks = await db.analyticsLog.count({ where: { eventType: 'PROJECT_CLICK' } });
     const resumeDownloads = await db.analyticsLog.count({ where: { eventType: 'RESUME_DOWNLOAD' } });
     const messagesCount = await db.message.count();
+    const uniqueVisitors = await db.visitorSession.count();
+
+    const recentSessions = await db.visitorSession.findMany({
+      orderBy: { lastVisit: 'desc' },
+      take: 30,
+    });
 
     const recentLogs = await db.analyticsLog.findMany({
       orderBy: { createdAt: 'desc' },
@@ -22,10 +28,12 @@ export async function GET() {
     return NextResponse.json({
       summary: {
         totalViews,
+        uniqueVisitors,
         projectClicks,
         resumeDownloads,
         messagesCount,
       },
+      sessions: recentSessions,
       logs: recentLogs,
     });
   } catch (error: any) {

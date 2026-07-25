@@ -235,15 +235,29 @@ export default function AdminSkillsPage() {
             <FileUploader category="icons" onUploadComplete={(url) => setFormData({ ...formData, officialLogo: url })} />
           </div>
 
-          <div className="flex items-center gap-2 pt-2">
-            <input
-              type="checkbox"
-              id="featured"
-              checked={formData.featured}
-              onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-              className="accent-[var(--accent-color)]"
-            />
-            <label htmlFor="featured" className="text-xs text-gray-300">Feature on top grid</label>
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="featured"
+                checked={formData.featured}
+                onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                className="accent-[var(--accent-color)] w-4 h-4 cursor-pointer"
+              />
+              <label htmlFor="featured" className="text-xs text-gray-300 font-bold cursor-pointer">
+                Feature on Top Grid
+              </label>
+            </div>
+
+            <div>
+              <label className="block text-[10px] text-gray-400 mb-1">MANUAL DISPLAY ORDER</label>
+              <input
+                type="number"
+                value={formData.order}
+                onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                className="w-full px-3 py-1.5 text-xs font-mono rounded-lg bg-black/40 border border-white/10 text-white"
+              />
+            </div>
           </div>
 
           <GlowButton type="submit" variant="primary" className="w-full" leftIcon={<Save className="w-4 h-4" />}>

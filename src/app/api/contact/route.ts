@@ -36,6 +36,8 @@ export async function POST(req: NextRequest) {
       data: {
         ...validatedData,
         ipAddress,
+        userAgent: req.headers.get('user-agent') || undefined,
+        country: req.headers.get('cf-ipcountry') || undefined,
       },
     });
 
@@ -47,6 +49,44 @@ export async function POST(req: NextRequest) {
         path: '/#contact',
       },
     });
+
+    // Automated SMTP Email Notification Dispatch
+    try {
+      const smtp = await db.sMTPSettings.findUnique({ where: { id: 'default' } });
+      if (smtp && smtp.enabled && smtp.smtpUser) {
+        const { decryptText } = await import('@/lib/crypto');
+        const nodemailer = (await import('nodemailer')).default;
+        const decryptedPass = decryptText(smtp.encryptedSmtpPass);
+
+        const transporter = nodemailer.createTransport({
+          host: smtp.smtpHost,
+          port: smtp.smtpPort,
+          secure: smtp.smtpPort === 465,
+          auth: { user: smtp.smtpUser, pass: decryptedPass },
+        });
+
+        await transporter.sendMail({
+          from: `"${validatedData.name}" <${smtp.senderEmail}>`,
+          to: smtp.recipientEmail,
+          replyTo: validatedData.email,
+          subject: `📩 New Contact Form Message: ${validatedData.subject}`,
+          html: `
+            <div style="font-family: monospace; background: #050505; color: #ffffff; padding: 24px; border-radius: 16px; border: 1px solid #00ff66;">
+              <h2 style="color: #00ff66;">[NEW PORTFOLIO INQUIRY]</h2>
+              <p><strong>Name:</strong> ${validatedData.name}</p>
+              <p><strong>Email:</strong> ${validatedData.email}</p>
+              <p><strong>Subject:</strong> ${validatedData.subject}</p>
+              <hr style="border-color: rgba(255,255,255,0.1);" />
+              <p style="white-space: pre-wrap; color: #dddddd;">${validatedData.message}</p>
+              <hr style="border-color: rgba(255,255,255,0.1);" />
+              <p style="font-size: 11px; color: #888888;">IP: ${ipAddress} | Date: ${new Date().toISOString()}</p>
+            </div>
+          `,
+        });
+      }
+    } catch (mailErr) {
+      console.error('Contact email dispatch failed:', mailErr);
+    }
 
     return NextResponse.json({ success: true, id: savedMessage.id }, { status: 201 });
   } catch (error: any) {

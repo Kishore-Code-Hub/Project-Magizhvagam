@@ -26,20 +26,25 @@ export default function AdminAnalyticsPage() {
       </div>
 
       {data?.summary && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <GlassCard variant="glow">
             <div className="text-xs text-gray-400 font-bold mb-1">TOTAL VIEWS</div>
             <div className="text-3xl font-extrabold text-[var(--accent-color)]">{data.summary.totalViews}</div>
           </GlassCard>
 
           <GlassCard variant="glow">
-            <div className="text-xs text-gray-400 font-bold mb-1">PROJECT INTERACTION</div>
-            <div className="text-3xl font-extrabold text-cyan-400">{data.summary.projectClicks}</div>
+            <div className="text-xs text-gray-400 font-bold mb-1">UNIQUE VISITORS</div>
+            <div className="text-3xl font-extrabold text-cyan-400">{data.summary.uniqueVisitors || 0}</div>
+          </GlassCard>
+
+          <GlassCard variant="glow">
+            <div className="text-xs text-gray-400 font-bold mb-1">PROJECT CLICKS</div>
+            <div className="text-3xl font-extrabold text-amber-400">{data.summary.projectClicks}</div>
           </GlassCard>
 
           <GlassCard variant="glow">
             <div className="text-xs text-gray-400 font-bold mb-1">RESUME DOWNLOADS</div>
-            <div className="text-3xl font-extrabold text-amber-400">{data.summary.resumeDownloads}</div>
+            <div className="text-3xl font-extrabold text-purple-400">{data.summary.resumeDownloads}</div>
           </GlassCard>
 
           <GlassCard variant="glow">
@@ -49,9 +54,50 @@ export default function AdminAnalyticsPage() {
         </div>
       )}
 
+      {/* Visitor Sessions Telemetry Table */}
       <GlassCard variant="default">
-        <h4 className="text-sm font-bold text-white uppercase mb-4">Recent Event Logs</h4>
-        <div className="space-y-2 max-h-96 overflow-y-auto no-scrollbar">
+        <h4 className="text-sm font-bold text-white uppercase mb-3 flex items-center gap-2">
+          <Eye className="w-4 h-4 text-cyan-400" /> Active Visitor Sessions (Debounced)
+        </h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs font-mono border-collapse">
+            <thead>
+              <tr className="border-b border-white/10 text-gray-400">
+                <th className="pb-2">IP Address</th>
+                <th className="pb-2">Location</th>
+                <th className="pb-2">OS / Browser</th>
+                <th className="pb-2">Device</th>
+                <th className="pb-2 text-center">Visits</th>
+                <th className="pb-2 text-right">Last Active</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {data?.sessions?.length > 0 ? (
+                data.sessions.map((s: any) => (
+                  <tr key={s.id} className="hover:bg-white/5">
+                    <td className="py-2 text-emerald-400 font-bold">{s.ipAddress}</td>
+                    <td className="py-2 text-gray-300">{s.city !== 'Unknown' ? `${s.city}, ${s.country}` : s.country}</td>
+                    <td className="py-2 text-gray-400">{s.os} / {s.browser}</td>
+                    <td className="py-2 text-gray-400">{s.deviceType} ({s.screenResolution})</td>
+                    <td className="py-2 text-center text-cyan-400 font-bold">{s.visitCount}</td>
+                    <td className="py-2 text-right text-gray-500">{new Date(s.lastVisit).toLocaleTimeString()}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="py-4 text-center text-gray-500">No active visitor sessions recorded yet.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </GlassCard>
+
+      <GlassCard variant="default">
+        <h4 className="text-sm font-bold text-white uppercase mb-4 flex items-center gap-2">
+          <MousePointerClick className="w-4 h-4 text-[var(--accent-color)]" /> Event Telemetry Feed
+        </h4>
+        <div className="space-y-2 max-h-80 overflow-y-auto no-scrollbar">
           {data?.logs?.map((log: any) => (
             <div key={log.id} className="flex items-center justify-between p-3 rounded-lg bg-black/40 border border-white/5 text-xs">
               <div className="flex items-center gap-2">
