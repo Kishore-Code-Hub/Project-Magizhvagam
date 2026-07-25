@@ -15,7 +15,7 @@ export const INITIAL_PROFILE: ProfileData = {
   socials: {
     github: 'https://github.com',
     linkedin: 'https://linkedin.com',
-    email: 'mailto:contact@soundkish.dev',
+    email: 'mailto:kishorenarayanankarthikeyan@gmail.com',
   },
   stats: {
     yearsLearning: '2+',

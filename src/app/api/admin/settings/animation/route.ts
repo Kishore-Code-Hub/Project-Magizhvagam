@@ -17,6 +17,9 @@ export async function GET() {
       repeatScrollReveal: settings?.repeatScrollReveal ?? false,
       waitForCriticalAssets: (settings as any)?.waitForCriticalAssets ?? true,
       fadeDuration: (settings as any)?.fadeDuration ?? 0.7,
+      accessGrantedHoldTime: settings?.accessGrantedHoldTime ?? 2.0,
+      bootMsgOffsetX: settings?.bootMsgOffsetX ?? 0,
+      bootMsgOffsetY: settings?.bootMsgOffsetY ?? -40,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -40,6 +43,9 @@ export async function POST(req: NextRequest) {
         repeatScrollReveal: Boolean(body.repeatScrollReveal),
         waitForCriticalAssets: Boolean(body.waitForCriticalAssets),
         fadeDuration: parseFloat(body.fadeDuration) || 0.7,
+        accessGrantedHoldTime: parseFloat(body.accessGrantedHoldTime) || 2.0,
+        bootMsgOffsetX: parseInt(body.bootMsgOffsetX) || 0,
+        bootMsgOffsetY: parseInt(body.bootMsgOffsetY) ?? -40,
       },
       create: {
         id: 'default',
@@ -50,6 +56,9 @@ export async function POST(req: NextRequest) {
         repeatScrollReveal: Boolean(body.repeatScrollReveal),
         waitForCriticalAssets: Boolean(body.waitForCriticalAssets),
         fadeDuration: parseFloat(body.fadeDuration) || 0.7,
+        accessGrantedHoldTime: parseFloat(body.accessGrantedHoldTime) || 2.0,
+        bootMsgOffsetX: parseInt(body.bootMsgOffsetX) || 0,
+        bootMsgOffsetY: parseInt(body.bootMsgOffsetY) ?? -40,
       },
     });
 

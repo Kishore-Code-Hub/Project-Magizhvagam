@@ -23,6 +23,22 @@ function SequenceInner({ onComplete }: CyberAccessSequenceProps) {
     skipSequence,
   } = useCyberAccessStateMachine(onComplete);
 
+  const [msgOffset, setMsgOffset] = React.useState({ x: 0, y: -40 });
+
+  React.useEffect(() => {
+    fetch('/api/appearance')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          setMsgOffset({
+            x: typeof data.bootMsgOffsetX === 'number' ? data.bootMsgOffsetX : 0,
+            y: typeof data.bootMsgOffsetY === 'number' ? data.bootMsgOffsetY : -40,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Keyboard shortcut listener: ESC to skip
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -83,7 +99,12 @@ function SequenceInner({ onComplete }: CyberAccessSequenceProps) {
         {(state === 'DISSOLVE' || state === 'BEAM' || state === 'RING') && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-full h-1 bg-[#00f0ff] shadow-[0_0_50px_#00f0ff] animate-pulse" />
-            <div className="absolute font-mono text-2xl font-extrabold text-[#00ff66] tracking-[0.3em] uppercase animate-ping">
+            <div 
+              className="absolute font-mono text-2xl font-extrabold text-[#00ff66] tracking-[0.3em] uppercase animate-ping"
+              style={{
+                transform: `translate(${msgOffset.x}px, ${msgOffset.y}px)`,
+              }}
+            >
               ACCESS GRANTED // INITIALIZING SYSTEM
             </div>
           </div>

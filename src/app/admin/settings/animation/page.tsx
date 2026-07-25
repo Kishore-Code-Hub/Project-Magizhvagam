@@ -14,6 +14,9 @@ export default function AdminAnimationSettingsPage() {
     repeatScrollReveal: false,
     waitForCriticalAssets: true,
     fadeDuration: 0.7,
+    accessGrantedHoldTime: 2.0,
+    bootMsgOffsetX: 0,
+    bootMsgOffsetY: -40,
   });
 
   const [loading, setLoading] = useState(true);
@@ -35,6 +38,9 @@ export default function AdminAnimationSettingsPage() {
             repeatScrollReveal: data.repeatScrollReveal ?? false,
             waitForCriticalAssets: data.waitForCriticalAssets ?? true,
             fadeDuration: data.fadeDuration ?? 0.7,
+            accessGrantedHoldTime: data.accessGrantedHoldTime ?? 2.0,
+            bootMsgOffsetX: data.bootMsgOffsetX ?? 0,
+            bootMsgOffsetY: data.bootMsgOffsetY ?? -40,
           });
         }
       })
@@ -147,6 +153,70 @@ export default function AdminAnimationSettingsPage() {
               <span>5s (Default)</span>
               <span>10s</span>
               <span>15s (Cinematic)</span>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-white/10 space-y-4">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold text-emerald-400 uppercase">
+                  Access Granted Hold Time ({formData.accessGrantedHoldTime.toFixed(1)} seconds)
+                </label>
+                <span className="text-xs text-emerald-400 font-bold">{formData.accessGrantedHoldTime.toFixed(1)}s</span>
+              </div>
+              <input
+                type="range"
+                min="0.5"
+                max="10.0"
+                step="0.5"
+                value={formData.accessGrantedHoldTime}
+                onChange={(e) => handleFieldChange('accessGrantedHoldTime', parseFloat(e.target.value))}
+                className="w-full accent-emerald-400 cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                <span>0.5s</span>
+                <span>2.0s (Default)</span>
+                <span>5s</span>
+                <span>10.0s</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-cyan-400 uppercase">
+                    Message Horizontal Offset ({formData.bootMsgOffsetX}px)
+                  </label>
+                  <span className="text-xs text-cyan-400 font-bold">{formData.bootMsgOffsetX}px</span>
+                </div>
+                <input
+                  type="range"
+                  min="-200"
+                  max="200"
+                  step="5"
+                  value={formData.bootMsgOffsetX}
+                  onChange={(e) => handleFieldChange('bootMsgOffsetX', parseInt(e.target.value))}
+                  className="w-full accent-cyan-400 cursor-pointer"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-amber-400 uppercase">
+                    Message Vertical Offset ({formData.bootMsgOffsetY}px)
+                  </label>
+                  <span className="text-xs text-amber-400 font-bold">{formData.bootMsgOffsetY}px</span>
+                </div>
+                <input
+                  type="range"
+                  min="-200"
+                  max="200"
+                  step="5"
+                  value={formData.bootMsgOffsetY}
+                  onChange={(e) => handleFieldChange('bootMsgOffsetY', parseInt(e.target.value))}
+                  className="w-full accent-amber-400 cursor-pointer"
+                />
+              </div>
             </div>
           </div>
 

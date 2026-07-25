@@ -47,7 +47,7 @@ model Profile {
   availability          String   @default("Open to Internships & Software Engineering Roles")
   languages             String   @default("[\"English\", \"Tamil\"]")
   resumeUrl             String   @default("https://drive.google.com")
-  socials               String   @default("{\"github\":\"https://github.com\",\"linkedin\":\"https://linkedin.com\",\"email\":\"mailto:contact@soundkish.dev\",\"leetcode\":\"https://leetcode.com\",\"tryhackme\":\"https://tryhackme.com\",\"hackthebox\":\"https://hackthebox.com\"}")
+  socials               String   @default("{\"github\":\"https://github.com\",\"linkedin\":\"https://linkedin.com\",\"email\":\"mailto:kishorenarayanankarthikeyan@gmail.com\",\"leetcode\":\"https://leetcode.com\",\"tryhackme\":\"https://tryhackme.com\",\"hackthebox\":\"https://hackthebox.com\"}")
   stats                 String   @default("{\"yearsLearning\":\"2+\",\"projects\":\"15+\",\"certifications\":\"10+\",\"curiosity\":\"∞\"}")
   aboutModules          String   @default("{\"showEducation\":true,\"showFocus\":true,\"showRoadmap\":true,\"showSpecializations\":true,\"showStats\":true}")
   academicDegree        String   @default("{\"degree\":\"B.E. Computer Science & Engineering\",\"college\":\"SRM Valliammai Engineering College\",\"year\":\"2024 – 2028\",\"status\":\"Active\"}")
@@ -184,6 +184,9 @@ model AppearanceSettings {
   repeatScrollReveal Boolean @default(false)
   waitForCriticalAssets Boolean @default(true)
   fadeDuration  Float    @default(0.7) // in seconds
+  accessGrantedHoldTime Float @default(2.0) // in seconds (0.5 to 10.0)
+  bootMsgOffsetX Int      @default(0) // in px (-200 to 200)
+  bootMsgOffsetY Int      @default(-40) // in px (-200 to 200)
   updatedAt     DateTime @updatedAt
 }
 

@@ -23,6 +23,7 @@ import {
   Compass,
   MapPin,
   Briefcase,
+  User,
   Rocket,
   CheckCircle2,
   ArrowRight,
@@ -104,42 +105,42 @@ export default function About({ profile }: AboutProps) {
   const focusChips = profile.focusChips && profile.focusChips.length > 0
     ? profile.focusChips
     : [
-        '✓ Cybersecurity',
-        '✓ AI & Neural Nets',
-        '✓ Backend Systems',
-        '✓ Cloud Infrastructure',
-        '✓ DevOps & Containers',
-        '✓ Network Security',
-      ];
+      '✓ Cybersecurity',
+      '✓ AI & Neural Nets',
+      '✓ Backend Systems',
+      '✓ Cloud Infrastructure',
+      '✓ DevOps & Containers',
+      '✓ Network Security',
+    ];
 
   const careerRoadmap = profile.careerRoadmap && profile.careerRoadmap.length > 0
     ? profile.careerRoadmap
     : [
-        { year: '2024', title: 'Started CSE Engineering', description: 'Foundation in computer science & security principles', iconName: 'GraduationCap', colorToken: 'emerald' },
-        { year: '2025', title: 'Full Stack & Security Projects', description: 'Building web systems and pentesting labs', iconName: 'Code2', colorToken: 'cyan' },
-        { year: '2026', title: 'AI + Cyber Threat Detection', description: 'Advanced machine learning for network intrusion', iconName: 'Cpu', colorToken: 'amber' },
-        { year: 'Goal', title: 'Security Software Engineer', description: 'Production engineering and defense-in-depth', iconName: 'ShieldCheck', colorToken: 'rose' },
-      ];
+      { year: '2024', title: 'Started CSE Engineering', description: 'Foundation in computer science & security principles', iconName: 'GraduationCap', colorToken: 'emerald' },
+      { year: '2025', title: 'Full Stack & Security Projects', description: 'Building web systems and pentesting labs', iconName: 'Code2', colorToken: 'cyan' },
+      { year: '2026', title: 'AI + Cyber Threat Detection', description: 'Advanced machine learning for network intrusion', iconName: 'Cpu', colorToken: 'amber' },
+      { year: 'Goal', title: 'Security Software Engineer', description: 'Production engineering and defense-in-depth', iconName: 'ShieldCheck', colorToken: 'rose' },
+    ];
 
   const statsCards = profile.statsCards && profile.statsCards.length > 0
     ? profile.statsCards
     : [
-        { id: '1', value: '15+', label: 'Projects Built', colorToken: 'emerald', iconName: 'Rocket' },
-        { id: '2', value: '10+', label: 'Certifications', colorToken: 'cyan', iconName: 'Award' },
-        { id: '3', value: '2+', label: 'Years Learning', colorToken: 'emerald', iconName: 'Flame' },
-        { id: '4', value: '∞', label: 'Curiosity', colorToken: 'amber', iconName: 'Sparkles' },
-      ];
+      { id: '1', value: '15+', label: 'Projects Built', colorToken: 'emerald', iconName: 'Rocket' },
+      { id: '2', value: '10+', label: 'Certifications', colorToken: 'cyan', iconName: 'Award' },
+      { id: '3', value: '2+', label: 'Years Learning', colorToken: 'emerald', iconName: 'Flame' },
+      { id: '4', value: '∞', label: 'Curiosity', colorToken: 'amber', iconName: 'Sparkles' },
+    ];
 
   const specializationCards = profile.specializationCards && profile.specializationCards.length > 0
     ? profile.specializationCards
     : [
-        { id: '1', title: 'Cybersecurity', description: 'Application Security, Threat Detection & Vulnerability Analysis', iconName: 'ShieldCheck', colorToken: 'emerald' },
-        { id: '2', title: 'AI Systems', description: 'Neural Networks, Computer Vision & Constraint Algorithms', iconName: 'Cpu', colorToken: 'cyan' },
-        { id: '3', title: 'Cloud Infra', description: 'Scalable Microservices, Docker Containers & CI/CD Pipelines', iconName: 'Globe', colorToken: 'amber' },
-        { id: '4', title: 'Networking', description: 'TCP/IP Architecture, Packet Analysis & Firewall Systems', iconName: 'Compass', colorToken: 'rose' },
-        { id: '5', title: 'Backend Systems', description: 'FastAPI, Node.js, High-Throughput REST APIs & JWT Security', iconName: 'Code2', colorToken: 'purple' },
-        { id: '6', title: 'Linux Kernel', description: 'Bash Scripting, System Administration & Access Controls', iconName: 'Terminal', colorToken: 'emerald' },
-      ];
+      { id: '1', title: 'Cybersecurity', description: 'Application Security, Threat Detection & Vulnerability Analysis', iconName: 'ShieldCheck', colorToken: 'emerald' },
+      { id: '2', title: 'AI Systems', description: 'Neural Networks, Computer Vision & Constraint Algorithms', iconName: 'Cpu', colorToken: 'cyan' },
+      { id: '3', title: 'Cloud Infra', description: 'Scalable Microservices, Docker Containers & CI/CD Pipelines', iconName: 'Globe', colorToken: 'amber' },
+      { id: '4', title: 'Networking', description: 'TCP/IP Architecture, Packet Analysis & Firewall Systems', iconName: 'Compass', colorToken: 'rose' },
+      { id: '5', title: 'Backend Systems', description: 'FastAPI, Node.js, High-Throughput REST APIs & JWT Security', iconName: 'Code2', colorToken: 'purple' },
+      { id: '6', title: 'Linux Kernel', description: 'Bash Scripting, System Administration & Access Controls', iconName: 'Terminal', colorToken: 'emerald' },
+    ];
 
   const skillProgressList = [
     { name: 'Python', percentage: 90, color: '#00ff66' },
@@ -160,7 +161,7 @@ export default function About({ profile }: AboutProps) {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto">
           <SectionTitle
-            title="SYSTEM BRIEFING"
+            title="ABOUT ME"
             subtitle="OPERATIONAL & ACADEMIC PROFILE"
             align="center"
           />
@@ -256,7 +257,7 @@ export default function About({ profile }: AboutProps) {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono text-emerald-400 uppercase tracking-wider font-bold">
-                        ACADEMIC CLEARANCE
+                        ACADEMICS
                       </span>
                       <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 font-bold">
                         {academicDegree.status}
@@ -271,76 +272,56 @@ export default function About({ profile }: AboutProps) {
             )}
           </div>
 
-          {/* Right Column: Focus Chips & Career Roadmap */}
-          <div className="lg:col-span-7 space-y-8">
-            {/* Current Focus Chips Module */}
-            {aboutModules.showFocus && (
+          {/* Right Column: About Me Bio, Core Specializations, & Statistics */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* About Me Bio Card */}
+            <GlassCard variant="default" className="p-6 sm:p-8 rounded-3xl space-y-4">
+              <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3">
+                <h3 className="text-xl font-extrabold text-white flex items-center gap-2 font-mono uppercase tracking-wider">
+                  <User className="w-5 h-5 text-emerald-400" /> ABOUT ME
+                </h3>
+                <span className="text-xs font-mono text-emerald-400">SUMMARY PROTOCOL</span>
+              </div>
+
+              <p className="text-sm sm:text-base text-gray-200 leading-relaxed font-sans">
+                {profile.personalBio || profile.bio}
+              </p>
+            </GlassCard>
+
+            {/* Specialization Highlight Cards Grid Module */}
+            {aboutModules.showSpecializations && (
               <GlassCard variant="default" className="p-6 sm:p-8 rounded-3xl space-y-4">
-                <div className="flex items-center gap-2">
-                  <Cpu className="w-5 h-5 text-emerald-400" />
-                  <h3 className="text-lg font-bold text-white uppercase tracking-wider font-mono">
-                    ACTIVE SYSTEM FOCUS & SPECS
+                <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3">
+                  <h3 className="text-lg font-extrabold text-white flex items-center gap-2 font-mono uppercase tracking-wider">
+                    <ShieldCheck className="w-5 h-5 text-emerald-400" /> CORE SPECIALIZATION HIGHLIGHTS
                   </h3>
+                  <span className="text-xs font-mono text-gray-400 hidden sm:inline">6 MODULES</span>
                 </div>
 
-                <p className="text-sm text-gray-300 leading-relaxed font-sans">
-                  {profile.currentFocus || 'Building production-grade secure web apps & studying AI-driven threat detection.'}
-                </p>
-
-                {/* Focus Chips Grid */}
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {focusChips.map((chip, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1.5 rounded-xl bg-black/60 border border-emerald-500/30 text-xs font-mono text-emerald-300 shadow-inner flex items-center gap-1.5"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> {chip}
-                    </span>
-                  ))}
-                </div>
-              </GlassCard>
-            )}
-
-            {/* Career Roadmap Timeline Module */}
-            {aboutModules.showRoadmap && (
-              <GlassCard variant="default" className="p-6 sm:p-8 rounded-3xl space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="w-5 h-5 text-emerald-400" />
-                    <h3 className="text-lg font-bold text-white uppercase tracking-wider font-mono">
-                      CAREER ROADMAP TIMELINE
-                    </h3>
-                  </div>
-                  <span className="text-xs font-mono text-emerald-400">CHRONOLOGICAL PROTOCOL</span>
-                </div>
-
-                <div className="relative pl-6 border-l-2 border-emerald-500/30 space-y-6">
-                  {careerRoadmap.map((item, idx) => {
-                    const IconComp = getLucideIcon(item.iconName, Rocket);
-                    const colorHex = resolveColor(item.colorToken, '#00ff66');
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  {specializationCards.map((card, idx) => {
+                    const IconComp = getLucideIcon(card.iconName, ShieldCheck);
+                    const cardColor = resolveColor(card.colorToken, '#00ff66');
 
                     return (
-                      <div key={idx} className="relative group">
-                        {/* Timeline Node Icon */}
-                        <div
-                          className="absolute -left-[31px] top-0 w-6 h-6 rounded-full bg-black border-2 flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-                          style={{ borderColor: colorHex, color: colorHex }}
-                        >
-                          <IconComp className="w-3 h-3" />
-                        </div>
-
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-black/60 border"
-                              style={{ borderColor: `${colorHex}40`, color: colorHex }}
-                            >
-                              {item.year}
-                            </span>
-                            <h4 className="text-sm font-bold text-white">{item.title}</h4>
+                      <div
+                        key={card.id || idx}
+                        className="p-4 rounded-2xl bg-black/50 border border-emerald-500/20 hover:border-emerald-500/50 transition-all duration-300 space-y-2 group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-9 h-9 rounded-xl flex items-center justify-center border bg-black/60 transition-transform duration-300 group-hover:scale-110 shrink-0"
+                            style={{ borderColor: `${cardColor}60`, color: cardColor }}
+                          >
+                            <IconComp className="w-4 h-4" />
                           </div>
-                          <p className="text-xs text-gray-300 font-sans">{item.description}</p>
+                          <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                            {card.title}
+                          </h4>
                         </div>
+                        <p className="text-xs text-gray-400 leading-relaxed font-sans line-clamp-2">
+                          {card.description}
+                        </p>
                       </div>
                     );
                   })}
@@ -350,52 +331,7 @@ export default function About({ profile }: AboutProps) {
           </div>
         </div>
 
-        {/* Specialization Highlight Cards Grid Module */}
-        {aboutModules.showSpecializations && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3">
-              <h3 className="text-xl font-extrabold text-white flex items-center gap-2 font-mono">
-                <ShieldCheck className="w-6 h-6 text-emerald-400" /> CORE SPECIALIZATION HIGHLIGHTS
-              </h3>
-              <span className="text-xs font-mono text-gray-400 hidden sm:inline">6 MODULE CLEARANCE</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {specializationCards.map((card, idx) => {
-                const IconComp = getLucideIcon(card.iconName, ShieldCheck);
-                const cardColor = resolveColor(card.colorToken, '#00ff66');
-
-                return (
-                  <GlassCard
-                    key={card.id || idx}
-                    variant="interactive"
-                    className="p-6 rounded-2xl flex flex-col justify-between space-y-4 group hover:border-emerald-500/50 transition-all duration-300"
-                  >
-                    <div className="space-y-3">
-                      <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center border bg-black/50 transition-transform duration-300 group-hover:scale-110"
-                        style={{ borderColor: `${cardColor}60`, color: cardColor }}
-                      >
-                        <IconComp className="w-6 h-6" />
-                      </div>
-                      <h4 className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors">
-                        {card.title}
-                      </h4>
-                      <p className="text-xs text-gray-300 leading-relaxed font-sans">
-                        {card.description}
-                      </p>
-                    </div>
-
-                    <div className="pt-2 flex items-center justify-between text-[10px] font-mono text-gray-400 border-t border-emerald-500/10">
-                      <span>STATUS: OPERATIONAL</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </GlassCard>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {/* BOTTOM SECTION: Four Counter Cards Module */}
 
         {/* BOTTOM SECTION: Four Counter Cards Module */}
         {aboutModules.showStats && (

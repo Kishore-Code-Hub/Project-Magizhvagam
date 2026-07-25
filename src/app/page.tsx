@@ -45,7 +45,7 @@ export default async function HomePage() {
     socials: {
       github: 'https://github.com',
       linkedin: 'https://linkedin.com',
-      email: 'mailto:contact@soundkish.dev',
+      email: 'mailto:kishorenarayanankarthikeyan@gmail.com',
       leetcode: 'https://leetcode.com',
       tryhackme: 'https://tryhackme.com',
       hackthebox: 'https://hackthebox.com',
@@ -66,11 +66,13 @@ export default async function HomePage() {
   try {
     const dbProfile = await db.profile.findFirst();
     if (dbProfile) {
+      const parsedStats = safeJsonParse<any>(dbProfile.stats, profileData.stats);
       profileData = {
         ...dbProfile,
+        image: parsedStats?.profileImage || '/hero-hacker.png',
         taglines: safeJsonParse<string[]>(dbProfile.taglines, profileData.taglines),
         socials: safeJsonParse<any>(dbProfile.socials, profileData.socials),
-        stats: safeJsonParse<any>(dbProfile.stats, profileData.stats),
+        stats: parsedStats,
         values: safeJsonParse<string[]>(dbProfile.values, profileData.values),
         education: safeJsonParse<string[]>(dbProfile.education, profileData.education),
         aboutModules: safeJsonParse<any>(dbProfile.aboutModules, INITIAL_PROFILE.aboutModules),

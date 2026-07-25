@@ -429,23 +429,21 @@ export default function AdminAboutPage() {
           Toggle modules ON or OFF. Disabled modules collapse cleanly without leaving whitespace. Stored data is preserved in the database.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
-            { key: 'showEducation', label: 'Academic Degree Card' },
-            { key: 'showFocus', label: 'Current Focus Chips' },
-            { key: 'showRoadmap', label: 'Career Roadmap Timeline' },
+            { key: 'showEducation', label: 'Academic Degree' },
             { key: 'showSpecializations', label: 'Specialization Cards' },
-            { key: 'showStats', label: 'Statistics Counter Grid' },
+            { key: 'showStats', label: 'Statistics Cards' },
           ].map(({ key, label }) => {
-            const active = aboutModules[key as keyof AboutModules];
+            const active = (aboutModules as any)[key];
             return (
               <button
                 key={key}
                 type="button"
                 onClick={() => toggleModule(key as keyof AboutModules)}
-                className={`p-3 rounded-xl border flex items-center justify-between transition-all text-left ${
+                className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
                   active
-                    ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                    ? 'bg-emerald-500/10 border-emerald-500/50 text-white'
                     : 'bg-black/40 border-gray-800 text-gray-400 hover:border-gray-700'
                 }`}
               >

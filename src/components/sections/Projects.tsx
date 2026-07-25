@@ -68,7 +68,7 @@ export default function Projects({ projects = [] }: ProjectsProps) {
     <SectionWrapper id="projects">
       <SectionTitle
         title="FEATURED PROJECTS"
-        subtitle="Software Engineering Portfolio • Systems • Security • AI Solutions"
+        subtitle="Software Engineering  • vibe_coding Projects • CyberSecurity • AI Solutions"
       />
 
       {/* Category Filter Bar */}
@@ -77,11 +77,10 @@ export default function Projects({ projects = [] }: ProjectsProps) {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 text-xs font-mono rounded-xl border transition-all whitespace-nowrap cursor-pointer ${
-              selectedCategory === cat
-                ? 'bg-[var(--accent-color)] text-black font-bold border-[var(--accent-color)] shadow-[var(--shadow-accent-glow)]'
-                : 'bg-white/5 text-gray-300 border-white/10 hover:border-white/30 hover:text-white'
-            }`}
+            className={`px-4 py-2 text-xs font-mono rounded-xl border transition-all whitespace-nowrap cursor-pointer ${selectedCategory === cat
+              ? 'bg-[var(--accent-color)] text-black font-bold border-[var(--accent-color)] shadow-[var(--shadow-accent-glow)]'
+              : 'bg-white/5 text-gray-300 border-white/10 hover:border-white/30 hover:text-white'
+              }`}
           >
             {cat}
           </button>

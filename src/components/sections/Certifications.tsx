@@ -15,7 +15,7 @@ export default function Certifications({ certifications = [] }: CertificationsPr
     <SectionWrapper id="certifications">
       <SectionTitle
         title="CERTIFICATIONS"
-        subtitle="Professional Certifications & Verified Engineering Accomplishments"
+        subtitle="Professional Certifications & Verified Engineering Achievements"
       />
 
       {certifications.length > 0 ? (

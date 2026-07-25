@@ -37,13 +37,25 @@ export const CertificateCard: React.FC<CertificateCardProps> = ({ cert }) => {
   return (
     <GlassCard variant="interactive" className="group flex flex-col justify-between h-full">
       <div>
+        {/* Certificate Preview Image Banner if uploaded */}
+        {(cert.pdfUrl || (cert.organizationLogo && cert.organizationLogo.length > 50)) && (
+          <div className="w-full h-40 overflow-hidden rounded-xl mb-4 bg-black/60 border border-emerald-500/30 relative group-hover:border-emerald-500/60 transition-colors">
+            <img
+              src={cert.pdfUrl || cert.organizationLogo || ''}
+              alt={cert.title}
+              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+          </div>
+        )}
+
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[var(--bg-glass)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--accent-color)] group-hover:scale-105 transition-transform">
-              {cert.organizationLogo ? (
-                <img src={cert.organizationLogo} alt={cert.issuer} className="w-8 h-8 object-contain" />
+            <div className="w-10 h-10 rounded-xl bg-[var(--bg-glass)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--accent-color)] group-hover:scale-105 transition-transform shrink-0">
+              {cert.organizationLogo && !cert.organizationLogo.startsWith('/uploads/') ? (
+                <img src={cert.organizationLogo} alt={cert.issuer} className="w-6 h-6 object-contain" />
               ) : (
-                <Award className="w-6 h-6" />
+                <Award className="w-5 h-5" />
               )}
             </div>
             <div>

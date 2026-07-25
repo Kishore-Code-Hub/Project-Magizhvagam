@@ -33,14 +33,14 @@ export default function QuantumShutter({ active }: QuantumShutterProps) {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: [0, 1, 1, 0], scale: [0.9, 1.05, 1, 0.95] }}
         transition={{ duration: 0.45, times: [0, 0.2, 0.7, 1] }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 text-center font-mono pointer-events-none"
+        className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 text-center font-mono pointer-events-none"
       >
         <div className="px-6 py-3 rounded-lg bg-black/90 border border-[#00ff66] shadow-[0_0_40px_rgba(0,255,102,0.6)] backdrop-blur-md">
           <div className="text-[10px] text-[#00ff66] uppercase tracking-widest font-bold">
             SECURITY CLEARANCE GRANTED // SYSTEM READY
           </div>
           <div className="text-xl sm:text-2xl text-white font-extrabold tracking-tight mt-0.5">
-            WELCOME, <span className="text-[#00f0ff]">KISHORE</span>
+            WELCOME, <span className="text-[#00f0ff]">ANONYMOUS</span>
           </div>
         </div>
       </motion.div>

@@ -51,6 +51,20 @@ export default function TerminalPhase({
     return () => clearInterval(interval);
   }, []);
 
+  const [buttonStage, setButtonStage] = useState<'idle' | 'granting' | 'granted'>('idle');
+
+  const handleGrantClick = () => {
+    if (buttonStage !== 'idle' || isAuthorizing) return;
+    setButtonStage('granting');
+
+    setTimeout(() => {
+      setButtonStage('granted');
+      setTimeout(() => {
+        onAuthorize();
+      }, 200);
+    }, 800);
+  };
+
   return (
     <div className="relative w-[92vw] sm:w-[min(900px,80vw)] max-w-[1000px] h-[420px] sm:h-[500px] p-6 sm:p-8 rounded-xl bg-[#030504]/95 border border-[#00ff66]/40 shadow-[0_0_80px_rgba(0,255,102,0.25)] backdrop-blur-xl text-left font-mono select-none flex flex-col justify-between overflow-hidden">
       {/* Scanline overlay pattern */}
@@ -138,17 +152,25 @@ export default function TerminalPhase({
         </div>
 
         <button
-          onClick={onAuthorize}
-          disabled={isAuthorizing}
+          onClick={handleGrantClick}
+          disabled={buttonStage !== 'idle' || isAuthorizing}
           className={`relative group px-8 py-3 rounded-lg text-xs sm:text-sm font-mono font-extrabold tracking-widest uppercase transition-all duration-300 w-full sm:w-auto ${
-            isAuthorizing
-              ? 'bg-[#00ff66]/30 text-[#00ff66] border border-[#00ff66] shadow-[0_0_40px_rgba(0,255,102,0.8)] scale-95'
+            buttonStage === 'granted'
+              ? 'bg-[#00ff66] text-black border border-[#00ff66] shadow-[0_0_50px_#00ff66] scale-105'
+              : buttonStage === 'granting'
+              ? 'bg-[#00ff66]/40 text-[#00ff66] border border-[#00ff66] shadow-[0_0_35px_rgba(0,255,102,0.8)] opacity-90'
               : 'bg-[#00ff66]/15 hover:bg-[#00ff66]/30 text-[#00ff66] border border-[#00ff66]/80 hover:border-[#00ff66] shadow-[0_0_25px_rgba(0,255,102,0.25)] hover:shadow-[0_0_45px_rgba(0,255,102,0.6)] active:scale-95 cursor-pointer'
           }`}
         >
           <span className="relative z-10 flex items-center justify-center gap-2">
-            <span>[ GRANT ACCESS ]</span>
-            <span className="w-2 h-4 bg-[#00ff66] animate-pulse inline-block" />
+            <span>
+              {buttonStage === 'granted'
+                ? '[ ACCESS GRANTED ]'
+                : buttonStage === 'granting'
+                ? '[ GRANTING ACCESS... ]'
+                : '[ GRANT ACCESS ]'}
+            </span>
+            <span className="w-2 h-4 bg-current animate-pulse inline-block" />
           </span>
           <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#00ff66]/0 via-[#00ff66]/30 to-[#00ff66]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </button>

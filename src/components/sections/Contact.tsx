@@ -104,8 +104,8 @@ export default function Contact({ profile }: ContactProps) {
                 <Mail className="w-5 h-5 text-[var(--accent-color)] shrink-0" />
                 <div className="truncate">
                   <div className="text-[10px] text-gray-500 uppercase">Primary Email</div>
-                  <a href={`mailto:${profile.socials?.email || 'contact@soundkish.dev'}`} className="hover:text-[var(--accent-color)] text-gray-200 truncate block">
-                    {profile.socials?.email?.replace('mailto:', '') || 'contact@soundkish.dev'}
+                  <a href={`mailto:${profile.socials?.email || 'kishorenarayanankarthikeyan@gmail.com'}`} className="hover:text-[var(--accent-color)] text-gray-200 truncate block">
+                    {profile.socials?.email?.replace('mailto:', '') || 'kishorenarayanankarthikeyan@gmail.com'}
                   </a>
                 </div>
               </div>
@@ -114,7 +114,7 @@ export default function Contact({ profile }: ContactProps) {
                 <MapPin className="w-5 h-5 text-cyan-400 shrink-0" />
                 <div>
                   <div className="text-[10px] text-gray-500 uppercase">Location</div>
-                  <span className="text-gray-200">India / Remote Worldwide</span>
+                  <span className="text-gray-200">Chennai</span>
                 </div>
               </div>
             </div>
@@ -122,7 +122,7 @@ export default function Contact({ profile }: ContactProps) {
             {/* Social & Coding Profiles */}
             <div className="mt-6 pt-6 border-t border-white/10">
               <h5 className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-3">
-                Developer Profiles
+                Looking For my Resume
               </h5>
               <div className="flex flex-wrap gap-2">
                 {profile.socials?.github && (
@@ -244,11 +244,10 @@ export default function Contact({ profile }: ContactProps) {
                         key={preset}
                         type="button"
                         onClick={() => setFormData((prev) => ({ ...prev, subject: preset }))}
-                        className={`px-2.5 py-1 text-[11px] font-mono rounded-lg border transition-all cursor-pointer ${
-                          formData.subject === preset
-                            ? 'bg-[var(--accent-color)] text-black border-[var(--accent-color)] font-bold'
-                            : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30 hover:text-white'
-                        }`}
+                        className={`px-2.5 py-1 text-[11px] font-mono rounded-lg border transition-all cursor-pointer ${formData.subject === preset
+                          ? 'bg-[var(--accent-color)] text-black border-[var(--accent-color)] font-bold'
+                          : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30 hover:text-white'
+                          }`}
                       >
                         {preset}
                       </button>

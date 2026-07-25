@@ -41,6 +41,8 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
     setState('AUTHORIZE');
   }, []);
 
+  const [accessGrantedHoldTime, setAccessGrantedHoldTime] = useState<number>(2.0);
+
   // Check prefers-reduced-motion: set visual flag ONLY, do NOT skip sequence
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -71,10 +73,13 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
         const duration = parseFloat(data?.loadingDuration) || 5.0;
         setLoadingDuration(duration);
 
+        const holdTime = parseFloat(data?.accessGrantedHoldTime) || 2.0;
+        setAccessGrantedHoldTime(holdTime);
+
         const skipReturning = Boolean(data?.skipLoaderForReturning);
         const bootedInSession = BootStorage.isBooted();
 
-        console.log('[Phase 1 FSM] Initialized:', { bootedInSession, forceBoot, skipReturning, duration });
+        console.log('[Phase 1 FSM] Initialized:', { bootedInSession, forceBoot, skipReturning, duration, holdTime });
 
         // ONLY skip if returning visitor skip policy is explicitly enabled in admin config
         if (!forceBoot && bootedInSession && skipReturning) {
@@ -163,36 +168,36 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
       return () => clearTimeout(timer);
     }
 
-    // Phase 3: DISSOLVE (10% of loadingDuration)
+    // Phase 3, 4, 5: Access Granted Hold sequence scaled by accessGrantedHoldTime
+    const holdStepMs = Math.max(200, Math.round((accessGrantedHoldTime * 1000) / 3));
+
+    // Phase 3: DISSOLVE
     if (state === 'DISSOLVE') {
-      const dur = getPhaseDuration(0.10, 0.3);
-      setPhaseTimer(dur / 1000);
+      setPhaseTimer(holdStepMs / 1000);
       const timer = setTimeout(() => {
         console.log('[Phase 1 FSM] DISSOLVE complete -> BEAM');
         setState('BEAM');
-      }, dur);
+      }, holdStepMs);
       return () => clearTimeout(timer);
     }
 
-    // Phase 4: BEAM (12% of loadingDuration)
+    // Phase 4: BEAM
     if (state === 'BEAM') {
-      const dur = getPhaseDuration(0.12, 0.3);
-      setPhaseTimer(dur / 1000);
+      setPhaseTimer(holdStepMs / 1000);
       const timer = setTimeout(() => {
         console.log('[Phase 1 FSM] BEAM complete -> RING');
         setState('RING');
-      }, dur);
+      }, holdStepMs);
       return () => clearTimeout(timer);
     }
 
-    // Phase 5: RING (10% of loadingDuration)
+    // Phase 5: RING
     if (state === 'RING') {
-      const dur = getPhaseDuration(0.10, 0.3);
-      setPhaseTimer(dur / 1000);
+      setPhaseTimer(holdStepMs / 1000);
       const timer = setTimeout(() => {
         console.log('[Phase 1 FSM] RING complete -> SHUTTER');
         setState('SHUTTER');
-      }, dur);
+      }, holdStepMs);
       return () => clearTimeout(timer);
     }
 
