@@ -73,6 +73,21 @@ export default function Hero({ profile }: HeroProps) {
             {profile.bio || profile.headline || 'I build secure, intelligent and scalable digital solutions with a strong focus on Cybersecurity, AI and real-world impact.'}
           </p>
 
+          {/* Prominent LinkedIn CTA Button */}
+          <div className="pt-1">
+            <a
+              href={socials.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Connect with me on LinkedIn"
+              title="Connect with me on LinkedIn"
+              className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-[#0A66C2] text-white border border-[#0A66C2] font-medium text-xs sm:text-sm hover:bg-white hover:text-[#0A66C2] hover:border-[#0A66C2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A66C2] transition-all duration-200 ease-in-out shadow-[0_4px_15px_rgba(10,102,194,0.35)] hover:shadow-[0_6px_20px_rgba(10,102,194,0.5)] transform hover:-translate-y-0.5 cursor-pointer"
+            >
+              <LinkedinIcon className="w-4 h-4 shrink-0 fill-current" />
+              <span>Connect with me on LinkedIn</span>
+            </a>
+          </div>
+
           {/* Action Buttons Row Grid Container */}
           <div className="space-y-4 pt-3 font-mono">
             {/* Primary Action Buttons Row */}
