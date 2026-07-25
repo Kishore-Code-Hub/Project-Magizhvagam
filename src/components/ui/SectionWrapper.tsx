@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { RevealWrapper } from '@/components/animation/RevealWrapper';
 
 interface SectionWrapperProps {
   id: string;
@@ -15,6 +16,14 @@ export const SectionWrapper: React.FC<SectionWrapperProps> = ({
   className = '',
   fullWidth = false,
 }) => {
+  const isHero = id === 'hero';
+
+  const content = fullWidth ? (
+    children
+  ) : (
+    <div className="relative z-10 max-w-7xl mx-auto">{children}</div>
+  );
+
   return (
     <section
       id={id}
@@ -23,11 +32,7 @@ export const SectionWrapper: React.FC<SectionWrapperProps> = ({
       {/* Background Circuit Grid overlay */}
       <div className="absolute inset-0 circuit-grid opacity-30 pointer-events-none" />
 
-      {fullWidth ? (
-        children
-      ) : (
-        <div className="relative z-10 max-w-7xl mx-auto">{children}</div>
-      )}
+      {isHero ? content : <RevealWrapper variant="fade-up">{content}</RevealWrapper>}
     </section>
   );
 };

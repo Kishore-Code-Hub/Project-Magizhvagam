@@ -105,7 +105,7 @@ export default function SideDockNav({
             );
           })}
 
-          {/* External Links & System Tools: Resume, Admin, Settings, Audio */}
+          {/* External Links & System Tools: Resume & Audio */}
           <div className="border-t border-accent/20 pt-2.5 flex flex-col gap-1.5">
             <a
               href={resumeUrl}
@@ -117,28 +117,6 @@ export default function SideDockNav({
               <ExternalLink className="w-4 h-4 text-accent flex-shrink-0" />
               <span className="opacity-0 group-hover/dock:opacity-100 transition-opacity duration-200 whitespace-nowrap uppercase tracking-widest">
                 RESUME
-              </span>
-            </a>
-
-            <a
-              href="/admin/dashboard"
-              onClick={handleItemClick}
-              className="flex items-center gap-4 px-3.5 py-2.5 rounded-xl text-gray-300 hover:text-accent hover:bg-accent/10 transition-all text-[11px] font-bold"
-            >
-              <ShieldAlert className="w-4 h-4 text-accent flex-shrink-0" />
-              <span className="opacity-0 group-hover/dock:opacity-100 transition-opacity duration-200 whitespace-nowrap uppercase tracking-widest">
-                ADMIN CONSOLE
-              </span>
-            </a>
-
-            <a
-              href="/admin/dashboard"
-              onClick={handleItemClick}
-              className="flex items-center gap-4 px-3.5 py-2.5 rounded-xl text-gray-300 hover:text-accent hover:bg-accent/10 transition-all text-[11px] font-bold"
-            >
-              <Sliders className="w-4 h-4 text-accent flex-shrink-0" />
-              <span className="opacity-0 group-hover/dock:opacity-100 transition-opacity duration-200 whitespace-nowrap uppercase tracking-widest">
-                SETTINGS
               </span>
             </a>
 
@@ -203,14 +181,6 @@ export default function SideDockNav({
               >
                 <ExternalLink className="w-4 h-4 text-accent" />
                 <span>RESUME</span>
-              </a>
-              <a
-                href="/admin/dashboard"
-                onClick={handleItemClick}
-                className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-accent font-bold"
-              >
-                <ShieldAlert className="w-4 h-4 text-accent" />
-                <span>ADMIN</span>
               </a>
             </div>
           </div>

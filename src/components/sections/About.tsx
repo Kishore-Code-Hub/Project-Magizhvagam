@@ -65,10 +65,10 @@ export default function About({ profile }: AboutProps) {
       <div className="p-6 sm:p-8 rounded-[24px] bg-[rgba(10,12,14,0.42)] backdrop-blur-[24px] border border-[rgba(0,255,120,0.15)] shadow-[0_25px_70px_rgba(0,255,100,0.10)]">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Left Column: Engineer Profile HUD */}
-          <div className="lg:col-span-5 flex flex-col h-full justify-between">
-            <GlassCard variant="glow" className="text-center relative flex-1 flex flex-col justify-between p-6">
+          <div className="lg:col-span-5 flex flex-col h-full">
+            <GlassCard variant="glow" className="h-full flex-1 flex flex-col justify-between p-6 sm:p-8 rounded-[24px]">
               <div>
-                <div className="relative w-28 h-28 mx-auto mb-4 rounded-2xl overflow-hidden border-2 border-[var(--border-accent)] p-1 bg-[var(--bg-glass)]">
+                <div className="relative w-28 h-28 mx-auto mb-4 rounded-2xl overflow-hidden border-2 border-[var(--border-accent)] p-1 bg-[var(--bg-glass)] aspect-square">
                   <img
                     src={(stats as any)?.profileImage || '/hero-hacker.png'}
                     alt={profile.name}
@@ -77,8 +77,8 @@ export default function About({ profile }: AboutProps) {
                   <span className="absolute bottom-2 right-2 w-3.5 h-3.5 rounded-full bg-[var(--accent-color)] border-2 border-black animate-pulse" />
                 </div>
 
-                <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">{profile.name}</h3>
-                <p className="text-xs font-mono text-[var(--accent-color)] mt-1 mb-4 uppercase">
+                <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight text-center">{profile.name}</h3>
+                <p className="text-xs font-mono text-[var(--accent-color)] mt-1 mb-4 uppercase text-center">
                   {profile.professionalIdentity || profile.headline}
                 </p>
 
@@ -118,8 +118,8 @@ export default function About({ profile }: AboutProps) {
                 </div>
               </div>
 
-              {/* Social Shortcuts */}
-              <div className="flex items-center justify-center gap-3 pt-2">
+              {/* Social Shortcuts Pinned to Bottom */}
+              <div className="flex items-center justify-center gap-3 pt-2 mt-auto">
                 {profile.socials?.github && (
                   <a
                     href={profile.socials.github}
@@ -154,7 +154,7 @@ export default function About({ profile }: AboutProps) {
 
           {/* Right Column: Narrative & Technical Core */}
           <div className="lg:col-span-7 flex flex-col h-full">
-            <GlassCard variant="default" className="flex-1 flex flex-col justify-between p-6">
+            <GlassCard variant="default" className="h-full flex-1 flex flex-col justify-between p-6 sm:p-8 rounded-[24px]">
               <div>
                 <h4 className="text-base font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
                   <Terminal className="w-4 h-4 text-[var(--accent-color)]" />

@@ -72,27 +72,41 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
     console.log(`[Phase 1 FSM] Current State: ${state}`);
   }, [state]);
 
-  // FSM Step Transitions (TRACE 2200ms -> AUTHORIZE 700ms -> COMPLETE)
+  const [loadingDuration, setLoadingDuration] = useState<number>(5.0);
+
+  useEffect(() => {
+    fetch('/api/appearance')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.loadingDuration) {
+          setLoadingDuration(data.loadingDuration);
+        }
+      })
+      .catch(() => null);
+  }, []);
+
+  // FSM Step Transitions (TRACE -> AUTHORIZE -> COMPLETE)
   useEffect(() => {
     if (state === 'IDLE' || state === 'COMPLETE') return;
 
     if (timerRef.current) clearTimeout(timerRef.current);
 
+    // Calculate trace duration in ms from configured loadingDuration (default 5s = 4200ms trace + 800ms auth)
+    const traceMs = Math.max(1000, Math.round(loadingDuration * 1000) - 800);
+
     switch (state) {
       case 'TRACE':
-        // Auto-advance to AUTHORIZE after 2200ms if user doesn't click
         timerRef.current = setTimeout(() => {
-          console.log('[Phase 1 FSM] TRACE timeout reached -> AUTHORIZE');
+          console.log(`[Phase 1 FSM] TRACE timeout (${traceMs}ms) reached -> AUTHORIZE`);
           setState('AUTHORIZE');
-        }, 2200);
+        }, traceMs);
         break;
 
       case 'AUTHORIZE':
-        // Pause 700ms before finishing Phase 1
         timerRef.current = setTimeout(() => {
           console.log('[Phase 1 FSM] AUTHORIZE completed -> markComplete');
           markComplete();
-        }, 700);
+        }, 800);
         break;
 
       default:
@@ -102,7 +116,7 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [state, markComplete]);
+  }, [state, markComplete, loadingDuration]);
 
   return {
     state,

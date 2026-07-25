@@ -56,6 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: 'Messages / Inbox', href: '/admin/contact', icon: Inbox },
     { label: 'Media Library', href: '/admin/media', icon: ImageIcon },
     { label: 'Visual Appearance', href: '/admin/appearance', icon: Palette },
+    { label: 'Animation & Loader', href: '/admin/settings/animation', icon: Sparkles },
     { label: 'Matrix Engine', href: '/admin/matrix', icon: Terminal },
     { label: 'SMTP Mailer', href: '/admin/settings/smtp', icon: Mail },
     { label: 'System Diagnostics', href: '/admin/diagnostics', icon: Activity },

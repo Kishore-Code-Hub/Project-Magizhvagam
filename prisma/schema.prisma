@@ -172,6 +172,11 @@ model AppearanceSettings {
   glassBlur     Int      @default(20) // in px
   borderRadius  Int      @default(16) // in px
   enableParticles Boolean @default(true)
+  loadingDuration Float    @default(5.0) // in seconds (1.0 to 15.0)
+  enableLoader  Boolean  @default(true)
+  skipLoaderForReturning Boolean @default(false)
+  enableScrollReveal Boolean @default(true)
+  repeatScrollReveal Boolean @default(false)
   updatedAt     DateTime @updatedAt
 }
 

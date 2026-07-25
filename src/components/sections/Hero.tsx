@@ -41,10 +41,10 @@ export default function Hero({ profile }: HeroProps) {
       {/* Background Adaptive Performance Manager Engine */}
       <PerformanceManager />
 
-      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-14 xl:gap-20 items-center z-10 pl-0 lg:pl-16">
+      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-14 xl:gap-20 items-stretch z-10 pl-0 lg:pl-16">
         
         {/* Mobile View Stacking Order: Text Content FIRST (order-1), Hero Banner SECOND (order-2) */}
-        <div className="order-1 md:order-1 lg:order-1 lg:col-span-5 flex flex-col justify-center text-left max-w-[780px] w-full p-5 sm:p-6 md:p-7 rounded-[24px] bg-[rgba(10,12,14,0.38)] backdrop-blur-[24px] border border-[rgba(0,255,120,0.12)] shadow-[0_30px_80px_rgba(0,255,100,0.08)] space-y-3.5 sm:space-y-4">
+        <div className="order-1 md:order-1 lg:order-1 lg:col-span-5 flex flex-col justify-between text-left max-w-[780px] w-full p-5 sm:p-6 md:p-7 rounded-[24px] bg-[rgba(10,12,14,0.38)] backdrop-blur-[24px] border border-[rgba(0,255,120,0.12)] shadow-[0_30px_80px_rgba(0,255,100,0.08)] space-y-3.5 sm:space-y-4">
           {/* Plain Text Greeting - Centered on Mobile, Left-aligned on Desktop (No Pill/Border/Background) */}
           <div className="w-full text-center md:text-left font-mono text-sm sm:text-base tracking-wide text-accent/90 font-medium select-none animate-in fade-in duration-700 mt-1 md:mt-0">
             {greetingText}
