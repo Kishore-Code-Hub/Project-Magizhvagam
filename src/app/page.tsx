@@ -10,14 +10,6 @@ import Footer from '@/components/sections/Footer';
 
 import { db } from '@/lib/db';
 import { seedDatabaseIfEmpty } from '@/lib/seed-db';
-import {
-  INITIAL_PROFILE,
-  INITIAL_PROJECTS,
-  INITIAL_SKILLS,
-  INITIAL_CERTIFICATIONS,
-  INITIAL_TIMELINE,
-} from '@/lib/initial-data';
-import { ProfileData, ProjectData, SkillData, CertificationData, TimelineData } from '@/types';
 
 export const revalidate = 0;
 
@@ -32,113 +24,93 @@ function safeJsonParse<T>(jsonString: string | null | undefined, fallback: T): T
 }
 
 export default async function HomePage() {
-  // Ensure DB has seed data
   await seedDatabaseIfEmpty();
 
-  let profile: ProfileData = INITIAL_PROFILE;
-  let skills: SkillData[] = INITIAL_SKILLS;
-  let projects: ProjectData[] = INITIAL_PROJECTS;
-  let certifications: CertificationData[] = INITIAL_CERTIFICATIONS;
-  let timeline: TimelineData[] = INITIAL_TIMELINE;
+  let profileData: any = {
+    id: 'default',
+    name: 'Kishore Narayanan K',
+    headline: 'Securing Systems. Building Trust.',
+    taglines: ['Cybersecurity Researcher', 'AI Developer', 'Full-Stack Software Engineer'],
+    bio: "I'm Kishore Narayanan K, a Computer Science & Engineering student passionate about Cybersecurity, AI, and building secure software solutions.",
+    professionalIdentity: 'Software Engineer & Cybersecurity Researcher',
+    personalBio: 'Deep interest in application security, penetration testing, full-stack systems architecture, and machine learning integration.',
+    education: ['B.E. Computer Science & Engineering'],
+    currentFocus: 'Building production-grade secure web apps & studying AI-driven threat detection.',
+    values: ['Security First', 'Clean Code', 'Continuous Learning', 'User Privacy'],
+    techPhilosophy: 'Build simple, resilient, and audit-ready systems with defence-in-depth architecture.',
+    availability: 'Open for Internships & Full-Stack Roles',
+    languages: ['English', 'Tamil'],
+    resumeUrl: 'https://drive.google.com',
+    socials: {
+      github: 'https://github.com',
+      linkedin: 'https://linkedin.com',
+      email: 'mailto:contact@soundkish.dev',
+      leetcode: 'https://leetcode.com',
+      tryhackme: 'https://tryhackme.com',
+      hackthebox: 'https://hackthebox.com',
+    },
+    stats: {
+      yearsLearning: '2+',
+      projects: '15+',
+      certifications: '10+',
+      curiosity: '∞',
+    },
+  };
+
+  let skillsData: any[] = [];
+  let projectsData: any[] = [];
+  let certsData: any[] = [];
+  let timelineData: any[] = [];
 
   try {
     const dbProfile = await db.profile.findFirst();
     if (dbProfile) {
-      const parsedTaglines = safeJsonParse<string[]>(dbProfile.taglines, INITIAL_PROFILE.taglines);
-      const parsedSocials = safeJsonParse<any>(dbProfile.socials, INITIAL_PROFILE.socials);
-      const parsedStats = safeJsonParse<any>(dbProfile.stats, INITIAL_PROFILE.stats);
-
-      profile = {
-        id: dbProfile.id ?? 'default',
-        name: dbProfile.name || INITIAL_PROFILE.name,
-        headline: dbProfile.headline || INITIAL_PROFILE.headline,
-        taglines: Array.isArray(parsedTaglines) && parsedTaglines.length > 0 ? parsedTaglines : INITIAL_PROFILE.taglines,
-        bio: dbProfile.bio || INITIAL_PROFILE.bio,
-        resumeUrl: dbProfile.resumeUrl || INITIAL_PROFILE.resumeUrl,
-        socials: {
-          github: parsedSocials?.github || INITIAL_PROFILE.socials.github,
-          linkedin: parsedSocials?.linkedin || INITIAL_PROFILE.socials.linkedin,
-          email: parsedSocials?.email || INITIAL_PROFILE.socials.email,
-        },
-        stats: {
-          yearsLearning: parsedStats?.yearsLearning || INITIAL_PROFILE.stats.yearsLearning,
-          projects: parsedStats?.projects || INITIAL_PROFILE.stats.projects,
-          certifications: parsedStats?.certifications || INITIAL_PROFILE.stats.certifications,
-          curiosity: parsedStats?.curiosity || INITIAL_PROFILE.stats.curiosity,
-        },
+      profileData = {
+        ...dbProfile,
+        taglines: safeJsonParse<string[]>(dbProfile.taglines, profileData.taglines),
+        socials: safeJsonParse<any>(dbProfile.socials, profileData.socials),
+        stats: safeJsonParse<any>(dbProfile.stats, profileData.stats),
+        values: safeJsonParse<string[]>(dbProfile.values, profileData.values),
+        education: safeJsonParse<string[]>(dbProfile.education, profileData.education),
       };
     }
 
-    const dbSkills = await db.skill.findMany({ orderBy: { order: 'asc' } });
-    if (dbSkills.length > 0) {
-      skills = dbSkills.map((s) => ({
-        id: s.id,
-        name: s.name || 'Skill',
-        category: s.category || 'Languages',
-        icon: s.icon || 'code',
-        order: s.order ?? 0,
-      }));
-    }
+    const dbSkills = await db.skill.findMany({
+      where: { published: true },
+      orderBy: [{ featured: 'desc' }, { order: 'asc' }],
+    });
+    skillsData = dbSkills;
 
     const dbProjects = await db.project.findMany({
       where: { published: true },
-      orderBy: { order: 'asc' },
+      orderBy: [{ featured: 'desc' }, { order: 'asc' }],
     });
-    if (dbProjects.length > 0) {
-      projects = dbProjects.map((p) => ({
-        id: p.id,
-        title: p.title || 'Untitled Project',
-        description: p.description || '',
-        longDescription: p.longDescription || null,
-        image: p.image || '/images/project-placeholder.svg',
-        tags: safeJsonParse<string[]>(p.tags, []),
-        githubUrl: p.githubUrl || null,
-        liveUrl: p.liveUrl || null,
-        featured: p.featured ?? true,
-        order: p.order ?? 0,
-        published: p.published ?? true,
-      }));
-    }
+    projectsData = dbProjects;
 
-    const dbCerts = await db.certification.findMany({ orderBy: { order: 'asc' } });
-    if (dbCerts.length > 0) {
-      certifications = dbCerts.map((c) => ({
-        id: c.id,
-        title: c.title || 'Certification',
-        issuer: c.issuer || '',
-        issueDate: c.issueDate || '',
-        credentialUrl: c.credentialUrl || null,
-        logoUrl: c.logoUrl || null,
-        order: c.order ?? 0,
-      }));
-    }
+    const dbCerts = await db.certification.findMany({
+      where: { published: true },
+      orderBy: [{ featured: 'desc' }, { order: 'asc' }],
+    });
+    certsData = dbCerts;
 
-    const dbTimeline = await db.timelineEntry.findMany({ orderBy: { order: 'asc' } });
-    if (dbTimeline.length > 0) {
-      timeline = dbTimeline.map((t) => ({
-        id: t.id,
-        year: t.year || '',
-        title: t.title || '',
-        subtitle: t.subtitle || null,
-        description: t.description || '',
-        category: t.category || 'Education',
-        order: t.order ?? 0,
-      }));
-    }
+    const dbTimeline = await db.timelineEntry.findMany({
+      orderBy: [{ order: 'asc' }, { year: 'desc' }],
+    });
+    timelineData = dbTimeline;
   } catch (err) {
-    console.error('Error fetching database records, using fallbacks:', err);
+    console.error('Database query fallback:', err);
   }
 
   return (
     <main className="relative min-h-screen bg-transparent text-[#f5f5f7]">
-      <Hero profile={profile} />
-      <About profile={profile} />
-      <Skills skills={skills} />
-      <Projects projects={projects} />
-      <Certifications certifications={certifications} />
-      <Timeline timeline={timeline} />
-      <Contact />
-      <Footer profile={profile} />
+      <Hero profile={profileData} />
+      <About profile={profileData} />
+      <Skills skills={skillsData} />
+      <Projects projects={projectsData} />
+      <Certifications certifications={certsData} />
+      <Timeline timeline={timelineData} />
+      <Contact profile={profileData} />
+      <Footer profile={profileData} />
     </main>
   );
 }

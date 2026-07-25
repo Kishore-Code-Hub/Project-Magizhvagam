@@ -29,28 +29,31 @@ export default function ParticleDissolveCanvas({ isMobile }: ParticleDissolveCan
     const width = (canvas.width = window.innerWidth);
     const height = (canvas.height = window.innerHeight);
 
-    // Particle count: 200 on mobile, 450 on desktop
-    const particleCount = isMobile ? 200 : 450;
-    const particles: Particle[] = [];
+    // Tiered particle count by device category
+    let particleCount = 450;
+    if (width < 768) particleCount = 100;
+    else if (width < 1024) particleCount = 180;
+    else if (width < 1280) particleCount = 300;
 
+    const particles: Particle[] = [];
     const colors = ['#00ff66', '#00f0ff', '#ffffff', '#00cc55'];
 
-    // Spawn particles clustered around center (where terminal was)
+    // Cluster particles around center (where terminal was)
     const centerX = width / 2;
     const centerY = height / 2;
 
     for (let i = 0; i < particleCount; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const radius = Math.random() * (isMobile ? 140 : 220);
+      const radius = Math.random() * (isMobile ? 140 : 260);
       const px = centerX + Math.cos(angle) * radius;
       const py = centerY + Math.sin(angle) * radius;
 
       particles.push({
         x: px,
         y: py,
-        vx: (Math.random() - 0.5) * 3,
-        vy: -Math.random() * 6 - 2, // Drift upward like digital dust
-        size: Math.random() * 2.5 + 1,
+        vx: (Math.random() - 0.5) * 4,
+        vy: -Math.random() * 7 - 2, // Drift upward like digital dust
+        size: Math.random() * 3 + 1,
         alpha: Math.random() * 0.8 + 0.2,
         color: colors[Math.floor(Math.random() * colors.length)],
       });
@@ -65,15 +68,16 @@ export default function ParticleDissolveCanvas({ isMobile }: ParticleDissolveCan
         const p = particles[i];
         p.x += p.vx;
         p.y += p.vy;
-        p.alpha -= 0.045; // Fade over ~120ms
+        p.alpha -= 0.035;
 
         if (p.alpha <= 0) continue;
 
         ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
         ctx.globalAlpha = Math.max(0, p.alpha);
         ctx.fillStyle = p.color;
         ctx.shadowColor = p.color;
-        ctx.shadowBlur = 6;
+        ctx.shadowBlur = 8;
         ctx.fillRect(p.x, p.y, p.size, p.size);
         ctx.restore();
       }

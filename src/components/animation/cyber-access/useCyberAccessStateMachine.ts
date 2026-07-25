@@ -3,24 +3,20 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { CyberAccessState } from './types';
 
-const MAX_SAFETY_TIMEOUT_MS = 10000;
-
 export function useCyberAccessStateMachine(onComplete?: () => void) {
+  // Start directly in TRACE state so TerminalPhase renders on 1st frame
   const [state, setState] = useState<CyberAccessState>('TRACE');
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [reducedMotion, setReducedMotion] = useState<boolean>(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const safetyTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Helper to mark complete
   const markComplete = useCallback(() => {
-    console.log('[useCyberAccessStateMachine] markComplete() triggered -> Writing sessionStorage.soc_session_booted = true');
+    console.log('[Phase 1 FSM] markComplete triggered');
     if (typeof window !== 'undefined') {
       try {
-        // Line where soc_session_booted is WRITTEN:
         sessionStorage.setItem('soc_session_booted', 'true');
-      } catch (err) {
-        console.warn('[useCyberAccessStateMachine] Failed to set sessionStorage:', err);
+      } catch {
+        // ignore
       }
     }
     setState('COMPLETE');
@@ -29,82 +25,46 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
 
   // Handle immediate skip
   const skipSequence = useCallback(() => {
-    console.log('[useCyberAccessStateMachine] skipSequence() invoked by user');
+    console.log('[Phase 1 FSM] skipSequence invoked');
     if (timerRef.current) clearTimeout(timerRef.current);
-    if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
     markComplete();
   }, [markComplete]);
 
-  // Log every state transition for verification
-  useEffect(() => {
-    console.log(`[useCyberAccessStateMachine] FSM State Changed: ${state}`);
-  }, [state]);
+  // Trigger authorization button
+  const triggerAuthorize = useCallback(() => {
+    console.log('[Phase 1 FSM] triggerAuthorize invoked');
+    setState('AUTHORIZE');
+  }, []);
 
-  // Initial setup check
+  // Initial setup & URL check
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const isMobileDevice = window.innerWidth < 768;
-    setIsMobile(isMobileDevice);
+    setIsMobile(window.innerWidth < 768);
 
     const urlParams = new URLSearchParams(window.location.search);
-    const forceBootParam = urlParams.get('boot') === 'true';
-    
-    // Line where soc_session_booted is READ:
-    const bootedInSession = sessionStorage.getItem('soc_session_booted') === 'true';
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const forceBoot = urlParams.has('boot') || urlParams.get('boot') === 'true' || urlParams.has('debug');
 
-    setReducedMotion(prefersReducedMotion);
-
-    console.log('[useCyberAccessStateMachine] Mount Audit:', {
-      fsmState: state,
-      'sessionStorage.soc_session_booted': bootedInSession,
-      prefersReducedMotion: prefersReducedMotion,
-      forceBootParam: forceBootParam,
-      isMobile: isMobileDevice,
-    });
-
-    // Check early exit conditions if forceBootParam is not set
-    // TEMPORARILY DISABLED FOR PHASE 2 LIFECYCLE AUDIT:
-    console.log('[useCyberAccessStateMachine] Phase 2 Audit: Session persistence & reduced motion early returns are TEMPORARILY DISABLED');
-    /*
-    if (!forceBootParam) {
-      if (bootedInSession) {
-        console.log('[useCyberAccessStateMachine] EARLY RETURN CONDITION: sessionStorage.soc_session_booted is true. Skipping boot sequence.');
-        markComplete();
-        return;
-      }
-      if (prefersReducedMotion) {
-        console.log('[useCyberAccessStateMachine] EARLY RETURN CONDITION: prefersReducedMotion is true. Skipping boot sequence.');
-        markComplete();
-        return;
-      }
+    if (forceBoot) {
+      sessionStorage.removeItem('soc_session_booted');
     }
-    */
 
-    // Safety fallback timer
-    safetyTimerRef.current = setTimeout(() => {
-      console.log('[useCyberAccessStateMachine] MAX_SAFETY_TIMEOUT_MS reached (10s), triggering markComplete()');
+    const bootedInSession = sessionStorage.getItem('soc_session_booted') === 'true';
+
+    console.log('[Phase 1 FSM] Initialized:', { bootedInSession, forceBoot });
+
+    if (!forceBoot && bootedInSession) {
+      console.log('[Phase 1 FSM] Skipping: soc_session_booted is true');
       markComplete();
-    }, MAX_SAFETY_TIMEOUT_MS);
-
-    return () => {
-      if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
-    };
+    }
   }, [markComplete]);
 
-  // Trigger authorization (user click or auto-advance)
-  const triggerAuthorize = useCallback(() => {
-    console.log('[useCyberAccessStateMachine] triggerAuthorize called');
-    setState((curr) => {
-      if (curr === 'TRACE' || curr === 'AUTHORIZE') {
-        return 'AUTHORIZE';
-      }
-      return curr;
-    });
-  }, []);
+  // Log state changes
+  useEffect(() => {
+    console.log(`[Phase 1 FSM] Current State: ${state}`);
+  }, [state]);
 
-  // FSM transitions driven deterministically by state updates
+  // FSM Step Transitions (Phase 1: TRACE -> AUTHORIZE -> COMPLETE)
   useEffect(() => {
     if (state === 'IDLE' || state === 'COMPLETE') return;
 
@@ -112,51 +72,19 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
 
     switch (state) {
       case 'TRACE':
+        // Auto-advance to AUTHORIZE after 2000ms if user doesn't click
         timerRef.current = setTimeout(() => {
+          console.log('[Phase 1 FSM] TRACE timeout reached -> AUTHORIZE');
           setState('AUTHORIZE');
-        }, 1200);
+        }, 2000);
         break;
 
       case 'AUTHORIZE':
+        // Pause 1000ms before finishing Phase 1
         timerRef.current = setTimeout(() => {
-          setState('DISSOLVE');
-        }, 200);
-        break;
-
-      case 'DISSOLVE':
-        timerRef.current = setTimeout(() => {
-          setState('BEAM');
-        }, 250);
-        break;
-
-      case 'BEAM':
-        timerRef.current = setTimeout(() => {
-          setState('RING');
-        }, 400);
-        break;
-
-      case 'RING':
-        timerRef.current = setTimeout(() => {
-          setState('RELEASE');
-        }, 500);
-        break;
-
-      case 'RELEASE':
-        timerRef.current = setTimeout(() => {
-          setState('SHUTTER');
-        }, 300);
-        break;
-
-      case 'SHUTTER':
-        timerRef.current = setTimeout(() => {
-          setState('REVEAL');
-        }, 600);
-        break;
-
-      case 'REVEAL':
-        timerRef.current = setTimeout(() => {
+          console.log('[Phase 1 FSM] AUTHORIZE completed -> markComplete');
           markComplete();
-        }, 800);
+        }, 1000);
         break;
 
       default:
@@ -171,9 +99,7 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
   return {
     state,
     isMobile,
-    reducedMotion,
     triggerAuthorize,
     skipSequence,
   };
 }
-

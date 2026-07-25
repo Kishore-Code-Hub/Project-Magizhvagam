@@ -1,4 +1,4 @@
-// Prisma Schema for Premium Cybersecurity Portfolio
+// Prisma Schema for Master Cyber Portfolio & Headless CMS V2.0
 
 generator client {
   provider = "prisma-client-js"
@@ -34,62 +34,103 @@ model Session {
 }
 
 model Profile {
-  id        String   @id @default("default")
-  name      String   @default("Soundkish")
-  headline  String   @default("Securing Systems. Building Trust.")
-  taglines  String   @default("[\"Cybersecurity Enthusiast\", \"AI Developer\", \"Full-Stack Developer\", \"Software Engineer\"]")
-  bio       String   @default("I'm Soundkish, a CSE student passionate about Cybersecurity, AI, and building secure digital solutions for a better tomorrow.")
-  resumeUrl String   @default("https://drive.google.com")
-  socials   String   @default("{\"github\":\"https://github.com\",\"linkedin\":\"https://linkedin.com\",\"email\":\"mailto:contact@soundkish.dev\"}")
-  stats     String   @default("{\"yearsLearning\":\"2+\",\"projects\":\"15+\",\"certifications\":\"10+\",\"curiosity\":\"∞\"}")
-  updatedAt DateTime @updatedAt
+  id                    String   @id @default("default")
+  name                  String   @default("Soundkish")
+  headline              String   @default("Securing Systems. Building Trust.")
+  taglines              String   @default("[\"Cybersecurity Enthusiast\", \"AI Developer\", \"Full-Stack Developer\", \"Software Engineer\"]")
+  bio                   String   @default("I'm Soundkish, a Computer Science & Engineering student passionate about Cybersecurity, AI, and building secure software solutions for a resilient digital future.")
+  professionalIdentity String   @default("Software Engineer & Cybersecurity Researcher")
+  personalBio           String   @default("Deep interest in application security, penetration testing, full-stack systems architecture, and machine learning integration.")
+  education             String   @default("[\"B.E. Computer Science & Engineering\", \"Specialization in Cybersecurity & Cloud\"]")
+  currentFocus          String   @default("Building production-grade secure web apps & studying AI-driven threat detection.")
+  values                String   @default("[\"Security First\", \"Clean Code\", \"Continuous Learning\", \"User Privacy\"]")
+  techPhilosophy        String   @default("Build simple, resilient, and audit-ready systems with defence-in-depth architecture.")
+  availability          String   @default("Open to Internships & Software Engineering Roles")
+  languages             String   @default("[\"English\", \"Tamil\"]")
+  resumeUrl             String   @default("https://drive.google.com")
+  socials               String   @default("{\"github\":\"https://github.com\",\"linkedin\":\"https://linkedin.com\",\"email\":\"mailto:contact@soundkish.dev\",\"leetcode\":\"https://leetcode.com\",\"tryhackme\":\"https://tryhackme.com\",\"hackthebox\":\"https://hackthebox.com\"}")
+  stats                 String   @default("{\"yearsLearning\":\"2+\",\"projects\":\"15+\",\"certifications\":\"10+\",\"curiosity\":\"∞\"}")
+  updatedAt             DateTime @updatedAt
 }
 
 model Project {
+  id                  String   @id @default(cuid())
+  title               String
+  description         String
+  longDescription     String?
+  image               String
+  gallery             String   @default("[]") // JSON string array of image URLs
+  videoUrl            String?
+  githubUrl           String?
+  liveUrl             String?
+  documentationUrl    String?
+  architectureDiagram String?
+  features            String   @default("[]") // JSON string array
+  challenges          String?  
+  solutions           String?
+  tags                String   @default("[]") // JSON array e.g. ["Python", "FastAPI", "AI"]
+  category            String   @default("Web Engineering") // Web Engineering, Cybersecurity, AI/ML, Cloud
+  status              String   @default("Completed") // Completed, In Development, Research
+  metrics             String   @default("{}") // JSON string e.g. {"stars": "45", "downloads": "1.2k"}
+  featured            Boolean  @default(false)
+  order               Int      @default(0)
+  published           Boolean  @default(true)
+  seoSlug             String?  @unique
+  viewCount           Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @default(now()) @updatedAt
+}
+
+model Skill {
   id              String   @id @default(cuid())
-  title           String
-  description     String
-  longDescription String?
-  image           String
-  tags            String   @default("[]") // JSON string array e.g. ["Python", "FastAPI", "AI"]
-  githubUrl       String?
-  liveUrl         String?
+  name            String
+  category        String   // Languages, Frameworks, Databases, Cloud, DevOps, Cybersecurity, AI / ML, Tools, Soft Skills
+  officialLogo    String?  // SVG path, icon key, or uploaded URL
+  shortDesc       String?
+  yearsExperience Float    @default(1.0)
+  proficiency     Int      @default(80) // 1 - 100
+  level           String   @default("Advanced") // Beginner, Intermediate, Advanced, Expert
   featured        Boolean  @default(false)
   order           Int      @default(0)
   published       Boolean  @default(true)
   createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-model Skill {
-  id        String   @id @default(cuid())
-  name      String
-  category  String   // Languages, Security Tools, Infra/DevOps, AI/ML
-  icon      String   // Icon key or path
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
 }
 
 model Certification {
-  id            String   @id @default(cuid())
-  title         String
-  issuer        String
-  issueDate     String
-  credentialUrl String?
-  logoUrl       String?
-  order         Int      @default(0)
-  createdAt     DateTime @default(now())
+  id               String   @id @default(cuid())
+  title            String
+  issuer           String
+  organizationLogo String?
+  issueDate        String
+  expiryDate       String?
+  credentialId     String?
+  credentialUrl    String?
+  pdfUrl           String?
+  skillsCovered    String   @default("[]") // JSON string array
+  description      String?
+  featured         Boolean  @default(false)
+  order            Int      @default(0)
+  published        Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
 }
 
 model TimelineEntry {
-  id          String   @id @default(cuid())
-  year        String
-  title       String
-  subtitle    String?
-  description String
-  category    String   @default("Education") // Education, Project, Milestone, Security
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
+  id              String   @id @default(cuid())
+  year            String
+  title           String
+  subtitle        String?
+  description     String
+  category        String   @default("Education") // Education, Experience, Internships, Projects, Hackathons, Certifications, Milestones
+  expandedContent String?
+  gallery         String   @default("[]") // JSON string array
+  iconKey         String?  @default("shield")
+  links           String   @default("[]") // JSON string array of link objects
+  isCurrent       Boolean  @default(false)
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
 }
 
 model Message {
@@ -103,6 +144,58 @@ model Message {
   repliedAt    DateTime?
   replyMessage String?
   createdAt    DateTime  @default(now())
+}
+
+model AppearanceSettings {
+  id            String   @id @default("default")
+  themePreset   String   @default("cyber-green") // cyber-green, neon-cyan, matrix-amber, dark-minimal
+  primaryColor  String   @default("#00ff66")
+  secondaryColor String  @default("#00cc52")
+  accentGlow    String   @default("rgba(0, 255, 102, 0.35)")
+  bgMain        String   @default("#050505")
+  bgCard        String   @default("rgba(10, 14, 11, 0.92)")
+  bgGlass       String   @default("rgba(0, 255, 102, 0.035)")
+  matrixSpeed   Float    @default(1.0)
+  matrixDensity Float    @default(1.0)
+  matrixColor   String   @default("#00ff66")
+  glassBlur     Int      @default(20) // in px
+  borderRadius  Int      @default(16) // in px
+  enableParticles Boolean @default(true)
+  updatedAt     DateTime @updatedAt
+}
+
+model SEOSettings {
+  id             String   @id @default("default")
+  siteTitle      String   @default("Soundkish | Cyber & Software Engineering Portfolio")
+  siteDescription String  @default("Production-grade portfolio of Soundkish — Cybersecurity Researcher, AI Developer, and Full-Stack Software Engineer.")
+  keywords       String   @default("Cybersecurity, Full-Stack, Software Engineer, Portfolio, Next.js, React, Penetration Testing, AI")
+  ogImage        String   @default("/og-image.png")
+  twitterCard    String   @default("summary_large_image")
+  robots         String   @default("index, follow")
+  canonicalUrl   String   @default("https://soundkish.dev")
+  updatedAt      DateTime @updatedAt
+}
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  filename  String
+  fileUrl   String
+  mimeType  String
+  sizeBytes Int
+  category  String   @default("uploads") // uploads, projects, certificates, hero, icons
+  altText   String?
+  createdAt DateTime @default(now())
+}
+
+model AnalyticsLog {
+  id         String   @id @default(cuid())
+  eventType  String   // PAGE_VIEW, PROJECT_CLICK, RESUME_DOWNLOAD, MESSAGE_SENT
+  path       String?
+  targetId   String?
+  ipAddress  String?
+  userAgent  String?
+  country    String?  @default("Unknown")
+  createdAt  DateTime @default(now())
 }
 
 model RateLimitBucket {
@@ -121,3 +214,4 @@ model AuditLog {
   ipAddress String?
   createdAt DateTime @default(now())
 }
+

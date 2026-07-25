@@ -1,280 +1,225 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ProjectData } from '@/types';
-import {
-  FolderGit2,
-  ExternalLink,
-  Maximize2,
-  X,
-  Terminal,
-  Calendar,
-  LayoutDashboard,
-  Brain,
-  Radio,
-  CheckCircle2,
-} from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { SectionWrapper } from '@/components/ui/SectionWrapper';
+import { SectionTitle } from '@/components/ui/SectionTitle';
+import { ProjectCard, ProjectItem } from '@/components/ui/ProjectCard';
+import { Modal } from '@/components/ui/Modal';
+import { ImageGallery } from '@/components/ui/ImageGallery';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { GlowButton } from '@/components/ui/GlowButton';
+import { CyberBadge } from '@/components/ui/CyberBadge';
+import { Search, ExternalLink, BookOpen, Layers, CheckCircle2, AlertTriangle, Shield } from 'lucide-react';
 import { GithubIcon } from '@/components/ui/Icons';
-import { CyberAudio } from '@/lib/CyberAudio';
-import { useTheme } from '@/components/theme/ThemeProvider';
+import { DESIGN_SYSTEM } from '@/lib/design-system';
 
 interface ProjectsProps {
-  projects: ProjectData[];
+  projects: ProjectItem[];
 }
 
-export default function Projects({ projects }: ProjectsProps) {
-  const { audioMuted } = useTheme();
-  const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null);
+export default function Projects({ projects = [] }: ProjectsProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string>('All Projects');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [activeProject, setActiveProject] = useState<ProjectItem | null>(null);
 
-  // Determine domain-specific software personality
-  const getProjectPersonality = (p: ProjectData) => {
-    const title = p.title.toLowerCase();
-    const tags = p.tags.map((t) => t.toLowerCase()).join(' ');
+  const categories = DESIGN_SYSTEM.categories.projects;
 
-    if (title.includes('erp') || title.includes('enterprise')) {
-      return {
-        label: 'SAP ENTERPRISE DASHBOARD',
-        icon: LayoutDashboard,
-        badge: 'ENTERPRISE SYSTEM',
-      };
-    } else if (title.includes('timetable') || title.includes('schedule')) {
-      return {
-        label: 'GOOGLE CALENDAR GRID',
-        icon: Calendar,
-        badge: 'SCHEDULING SUITE',
-      };
-    } else if (title.includes('ai') || title.includes('neural') || title.includes('mangomate')) {
-      return {
-        label: 'TENSORBOARD NEURAL MATRIX',
-        icon: Brain,
-        badge: 'AI / IoT SENSOR',
-      };
-    } else {
-      return {
-        label: 'KALI LINUX TERMINAL',
-        icon: Terminal,
-        badge: 'CYBERSECURITY TOOL',
-      };
+  const filteredProjects = useMemo(() => {
+    return projects.filter((p) => {
+      const matchesCategory =
+        selectedCategory === 'All Projects' || p.category === selectedCategory;
+      const matchesSearch =
+        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.tags.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [projects, selectedCategory, searchQuery]);
+
+  const activeGalleryImages = useMemo(() => {
+    if (!activeProject) return [];
+    try {
+      const parsed = JSON.parse(activeProject.gallery || '[]');
+      return parsed.length > 0 ? parsed : [activeProject.image];
+    } catch {
+      return [activeProject.image];
     }
-  };
+  }, [activeProject]);
 
-  const handleProjectClick = (p: ProjectData) => {
-    CyberAudio.playKeyClick(audioMuted);
-    setSelectedProject(p);
-  };
+  const activeFeatures = useMemo(() => {
+    if (!activeProject) return [];
+    try {
+      return JSON.parse(activeProject.features || '[]');
+    } catch {
+      return [];
+    }
+  }, [activeProject]);
+
+  const activeTags = useMemo(() => {
+    if (!activeProject) return [];
+    try {
+      return JSON.parse(activeProject.tags || '[]');
+    } catch {
+      return [];
+    }
+  }, [activeProject]);
 
   return (
-    <section id="projects" className="py-24 px-4 md:px-8 relative z-10 circuit-grid font-mono">
-      <div className="max-w-7xl mx-auto space-y-10 pl-0 lg:pl-20">
-        
-        {/* Section Title Header */}
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-accent font-semibold px-3 py-1 rounded-full bg-accent/10 border border-accent/30">
-            <span className="pulse-dot" />
-            // SOFTWARE LAB & DOMAIN APPLICATIONS
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
-            PRODUCTION SYSTEMS & <br />
-            <span className="text-gradient">AUTHENTIC DOMAIN SOFTWARE</span>
-          </h2>
+    <SectionWrapper id="projects">
+      <SectionTitle
+        title="FEATURED PROJECTS"
+        subtitle="Software Engineering Portfolio • Systems • Security • AI Solutions"
+        badgeText="SHIPPED SYSTEMS"
+      />
+
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-8 p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-accent)] backdrop-blur-xl">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search projects by tech, title, features..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-[var(--accent-color)] transition-colors"
+          />
         </div>
 
-        {/* Projects Application Windows Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {projects.map((project) => {
-            const personality = getProjectPersonality(project);
-            const AppIcon = personality.icon;
-
-            return (
-              <div
-                key={project.id}
-                onClick={() => handleProjectClick(project)}
-                className="glass-panel p-0 border-accent/40 bg-[#040705]/95 rounded-2xl overflow-hidden hover:border-accent hover:-translate-y-1 transition-all cursor-pointer group shadow-2xl flex flex-col justify-between"
-              >
-                {/* Virtual Application Window Bar */}
-                <div className="flex items-center justify-between px-4 py-2.5 bg-[#070c08] border-b border-accent/25 text-xs">
-                  <div className="flex items-center gap-2">
-                    <AppIcon className="w-4 h-4 text-accent" />
-                    <span className="font-bold text-white tracking-wide">{personality.label}</span>
-                  </div>
-                  <span className="text-[9px] px-2 py-0.5 rounded bg-accent/15 border border-accent/30 text-accent font-extrabold">
-                    {personality.badge}
-                  </span>
-                </div>
-
-                {/* Project Image Banner */}
-                <div className="relative h-48 sm:h-56 w-full bg-[#020403] overflow-hidden group-hover:opacity-95 transition-opacity">
-                  <img
-                    src={project.image || '/images/project-placeholder.svg'}
-                    alt={project.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#040705] via-transparent to-transparent" />
-                  
-                  <button className="absolute top-3 right-3 p-2 rounded-xl bg-[#050505]/80 border border-accent/40 text-accent backdrop-blur-md hover:bg-accent hover:text-[#050505] transition-all">
-                    <Maximize2 className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Project Info Panel */}
-                <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-extrabold text-white group-hover:text-accent transition-colors">
-                      {project.title}
-                    </h3>
-                    <p className="text-xs text-gray-300 font-sans leading-relaxed line-clamp-2">
-                      {project.description}
-                    </p>
-                  </div>
-
-                  {/* Technology Tags */}
-                  <div className="flex flex-wrap items-center gap-1.5 pt-2">
-                    {project.tags.map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2.5 py-1 rounded-md bg-accent/10 border border-accent/30 text-[10px] font-bold text-accent"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Action Link Footer */}
-                  <div className="flex items-center justify-between border-t border-accent/20 pt-4 text-xs font-bold">
-                    <span className="text-accent group-hover:underline flex items-center gap-1 text-[11px]">
-                      OPEN FULL SHOWCASE &gt;
-                    </span>
-                    <div className="flex items-center gap-2">
-                      {project.githubUrl && (
-                        <a
-                          href={project.githubUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="p-2 rounded-lg border border-accent/40 text-gray-300 hover:text-accent hover:border-accent"
-                        >
-                          <GithubIcon className="w-4 h-4" />
-                        </a>
-                      )}
-                      {project.liveUrl && (
-                        <a
-                          href={project.liveUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="p-2 rounded-lg border border-accent/40 text-gray-300 hover:text-accent hover:border-accent"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        {/* Category Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3.5 py-1.5 text-xs font-mono rounded-xl border transition-all whitespace-nowrap cursor-pointer ${
+                selectedCategory === cat
+                  ? 'bg-[var(--accent-color)] text-black font-bold border-[var(--accent-color)] shadow-[var(--shadow-accent-glow)]'
+                  : 'bg-white/5 text-gray-300 border-white/10 hover:border-white/30'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* --- FULLSCREEN PROJECT SHOWCASE MODAL --- */}
-      {selectedProject && (
-        <div className="fixed inset-0 z-50 bg-[#030504]/90 backdrop-blur-lg flex items-center justify-center p-4">
-          <div className="max-w-3xl w-full glass-panel p-6 border-accent/60 bg-[#040805] rounded-2xl space-y-6 shadow-[0_0_80px_rgba(0,255,102,0.3)] relative max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-accent/30 pb-3">
-              <div className="flex items-center gap-2 text-accent font-bold text-base">
-                <FolderGit2 className="w-5 h-5 text-accent" />
-                <span>PROJECT SHOWCASE // {selectedProject.title.toUpperCase()}</span>
-              </div>
-              <button
-                onClick={() => setSelectedProject(null)}
-                className="p-1.5 rounded-lg border border-accent/30 text-gray-400 hover:text-accent hover:border-accent"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      {/* Grid */}
+      {filteredProjects.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredProjects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onSelect={(p) => setActiveProject(p)}
+            />
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          title="No Projects Found"
+          description="Try modifying your search or choosing another category."
+        />
+      )}
+
+      {/* Detailed Architectural Modal */}
+      <Modal
+        isOpen={!!activeProject}
+        onClose={() => setActiveProject(null)}
+        title={activeProject?.title}
+        maxWidth="4xl"
+      >
+        {activeProject && (
+          <div className="space-y-6 text-left font-sans">
+            {/* Gallery / Media */}
+            <ImageGallery images={activeGalleryImages} alt={activeProject.title} />
+
+            {/* Badges & Overview */}
+            <div className="flex flex-wrap items-center gap-2">
+              <CyberBadge variant="green">{activeProject.category}</CyberBadge>
+              <CyberBadge variant="cyan">{activeProject.status}</CyberBadge>
+              {activeTags.map((tag: string, i: number) => (
+                <span key={i} className="px-2 py-0.5 text-xs font-mono rounded bg-white/5 text-gray-300 border border-white/10">
+                  #{tag}
+                </span>
+              ))}
             </div>
 
-            {/* Modal Project Image */}
-            <div className="w-full h-64 sm:h-80 rounded-xl overflow-hidden border border-accent/30 relative bg-black">
-              <img
-                src={selectedProject.image}
-                alt={selectedProject.title}
-                className="w-full h-full object-cover"
-              />
+            <div>
+              <h4 className="text-sm font-mono text-[var(--accent-color)] uppercase tracking-wider mb-1 font-bold">
+                Project Overview
+              </h4>
+              <p className="text-sm text-gray-300 leading-relaxed font-sans">
+                {activeProject.longDescription || activeProject.description}
+              </p>
             </div>
 
-            {/* Modal Details Body */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="text-2xl font-extrabold text-white">{selectedProject.title}</h3>
-                <p className="text-sm text-gray-300 font-sans leading-relaxed">
-                  {selectedProject.longDescription || selectedProject.description}
-                </p>
-              </div>
-
-              {/* Technologies Used */}
-              <div className="space-y-2">
-                <h4 className="text-xs text-accent font-bold uppercase">// TECHNOLOGIES & STACK</h4>
-                <div className="flex flex-wrap gap-2">
-                  {selectedProject.tags.map((tag, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1.5 rounded-lg bg-accent/15 border border-accent/40 text-xs font-bold text-accent"
-                    >
-                      {tag}
-                    </span>
+            {/* Features */}
+            {activeFeatures.length > 0 && (
+              <div>
+                <h4 className="text-sm font-mono text-[var(--accent-color)] uppercase tracking-wider mb-2 font-bold">
+                  Key System Features
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {activeFeatures.map((feat: string, i: number) => (
+                    <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-gray-300">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <span>{feat}</span>
+                    </div>
                   ))}
                 </div>
               </div>
+            )}
 
-              {/* Architecture Integrity */}
-              <div className="bg-[#020403] p-4 rounded-xl border border-accent/30 space-y-2 text-xs">
-                <div className="flex items-center gap-2 text-emerald-400 font-bold">
-                  <CheckCircle2 className="w-4 h-4" /> PRODUCTION READY ARCHITECTURE
-                </div>
-                <p className="text-gray-400 font-sans text-xs">
-                  Hardened authentication logic, optimized database query indexing, responsive UI layout, and strict input validation.
-                </p>
+            {/* Challenges & Solutions */}
+            {(activeProject.challenges || activeProject.solutions) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {activeProject.challenges && (
+                  <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                    <h5 className="text-xs font-mono text-amber-400 font-bold uppercase flex items-center gap-1.5 mb-2">
+                      <AlertTriangle className="w-4 h-4" /> Technical Challenges
+                    </h5>
+                    <p className="text-xs text-gray-300 leading-relaxed">{activeProject.challenges}</p>
+                  </div>
+                )}
+                {activeProject.solutions && (
+                  <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                    <h5 className="text-xs font-mono text-emerald-400 font-bold uppercase flex items-center gap-1.5 mb-2">
+                      <Shield className="w-4 h-4" /> Architectural Solutions
+                    </h5>
+                    <p className="text-xs text-gray-300 leading-relaxed">{activeProject.solutions}</p>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
 
-            {/* Modal Footer Links */}
-            <div className="pt-3 border-t border-accent/20 flex flex-wrap items-center justify-between gap-3 text-xs">
+            {/* Links Bar */}
+            <div className="pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                {selectedProject.githubUrl && (
-                  <a
-                    href={selectedProject.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-accent text-accent font-bold hover:bg-accent hover:text-[#050505] transition-all"
+                {activeProject.githubUrl && (
+                  <GlowButton
+                    variant="secondary"
+                    size="sm"
+                    leftIcon={<GithubIcon className="w-4 h-4" />}
+                    onClick={() => window.open(activeProject.githubUrl!, '_blank')}
                   >
-                    <GithubIcon className="w-4 h-4" />
-                    <span>VIEW GITHUB REPO</span>
-                  </a>
+                    View Codebase
+                  </GlowButton>
                 )}
-                {selectedProject.liveUrl && (
-                  <a
-                    href={selectedProject.liveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-[#050505] font-bold hover:bg-white transition-all"
+                {activeProject.liveUrl && (
+                  <GlowButton
+                    variant="primary"
+                    size="sm"
+                    rightIcon={<ExternalLink className="w-4 h-4" />}
+                    onClick={() => window.open(activeProject.liveUrl!, '_blank')}
                   >
-                    <ExternalLink className="w-4 h-4" />
-                    <span>LAUNCH DEMO</span>
-                  </a>
+                    Live Demo
+                  </GlowButton>
                 )}
               </div>
-
-              <button
-                onClick={() => setSelectedProject(null)}
-                className="px-5 py-2.5 rounded-xl border border-accent/40 text-gray-300 font-bold hover:text-accent hover:border-accent"
-              >
-                CLOSE SHOWCASE
-              </button>
             </div>
           </div>
-        </div>
-      )}
-    </section>
+        )}
+      </Modal>
+    </SectionWrapper>
   );
 }

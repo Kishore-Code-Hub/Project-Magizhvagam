@@ -6,17 +6,30 @@ export interface ProfileData {
   bio: string;
   resumeUrl: string;
   image?: string;
+  professionalIdentity?: string;
+  personalBio?: string;
+  education?: string[];
+  currentFocus?: string;
+  values?: string[];
+  techPhilosophy?: string;
+  availability?: string;
+  languages?: string[];
   socials: {
     github?: string;
     linkedin?: string;
     email?: string;
     twitter?: string;
+    leetcode?: string;
+    tryhackme?: string;
+    hackthebox?: string;
   };
   stats: {
     yearsLearning: string;
     projects: string;
     certifications: string;
     curiosity: string;
+    heroImage?: string;
+    greeting?: string;
   };
 }
 
@@ -26,9 +39,19 @@ export interface ProjectData {
   description: string;
   longDescription?: string | null;
   image: string;
-  tags: string[];
+  gallery?: string;
+  videoUrl?: string | null;
   githubUrl?: string | null;
   liveUrl?: string | null;
+  documentationUrl?: string | null;
+  architectureDiagram?: string | null;
+  features?: string;
+  challenges?: string | null;
+  solutions?: string | null;
+  tags: string | string[];
+  category?: string;
+  status?: string;
+  metrics?: string;
   featured: boolean;
   order: number;
   published: boolean;
@@ -38,9 +61,14 @@ export interface ProjectData {
 export interface SkillData {
   id: string;
   name: string;
-  category: 'Languages' | 'Security Tools' | 'Infra/DevOps' | 'AI/ML' | string;
-  icon: string;
+  category: string;
+  icon?: string;
+  officialLogo?: string | null;
+  shortDesc?: string | null;
+  yearsExperience?: number;
+  proficiency?: number;
   level?: string;
+  featured?: boolean;
   order: number;
 }
 
@@ -48,9 +76,16 @@ export interface CertificationData {
   id: string;
   title: string;
   issuer: string;
-  issueDate: string;
-  credentialUrl?: string | null;
   logoUrl?: string | null;
+  organizationLogo?: string | null;
+  issueDate: string;
+  expiryDate?: string | null;
+  credentialId?: string | null;
+  credentialUrl?: string | null;
+  pdfUrl?: string | null;
+  skillsCovered?: string;
+  description?: string | null;
+  featured?: boolean;
   order: number;
 }
 
@@ -60,7 +95,12 @@ export interface TimelineData {
   title: string;
   subtitle?: string | null;
   description: string;
-  category: 'Education' | 'Project' | 'Milestone' | 'Security' | string;
+  category: string;
+  expandedContent?: string | null;
+  gallery?: string;
+  iconKey?: string | null;
+  links?: string;
+  isCurrent?: boolean;
   order: number;
 }
 

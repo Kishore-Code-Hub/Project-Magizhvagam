@@ -1,111 +1,72 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TimelineData } from '@/types';
-import { Clock, ChevronRight, CheckCircle2, Radio } from 'lucide-react';
-import { CyberAudio } from '@/lib/CyberAudio';
-import { useTheme } from '@/components/theme/ThemeProvider';
+import { SectionWrapper } from '@/components/ui/SectionWrapper';
+import { SectionTitle } from '@/components/ui/SectionTitle';
+import { TimelineCard, TimelineItem } from '@/components/ui/TimelineCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { DESIGN_SYSTEM } from '@/lib/design-system';
 
 interface TimelineProps {
-  timeline: TimelineData[];
+  timeline: TimelineItem[];
 }
 
-export default function Timeline({ timeline }: TimelineProps) {
-  const { audioMuted } = useTheme();
-  const [expandedId, setExpandedId] = useState<string | null>(timeline[0]?.id || null);
+export default function Timeline({ timeline = [] }: TimelineProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
-  const toggleExpand = (id: string) => {
-    CyberAudio.playKeyClick(audioMuted);
-    setExpandedId((prev) => (prev === id ? null : id));
-  };
+  const categories = ['All', ...DESIGN_SYSTEM.categories.timeline];
+
+  const filteredTimeline = timeline.filter(
+    (t) => selectedCategory === 'All' || t.category === selectedCategory
+  );
 
   return (
-    <section id="timeline" className="py-24 px-4 md:px-8 relative z-10 circuit-grid font-mono">
-      <div className="max-w-7xl mx-auto space-y-12 pl-0 lg:pl-20">
-        
-        {/* Section Header */}
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-accent font-semibold px-3 py-1 rounded-full bg-accent/10 border border-accent/30">
-            <span className="pulse-dot" />
-            // FIBER-OPTIC NETWORK PIPELINE
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
-            CAREER MILESTONES & <br />
-            <span className="text-gradient">TRAVELING DATA PACKETS</span>
-          </h2>
-        </div>
+    <SectionWrapper id="timeline">
+      <SectionTitle
+        title="CAREER TIMELINE"
+        subtitle="Education • Experience • Projects • Achievements"
+        badgeText="ENGINEERING MILESTONES"
+      />
 
-        {/* Vertical Fiber Optic Network Cable */}
-        <div className="relative pl-6 sm:pl-10 space-y-8 border-l-2 border-accent/50 shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]">
-          
-          {/* Animated Glowing Packet Traveling Down the Cable */}
-          <div className="absolute top-0 -left-[5px] w-2.5 h-10 rounded-full bg-accent shadow-[0_0_20px_var(--accent-color)] animate-[pulse_2s_infinite]" />
-
-          {timeline.map((entry) => {
-            const isExpanded = expandedId === entry.id;
-
-            return (
-              <div key={entry.id} className="relative group">
-                
-                {/* Fiber Optic Node Connection Dot */}
-                <div
-                  onClick={() => toggleExpand(entry.id)}
-                  className={`absolute -left-[31px] sm:-left-[47px] top-1.5 w-6 h-6 rounded-full border-2 cursor-pointer flex items-center justify-center transition-all ${
-                    isExpanded
-                      ? 'bg-accent border-accent text-[#050505] shadow-[0_0_25px_var(--accent-color)]'
-                      : 'bg-[#050505] border-accent/60 text-accent hover:border-accent'
-                  }`}
-                >
-                  <div className="w-2 h-2 rounded-full bg-current animate-pulse" />
-                </div>
-
-                {/* Event Card Panel */}
-                <div
-                  onClick={() => toggleExpand(entry.id)}
-                  className="glass-panel p-6 border-accent/40 bg-[#040705]/95 rounded-2xl hover:border-accent transition-all cursor-pointer space-y-3 shadow-2xl"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-accent/20 pb-3 text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 rounded bg-accent/15 border border-accent/30 text-accent font-extrabold">
-                        {entry.year}
-                      </span>
-                      <span className="font-bold text-white uppercase">{entry.category}</span>
-                    </div>
-                    <span className="text-[10px] text-accent font-bold flex items-center gap-1">
-                      {isExpanded ? 'PAUSE & COLLAPSE PACKET' : 'PAUSE & INSPECT PACKET'}{' '}
-                      <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl font-extrabold text-white group-hover:text-accent transition-colors">
-                    {entry.title}
-                  </h3>
-
-                  {entry.subtitle && (
-                    <p className="text-xs text-accent font-bold">{entry.subtitle}</p>
-                  )}
-
-                  <p className="text-xs text-gray-300 font-sans leading-relaxed">
-                    {entry.description}
-                  </p>
-
-                  {/* Expanded Extra Details */}
-                  {isExpanded && (
-                    <div className="pt-3 border-t border-accent/20 space-y-2 text-xs animate-in fade-in slide-in-from-top-2 duration-150">
-                      <div className="flex items-center gap-2 text-emerald-400 font-bold">
-                        <CheckCircle2 className="w-4 h-4" /> PACKET INSPECTION COMPLETE // VERIFIED MILESTONE
-                      </div>
-                      <p className="text-gray-400 font-sans text-xs">
-                        Logged in the SOC mission archives. Associated code repositories, project builds, and credentials indexed.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      {/* Category Filter Pills */}
+      <div className="flex items-center justify-center gap-2 overflow-x-auto pb-4 mb-10 no-scrollbar">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-3.5 py-1.5 text-xs font-mono rounded-xl border transition-all whitespace-nowrap cursor-pointer ${
+              selectedCategory === cat
+                ? 'bg-[var(--accent-color)] text-black font-bold border-[var(--accent-color)] shadow-[var(--shadow-accent-glow)]'
+                : 'bg-white/5 text-gray-300 border-white/10 hover:border-white/30'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
-    </section>
+
+      {filteredTimeline.length > 0 ? (
+        <div className="relative max-w-4xl mx-auto space-y-6">
+          {/* Vertical Center Line for Desktop */}
+          <div className="hidden sm:block absolute left-6 top-4 bottom-4 w-0.5 bg-gradient-to-b from-[var(--accent-color)] via-emerald-500/30 to-transparent" />
+
+          {filteredTimeline.map((item) => (
+            <div key={item.id} className="relative sm:pl-16">
+              {/* Timeline Indicator Node */}
+              <div className="hidden sm:flex absolute left-4 top-6 -translate-x-1/2 w-4 h-4 rounded-full bg-black border-2 border-[var(--accent-color)] items-center justify-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-color)] animate-ping" />
+              </div>
+
+              <TimelineCard item={item} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          title="No Milestones Recorded"
+          description="Career entries will be logged as milestones unfold."
+        />
+      )}
+    </SectionWrapper>
   );
 }

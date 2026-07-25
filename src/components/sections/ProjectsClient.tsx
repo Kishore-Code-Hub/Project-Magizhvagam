@@ -65,7 +65,7 @@ export default function ProjectsClient({ initialProjects }: { initialProjects: P
 
             <div className="space-y-4 pt-4 border-t border-white/10">
               <div className="flex flex-wrap gap-1.5">
-                {(project.tags ?? []).map((t, idx) => (
+                {(Array.isArray(project.tags) ? project.tags : []).map((t: string, idx: number) => (
                   <span
                     key={idx}
                     className="text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300"

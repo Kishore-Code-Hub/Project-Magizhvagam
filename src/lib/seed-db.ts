@@ -35,7 +35,7 @@ export async function seedDatabaseIfEmpty() {
           data: {
             name: skill.name,
             category: skill.category,
-            icon: skill.icon,
+            officialLogo: skill.icon,
             order: skill.order,
           },
         });
@@ -73,7 +73,7 @@ export async function seedDatabaseIfEmpty() {
             issuer: cert.issuer,
             issueDate: cert.issueDate,
             credentialUrl: cert.credentialUrl,
-            logoUrl: cert.logoUrl,
+            organizationLogo: cert.logoUrl,
             order: cert.order,
           },
         });

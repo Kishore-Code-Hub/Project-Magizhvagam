@@ -3,54 +3,56 @@ import { db } from '@/lib/db';
 import { z } from 'zod';
 
 const contactSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
-  subject: z.string().min(2, 'Subject must be at least 2 characters').max(150),
-  message: z.string().min(10, 'Message must be at least 10 characters').max(2000),
-  honeypot: z.string().optional(),
+  subject: z.string().min(3, 'Subject must be at least 3 characters'),
+  message: z.string().min(10, 'Message must be at least 10 characters'),
 });
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const ipAddress = req.headers.get('x-forwarded-for') || '127.0.0.1';
 
-    // 1. Honeypot check
-    if (body.honeypot) {
-      return NextResponse.json({ success: true, message: 'Message received' });
-    }
-
-    // 2. Input validation
-    const parsed = contactSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.issues[0].message },
-        { status: 400 }
-      );
-    }
-
-    const { name, email, subject, message } = parsed.data;
-    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
-
-    // 3. Database Persistent Storage
-    await db.message.create({
-      data: {
-        name,
-        email,
-        subject,
-        message,
-        ipAddress: ip,
+    // Basic rate limit check: max 5 messages per hour per IP
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const recentCount = await db.message.count({
+      where: {
+        ipAddress,
+        createdAt: { gte: oneHourAgo },
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      message: 'Message delivered & securely stored.',
+    if (recentCount >= 5) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please wait an hour before submitting another message.' },
+        { status: 429 }
+      );
+    }
+
+    const body = await req.json();
+    const validatedData = contactSchema.parse(body);
+
+    const savedMessage = await db.message.create({
+      data: {
+        ...validatedData,
+        ipAddress,
+      },
     });
+
+    // Record Analytics Event
+    await db.analyticsLog.create({
+      data: {
+        eventType: 'MESSAGE_SENT',
+        ipAddress,
+        path: '/#contact',
+      },
+    });
+
+    return NextResponse.json({ success: true, id: savedMessage.id }, { status: 201 });
   } catch (error: any) {
-    console.error('Contact API Error:', error);
-    return NextResponse.json(
-      { error: 'Server error processing contact request.' },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+    }
+    return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }
 }

@@ -1,231 +1,109 @@
 'use client';
 
-import React, { useState } from 'react';
-import { SkillData } from '@/types';
-import {
-  Cpu,
-  Shield,
-  Server,
-  BrainCircuit,
-  Database,
-  Network,
-  X,
-  Code2,
-  CheckCircle2,
-  Layers,
-  Sparkles,
-} from 'lucide-react';
-import { CyberAudio } from '@/lib/CyberAudio';
-import { useTheme } from '@/components/theme/ThemeProvider';
+import React, { useState, useMemo } from 'react';
+import { SectionWrapper } from '@/components/ui/SectionWrapper';
+import { SectionTitle } from '@/components/ui/SectionTitle';
+import { SkillCard, SkillItem } from '@/components/ui/SkillCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Search, SlidersHorizontal, Layers } from 'lucide-react';
+import { DESIGN_SYSTEM } from '@/lib/design-system';
 
 interface SkillsProps {
-  skills: SkillData[];
+  skills: SkillItem[];
 }
 
-export default function Skills({ skills }: SkillsProps) {
-  const { audioMuted } = useTheme();
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
-  const [selectedSkill, setSelectedSkill] = useState<SkillData | null>(null);
+export default function Skills({ skills = [] }: SkillsProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [sortBy, setSortBy] = useState<'proficiency' | 'experience' | 'name'>('proficiency');
 
-  const categories = ['ALL', 'Languages', 'Security Tools', 'Infra/DevOps', 'AI/ML'];
+  const categories = ['All', ...DESIGN_SYSTEM.categories.skills];
 
-  const filteredSkills =
-    selectedCategory === 'ALL'
-      ? skills
-      : skills.filter((s) => s.category?.toLowerCase() === selectedCategory.toLowerCase());
-
-  // Category specific hardware identity styling & icons
-  const getHardwareIdentity = (category?: string) => {
-    const cat = (category || '').toLowerCase();
-    if (cat.includes('security')) {
-      return {
-        type: 'SECURITY MODULE PCB',
-        icon: Shield,
-        badge: 'CYBER DEFENSE',
-      };
-    } else if (cat.includes('infra') || cat.includes('devops') || cat.includes('cloud')) {
-      return {
-        type: 'RACK SERVER CHASSIS',
-        icon: Server,
-        badge: 'INFRA STRUCTURE',
-      };
-    } else if (cat.includes('ai') || cat.includes('ml')) {
-      return {
-        type: 'GPU ACCELERATOR NPU',
-        icon: BrainCircuit,
-        badge: 'NEURAL ENGINE',
-      };
-    } else if (cat.includes('database') || cat.includes('storage')) {
-      return {
-        type: 'SSD CONTROLLER MODULE',
-        icon: Database,
-        badge: 'DATA STORAGE',
-      };
-    } else if (cat.includes('network')) {
-      return {
-        type: 'NETWORK SWITCH BOARD',
-        icon: Network,
-        badge: 'NETWORK HUB',
-      };
-    } else {
-      // Default / Languages
-      return {
-        type: 'MOTHERBOARD CPU CHIP',
-        icon: Cpu,
-        badge: 'COMPUTE MATRIX',
-      };
-    }
-  };
-
-  const handleSkillClick = (skill: SkillData) => {
-    CyberAudio.playKeyClick(audioMuted);
-    setSelectedSkill(skill);
-  };
+  const filteredSkills = useMemo(() => {
+    return skills
+      .filter((s) => {
+        const matchesCategory = selectedCategory === 'All' || s.category === selectedCategory;
+        const matchesSearch =
+          s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (s.shortDesc && s.shortDesc.toLowerCase().includes(searchQuery.toLowerCase()));
+        return matchesCategory && matchesSearch;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'proficiency') return b.proficiency - a.proficiency;
+        if (sortBy === 'experience') return b.yearsExperience - a.yearsExperience;
+        return a.name.localeCompare(b.name);
+      });
+  }, [skills, selectedCategory, searchQuery, sortBy]);
 
   return (
-    <section id="skills" className="py-24 px-4 md:px-8 relative z-10 circuit-grid font-mono">
-      <div className="max-w-7xl mx-auto space-y-10 pl-0 lg:pl-20">
-        
-        {/* Section Title Header */}
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-accent font-semibold px-3 py-1 rounded-full bg-accent/10 border border-accent/30">
-            <span className="pulse-dot" />
-            // MOTHERBOARD HARDWARE TESTBED
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
-            PCB HARDWARE MODULES & <br />
-            <span className="text-gradient">MOTHERBOARD CAPABILITIES</span>
-          </h2>
+    <SectionWrapper id="skills">
+      <SectionTitle
+        title="TECHNICAL SKILLS"
+        subtitle="Technology Stack & Engineering Expertise"
+        badgeText="CAPABILITIES & TOOLING"
+      />
+
+      {/* Controls HUD Header */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-8 p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-accent)] backdrop-blur-xl">
+        {/* Search Bar */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search technology stack..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-[var(--accent-color)] transition-colors"
+          />
         </div>
 
-        {/* Category Filter Controls */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setSelectedCategory(cat);
-                CyberAudio.playKeyClick(audioMuted);
-              }}
-              className={`px-4 py-2.5 rounded-xl border text-xs font-bold transition-all uppercase ${
-                selectedCategory === cat
-                  ? 'bg-accent text-[#050505] border-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]'
-                  : 'bg-[#040705]/80 text-gray-400 border-accent/30 hover:border-accent hover:text-white'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* PCB Hardware Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredSkills.map((skill) => {
-            const hw = getHardwareIdentity(skill.category);
-            const HardwareIcon = hw.icon;
-
-            return (
-              <div
-                key={skill.id}
-                onClick={() => handleSkillClick(skill)}
-                className="glass-panel p-5 border-accent/40 bg-[#040705]/95 rounded-2xl hover:border-accent hover:-translate-y-1 transition-all cursor-pointer group space-y-4 shadow-xl relative overflow-hidden"
-              >
-                {/* Micro Circuit Lines Header */}
-                <div className="flex items-center justify-between border-b border-accent/20 pb-3">
-                  <div className="flex items-center gap-2 text-xs font-bold text-accent">
-                    <HardwareIcon className="w-4 h-4 text-accent group-hover:scale-110 transition-transform" />
-                    <span>{hw.type}</span>
-                  </div>
-                  <span className="text-[9px] px-2 py-0.5 rounded bg-accent/10 border border-accent/30 text-accent font-bold">
-                    {hw.badge}
-                  </span>
-                </div>
-
-                {/* Skill Name & Pin Aesthetic */}
-                <div className="space-y-1">
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-accent transition-colors">
-                    {skill.name}
-                  </h3>
-                  <p className="text-[11px] text-gray-400 font-sans">
-                    Category: <span className="text-gray-300 font-mono">{skill.category}</span>
-                  </p>
-                </div>
-
-                {/* PCB Copper Pins Visual Indicator */}
-                <div className="flex items-center justify-between border-t border-accent/15 pt-3 text-[10px] text-gray-500">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                    <span>STATUS: HARDWARE ONLINE</span>
-                  </div>
-                  <span className="text-accent group-hover:underline font-bold text-[9px]">
-                    INSPECT SPEC &gt;
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+        {/* Sort Controls */}
+        <div className="flex items-center gap-3 font-mono text-xs text-gray-300">
+          <span className="flex items-center gap-1.5 text-gray-400">
+            <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--accent-color)]" /> Sort:
+          </span>
+          <select
+            value={sortBy}
+            onChange={(e: any) => setSortBy(e.target.value)}
+            className="bg-black/60 border border-white/10 text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-[var(--accent-color)]"
+          >
+            <option value="proficiency">Highest Proficiency</option>
+            <option value="experience">Years Experience</option>
+            <option value="name">Alphabetical</option>
+          </select>
         </div>
       </div>
 
-      {/* --- HARDWARE SPEC SHEET MODAL --- */}
-      {selectedSkill && (
-        <div className="fixed inset-0 z-50 bg-[#030504]/90 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-xl w-full glass-panel p-6 border-accent/60 bg-[#040805] rounded-2xl space-y-6 shadow-[0_0_60px_rgba(0,255,102,0.25)] relative animate-in fade-in zoom-in-95 duration-200">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-accent/30 pb-3">
-              <div className="flex items-center gap-2 text-accent font-bold text-sm">
-                <Code2 className="w-5 h-5 text-accent" />
-                <span>MOTHERBOARD SPEC SHEET // {selectedSkill.name.toUpperCase()}</span>
-              </div>
-              <button
-                onClick={() => setSelectedSkill(null)}
-                className="p-1 rounded-lg border border-accent/30 text-gray-400 hover:text-accent hover:border-accent"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {/* Category Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-4 py-2 text-xs font-mono rounded-xl border transition-all whitespace-nowrap cursor-pointer ${
+              selectedCategory === cat
+                ? 'bg-[var(--accent-color)] text-black font-bold border-[var(--accent-color)] shadow-[var(--shadow-accent-glow)]'
+                : 'bg-white/5 text-gray-300 border-white/10 hover:border-white/30 hover:text-white'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
 
-            {/* Spec Details */}
-            <div className="space-y-4 text-xs">
-              <div className="bg-[#020403] p-4 rounded-xl border border-accent/30 space-y-2">
-                <div className="flex justify-between text-gray-300">
-                  <span className="text-gray-400">HARDWARE MODULE:</span>
-                  <span className="font-bold text-accent">{selectedSkill.name}</span>
-                </div>
-                <div className="flex justify-between text-gray-300">
-                  <span className="text-gray-400">CATEGORY:</span>
-                  <span className="font-bold text-white">{selectedSkill.category}</span>
-                </div>
-                <div className="flex justify-between text-gray-300">
-                  <span className="text-gray-400">SYSTEM INTEGRATION:</span>
-                  <span className="font-bold text-emerald-400 flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> PRODUCTION READY
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-2 text-gray-300 font-sans text-xs">
-                <h4 className="font-mono text-accent font-bold uppercase text-[11px]">
-                  // HARDWARE SPECIFICATION & UTILIZATION
-                </h4>
-                <p className="leading-relaxed">
-                  Extensively utilized across security toolings, backend API microservices, AI pipelines, and full-stack software. Hardened in production projects and security audits.
-                </p>
-              </div>
-            </div>
-
-            {/* Close Button */}
-            <div className="pt-2 border-t border-accent/20 flex justify-end">
-              <button
-                onClick={() => setSelectedSkill(null)}
-                className="px-5 py-2.5 rounded-xl border border-accent text-accent font-bold text-xs hover:bg-accent hover:text-[#050505] transition-all"
-              >
-                CLOSE SPECIFICATION
-              </button>
-            </div>
-          </div>
+      {/* Skills Cards Grid */}
+      {filteredSkills.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredSkills.map((skill) => (
+            <SkillCard key={skill.id} skill={skill} />
+          ))}
         </div>
+      ) : (
+        <EmptyState
+          title="No Matching Skills Found"
+          description="Try clearing your search query or selecting a different skill category."
+        />
       )}
-    </section>
+    </SectionWrapper>
   );
 }
