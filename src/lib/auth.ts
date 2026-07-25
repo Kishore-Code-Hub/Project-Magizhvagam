@@ -3,6 +3,10 @@ import { cookies } from 'next/headers';
 import { db } from './db';
 import crypto from 'crypto';
 
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable must be explicitly defined in production!');
+}
+
 const JWT_SECRET_KEY = new TextEncoder().encode(
   process.env.JWT_SECRET || 'super-secret-cyber-key-change-this-in-production-2026'
 );

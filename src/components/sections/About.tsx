@@ -10,6 +10,7 @@ import { GlowButton } from '@/components/ui/GlowButton';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
 import { SkillProgressBar } from '@/components/ui/SkillProgressBar';
 import { ProfileData } from '@/types';
+import { normalizeImageUrl } from '@/lib/image-utils';
 import {
   ShieldCheck,
   Code2,
@@ -176,8 +177,9 @@ export default function About({ profile }: AboutProps) {
                 {/* Profile Image with Cyber Avatar Ring */}
                 <div className="relative group">
                   <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-500" />
+
                   <img
-                    src={profile.profileImage || profile.image || '/hero-hacker.png'}
+                    src={normalizeImageUrl(profile.profileImage || profile.image, 'about') || '/hero-hacker.png'}
                     alt={profile.name}
                     className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-2 border-emerald-500/80 shadow-2xl"
                   />

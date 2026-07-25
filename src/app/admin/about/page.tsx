@@ -188,7 +188,7 @@ export default function AdminAboutPage() {
             currentFocus: data.currentFocus || '',
             availability: data.availability || '',
             education: eduVal,
-            profileImage: statsObj.profileImage || '/hero-hacker.png',
+            profileImage: data.profileImage || statsObj.profileImage || '/hero-hacker.png',
           });
 
           if (data.aboutModules) {

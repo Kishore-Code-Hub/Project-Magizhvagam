@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, X, Check, Image as ImageIcon, FolderOpen, Search } from 'lucide-react';
 import { Modal } from './Modal';
+import { normalizeImageUrl } from '@/lib/image-utils';
 
 interface FileUploaderProps {
   onUploadComplete: (url: string) => void;
@@ -21,13 +22,13 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [preview, setPreview] = useState<string | null>(value || null);
+  const [preview, setPreview] = useState<string | null>(normalizeImageUrl(value, category) || null);
 
   useEffect(() => {
     if (value) {
-      setPreview(value);
+      setPreview(normalizeImageUrl(value, category) || null);
     }
-  }, [value]);
+  }, [value, category]);
 
   // Media Library Picker Modal State
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
@@ -58,8 +59,9 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
       }
 
       const data = await res.json();
-      setPreview(data.fileUrl);
-      onUploadComplete(data.fileUrl);
+      const normalizedUrl = normalizeImageUrl(data.fileUrl, category) || data.fileUrl;
+      setPreview(normalizedUrl);
+      onUploadComplete(normalizedUrl);
     } catch (err: any) {
       setError(err.message || 'File upload failed');
     } finally {
@@ -84,8 +86,9 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
   };
 
   const handleSelectAsset = (url: string) => {
-    setPreview(url);
-    onUploadComplete(url);
+    const normalizedUrl = normalizeImageUrl(url, category) || url;
+    setPreview(normalizedUrl);
+    onUploadComplete(normalizedUrl);
     setIsLibraryOpen(false);
   };
 

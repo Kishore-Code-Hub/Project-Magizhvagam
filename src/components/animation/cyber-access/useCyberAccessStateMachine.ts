@@ -24,20 +24,26 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
   const isTimerReadyRef = useRef<boolean>(false);
 
   const markComplete = useCallback(() => {
-    console.log('[Phase 1 FSM] markComplete triggered');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Phase 1 FSM] markComplete triggered');
+    }
     BootStorage.setBooted();
     setState('COMPLETE');
     onComplete?.();
   }, [onComplete]);
 
   const skipSequence = useCallback(() => {
-    console.log('[Phase 1 FSM] skipSequence invoked');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Phase 1 FSM] skipSequence invoked');
+    }
     if (timerRef.current) clearTimeout(timerRef.current);
     markComplete();
   }, [markComplete]);
 
   const triggerAuthorize = useCallback(() => {
-    console.log('[Phase 1 FSM] triggerAuthorize invoked');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Phase 1 FSM] triggerAuthorize invoked');
+    }
     setState('AUTHORIZE');
   }, []);
 

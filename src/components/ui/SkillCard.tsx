@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { GlassCard } from './GlassCard';
 import { CyberBadge } from './CyberBadge';
 import { Award, Clock, Star, Code2, Terminal, Cpu, Database, Shield, Flame, Server, Globe, Layers } from 'lucide-react';
+import { normalizeImageUrl } from '@/lib/image-utils';
 
 export interface SkillItem {
   id: string;
@@ -23,14 +24,20 @@ interface SkillCardProps {
 }
 
 function renderSkillIcon(logo?: string | null, name: string = '') {
-  if (!logo && !name) return <span className="font-mono font-bold text-sm">SK</span>;
+  const normalizedLogo = normalizeImageUrl(logo, 'icons');
 
-  // Priority 1 & 2: Uploaded URL / Media asset
-  if (logo && (logo.startsWith('/') || logo.startsWith('http://') || logo.startsWith('https://') || logo.startsWith('data:'))) {
-    return <img src={logo} alt={name} className="w-6 h-6 object-contain" />;
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[SkillCard Trace] skill="${name}" | rawLogo="${logo}" | normalizedLogo="${normalizedLogo}"`);
   }
 
-  // Priority 3: Icon Map for Key Terms
+  // Priority 1: Normalized Uploaded Image URL
+  if (normalizedLogo && (normalizedLogo.startsWith('/') || normalizedLogo.startsWith('http://') || normalizedLogo.startsWith('https://') || normalizedLogo.startsWith('data:'))) {
+    return <img src={normalizedLogo} alt={name} className="w-6 h-6 object-contain" />;
+  }
+
+  if (!logo && !name) return <span className="font-mono font-bold text-sm">SK</span>;
+
+  // Priority 2: Icon Map for Key Terms
   const key = (logo || name).toLowerCase();
   if (key.includes('python')) return <span className="text-emerald-400 font-bold font-mono text-sm">Py</span>;
   if (key.includes('react') || key.includes('next')) return <Globe className="w-5 h-5 text-cyan-400" />;
@@ -41,7 +48,7 @@ function renderSkillIcon(logo?: string | null, name: string = '') {
   if (key.includes('api') || key.includes('cloud') || key.includes('docker') || key.includes('aws')) return <Server className="w-5 h-5 text-cyan-400" />;
   if (key.includes('c++') || key.includes('java') || key.includes('code')) return <Code2 className="w-5 h-5 text-emerald-400" />;
 
-  // Priority 4: Fallback Tech Badge (First 2 characters)
+  // Priority 3: Fallback Tech Badge (First 2 characters)
   return <span className="font-mono font-bold text-sm text-[var(--accent-color)]">{name.slice(0, 2).toUpperCase()}</span>;
 }
 

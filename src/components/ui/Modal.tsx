@@ -59,6 +59,9 @@ export const Modal: React.FC<ModalProps> = ({
 
           {/* Modal Container */}
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={title || 'Dialog Modal'}
             initial={{ opacity: 0, scale: 0.95, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}

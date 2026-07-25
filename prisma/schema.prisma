@@ -161,6 +161,8 @@ model Message {
   repliedAt    DateTime?
   replyMessage String?
   createdAt    DateTime  @default(now())
+
+  @@index([ipAddress, createdAt])
 }
 
 model AppearanceSettings {
@@ -224,6 +226,8 @@ model AnalyticsLog {
   userAgent  String?
   country    String?  @default("Unknown")
   createdAt  DateTime @default(now())
+
+  @@index([ipAddress, createdAt])
 }
 
 model RateLimitBucket {

@@ -21,24 +21,33 @@ export default function CyberWorkstation({
   glowIntensity = 100,
 }: WorkstationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
 
-    // Subtle 3D mouse parallax constrained to +-3 deg max
-    setTilt({
-      rx: -y * 6,
-      ry: x * 6,
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+
+    rafRef.current = requestAnimationFrame(() => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = (clientX - rect.left) / rect.width - 0.5;
+      const y = (clientY - rect.top) / rect.height - 0.5;
+
+      setTilt({
+        rx: -y * 6,
+        ry: x * 6,
+      });
     });
   };
 
   const handleMouseEnter = () => setIsHovered(true);
   const handleMouseLeave = () => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
     setIsHovered(false);
     setTilt({ rx: 0, ry: 0 });
   };

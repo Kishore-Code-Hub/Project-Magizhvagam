@@ -9,6 +9,13 @@ const contactSchema = z.object({
   message: z.string().min(10, 'Message must be at least 10 characters'),
 });
 
+function sanitizeText(input: string): string {
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .trim();
+}
+
 export async function POST(req: NextRequest) {
   try {
     const ipAddress = req.headers.get('x-forwarded-for') || '127.0.0.1';
@@ -25,16 +32,23 @@ export async function POST(req: NextRequest) {
     if (recentCount >= 5) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please wait an hour before submitting another message.' },
-        { status: 429 }
+        { status: 429, headers: { 'Retry-After': '3600' } }
       );
     }
 
     const body = await req.json();
     const validatedData = contactSchema.parse(body);
 
+    const sanitizedName = sanitizeText(validatedData.name);
+    const sanitizedSubject = sanitizeText(validatedData.subject);
+    const sanitizedMessage = sanitizeText(validatedData.message);
+
     const savedMessage = await db.message.create({
       data: {
-        ...validatedData,
+        name: sanitizedName,
+        email: validatedData.email.trim().toLowerCase(),
+        subject: sanitizedSubject,
+        message: sanitizedMessage,
         ipAddress,
         userAgent: req.headers.get('user-agent') || undefined,
         country: req.headers.get('cf-ipcountry') || undefined,

@@ -5,6 +5,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { FileUploader } from '@/components/ui/FileUploader';
 import { Modal } from '@/components/ui/Modal';
+import { normalizeImageUrl } from '@/lib/image-utils';
 import { Image as ImageIcon, Folder, Upload, Trash2, Copy, Check, Search, Eye, ExternalLink } from 'lucide-react';
 
 export default function AdminMediaPage() {
@@ -113,7 +114,7 @@ export default function AdminMediaPage() {
                 onClick={() => setPreviewAsset(asset)}
                 className="relative h-32 w-full rounded-lg overflow-hidden bg-black/60 mb-2 cursor-pointer group-hover:border group-hover:border-[var(--accent-color)] transition-all"
               >
-                <img src={asset.fileUrl} alt={asset.filename} className="w-full h-full object-cover" />
+                <img src={normalizeImageUrl(asset.fileUrl, asset.category || 'uploads') || asset.fileUrl} alt={asset.filename} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                   <Eye className="w-6 h-6 text-white" />
                 </div>
@@ -130,7 +131,7 @@ export default function AdminMediaPage() {
 
             <div className="pt-2 mt-2 border-t border-white/10 flex items-center justify-between">
               <button
-                onClick={() => handleCopyUrl(asset.fileUrl, asset.id)}
+                onClick={() => handleCopyUrl(normalizeImageUrl(asset.fileUrl, asset.category || 'uploads') || asset.fileUrl, asset.id)}
                 className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 flex items-center gap-1 text-[10px] cursor-pointer"
               >
                 {copiedId === asset.id ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
@@ -154,11 +155,11 @@ export default function AdminMediaPage() {
         <Modal isOpen={Boolean(previewAsset)} onClose={() => setPreviewAsset(null)} title={previewAsset.filename} maxWidth="2xl">
           <div className="space-y-4 font-mono">
             <div className="w-full max-h-96 rounded-xl overflow-hidden bg-black/80 flex items-center justify-center border border-white/10">
-              <img src={previewAsset.fileUrl} alt={previewAsset.filename} className="max-h-96 object-contain" />
+              <img src={normalizeImageUrl(previewAsset.fileUrl, previewAsset.category || 'uploads') || previewAsset.fileUrl} alt={previewAsset.filename} className="max-h-96 object-contain" />
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-xs bg-black/40 p-3 rounded-xl border border-white/10">
-              <div>URL: <a href={previewAsset.fileUrl} target="_blank" rel="noreferrer" className="text-cyan-400 underline truncate block">{previewAsset.fileUrl}</a></div>
+              <div>URL: <a href={normalizeImageUrl(previewAsset.fileUrl, previewAsset.category || 'uploads') || previewAsset.fileUrl} target="_blank" rel="noreferrer" className="text-cyan-400 underline truncate block">{normalizeImageUrl(previewAsset.fileUrl, previewAsset.category || 'uploads') || previewAsset.fileUrl}</a></div>
               <div>Size: <span className="text-white font-bold">{(previewAsset.sizeBytes / 1024).toFixed(1)} KB</span></div>
               <div>Category: <span className="text-emerald-400 font-bold uppercase">{previewAsset.category}</span></div>
               <div>Uploaded: <span className="text-gray-400">{new Date(previewAsset.createdAt).toLocaleString()}</span></div>

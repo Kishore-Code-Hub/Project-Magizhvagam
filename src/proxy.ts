@@ -14,6 +14,33 @@ export async function proxy(req: NextRequest) {
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), display-capture=()'
+  );
+  response.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https:;"
+  );
+
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set(
+      'Strict-Transport-Security',
+      'max-age=31536000; includeSubDomains; preload'
+    );
+  }
+
+  // CSRF Origin & Method Protection on Mutating Admin API Routes
+  if (pathname.startsWith('/api/admin') && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+    const origin = req.headers.get('origin');
+    const host = req.headers.get('host');
+    if (origin && host) {
+      const originHost = new URL(origin).host;
+      if (originHost !== host) {
+        return NextResponse.json({ error: 'Forbidden: CSRF validation failed' }, { status: 403 });
+      }
+    }
+  }
 
   // Protect Admin CMS Routes (/admin/* except /admin/login)
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {

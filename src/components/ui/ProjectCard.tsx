@@ -7,6 +7,7 @@ import { CyberBadge } from './CyberBadge';
 import { GlowButton } from './GlowButton';
 import { ExternalLink, BookOpen, Layers, Star, Download, Eye } from 'lucide-react';
 import { GithubIcon } from './Icons';
+import { normalizeImageUrl } from '@/lib/image-utils';
 
 export interface ProjectItem {
   id: string;
@@ -37,6 +38,7 @@ interface ProjectCardProps {
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onSelect }) => {
+  const normalizedImage = normalizeImageUrl(project.image, 'projects') || '/project-placeholder.jpg';
   const parsedTags: string[] = React.useMemo(() => {
     try {
       return JSON.parse(project.tags);
@@ -58,7 +60,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onSelect }) =
       {/* Cover Image Container */}
       <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-black/40">
         <img
-          src={project.image}
+          src={normalizedImage}
           alt={project.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
         />

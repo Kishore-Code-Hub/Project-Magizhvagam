@@ -3,6 +3,10 @@ import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db';
 import { getAdminSession } from '@/lib/auth';
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
 export async function GET() {
   try {
     const session = await getAdminSession();
@@ -33,35 +37,46 @@ export async function POST(req: NextRequest) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
+    const loadingDuration = clamp(parseFloat(body.loadingDuration) || 5.0, 0.5, 15.0);
+    const accessGrantedHoldTime = clamp(parseFloat(body.accessGrantedHoldTime) || 2.0, 0.5, 10.0);
+    const welcomeScreenHoldTime = clamp(parseFloat(body.welcomeScreenHoldTime) || 2.0, 0.5, 10.0);
 
     const updated = await db.appearanceSettings.upsert({
       where: { id: 'default' },
       update: {
-        loadingDuration: parseFloat(body.loadingDuration) || 5.0,
+        loadingDuration,
         enableLoader: Boolean(body.enableLoader),
         skipLoaderForReturning: Boolean(body.skipLoaderForReturning),
         enableScrollReveal: Boolean(body.enableScrollReveal),
         repeatScrollReveal: Boolean(body.repeatScrollReveal),
         waitForCriticalAssets: Boolean(body.waitForCriticalAssets),
-        fadeDuration: parseFloat(body.fadeDuration) || 0.7,
-        accessGrantedHoldTime: parseFloat(body.accessGrantedHoldTime) || 2.0,
-        welcomeScreenHoldTime: parseFloat(body.welcomeScreenHoldTime) || 2.0,
-        bootMsgOffsetX: parseInt(body.bootMsgOffsetX) || 0,
-        bootMsgOffsetY: parseInt(body.bootMsgOffsetY) ?? -40,
+        fadeDuration: clamp(parseFloat(body.fadeDuration) || 0.7, 0.1, 5.0),
+        accessGrantedHoldTime,
+        welcomeScreenHoldTime,
+        bootMsgOffsetX: clamp(parseInt(body.bootMsgOffsetX) || 0, -200, 200),
+        bootMsgOffsetY: clamp(parseInt(body.bootMsgOffsetY) ?? -40, -200, 200),
       },
       create: {
         id: 'default',
-        loadingDuration: parseFloat(body.loadingDuration) || 5.0,
+        loadingDuration,
         enableLoader: Boolean(body.enableLoader),
         skipLoaderForReturning: Boolean(body.skipLoaderForReturning),
         enableScrollReveal: Boolean(body.enableScrollReveal),
         repeatScrollReveal: Boolean(body.repeatScrollReveal),
         waitForCriticalAssets: Boolean(body.waitForCriticalAssets),
-        fadeDuration: parseFloat(body.fadeDuration) || 0.7,
-        accessGrantedHoldTime: parseFloat(body.accessGrantedHoldTime) || 2.0,
-        welcomeScreenHoldTime: parseFloat(body.welcomeScreenHoldTime) || 2.0,
-        bootMsgOffsetX: parseInt(body.bootMsgOffsetX) || 0,
-        bootMsgOffsetY: parseInt(body.bootMsgOffsetY) ?? -40,
+        fadeDuration: clamp(parseFloat(body.fadeDuration) || 0.7, 0.1, 5.0),
+        accessGrantedHoldTime,
+        welcomeScreenHoldTime,
+        bootMsgOffsetX: clamp(parseInt(body.bootMsgOffsetX) || 0, -200, 200),
+        bootMsgOffsetY: clamp(parseInt(body.bootMsgOffsetY) ?? -40, -200, 200),
+      },
+    });
+
+    await db.auditLog.create({
+      data: {
+        action: 'UPDATE_ANIMATION_SETTINGS',
+        actor: session.email,
+        details: `Updated animation durations (loading: ${loadingDuration}s, welcome: ${welcomeScreenHoldTime}s)`,
       },
     });
 

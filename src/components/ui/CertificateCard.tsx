@@ -6,6 +6,7 @@ import { CyberBadge } from './CyberBadge';
 import { GlowButton } from './GlowButton';
 import { Modal } from './Modal';
 import { Award, ExternalLink, Calendar, CheckCircle, FileText, Maximize2 } from 'lucide-react';
+import { normalizeImageUrl } from '@/lib/image-utils';
 
 export interface CertificationItem {
   id: string;
@@ -37,7 +38,7 @@ export const CertificateCard: React.FC<CertificateCardProps> = ({ cert }) => {
     }
   }, [cert.skillsCovered]);
 
-  const certificateImg = cert.pdfUrl || (cert.organizationLogo?.startsWith('/uploads/') ? cert.organizationLogo : null);
+  const certificateImg = normalizeImageUrl(cert.pdfUrl || cert.organizationLogo, 'certificates');
 
   return (
     <>

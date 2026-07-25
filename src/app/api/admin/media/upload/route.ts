@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getAdminSession } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
+
+const ALLOWED_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.pdf', '.mp4', '.webm', '.jfif'];
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,6 +23,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'File size exceeds maximum limit of 25MB' }, { status: 400 });
+    }
+
+    const ext = path.extname(file.name).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      return NextResponse.json({ error: `File extension '${ext}' is forbidden for security` }, { status: 400 });
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
@@ -27,7 +40,6 @@ export async function POST(req: NextRequest) {
     await mkdir(uploadsDir, { recursive: true });
 
     // Generate safe filename with timestamp
-    const ext = path.extname(file.name) || '.png';
     const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
     const filePath = path.join(uploadsDir, safeName);
 
@@ -47,7 +59,24 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(mediaAsset, { status: 201 });
+    // Record Audit Log Entry
+    await db.auditLog.create({
+      data: {
+        action: 'UPLOAD_MEDIA',
+        actor: session.email,
+        details: `Uploaded ${file.name} (${category})`,
+      },
+    });
+
+    revalidatePath('/', 'layout');
+    revalidatePath('/admin/media');
+
+    return NextResponse.json(mediaAsset, {
+      status: 201,
+      headers: {
+        'Cache-Control': 'no-store, max-age=0, must-revalidate',
+      },
+    });
   } catch (error: any) {
     console.error('Media upload error:', error);
     return NextResponse.json({ error: error.message || 'File upload failed' }, { status: 500 });
