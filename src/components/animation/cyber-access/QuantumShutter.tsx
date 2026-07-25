@@ -5,34 +5,39 @@ import { motion } from 'framer-motion';
 
 interface QuantumShutterProps {
   active: boolean;
+  isOpening?: boolean;
 }
 
-export default function QuantumShutter({ active }: QuantumShutterProps) {
+export default function QuantumShutter({ active, isOpening = false }: QuantumShutterProps) {
   if (!active) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden select-none">
-      {/* 80ms Volumetric White Lens Seam Flash */}
-      <motion.div
-        initial={{ opacity: 0, scaleY: 0.2 }}
-        animate={{ opacity: [0, 1, 0.9, 0], scaleY: [0.2, 3, 1, 0] }}
-        transition={{ duration: 0.45, ease: [0.82, 0, 0.2, 1] }}
-        className="absolute top-1/2 left-0 right-0 h-16 -translate-y-1/2 bg-gradient-to-r from-transparent via-[#ffffff] to-transparent shadow-[0_0_80px_#ffffff] z-50 pointer-events-none"
-      />
+      {/* 80ms Volumetric White Lens Seam Flash when opening */}
+      {isOpening && (
+        <motion.div
+          initial={{ opacity: 0, scaleY: 0.2 }}
+          animate={{ opacity: [0, 1, 0.9, 0], scaleY: [0.2, 3, 1, 0] }}
+          transition={{ duration: 0.45, ease: [0.82, 0, 0.2, 1] }}
+          className="absolute top-1/2 left-0 right-0 h-16 -translate-y-1/2 bg-gradient-to-r from-transparent via-[#ffffff] to-transparent shadow-[0_0_80px_#ffffff] z-50 pointer-events-none"
+        />
+      )}
 
-      {/* Radial Bloom Lens Flare */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: [0, 1, 0], scale: [0.5, 1.5, 2.0] }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-radial from-white via-[#00ff66]/50 to-transparent blur-2xl z-50 pointer-events-none"
-      />
+      {/* Radial Bloom Lens Flare when opening */}
+      {isOpening && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: [0, 1, 0], scale: [0.5, 1.5, 2.0] }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-radial from-white via-[#00ff66]/50 to-transparent blur-2xl z-50 pointer-events-none"
+        />
+      )}
 
-      {/* 150ms "WELCOME, KISHORE" HUD Toast Moment */}
+      {/* "WELCOME, ANONYMOUS" HUD Toast */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: [0, 1, 1, 0], scale: [0.9, 1.05, 1, 0.95] }}
-        transition={{ duration: 0.45, times: [0, 0.2, 0.7, 1] }}
+        animate={isOpening ? { opacity: 0, scale: 0.95 } : { opacity: 1, scale: 1 }}
+        transition={{ duration: isOpening ? 0.25 : 0.3 }}
         className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 text-center font-mono pointer-events-none"
       >
         <div className="px-6 py-3 rounded-lg bg-black/90 border border-[#00ff66] shadow-[0_0_40px_rgba(0,255,102,0.6)] backdrop-blur-md">
@@ -45,20 +50,20 @@ export default function QuantumShutter({ active }: QuantumShutterProps) {
         </div>
       </motion.div>
 
-      {/* Upper Shutter Panel (Slides Upward) */}
+      {/* Upper Shutter Panel (Slides Upward on Reveal) */}
       <motion.div
         initial={{ y: '0%' }}
-        animate={{ y: '-100%' }}
+        animate={{ y: isOpening ? '-100%' : '0%' }}
         transition={{ duration: 0.45, ease: [0.82, 0, 0.2, 1] }}
         className="absolute top-0 left-0 right-0 h-1/2 bg-[#030303] border-b-2 border-[#00ff66]/60 shadow-[0_15px_40px_rgba(0,0,0,0.95)] z-40 overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black via-[#030504] to-[#00ff66]/15 opacity-50" />
       </motion.div>
 
-      {/* Lower Shutter Panel (Slides Downward) */}
+      {/* Lower Shutter Panel (Slides Downward on Reveal) */}
       <motion.div
         initial={{ y: '0%' }}
-        animate={{ y: '100%' }}
+        animate={{ y: isOpening ? '100%' : '0%' }}
         transition={{ duration: 0.45, ease: [0.82, 0, 0.2, 1] }}
         className="absolute bottom-0 left-0 right-0 h-1/2 bg-[#030303] border-t-2 border-[#00ff66]/60 shadow-[0_-15px_40px_rgba(0,0,0,0.95)] z-40 overflow-hidden"
       >

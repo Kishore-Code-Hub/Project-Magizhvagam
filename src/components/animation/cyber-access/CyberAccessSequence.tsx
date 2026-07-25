@@ -111,8 +111,8 @@ function SequenceInner({ onComplete }: CyberAccessSequenceProps) {
         )}
       </div>
 
-      {/* Phase 6: Quantum Shutter Overlay */}
-      <QuantumShutter active={state === 'SHUTTER'} />
+      {/* Phase 6 & 7: Quantum Shutter & Welcome Screen Overlay */}
+      <QuantumShutter active={state === 'SHUTTER' || state === 'REVEAL'} isOpening={state === 'REVEAL'} />
     </>
   );
 }

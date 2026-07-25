@@ -211,25 +211,25 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
       return () => clearTimeout(timer);
     }
 
-    // Phase 6: SHUTTER (8% of loadingDuration) -> REVEAL -> COMPLETE
+    // Phase 6: SHUTTER (Holds Welcome Screen for configured welcomeScreenHoldTime)
     if (state === 'SHUTTER') {
-      const dur = getPhaseDuration(0.08, 0.3);
-      setPhaseTimer(dur / 1000);
-      const timer = setTimeout(() => {
-        console.log('[Phase 1 FSM] SHUTTER complete -> REVEAL');
-        setState('REVEAL');
-      }, dur);
-      return () => clearTimeout(timer);
-    }
-
-    // Phase 7: REVEAL -> COMPLETE (Holds for configured Welcome Screen Hold Time)
-    if (state === 'REVEAL') {
       const welcomeHoldMs = Math.max(500, Math.round(welcomeScreenHoldTime * 1000));
       setPhaseTimer(welcomeHoldMs / 1000);
       const timer = setTimeout(() => {
-        console.log(`[Phase 1 FSM] Welcome Screen Held for ${welcomeScreenHoldTime}s -> COMPLETE`);
-        markComplete();
+        console.log(`[Phase 1 FSM] Welcome Screen Held for ${welcomeScreenHoldTime}s -> REVEAL (Slide Open)`);
+        setState('REVEAL');
       }, welcomeHoldMs);
+      return () => clearTimeout(timer);
+    }
+
+    // Phase 7: REVEAL (450ms shutter slide-open animation) -> COMPLETE
+    if (state === 'REVEAL') {
+      const revealDurMs = 450;
+      setPhaseTimer(0.45);
+      const timer = setTimeout(() => {
+        console.log('[Phase 1 FSM] Shutter Reveal complete -> COMPLETE');
+        markComplete();
+      }, revealDurMs);
       return () => clearTimeout(timer);
     }
   }, [state, getPhaseDuration, markComplete, welcomeScreenHoldTime]);

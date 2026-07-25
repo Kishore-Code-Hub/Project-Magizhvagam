@@ -7,7 +7,7 @@ import SideDockNav from '@/components/nav/SideDockNav';
 import PerformanceManager from '@/components/ui/PerformanceManager';
 import CommandPalette from '@/components/ui/CommandPalette';
 import { ArrowRight, Mail, ExternalLink } from 'lucide-react';
-import { GithubIcon, LinkedinIcon } from '@/components/ui/Icons';
+import { GithubIcon, LinkedinIcon, LeetCodeIcon } from '@/components/ui/Icons';
 import { ProfileData } from '@/types';
 
 interface HeroProps {
@@ -86,29 +86,41 @@ export default function Hero({ profile }: HeroProps) {
                 <ExternalLink className="w-3.5 h-3.5 text-accent" />
               </a>
 
-              {/* Social Icon Buttons matched to minimal outline button style */}
-              <div className="flex items-center gap-2">
-                {profile.socials.github && (
+              {/* Clean horizontal social links row containing ONLY: GitHub, LinkedIn, LeetCode */}
+              <div className="flex items-center gap-2.5">
+                {profile.socials?.github && (
                   <a
                     href={profile.socials.github}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="GitHub Profile"
-                    className="p-2.5 rounded-xl border border-accent/60 text-gray-300 hover:text-accent hover:border-accent transition-all hover:scale-105 bg-[#040705]/60 backdrop-blur-md"
+                    className="p-2.5 rounded-xl border border-accent/60 text-gray-300 hover:text-accent hover:border-accent hover:shadow-[0_0_15px_rgba(0,255,102,0.4)] transition-all duration-300 hover:scale-110 bg-[#040705]/60 backdrop-blur-md"
                   >
                     <GithubIcon className="w-4 h-4" />
                   </a>
                 )}
 
-                {profile.socials.linkedin && (
+                {profile.socials?.linkedin && (
                   <a
                     href={profile.socials.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="LinkedIn Profile"
-                    className="p-2.5 rounded-xl border border-accent/60 text-gray-300 hover:text-accent hover:border-accent transition-all hover:scale-105 bg-[#040705]/60 backdrop-blur-md"
+                    className="p-2.5 rounded-xl border border-accent/60 text-gray-300 hover:text-accent hover:border-accent hover:shadow-[0_0_15px_rgba(0,255,102,0.4)] transition-all duration-300 hover:scale-110 bg-[#040705]/60 backdrop-blur-md"
                   >
                     <LinkedinIcon className="w-4 h-4" />
+                  </a>
+                )}
+
+                {profile.socials?.leetcode && (
+                  <a
+                    href={profile.socials.leetcode}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="LeetCode Profile"
+                    className="p-2.5 rounded-xl border border-accent/60 text-gray-300 hover:text-accent hover:border-accent hover:shadow-[0_0_15px_rgba(0,255,102,0.4)] transition-all duration-300 hover:scale-110 bg-[#040705]/60 backdrop-blur-md"
+                  >
+                    <LeetCodeIcon className="w-4 h-4" />
                   </a>
                 )}
               </div>

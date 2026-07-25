@@ -195,10 +195,18 @@ export default function About({ profile }: AboutProps) {
                   </p>
                 </div>
 
-                <div className="flex flex-wrap justify-center gap-2 pt-1">
-                  <CyberBadge variant="green" size="sm">ENCRYPTION READY</CyberBadge>
-                  <CyberBadge variant="cyan" size="sm">SYSTEM CLEARANCE</CyberBadge>
-                </div>
+                {/* LinkedIn CTA Button */}
+                {profile.socials?.linkedin && (
+                  <a
+                    href={profile.socials.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-[#0A66C2] text-white border border-[#0A66C2] font-bold text-xs hover:bg-white hover:text-[#0A66C2] hover:border-[#0A66C2] transition-all duration-300 shadow-[0_4px_15px_rgba(10,102,194,0.35)] hover:shadow-[0_6px_20px_rgba(10,102,194,0.5)] transform hover:-translate-y-0.5 mt-1 cursor-pointer"
+                  >
+                    <LinkedinIcon className="w-4 h-4 shrink-0 fill-current" />
+                    <span>Connect with me on LinkedIn</span>
+                  </a>
+                )}
 
                 {/* About Me Bio Summary Block */}
                 <div className="w-full text-left p-4 rounded-2xl bg-black/50 border border-emerald-500/20 space-y-2 mt-2">

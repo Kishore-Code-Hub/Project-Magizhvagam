@@ -14,6 +14,9 @@ export default function AdminHeroPage() {
     resumeUrl: '',
     heroImage: '',
     greeting: '',
+    github: 'https://github.com',
+    linkedin: 'https://linkedin.com',
+    leetcode: 'https://leetcode.com',
   });
 
   const [roles, setRoles] = useState<string[]>([
@@ -46,6 +49,7 @@ export default function AdminHeroPage() {
       .then((data) => {
         if (data) {
           const stats = typeof data.stats === 'string' ? JSON.parse(data.stats) : data.stats || {};
+          const socials = typeof data.socials === 'string' ? JSON.parse(data.socials) : data.socials || {};
           setFormData({
             name: data.name || '',
             headline: data.headline || '',
@@ -53,6 +57,9 @@ export default function AdminHeroPage() {
             resumeUrl: data.resumeUrl || '',
             heroImage: stats.heroImage || '/Hero-section-banner.jfif',
             greeting: stats.greeting || 'Welcome to my Cyber Operations Hub',
+            github: socials.github || 'https://github.com',
+            linkedin: socials.linkedin || 'https://linkedin.com',
+            leetcode: socials.leetcode || 'https://leetcode.com',
           });
           setRoles(parseTaglines(data.taglines));
         }
@@ -111,6 +118,11 @@ export default function AdminHeroPage() {
             taglines: taglinesJson,
             bio: formData.bio,
             resumeUrl: formData.resumeUrl,
+            socials: {
+              github: formData.github,
+              linkedin: formData.linkedin,
+              leetcode: formData.leetcode,
+            },
             stats: {
               heroImage: formData.heroImage,
               greeting: formData.greeting,
@@ -258,6 +270,43 @@ export default function AdminHeroPage() {
               onChange={(e) => handleFieldChange('resumeUrl', e.target.value)}
               className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)]"
             />
+          </div>
+
+          {/* Official Social Links (GitHub, LinkedIn, LeetCode) */}
+          <div className="space-y-3 pt-4 border-t border-white/10">
+            <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Social Links (Hero Icons & About CTA)</h4>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold text-gray-300 mb-1 uppercase">GitHub Profile URL</label>
+                <input
+                  type="text"
+                  value={formData.github}
+                  onChange={(e) => handleFieldChange('github', e.target.value)}
+                  className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-300 mb-1 uppercase">LinkedIn Profile URL</label>
+                <input
+                  type="text"
+                  value={formData.linkedin}
+                  onChange={(e) => handleFieldChange('linkedin', e.target.value)}
+                  className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-300 mb-1 uppercase">LeetCode Profile URL</label>
+                <input
+                  type="text"
+                  value={formData.leetcode}
+                  onChange={(e) => handleFieldChange('leetcode', e.target.value)}
+                  className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)]"
+                />
+              </div>
+            </div>
           </div>
 
           <div>
