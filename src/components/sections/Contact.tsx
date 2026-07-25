@@ -217,7 +217,7 @@ export default function Contact({ profile }: ContactProps) {
                       required
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder="e.g. Alex Mercer"
+                      placeholder="e.g. Anonymous"
                       className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)] transition-colors"
                     />
                   </div>
@@ -229,7 +229,7 @@ export default function Contact({ profile }: ContactProps) {
                       required
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="alex@domain.com"
+                      placeholder="anonymous@domain.com"
                       className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)] transition-colors"
                     />
                   </div>
@@ -272,7 +272,7 @@ export default function Contact({ profile }: ContactProps) {
                     required
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder="Provide details about your project, timeline, or engineering opportunity..."
+                    placeholder="Provide Your Message Here ..."
                     className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)] transition-colors resize-none"
                   />
                 </div>

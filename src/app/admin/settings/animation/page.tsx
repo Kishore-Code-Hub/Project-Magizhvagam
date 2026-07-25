@@ -15,6 +15,7 @@ export default function AdminAnimationSettingsPage() {
     waitForCriticalAssets: true,
     fadeDuration: 0.7,
     accessGrantedHoldTime: 2.0,
+    welcomeScreenHoldTime: 2.0,
     bootMsgOffsetX: 0,
     bootMsgOffsetY: -40,
   });
@@ -39,6 +40,7 @@ export default function AdminAnimationSettingsPage() {
             waitForCriticalAssets: data.waitForCriticalAssets ?? true,
             fadeDuration: data.fadeDuration ?? 0.7,
             accessGrantedHoldTime: data.accessGrantedHoldTime ?? 2.0,
+            welcomeScreenHoldTime: data.welcomeScreenHoldTime ?? 2.0,
             bootMsgOffsetX: data.bootMsgOffsetX ?? 0,
             bootMsgOffsetY: data.bootMsgOffsetY ?? -40,
           });
@@ -181,6 +183,30 @@ export default function AdminAnimationSettingsPage() {
               </div>
             </div>
 
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold text-cyan-400 uppercase">
+                  Welcome Screen Hold Time ({(formData.welcomeScreenHoldTime || 2.0).toFixed(1)} seconds)
+                </label>
+                <span className="text-xs text-cyan-400 font-bold">{(formData.welcomeScreenHoldTime || 2.0).toFixed(1)}s</span>
+              </div>
+              <input
+                type="range"
+                min="0.5"
+                max="10.0"
+                step="0.5"
+                value={formData.welcomeScreenHoldTime || 2.0}
+                onChange={(e) => handleFieldChange('welcomeScreenHoldTime', parseFloat(e.target.value))}
+                className="w-full accent-cyan-400 cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                <span>0.5s</span>
+                <span>2.0s (Default)</span>
+                <span>5s</span>
+                <span>10.0s</span>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -310,15 +336,6 @@ export default function AdminAnimationSettingsPage() {
             >
               <Play className="w-4 h-4 text-emerald-400" />
               <span>Preview Loader</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handlePreviewReveal}
-              className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-mono border border-white/10 flex items-center gap-2 cursor-pointer"
-            >
-              <Eye className="w-4 h-4 text-cyan-400" />
-              <span>Preview Reveal</span>
             </button>
           </div>
         </div>

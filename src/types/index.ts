@@ -6,6 +6,7 @@ export interface ProfileData {
   bio: string;
   resumeUrl: string;
   image?: string;
+  profileImage?: string;
   professionalIdentity?: string;
   personalBio?: string;
   education?: string[];

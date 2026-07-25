@@ -37,6 +37,7 @@ model Profile {
   id                    String   @id @default("default")
   name                  String   @default("Soundkish")
   headline              String   @default("Securing Systems. Building Trust.")
+  profileImage          String   @default("/uploads/about/1784968630446-IMG_0307.JPG")
   taglines              String   @default("[\"Cybersecurity Enthusiast\", \"AI Developer\", \"Full-Stack Developer\", \"Software Engineer\"]")
   bio                   String   @default("I'm Soundkish, a Computer Science & Engineering student passionate about Cybersecurity, AI, and building secure software solutions for a resilient digital future.")
   professionalIdentity String   @default("Software Engineer & Cybersecurity Researcher")
@@ -185,6 +186,7 @@ model AppearanceSettings {
   waitForCriticalAssets Boolean @default(true)
   fadeDuration  Float    @default(0.7) // in seconds
   accessGrantedHoldTime Float @default(2.0) // in seconds (0.5 to 10.0)
+  welcomeScreenHoldTime Float @default(2.0) // in seconds (0.5 to 10.0)
   bootMsgOffsetX Int      @default(0) // in px (-200 to 200)
   bootMsgOffsetY Int      @default(-40) // in px (-200 to 200)
   updatedAt     DateTime @updatedAt

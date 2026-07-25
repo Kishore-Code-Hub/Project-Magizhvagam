@@ -23,7 +23,7 @@ export default function Footer({ profile }: FooterProps) {
             <Shield className="w-4 h-4 text-accent" />
           </div>
           <span className="text-xs font-bold text-white uppercase tracking-wider">
-            KISHORE // CYBERSECURITY SOC WORKSTATION v3.6
+            KISHORE NARAYANAN // CYBERSECURITY HACKSPOT
           </span>
         </div>
 
@@ -64,7 +64,7 @@ export default function Footer({ profile }: FooterProps) {
 
         {/* Right: Copyright & Back To Top */}
         <div className="flex items-center gap-6 text-xs text-gray-400">
-          <span>© {new Date().getFullYear()} KISHORE. ALL RIGHTS RESERVED.</span>
+          <span>© {new Date().getFullYear()} KISHORE NARAYANAN. ALL RIGHTS RESERVED.</span>
 
           <button
             onClick={scrollToTop}

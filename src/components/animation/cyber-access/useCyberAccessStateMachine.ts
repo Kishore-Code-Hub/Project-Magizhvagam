@@ -42,6 +42,7 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
   }, []);
 
   const [accessGrantedHoldTime, setAccessGrantedHoldTime] = useState<number>(2.0);
+  const [welcomeScreenHoldTime, setWelcomeScreenHoldTime] = useState<number>(2.0);
 
   // Check prefers-reduced-motion: set visual flag ONLY, do NOT skip sequence
   useEffect(() => {
@@ -76,10 +77,13 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
         const holdTime = parseFloat(data?.accessGrantedHoldTime) || 2.0;
         setAccessGrantedHoldTime(holdTime);
 
+        const welcomeHoldTime = parseFloat(data?.welcomeScreenHoldTime) || 2.0;
+        setWelcomeScreenHoldTime(welcomeHoldTime);
+
         const skipReturning = Boolean(data?.skipLoaderForReturning);
         const bootedInSession = BootStorage.isBooted();
 
-        console.log('[Phase 1 FSM] Initialized:', { bootedInSession, forceBoot, skipReturning, duration, holdTime });
+        console.log('[Phase 1 FSM] Initialized:', { bootedInSession, forceBoot, skipReturning, duration, holdTime, welcomeHoldTime });
 
         // ONLY skip if returning visitor skip policy is explicitly enabled in admin config
         if (!forceBoot && bootedInSession && skipReturning) {
@@ -212,16 +216,17 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
       return () => clearTimeout(timer);
     }
 
-    // Phase 7: REVEAL -> COMPLETE
+    // Phase 7: REVEAL -> COMPLETE (Holds for configured Welcome Screen Hold Time)
     if (state === 'REVEAL') {
-      setPhaseTimer(0.1);
+      const welcomeHoldMs = Math.max(500, Math.round(welcomeScreenHoldTime * 1000));
+      setPhaseTimer(welcomeHoldMs / 1000);
       const timer = setTimeout(() => {
-        console.log('[Phase 1 FSM] Cinematic Sequence Finished -> COMPLETE');
+        console.log(`[Phase 1 FSM] Welcome Screen Held for ${welcomeScreenHoldTime}s -> COMPLETE`);
         markComplete();
-      }, 100);
+      }, welcomeHoldMs);
       return () => clearTimeout(timer);
     }
-  }, [state, getPhaseDuration, markComplete]);
+  }, [state, getPhaseDuration, markComplete, welcomeScreenHoldTime]);
 
   return {
     state,

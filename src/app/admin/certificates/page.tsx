@@ -107,28 +107,43 @@ export default function AdminCertificatesPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {certs.map((cert) => (
-          <GlassCard key={cert.id} variant="default" className="flex flex-col justify-between">
+          <GlassCard key={cert.id} variant="default" className="flex flex-col justify-between p-0 overflow-hidden">
             <div>
-              <div className="flex items-center gap-3 mb-3">
-                {cert.organizationLogo ? (
-                  <img src={cert.organizationLogo} alt={cert.issuer} className="w-8 h-8 object-contain" />
-                ) : (
-                  <Award className="w-6 h-6 text-[var(--accent-color)]" />
-                )}
-                <div>
-                  <h4 className="font-bold text-white text-sm leading-tight">{cert.title}</h4>
-                  <p className="text-[10px] text-gray-400 font-mono">{cert.issuer}</p>
+              {/* Certificate Image Banner */}
+              {(cert.pdfUrl || (cert.organizationLogo && cert.organizationLogo.startsWith('/uploads/'))) && (
+                <div className="h-36 w-full bg-black/60 relative border-b border-white/10 overflow-hidden">
+                  <img
+                    src={cert.pdfUrl || cert.organizationLogo}
+                    alt={cert.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
+              <div className="p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center text-emerald-400 shrink-0">
+                    {cert.organizationLogo && !cert.organizationLogo.startsWith('/uploads/') ? (
+                      <img src={cert.organizationLogo} alt={cert.issuer} className="w-5 h-5 object-contain" />
+                    ) : (
+                      <Award className="w-4 h-4" />
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-sm leading-tight">{cert.title}</h4>
+                    <p className="text-[10px] text-gray-400 font-mono">{cert.issuer}</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-              <span className="text-[10px] text-gray-500">{cert.issueDate}</span>
+            <div className="p-4 pt-0 flex items-center justify-between border-t border-white/5">
+              <span className="text-[10px] text-gray-500 font-mono">{cert.issueDate}</span>
               <div className="flex items-center gap-2">
-                <button onClick={() => handleOpenEdit(cert)} className="p-1.5 rounded-lg bg-white/5 text-gray-300">
+                <button onClick={() => handleOpenEdit(cert)} className="p-1.5 rounded-lg bg-white/5 text-gray-300 hover:text-white">
                   <Edit2 className="w-4 h-4" />
                 </button>
-                <button onClick={() => handleDelete(cert.id)} className="p-1.5 rounded-lg bg-red-500/10 text-red-400">
+                <button onClick={() => handleDelete(cert.id)} className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:text-red-300">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -173,23 +188,78 @@ export default function AdminCertificatesPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">VERIFICATION URL</label>
-            <input
-              type="text"
-              value={formData.credentialUrl}
-              onChange={(e) => setFormData({ ...formData, credentialUrl: e.target.value })}
-              className="w-full px-4 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">CREDENTIAL ID</label>
+              <input
+                type="text"
+                value={formData.credentialId}
+                onChange={(e) => setFormData({ ...formData, credentialId: e.target.value })}
+                className="w-full px-4 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white"
+                placeholder="e.g. AWS-908123"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">VERIFICATION URL</label>
+              <input
+                type="text"
+                value={formData.credentialUrl}
+                onChange={(e) => setFormData({ ...formData, credentialUrl: e.target.value })}
+                className="w-full px-4 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white"
+                placeholder="https://..."
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-xs text-gray-400 mb-1">ORGANIZATION LOGO</label>
-            <FileUploader
-              category="certificates"
-              value={formData.organizationLogo}
-              onUploadComplete={(url) => setFormData({ ...formData, organizationLogo: url })}
+            <label className="block text-xs text-gray-400 mb-1">DESCRIPTION & SKILLS</label>
+            <textarea
+              rows={2}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-4 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white resize-none"
+              placeholder="Short description of credential achievements..."
             />
+          </div>
+
+          <div className="space-y-4 pt-2 border-t border-white/10">
+            <div>
+              <label className="block text-xs font-bold text-emerald-400 mb-1">
+                FULL CERTIFICATE PREVIEW IMAGE (pdfUrl)
+              </label>
+              <FileUploader
+                category="certificates"
+                label="Upload Full Certificate Image or Drag & Drop"
+                value={formData.pdfUrl}
+                onUploadComplete={(url) => setFormData({ ...formData, pdfUrl: url })}
+              />
+              {formData.pdfUrl && (
+                <p className="mt-1 text-[11px] text-emerald-400 font-mono">Image: {formData.pdfUrl}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">ORGANIZATION / ISSUER LOGO</label>
+              <FileUploader
+                category="certificates"
+                label="Upload Issuer Logo"
+                value={formData.organizationLogo}
+                onUploadComplete={(url) => setFormData({ ...formData, organizationLogo: url })}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              type="checkbox"
+              id="certFeatured"
+              checked={formData.featured}
+              onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+              className="accent-[var(--accent-color)] w-4 h-4 cursor-pointer"
+            />
+            <label htmlFor="certFeatured" className="text-xs text-gray-300 font-bold cursor-pointer">
+              Feature on Top Grid
+            </label>
           </div>
 
           <GlowButton type="submit" variant="primary" className="w-full" leftIcon={<Save className="w-4 h-4" />}>

@@ -177,7 +177,7 @@ export default function About({ profile }: AboutProps) {
                 <div className="relative group">
                   <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-500" />
                   <img
-                    src={profile.image || '/hero-hacker.png'}
+                    src={profile.profileImage || profile.image || '/hero-hacker.png'}
                     alt={profile.name}
                     className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-2 border-emerald-500/80 shadow-2xl"
                   />
@@ -198,9 +198,18 @@ export default function About({ profile }: AboutProps) {
                   <CyberBadge variant="cyan" size="sm">SYSTEM CLEARANCE</CyberBadge>
                 </div>
 
-                <p className="text-sm text-gray-300 leading-relaxed font-sans pt-2">
-                  {profile.personalBio || profile.bio}
-                </p>
+                {/* About Me Bio Summary Block */}
+                <div className="w-full text-left p-4 rounded-2xl bg-black/50 border border-emerald-500/20 space-y-2 mt-2">
+                  <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
+                    <h4 className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <User className="w-4 h-4 text-emerald-400" /> ABOUT ME
+                    </h4>
+                    <span className="text-[10px] font-mono text-gray-400">SUMMARY PROTOCOL</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-200 leading-relaxed font-sans">
+                    {profile.personalBio || profile.bio}
+                  </p>
+                </div>
 
                 {/* Social & Contact Actions */}
                 <div className="pt-4 border-t border-emerald-500/20 w-full flex items-center justify-center gap-3">
@@ -272,21 +281,8 @@ export default function About({ profile }: AboutProps) {
             )}
           </div>
 
-          {/* Right Column: About Me Bio, Core Specializations, & Statistics */}
+          {/* Right Column: Core Specializations & Statistics */}
           <div className="lg:col-span-7 space-y-6">
-            {/* About Me Bio Card */}
-            <GlassCard variant="default" className="p-6 sm:p-8 rounded-3xl space-y-4">
-              <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3">
-                <h3 className="text-xl font-extrabold text-white flex items-center gap-2 font-mono uppercase tracking-wider">
-                  <User className="w-5 h-5 text-emerald-400" /> ABOUT ME
-                </h3>
-                <span className="text-xs font-mono text-emerald-400">SUMMARY PROTOCOL</span>
-              </div>
-
-              <p className="text-sm sm:text-base text-gray-200 leading-relaxed font-sans">
-                {profile.personalBio || profile.bio}
-              </p>
-            </GlassCard>
 
             {/* Specialization Highlight Cards Grid Module */}
             {aboutModules.showSpecializations && (

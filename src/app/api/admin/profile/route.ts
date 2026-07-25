@@ -80,9 +80,14 @@ async function handleProfileUpdate(req: NextRequest) {
         incomingStatsObj = typeof body.stats === 'string' ? JSON.parse(body.stats) : body.stats;
       } catch {}
     }
+    const imgUrl = body.profileImage || body.image;
+    if (imgUrl) {
+      (incomingStatsObj as any).profileImage = imgUrl;
+    }
     const mergedStatsStr = JSON.stringify({ ...existingStatsObj, ...incomingStatsObj });
 
     const updateData: any = {};
+    if (imgUrl) updateData.profileImage = imgUrl;
     if (body.name !== undefined) updateData.name = body.name;
     if (body.headline !== undefined) updateData.headline = body.headline;
     if (body.taglines !== undefined) updateData.taglines = taglinesStr;
@@ -93,7 +98,7 @@ async function handleProfileUpdate(req: NextRequest) {
     if (body.availability !== undefined) updateData.availability = body.availability;
     if (body.resumeUrl !== undefined) updateData.resumeUrl = body.resumeUrl;
     if (body.socials !== undefined) updateData.socials = socialsStr;
-    if (body.stats !== undefined) updateData.stats = mergedStatsStr;
+    if (body.stats !== undefined || imgUrl) updateData.stats = mergedStatsStr;
     if (body.aboutModules !== undefined) updateData.aboutModules = aboutModulesStr;
     if (body.academicDegree !== undefined) updateData.academicDegree = academicDegreeStr;
     if (body.focusChips !== undefined) updateData.focusChips = focusChipsStr;
@@ -108,6 +113,7 @@ async function handleProfileUpdate(req: NextRequest) {
         id: 'default',
         name: body.name || 'Soundkish',
         headline: body.headline || 'Securing Systems. Building Trust.',
+        profileImage: imgUrl || '/uploads/about/1784968630446-IMG_0307.JPG',
         taglines: taglinesStr,
         bio: body.bio || '',
         professionalIdentity: body.professionalIdentity || 'Software Engineer & Cybersecurity Researcher',
