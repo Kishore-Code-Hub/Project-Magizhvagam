@@ -9,12 +9,21 @@ import CommandPalette from '@/components/ui/CommandPalette';
 import { ArrowRight, Mail, ExternalLink } from 'lucide-react';
 import { GithubIcon, LinkedinIcon, LeetCodeIcon } from '@/components/ui/Icons';
 import { ProfileData } from '@/types';
+import { getSocials } from '@/lib/social-utils';
 
 interface HeroProps {
   profile: ProfileData;
 }
 
 export default function Hero({ profile }: HeroProps) {
+  const socials = getSocials(profile.socials);
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Hero Component] profile prop:', profile);
+    console.log('[Hero Component] profile.socials:', profile?.socials);
+    console.log('[Hero Component] resolved socials:', socials);
+  }
+
   const safeResumeUrl = profile.resumeUrl || 'https://drive.google.com';
 
   // Read hero image and greeting settings if stored in profile.stats
@@ -65,12 +74,12 @@ export default function Hero({ profile }: HeroProps) {
           </p>
 
           {/* Action Buttons Row Grid Container */}
-          <div className="space-y-3 pt-2 sm:pt-3 font-mono">
-            {/* Row 1: Contact Me, Resume, GitHub Icon, LinkedIn Icon on Desktop */}
+          <div className="space-y-4 pt-3 font-mono">
+            {/* Primary Action Buttons Row */}
             <div className="flex flex-wrap items-center gap-3">
               <a
                 href="#contact"
-                className="inline-flex items-center gap-2 px-4.5 py-2.5 rounded-xl border border-accent/60 text-xs font-bold text-white hover:border-accent hover:text-accent transition-all hover:scale-[1.02] bg-[#040705]/60 backdrop-blur-md"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-accent/60 text-xs font-bold text-white hover:border-accent hover:text-accent transition-all hover:scale-[1.02] bg-[#040705]/60 backdrop-blur-md"
               >
                 <Mail className="w-4 h-4 text-accent" />
                 <span>CONTACT ME</span>
@@ -80,54 +89,12 @@ export default function Hero({ profile }: HeroProps) {
                 href={safeResumeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl border border-accent/60 text-xs font-bold text-white hover:border-accent hover:text-accent transition-all hover:scale-[1.02] bg-[#040705]/60 backdrop-blur-md"
+                className="inline-flex items-center gap-1.5 px-5 py-3 rounded-xl border border-accent/60 text-xs font-bold text-white hover:border-accent hover:text-accent transition-all hover:scale-[1.02] bg-[#040705]/60 backdrop-blur-md"
               >
                 <span>RESUME</span>
                 <ExternalLink className="w-3.5 h-3.5 text-accent" />
               </a>
 
-              {/* Clean horizontal social links row containing ONLY: GitHub, LinkedIn, LeetCode */}
-              <div className="flex items-center gap-2.5">
-                {profile.socials?.github && (
-                  <a
-                    href={profile.socials.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="GitHub Profile"
-                    className="p-2.5 rounded-xl border border-accent/60 text-gray-300 hover:text-accent hover:border-accent hover:shadow-[0_0_15px_rgba(0,255,102,0.4)] transition-all duration-300 hover:scale-110 bg-[#040705]/60 backdrop-blur-md"
-                  >
-                    <GithubIcon className="w-4 h-4" />
-                  </a>
-                )}
-
-                {profile.socials?.linkedin && (
-                  <a
-                    href={profile.socials.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="LinkedIn Profile"
-                    className="p-2.5 rounded-xl border border-accent/60 text-gray-300 hover:text-accent hover:border-accent hover:shadow-[0_0_15px_rgba(0,255,102,0.4)] transition-all duration-300 hover:scale-110 bg-[#040705]/60 backdrop-blur-md"
-                  >
-                    <LinkedinIcon className="w-4 h-4" />
-                  </a>
-                )}
-
-                {profile.socials?.leetcode && (
-                  <a
-                    href={profile.socials.leetcode}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="LeetCode Profile"
-                    className="p-2.5 rounded-xl border border-accent/60 text-gray-300 hover:text-accent hover:border-accent hover:shadow-[0_0_15px_rgba(0,255,102,0.4)] transition-all duration-300 hover:scale-110 bg-[#040705]/60 backdrop-blur-md"
-                  >
-                    <LeetCodeIcon className="w-4 h-4" />
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Row 2: VIEW PROJECTS button aligned to the left directly below */}
-            <div>
               <a
                 href="#projects"
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-accent text-accent font-extrabold text-xs hover:bg-accent hover:text-[#050505] shadow-lg shadow-accent/20 transition-all hover:scale-[1.02] bg-[#040705]/80 backdrop-blur-md"
@@ -135,6 +102,45 @@ export default function Hero({ profile }: HeroProps) {
                 <span>VIEW PROJECTS</span>
                 <ArrowRight className="w-4 h-4" />
               </a>
+            </div>
+
+            {/* Dedicated Horizontal Social Links Row (GitHub, LinkedIn, LeetCode) - Always Rendered */}
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-1">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest font-mono">CONNECT:</span>
+              <div className="flex items-center gap-2.5">
+                <a
+                  href={socials.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub Profile"
+                  title="GitHub Profile"
+                  className="p-2.5 rounded-xl border border-accent/50 text-gray-300 hover:text-accent hover:border-accent hover:shadow-[0_0_15px_rgba(0,255,102,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-all duration-300 hover:scale-110 bg-[#040705]/60 backdrop-blur-md cursor-pointer"
+                >
+                  <GithubIcon className="w-4 h-4" />
+                </a>
+
+                <a
+                  href={socials.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn Profile"
+                  title="LinkedIn Profile"
+                  className="p-2.5 rounded-xl border border-accent/50 text-gray-300 hover:text-accent hover:border-accent hover:shadow-[0_0_15px_rgba(0,255,102,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-all duration-300 hover:scale-110 bg-[#040705]/60 backdrop-blur-md cursor-pointer"
+                >
+                  <LinkedinIcon className="w-4 h-4" />
+                </a>
+
+                <a
+                  href={socials.leetcode}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LeetCode Profile"
+                  title="LeetCode Profile"
+                  className="p-2.5 rounded-xl border border-accent/50 text-gray-300 hover:text-accent hover:border-accent hover:shadow-[0_0_15px_rgba(0,255,102,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-all duration-300 hover:scale-110 bg-[#040705]/60 backdrop-blur-md cursor-pointer"
+                >
+                  <LeetCodeIcon className="w-4 h-4" />
+                </a>
+              </div>
             </div>
           </div>
         </div>

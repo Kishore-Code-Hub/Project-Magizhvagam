@@ -11,6 +11,7 @@ import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
 import { SkillProgressBar } from '@/components/ui/SkillProgressBar';
 import { ProfileData } from '@/types';
 import { normalizeImageUrl } from '@/lib/image-utils';
+import { getSocials } from '@/lib/social-utils';
 import {
   ShieldCheck,
   Code2,
@@ -69,6 +70,17 @@ function getLucideIcon(name?: string, fallback: any = ShieldCheck): any {
   return ICON_MAP[name] || fallback;
 }
 
+function getSpecializationIcon(card: any): any {
+  const key = `${card.iconName || ''} ${card.title || ''}`.toLowerCase();
+  if (key.includes('cyber') || key.includes('shield') || key.includes('sec')) return ShieldCheck;
+  if (key.includes('ai') || key.includes('brain') || key.includes('cpu') || key.includes('neural')) return Cpu;
+  if (key.includes('network') || key.includes('compass') || key.includes('tcp') || key.includes('packet')) return Compass;
+  if (key.includes('linux') || key.includes('terminal') || key.includes('bash') || key.includes('kernel')) return Terminal;
+  if (key.includes('cloud') || key.includes('infra') || key.includes('globe')) return Globe;
+  if (key.includes('backend') || key.includes('code') || key.includes('server') || key.includes('api')) return Code2;
+  return getLucideIcon(card.iconName, ShieldCheck);
+}
+
 function resolveColor(tokenOrHex?: string, fallback = '#00ff66'): string {
   if (!tokenOrHex) return fallback;
   if (COLOR_TOKEN_MAP[tokenOrHex]) return COLOR_TOKEN_MAP[tokenOrHex];
@@ -76,6 +88,14 @@ function resolveColor(tokenOrHex?: string, fallback = '#00ff66'): string {
 }
 
 export default function About({ profile }: AboutProps) {
+  const socials = getSocials(profile.socials);
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[About Component] profile prop:', profile);
+    console.log('[About Component] profile.socials:', profile?.socials);
+    console.log('[About Component] resolved socials:', socials);
+  }
+
   const safeResumeUrl = profile.resumeUrl || 'https://drive.google.com';
 
   const aboutModules = profile.aboutModules || {
@@ -195,18 +215,18 @@ export default function About({ profile }: AboutProps) {
                   </p>
                 </div>
 
-                {/* LinkedIn CTA Button */}
-                {profile.socials?.linkedin && (
-                  <a
-                    href={profile.socials.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-[#0A66C2] text-white border border-[#0A66C2] font-bold text-xs hover:bg-white hover:text-[#0A66C2] hover:border-[#0A66C2] transition-all duration-300 shadow-[0_4px_15px_rgba(10,102,194,0.35)] hover:shadow-[0_6px_20px_rgba(10,102,194,0.5)] transform hover:-translate-y-0.5 mt-1 cursor-pointer"
-                  >
-                    <LinkedinIcon className="w-4 h-4 shrink-0 fill-current" />
-                    <span>Connect with me on LinkedIn</span>
-                  </a>
-                )}
+                {/* LinkedIn CTA Button - Always Rendered */}
+                <a
+                  href={socials.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Connect with me on LinkedIn"
+                  title="Connect with me on LinkedIn"
+                  className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-[#0A66C2] text-white border border-[#0A66C2] font-bold text-xs hover:bg-white hover:text-[#0A66C2] hover:border-[#0A66C2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A66C2] transition-all duration-300 shadow-[0_4px_15px_rgba(10,102,194,0.35)] hover:shadow-[0_6px_20px_rgba(10,102,194,0.5)] transform hover:-translate-y-0.5 mt-1 cursor-pointer"
+                >
+                  <LinkedinIcon className="w-4 h-4 shrink-0 fill-current" />
+                  <span>Connect with me on LinkedIn</span>
+                </a>
 
                 {/* About Me Bio Summary Block */}
                 <div className="w-full text-left p-4 rounded-2xl bg-black/50 border border-emerald-500/20 space-y-2 mt-2">
@@ -306,7 +326,7 @@ export default function About({ profile }: AboutProps) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   {specializationCards.map((card, idx) => {
-                    const IconComp = getLucideIcon(card.iconName, ShieldCheck);
+                    const IconComp = getSpecializationIcon(card);
                     const cardColor = resolveColor(card.colorToken, '#00ff66');
 
                     return (

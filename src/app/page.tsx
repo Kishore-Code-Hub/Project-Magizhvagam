@@ -11,6 +11,7 @@ import Footer from '@/components/sections/Footer';
 import { db } from '@/lib/db';
 import { seedDatabaseIfEmpty } from '@/lib/seed-db';
 import { INITIAL_PROFILE } from '@/lib/initial-data';
+import { getSocials } from '@/lib/social-utils';
 
 export const revalidate = 0;
 
@@ -66,21 +67,22 @@ export default async function HomePage() {
   try {
     const dbProfile = await db.profile.findFirst();
     if (dbProfile) {
-      const parsedStats = safeJsonParse<any>(dbProfile.stats, profileData.stats);
+      const p: any = dbProfile;
+      const parsedStats = safeJsonParse<any>(p.stats, profileData.stats);
       profileData = {
-        ...dbProfile,
+        ...p,
         image: parsedStats?.profileImage || '/hero-hacker.png',
-        taglines: safeJsonParse<string[]>(dbProfile.taglines, profileData.taglines),
-        socials: safeJsonParse<any>(dbProfile.socials, profileData.socials),
+        taglines: safeJsonParse<string[]>(p.taglines, profileData.taglines),
+        socials: getSocials(safeJsonParse<any>(p.socials, profileData.socials)),
         stats: parsedStats,
-        values: safeJsonParse<string[]>(dbProfile.values, profileData.values),
-        education: safeJsonParse<string[]>(dbProfile.education, profileData.education),
-        aboutModules: safeJsonParse<any>(dbProfile.aboutModules, INITIAL_PROFILE.aboutModules),
-        academicDegree: safeJsonParse<any>(dbProfile.academicDegree, INITIAL_PROFILE.academicDegree),
-        focusChips: safeJsonParse<string[]>(dbProfile.focusChips, INITIAL_PROFILE.focusChips || []),
-        careerRoadmap: safeJsonParse<any[]>(dbProfile.careerRoadmap, INITIAL_PROFILE.careerRoadmap || []),
-        statsCards: safeJsonParse<any[]>(dbProfile.statsCards, INITIAL_PROFILE.statsCards || []),
-        specializationCards: safeJsonParse<any[]>(dbProfile.specializationCards, INITIAL_PROFILE.specializationCards || []),
+        values: safeJsonParse<string[]>(p.values, profileData.values),
+        education: safeJsonParse<string[]>(p.education, profileData.education),
+        aboutModules: safeJsonParse<any>(p.aboutModules, INITIAL_PROFILE.aboutModules),
+        academicDegree: safeJsonParse<any>(p.academicDegree, INITIAL_PROFILE.academicDegree),
+        focusChips: safeJsonParse<string[]>(p.focusChips, INITIAL_PROFILE.focusChips || []),
+        careerRoadmap: safeJsonParse<any[]>(p.careerRoadmap, INITIAL_PROFILE.careerRoadmap || []),
+        statsCards: safeJsonParse<any[]>(p.statsCards, INITIAL_PROFILE.statsCards || []),
+        specializationCards: safeJsonParse<any[]>(p.specializationCards, INITIAL_PROFILE.specializationCards || []),
       };
     }
 
