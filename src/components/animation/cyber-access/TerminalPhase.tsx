@@ -6,9 +6,16 @@ import { Shield, Terminal, KeyRound } from 'lucide-react';
 interface TerminalPhaseProps {
   onAuthorize: () => void;
   isAuthorizing: boolean;
+  progress?: number;
+  stageText?: string;
 }
 
-export default function TerminalPhase({ onAuthorize, isAuthorizing }: TerminalPhaseProps) {
+export default function TerminalPhase({
+  onAuthorize,
+  isAuthorizing,
+  progress = 0,
+  stageText = 'INITIALIZING_SYSTEM_KERNEL',
+}: TerminalPhaseProps) {
   const [ipText, setIpText] = useState('192.168.██.██');
   const [relayText, setRelayText] = useState('TRACING ANONYMOUS RELAY...');
 
@@ -71,7 +78,7 @@ export default function TerminalPhase({ onAuthorize, isAuthorizing }: TerminalPh
       </div>
 
       {/* Terminal Text Output Log Stream */}
-      <div className="space-y-4 text-xs sm:text-sm text-emerald-400/90 font-mono z-20 my-auto overflow-y-auto max-h-[300px] scrollbar-none">
+      <div className="space-y-3.5 text-xs sm:text-sm text-emerald-400/90 font-mono z-20 my-auto overflow-y-auto max-h-[300px] scrollbar-none">
         <div className="text-[#00ff66] font-bold tracking-wide flex items-center gap-2 text-sm sm:text-base">
           <Terminal className="w-4 h-4 text-[#00f0ff]" />
           <span>SECURE GATEWAY ESTABLISHED // INC-9042</span>
@@ -80,9 +87,26 @@ export default function TerminalPhase({ onAuthorize, isAuthorizing }: TerminalPh
         <div className="text-gray-300 space-y-1.5 pl-4 border-l-2 border-[#00ff66]/40 text-xs sm:text-sm">
           <div className="text-gray-400">&gt; Scanning incoming endpoint connection...</div>
           <div className="text-[#00f0ff] font-semibold">&gt; {relayText}</div>
+          <div className="text-amber-400 font-mono font-bold text-[11px]">
+            &gt; STAGE: {stageText} [{progress}%]
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#00ff66]/20 text-xs">
+        {/* Real Progress Bar */}
+        <div className="space-y-1 pt-1">
+          <div className="flex items-center justify-between text-[11px] font-mono">
+            <span className="text-gray-400">PRELOADER BUFFER STATUS</span>
+            <span className="text-[#00ff66] font-bold">{progress}%</span>
+          </div>
+          <div className="w-full h-2 rounded-full bg-black/60 border border-[#00ff66]/30 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-emerald-500 to-[#00ff66] transition-all duration-300 ease-out shadow-[0_0_12px_#00ff66]"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[#00ff66]/20 text-xs">
           <div className="space-y-1">
             <span className="text-gray-500 block uppercase text-[10px] tracking-wider">DETECTED TARGET ENDPOINT</span>
             <span className="text-[#00f0ff] font-extrabold text-sm sm:text-base tracking-widest">
@@ -101,9 +125,9 @@ export default function TerminalPhase({ onAuthorize, isAuthorizing }: TerminalPh
           </div>
         </div>
 
-        <div className="pt-2 flex items-center gap-2 text-xs text-amber-300 font-semibold animate-pulse">
+        <div className="pt-1 flex items-center gap-2 text-xs text-amber-300 font-semibold animate-pulse">
           <KeyRound className="w-3.5 h-3.5" />
-          <span>SECURITY CLEARANCE REQUIRED. AWAITING OPERATOR AUTHORIZATION...</span>
+          <span>{progress >= 100 ? 'ASSETS 100% DECODED. READY FOR OPERATOR AUTHORIZATION.' : 'PRELOADING & DECODING MEDIA MEMORY BUFFERS...'}</span>
         </div>
       </div>
 

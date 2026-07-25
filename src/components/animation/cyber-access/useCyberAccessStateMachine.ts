@@ -2,12 +2,18 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { CyberAccessState } from './types';
+import { AssetPreloader, PreloadProgress } from '@/lib/AssetPreloader';
 
 export function useCyberAccessStateMachine(onComplete?: () => void) {
   // Start directly in TRACE state so TerminalPhase renders on 1st frame
   const [state, setState] = useState<CyberAccessState>('TRACE');
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+  const [stageText, setStageText] = useState<string>('INITIALIZING_SYSTEM_KERNEL');
+  const [loadingDuration, setLoadingDuration] = useState<number>(5.0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isAssetReadyRef = useRef<boolean>(false);
+  const isTimerReadyRef = useRef<boolean>(false);
 
   // Helper to mark complete
   const markComplete = useCallback(() => {
@@ -34,6 +40,18 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
   const triggerAuthorize = useCallback(() => {
     console.log('[Phase 1 FSM] triggerAuthorize invoked');
     setState('AUTHORIZE');
+  }, []);
+
+  // Fetch loading duration from appearance settings
+  useEffect(() => {
+    fetch('/api/appearance')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.loadingDuration) {
+          setLoadingDuration(data.loadingDuration);
+        }
+      })
+      .catch(() => null);
   }, []);
 
   // Initial setup & URL check
@@ -67,60 +85,54 @@ export function useCyberAccessStateMachine(onComplete?: () => void) {
     }
   }, [markComplete]);
 
-  // Log state changes
-  useEffect(() => {
-    console.log(`[Phase 1 FSM] Current State: ${state}`);
-  }, [state]);
-
-  const [loadingDuration, setLoadingDuration] = useState<number>(5.0);
-
-  useEffect(() => {
-    fetch('/api/appearance')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.loadingDuration) {
-          setLoadingDuration(data.loadingDuration);
-        }
-      })
-      .catch(() => null);
-  }, []);
-
-  // FSM Step Transitions (TRACE -> AUTHORIZE -> COMPLETE)
+  // Start AssetPreloader pipeline & enforce minimum boot duration
   useEffect(() => {
     if (state === 'IDLE' || state === 'COMPLETE') return;
 
-    if (timerRef.current) clearTimeout(timerRef.current);
+    // 1. Trigger AssetPreloader
+    AssetPreloader.preloadAll((p: PreloadProgress) => {
+      setProgress(p.percent);
+      setStageText(p.stage);
+      if (p.percent >= 100) {
+        isAssetReadyRef.current = true;
+        checkCanAdvance();
+      }
+    });
 
-    // Calculate trace duration in ms from configured loadingDuration (default 5s = 4200ms trace + 800ms auth)
+    // 2. Minimum boot timer
     const traceMs = Math.max(1000, Math.round(loadingDuration * 1000) - 800);
+    timerRef.current = setTimeout(() => {
+      isTimerReadyRef.current = true;
+      checkCanAdvance();
+    }, traceMs);
 
-    switch (state) {
-      case 'TRACE':
-        timerRef.current = setTimeout(() => {
-          console.log(`[Phase 1 FSM] TRACE timeout (${traceMs}ms) reached -> AUTHORIZE`);
-          setState('AUTHORIZE');
-        }, traceMs);
-        break;
-
-      case 'AUTHORIZE':
-        timerRef.current = setTimeout(() => {
-          console.log('[Phase 1 FSM] AUTHORIZE completed -> markComplete');
-          markComplete();
-        }, 800);
-        break;
-
-      default:
-        break;
+    function checkCanAdvance() {
+      if (isAssetReadyRef.current && isTimerReadyRef.current) {
+        console.log('[Phase 1 FSM] Both AssetPreloader and timer ready -> AUTHORIZE');
+        setState('AUTHORIZE');
+      }
     }
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [state, markComplete, loadingDuration]);
+  }, [state, loadingDuration]);
+
+  // Handle AUTHORIZE state transition
+  useEffect(() => {
+    if (state === 'AUTHORIZE') {
+      const authTimer = setTimeout(() => {
+        markComplete();
+      }, 800);
+      return () => clearTimeout(authTimer);
+    }
+  }, [state, markComplete]);
 
   return {
     state,
     isMobile,
+    progress,
+    stageText,
     triggerAuthorize,
     skipSequence,
   };

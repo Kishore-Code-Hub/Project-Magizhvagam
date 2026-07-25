@@ -15,6 +15,8 @@ export async function GET() {
       skipLoaderForReturning: settings?.skipLoaderForReturning ?? false,
       enableScrollReveal: settings?.enableScrollReveal ?? true,
       repeatScrollReveal: settings?.repeatScrollReveal ?? false,
+      waitForCriticalAssets: (settings as any)?.waitForCriticalAssets ?? true,
+      fadeDuration: (settings as any)?.fadeDuration ?? 0.7,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -36,6 +38,8 @@ export async function POST(req: NextRequest) {
         skipLoaderForReturning: Boolean(body.skipLoaderForReturning),
         enableScrollReveal: Boolean(body.enableScrollReveal),
         repeatScrollReveal: Boolean(body.repeatScrollReveal),
+        waitForCriticalAssets: Boolean(body.waitForCriticalAssets),
+        fadeDuration: parseFloat(body.fadeDuration) || 0.7,
       },
       create: {
         id: 'default',
@@ -44,6 +48,8 @@ export async function POST(req: NextRequest) {
         skipLoaderForReturning: Boolean(body.skipLoaderForReturning),
         enableScrollReveal: Boolean(body.enableScrollReveal),
         repeatScrollReveal: Boolean(body.repeatScrollReveal),
+        waitForCriticalAssets: Boolean(body.waitForCriticalAssets),
+        fadeDuration: parseFloat(body.fadeDuration) || 0.7,
       },
     });
 

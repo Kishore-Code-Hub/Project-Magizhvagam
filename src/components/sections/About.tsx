@@ -68,10 +68,14 @@ export default function About({ profile }: AboutProps) {
           <div className="lg:col-span-5 flex flex-col h-full">
             <GlassCard variant="glow" className="h-full flex-1 flex flex-col justify-between p-6 sm:p-8 rounded-[24px]">
               <div>
-                <div className="relative w-28 h-28 mx-auto mb-4 rounded-2xl overflow-hidden border-2 border-[var(--border-accent)] p-1 bg-[var(--bg-glass)] aspect-square">
+                <div className="relative w-28 h-28 mx-auto mb-4 rounded-2xl overflow-hidden border-2 border-[var(--border-accent)] p-1 bg-[var(--bg-glass)] aspect-square flex-shrink-0">
                   <img
                     src={(stats as any)?.profileImage || '/hero-hacker.png'}
                     alt={profile.name}
+                    loading="eager"
+                    // @ts-ignore
+                    fetchPriority="high"
+                    decoding="async"
                     className="w-full h-full object-cover rounded-xl"
                   />
                   <span className="absolute bottom-2 right-2 w-3.5 h-3.5 rounded-full bg-[var(--accent-color)] border-2 border-black animate-pulse" />

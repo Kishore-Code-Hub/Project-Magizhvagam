@@ -177,6 +177,8 @@ model AppearanceSettings {
   skipLoaderForReturning Boolean @default(false)
   enableScrollReveal Boolean @default(true)
   repeatScrollReveal Boolean @default(false)
+  waitForCriticalAssets Boolean @default(true)
+  fadeDuration  Float    @default(0.7) // in seconds
   updatedAt     DateTime @updatedAt
 }
 

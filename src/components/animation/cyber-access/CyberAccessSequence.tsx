@@ -11,7 +11,7 @@ interface CyberAccessSequenceProps {
 }
 
 function SequenceInner({ onComplete }: CyberAccessSequenceProps) {
-  const { state, isMobile, triggerAuthorize, skipSequence } = useCyberAccessStateMachine(onComplete);
+  const { state, isMobile, progress, stageText, triggerAuthorize, skipSequence } = useCyberAccessStateMachine(onComplete);
 
   if (state === 'COMPLETE') {
     return null;
@@ -23,7 +23,7 @@ function SequenceInner({ onComplete }: CyberAccessSequenceProps) {
     <div
       id="cyber-access-overlay"
       data-cyber-state={state}
-      className="fixed inset-0 z-50 overflow-hidden select-none bg-[#030303] flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 overflow-hidden select-none bg-[#030303] flex items-center justify-center p-4 transition-opacity duration-700"
     >
       {/* Background ambient glow */}
       <div className="absolute inset-0 bg-radial from-[#00ff66]/10 via-transparent to-black pointer-events-none" />
@@ -42,7 +42,7 @@ function SequenceInner({ onComplete }: CyberAccessSequenceProps) {
       {/* State Badge */}
       <div className="absolute top-5 left-6 z-50 font-mono text-[10px] text-[#00ff66]/80 bg-black/80 px-2.5 py-1 rounded border border-[#00ff66]/30 pointer-events-none flex items-center gap-2">
         <Terminal className="w-3 h-3 text-[#00ff66] animate-pulse" />
-        <span>PHASE 1 TEST // FSM: <span className="text-[#00f0ff] font-bold">{state}</span></span>
+        <span>CYBER BOOTLOADER // <span className="text-[#00f0ff] font-bold">{stageText}</span></span>
       </div>
 
       {/* Phase 1: SOC Terminal Trace & Grant Access Button */}
@@ -50,6 +50,8 @@ function SequenceInner({ onComplete }: CyberAccessSequenceProps) {
         <TerminalPhase
           onAuthorize={triggerAuthorize}
           isAuthorizing={state === 'AUTHORIZE'}
+          progress={progress}
+          stageText={stageText}
         />
       )}
     </div>

@@ -12,6 +12,8 @@ export default function AdminAnimationSettingsPage() {
     skipLoaderForReturning: false,
     enableScrollReveal: true,
     repeatScrollReveal: false,
+    waitForCriticalAssets: true,
+    fadeDuration: 0.7,
   });
 
   const [loading, setLoading] = useState(true);
@@ -31,6 +33,8 @@ export default function AdminAnimationSettingsPage() {
             skipLoaderForReturning: data.skipLoaderForReturning ?? false,
             enableScrollReveal: data.enableScrollReveal ?? true,
             repeatScrollReveal: data.repeatScrollReveal ?? false,
+            waitForCriticalAssets: data.waitForCriticalAssets ?? true,
+            fadeDuration: data.fadeDuration ?? 0.7,
           });
         }
       })
@@ -163,13 +167,13 @@ export default function AdminAnimationSettingsPage() {
             <div className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/10">
               <input
                 type="checkbox"
-                id="skipLoaderForReturning"
-                checked={formData.skipLoaderForReturning}
-                onChange={(e) => handleFieldChange('skipLoaderForReturning', e.target.checked)}
+                id="waitForCriticalAssets"
+                checked={formData.waitForCriticalAssets}
+                onChange={(e) => handleFieldChange('waitForCriticalAssets', e.target.checked)}
                 className="accent-[var(--accent-color)] w-4 h-4 cursor-pointer"
               />
-              <label htmlFor="skipLoaderForReturning" className="text-xs text-gray-200 font-bold cursor-pointer">
-                Skip Loader for Returning Visitors
+              <label htmlFor="waitForCriticalAssets" className="text-xs text-emerald-400 font-bold cursor-pointer">
+                Wait for Critical Assets (100% Preload)
               </label>
             </div>
           </div>
