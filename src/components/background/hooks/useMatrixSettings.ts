@@ -16,20 +16,38 @@ export function useMatrixSettings() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const loadSettings = () => {
+    const loadSettings = async () => {
+      let dbSettings: Partial<MatrixSettings> = {};
       try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          setSettings({
-            ...DEFAULT_SETTINGS,
-            ...parsed,
-            opacity: typeof parsed.opacity === 'number' && parsed.opacity > 0 ? parsed.opacity : DEFAULT_SETTINGS.opacity,
-            enabled: parsed.enabled !== false,
-          });
+        const res = await fetch('/api/appearance');
+        if (res.ok) {
+          const json = await res.json();
+          if (json) {
+            dbSettings = {
+              rainSpeed: json.matrixSpeed ?? 1.2,
+              density: json.matrixDensity ? Math.round(json.matrixDensity * 45) : 45,
+              primaryColor: json.matrixColor || '#00ff66',
+              glowStrength: json.glassBlur ?? 6,
+              enabled: json.enableParticles !== false,
+            };
+          }
         }
       } catch {
-        setSettings(DEFAULT_SETTINGS);
+        // DB fetch fallback
+      }
+
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const parsed = saved ? JSON.parse(saved) : {};
+        setSettings({
+          ...DEFAULT_SETTINGS,
+          ...dbSettings,
+          ...parsed,
+          opacity: typeof parsed.opacity === 'number' && parsed.opacity > 0 ? parsed.opacity : DEFAULT_SETTINGS.opacity,
+          enabled: parsed.enabled !== false,
+        });
+      } catch {
+        setSettings({ ...DEFAULT_SETTINGS, ...dbSettings });
       } finally {
         setIsLoaded(true);
       }

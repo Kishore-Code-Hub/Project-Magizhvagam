@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlowButton } from '@/components/ui/GlowButton';
-import { User, Save, CheckCircle } from 'lucide-react';
+import { User, Save, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function AdminAboutPage() {
   const [formData, setFormData] = useState({
@@ -17,7 +17,7 @@ export default function AdminAboutPage() {
   });
 
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/admin/profile')
@@ -31,7 +31,7 @@ export default function AdminAboutPage() {
             techPhilosophy: data.techPhilosophy || '',
             availability: data.availability || '',
             values: typeof data.values === 'string' ? data.values : JSON.stringify(data.values || []),
-            education: typeof data.education === 'string' ? data.education : JSON.stringify(data.education || []),
+            education: '[]',
           });
         }
       })
@@ -50,11 +50,15 @@ export default function AdminAboutPage() {
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) throw new Error('Save failed');
+      const resData = await res.json();
 
-      setMessage('About section updated successfully!');
+      if (!res.ok) {
+        throw new Error(resData.error || `HTTP ${res.status}: Save failed`);
+      }
+
+      setMessage({ type: 'success', text: 'About section updated successfully!' });
     } catch (err: any) {
-      setMessage(err.message || 'Error');
+      setMessage({ type: 'error', text: err.message || 'Error saving about data' });
     } finally {
       setSaving(false);
     }
@@ -125,9 +129,15 @@ export default function AdminAboutPage() {
         </GlassCard>
 
         {message && (
-          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono flex items-center gap-2">
-            <CheckCircle className="w-4 h-4" />
-            <span>{message}</span>
+          <div
+            className={`p-4 rounded-xl border text-xs font-mono flex items-center gap-2 ${
+              message.type === 'success'
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                : 'bg-red-500/10 border-red-500/30 text-red-400'
+            }`}
+          >
+            {message.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+            <span>{message.text}</span>
           </div>
         )}
 

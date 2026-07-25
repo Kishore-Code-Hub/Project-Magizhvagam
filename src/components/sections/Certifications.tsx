@@ -16,7 +16,6 @@ export default function Certifications({ certifications = [] }: CertificationsPr
       <SectionTitle
         title="CERTIFICATIONS"
         subtitle="Professional Certifications & Verified Engineering Accomplishments"
-        badgeText="CREDENTIALS"
       />
 
       {certifications.length > 0 ? (

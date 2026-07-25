@@ -14,7 +14,7 @@ interface RainStream {
   chars: string[];
 }
 
-function getCharList(mode: string): string[] {
+function getCharList(mode: string, customText?: string): string[] {
   switch (mode) {
     case 'katakana':
       return ['ｱ', 'ｲ', 'ｳ', 'ｴ', 'ｵ', 'ｶ', 'ｷ', 'ｸ', 'ｹ', 'ｺ', 'ｻ', 'ｼ', 'ｽ', 'ｾ', 'ｿ', '0', '1'];
@@ -22,8 +22,25 @@ function getCharList(mode: string): string[] {
       return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
     case 'cyber':
       return ['0', '1', '⚡', '⚙', '⌘', '⌥', '⎇', '⌬', '⏣', '∅'];
+    case 'ascii':
+      return ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '{', '}', '[', ']', ':', ';', '<', '>', '?', '/'];
+    case 'keywords':
+      return ['CYBER', 'SECURITY', 'ROOT', 'SHELL', 'KERNEL', 'PACKET', 'SOC', 'CIPHER', 'FIREWALL', 'BREACH'];
+    case 'languages':
+      return ['PYTHON', 'TYPESCRIPT', 'RUST', 'GOLANG', 'C++', 'JAVASCRIPT', 'SQL', 'BASH'];
+    case 'networking':
+      return ['TCP', 'UDP', 'HTTP', 'DNS', 'SSH', 'SSL', 'TLS', 'IP', 'MAC', 'VLAN'];
+    case 'linux':
+      return ['sudo', 'grep', 'chmod', 'chown', 'nmap', 'systemctl', 'docker', 'kubectl'];
+    case 'sql':
+      return ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'JOIN', 'INDEX', 'WHERE', 'HAVING'];
+    case 'custom':
+      if (customText && customText.trim().length > 0) {
+        return customText.trim().split(/\s+/);
+      }
+      return ['KENTUCKY', 'PYTHON', 'FASTAPI', 'SOC', 'AI', 'LINUX', 'CYBERSECURITY'];
     case 'mixed':
-      return ['0', '1', 'X', 'Y', 'Z', '7', '9', 'A', 'F', 'ｱ', 'ｼ', '⌬'];
+      return ['0', '1', 'X', 'Y', 'Z', '7', '9', 'A', 'F', 'ｱ', 'ｼ', '⌬', 'CYBER', 'ROOT', 'PYTHON'];
     case 'binary':
     default:
       return ['0', '1'];
@@ -212,6 +229,8 @@ export default function MatrixEngine() {
 
       activeCtx.globalAlpha = 1.0;
       activeCtx.globalCompositeOperation = 'source-over';
+      activeCtx.shadowBlur = 0;
+      activeCtx.shadowColor = 'transparent';
 
       // Matte dark background trail fade with configurable darkness
       activeCtx.fillStyle = `rgba(5, 5, 5, ${backgroundDarkness})`;

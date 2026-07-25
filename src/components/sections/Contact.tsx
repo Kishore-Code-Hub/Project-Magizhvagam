@@ -70,12 +70,19 @@ export default function Contact({ profile }: ContactProps) {
     }
   };
 
+  const subjectPresets = [
+    'Internship Opportunity',
+    'Software Engineer Position',
+    'Research Collaboration',
+    'Freelance Project',
+    'General Inquiry',
+  ];
+
   return (
     <SectionWrapper id="contact">
       <SectionTitle
         title="GET IN TOUCH"
-        subtitle="Let's Build Something Amazing Together • Open to Collaborations & Software Engineering Roles"
-        badgeText="COMMUNICATION HUB"
+        subtitle="I'm actively looking for Software Engineering, Cybersecurity and AI Internship opportunities. If you're hiring interns, collaborating on research or building innovative products, I'd love to connect."
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -176,12 +183,12 @@ export default function Contact({ profile }: ContactProps) {
           </GlassCard>
         </div>
 
-        {/* Right Column: Encrypted Message Transmission Form */}
+        {/* Right Column: Contact Message Form */}
         <div className="lg:col-span-7">
           <GlassCard variant="default">
             <h4 className="text-lg font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
               <Terminal className="w-5 h-5 text-[var(--accent-color)]" />
-              Transmit Secure Dispatch
+              Send Message
             </h4>
 
             {success ? (
@@ -191,12 +198,12 @@ export default function Contact({ profile }: ContactProps) {
                 className="p-8 text-center rounded-xl bg-emerald-500/10 border border-emerald-500/30"
               >
                 <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-3 animate-bounce" />
-                <h5 className="text-xl font-bold text-white mb-2">Dispatch Transmitted</h5>
+                <h5 className="text-xl font-bold text-white mb-2">Message Sent</h5>
                 <p className="text-xs font-mono text-gray-300 mb-4">
-                  Your message has been logged in the system inbox. I will review and respond promptly.
+                  Your message has been logged in the inbox. I will review and respond promptly.
                 </p>
                 <GlowButton variant="outline" size="sm" onClick={() => setSuccess(false)}>
-                  Send Another Dispatch
+                  Send Another Message
                 </GlowButton>
               </motion.div>
             ) : (
@@ -230,13 +237,30 @@ export default function Contact({ profile }: ContactProps) {
 
                 <div>
                   <label className="block text-xs font-mono text-gray-400 mb-1">SUBJECT *</label>
+                  {/* Preset Suggestion Chips */}
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {subjectPresets.map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setFormData((prev) => ({ ...prev, subject: preset }))}
+                        className={`px-2.5 py-1 text-[11px] font-mono rounded-lg border transition-all cursor-pointer ${
+                          formData.subject === preset
+                            ? 'bg-[var(--accent-color)] text-black border-[var(--accent-color)] font-bold'
+                            : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30 hover:text-white'
+                        }`}
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
                   <input
                     type="text"
                     name="subject"
                     required
                     value={formData.subject}
                     onChange={handleChange}
-                    placeholder="Project Inquiry / Job Opportunity"
+                    placeholder="Select preset above or type subject..."
                     className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)] transition-colors"
                   />
                 </div>

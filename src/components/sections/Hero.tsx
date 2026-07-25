@@ -55,19 +55,19 @@ export default function Hero({ profile }: HeroProps) {
             <h2 className="text-xs sm:text-sm text-gray-400 font-medium tracking-wide">
               HELLO, I'M
             </h2>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-tight break-words">
-              KISHORE_NARAYANAN_K
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-tight break-words uppercase">
+              {profile.name || 'KISHORE_NARAYANAN_K'}
             </h1>
           </div>
 
           {/* Typewriter Role Loop Sequence - Fixed height & no wrapping */}
           <div className="min-h-[44px] sm:min-h-[52px] flex items-center font-mono whitespace-nowrap overflow-visible">
-            <Typewriter />
+            <Typewriter words={profile.taglines} />
           </div>
 
           {/* Bio paragraph with max 600px width */}
           <p className="text-sm sm:text-base text-gray-300 font-sans leading-relaxed max-w-[600px]">
-            I build <span className="text-accent font-semibold">secure, intelligent</span> and scalable digital solutions with a strong focus on <span className="text-accent font-semibold">Cybersecurity, AI</span> and real-world impact.
+            {profile.bio || profile.headline || 'I build secure, intelligent and scalable digital solutions with a strong focus on Cybersecurity, AI and real-world impact.'}
           </p>
 
           {/* Action Buttons Row Grid Container */}

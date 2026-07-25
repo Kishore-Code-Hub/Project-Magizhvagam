@@ -64,7 +64,11 @@ export default function AdminHeroPage() {
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to update Hero configuration');
+      const resData = await res.json();
+
+      if (!res.ok) {
+        throw new Error(resData.error || `HTTP ${res.status}: Save failed`);
+      }
 
       setMessage({ type: 'success', text: 'Hero & Identity updated successfully!' });
     } catch (err: any) {

@@ -69,38 +69,23 @@ export default function Projects({ projects = [] }: ProjectsProps) {
       <SectionTitle
         title="FEATURED PROJECTS"
         subtitle="Software Engineering Portfolio • Systems • Security • AI Solutions"
-        badgeText="SHIPPED SYSTEMS"
       />
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-8 p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-accent)] backdrop-blur-xl">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search projects by tech, title, features..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-[var(--accent-color)] transition-colors"
-          />
-        </div>
-
-        {/* Category Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 text-xs font-mono rounded-xl border transition-all whitespace-nowrap cursor-pointer ${
-                selectedCategory === cat
-                  ? 'bg-[var(--accent-color)] text-black font-bold border-[var(--accent-color)] shadow-[var(--shadow-accent-glow)]'
-                  : 'bg-white/5 text-gray-300 border-white/10 hover:border-white/30'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+      {/* Category Filter Bar */}
+      <div className="flex items-center justify-center gap-2 overflow-x-auto pb-4 mb-8 p-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-accent)] backdrop-blur-xl no-scrollbar">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-4 py-2 text-xs font-mono rounded-xl border transition-all whitespace-nowrap cursor-pointer ${
+              selectedCategory === cat
+                ? 'bg-[var(--accent-color)] text-black font-bold border-[var(--accent-color)] shadow-[var(--shadow-accent-glow)]'
+                : 'bg-white/5 text-gray-300 border-white/10 hover:border-white/30 hover:text-white'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
 
       {/* Grid */}

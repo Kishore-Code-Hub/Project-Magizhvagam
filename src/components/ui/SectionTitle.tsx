@@ -14,7 +14,6 @@ interface SectionTitleProps {
 export const SectionTitle: React.FC<SectionTitleProps> = ({
   title,
   subtitle,
-  badgeText,
   align = 'center',
   className = '',
 }) => {
@@ -30,14 +29,8 @@ export const SectionTitle: React.FC<SectionTitleProps> = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className={`flex flex-col mb-12 ${alignmentClasses[align]} ${className}`}
+      className={`flex flex-col mb-12 p-6 sm:p-8 rounded-[24px] bg-[rgba(10,12,14,0.42)] backdrop-blur-[24px] border border-[rgba(0,255,120,0.15)] shadow-[0_25px_70px_rgba(0,255,100,0.10)] ${alignmentClasses[align]} ${className}`}
     >
-      {badgeText && (
-        <span className="inline-flex items-center gap-2 px-3 py-1 mb-3 text-xs font-mono tracking-widest uppercase rounded-full bg-[var(--bg-glass)] text-[var(--accent-color)] border border-[var(--border-accent)]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-color)] animate-ping" />
-          {badgeText}
-        </span>
-      )}
       <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white uppercase">
         {title.split(' ').map((word, i) => (
           <span key={i} className={i % 2 !== 0 ? 'text-[var(--accent-color)] font-extrabold' : ''}>
@@ -46,7 +39,7 @@ export const SectionTitle: React.FC<SectionTitleProps> = ({
         ))}
       </h2>
       {subtitle && (
-        <p className="mt-3 text-base sm:text-lg text-gray-400 max-w-2xl font-normal leading-relaxed">
+        <p className="mt-3 text-base sm:text-lg text-gray-300 max-w-2xl font-normal leading-relaxed">
           {subtitle}
         </p>
       )}

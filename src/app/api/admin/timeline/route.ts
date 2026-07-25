@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getAdminSession } from '@/lib/auth';
 import { db } from '@/lib/db';
 
@@ -33,9 +34,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    revalidatePath('/');
     return NextResponse.json(entry, { status: 201 });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[API /api/admin/timeline POST Error]:', error);
+    return NextResponse.json({ error: `Database Error: ${error.message}` }, { status: 500 });
   }
 }
 
@@ -52,9 +55,11 @@ export async function PUT(req: NextRequest) {
       data,
     });
 
+    revalidatePath('/');
     return NextResponse.json(updated);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[API /api/admin/timeline PUT Error]:', error);
+    return NextResponse.json({ error: `Database Error: ${error.message}` }, { status: 500 });
   }
 }
 
@@ -80,8 +85,10 @@ export async function DELETE(req: NextRequest) {
       },
     });
 
+    revalidatePath('/');
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[API /api/admin/timeline DELETE Error]:', error);
+    return NextResponse.json({ error: `Database Error: ${error.message}` }, { status: 500 });
   }
 }
