@@ -24,7 +24,21 @@ async function handleProfileUpdate(req: NextRequest) {
 
     const taglinesStr = normalizeJsonField(body.taglines, []);
     const socialsStr = normalizeJsonField(body.socials, {});
-    const statsStr = normalizeJsonField(body.stats, {});
+    // Retrieve existing profile stats to merge intelligently
+    const existingProfile = await db.profile.findUnique({ where: { id: 'default' } });
+    let existingStatsObj = {};
+    if (existingProfile?.stats) {
+      try {
+        existingStatsObj = typeof existingProfile.stats === 'string' ? JSON.parse(existingProfile.stats) : existingProfile.stats;
+      } catch {}
+    }
+    let incomingStatsObj = {};
+    if (body.stats) {
+      try {
+        incomingStatsObj = typeof body.stats === 'string' ? JSON.parse(body.stats) : body.stats;
+      } catch {}
+    }
+    const mergedStatsStr = JSON.stringify({ ...existingStatsObj, ...incomingStatsObj });
 
     const updateData: any = {};
     if (body.name !== undefined) updateData.name = body.name;
@@ -38,7 +52,7 @@ async function handleProfileUpdate(req: NextRequest) {
     if (body.availability !== undefined) updateData.availability = body.availability;
     if (body.resumeUrl !== undefined) updateData.resumeUrl = body.resumeUrl;
     if (body.socials !== undefined) updateData.socials = socialsStr;
-    if (body.stats !== undefined) updateData.stats = statsStr;
+    if (body.stats !== undefined) updateData.stats = mergedStatsStr;
 
     const updated = await db.profile.upsert({
       where: { id: 'default' },
@@ -56,7 +70,7 @@ async function handleProfileUpdate(req: NextRequest) {
         availability: body.availability || 'Open to Internships',
         resumeUrl: body.resumeUrl || '',
         socials: socialsStr,
-        stats: statsStr,
+        stats: mergedStatsStr,
       },
     });
 

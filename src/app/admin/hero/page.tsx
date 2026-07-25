@@ -264,6 +264,7 @@ export default function AdminHeroPage() {
             <label className="block text-xs font-bold text-gray-300 mb-1 uppercase">Hero Workstation Banner Image</label>
             <FileUploader
               category="hero"
+              value={formData.heroImage}
               onUploadComplete={(url) => handleFieldChange('heroImage', url)}
             />
             {formData.heroImage && (

@@ -161,7 +161,7 @@ export default function About({ profile }: AboutProps) {
                   Personal Biography & Focus
                 </h4>
                 <p className="text-xs sm:text-sm text-gray-300 leading-relaxed mb-4 font-sans">
-                  {profile.bio || profile.personalBio}
+                  {profile.personalBio || profile.bio}
                 </p>
 
                 {/* Current Focus */}

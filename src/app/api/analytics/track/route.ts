@@ -19,13 +19,30 @@ export async function POST(req: NextRequest) {
       deviceType = 'Desktop',
     } = body;
 
-    // Retrieve IP Address from headers
+    // Retrieve IP Address with comprehensive proxy header detection
     const forwardedFor = req.headers.get('x-forwarded-for');
-    const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
+    const realIp = req.headers.get('x-real-ip');
+    const cfConnectingIp = req.headers.get('cf-connecting-ip');
+    const trueClientIp = req.headers.get('true-client-ip');
+
+    let ipAddress = '127.0.0.1';
+    if (cfConnectingIp) {
+      ipAddress = cfConnectingIp;
+    } else if (trueClientIp) {
+      ipAddress = trueClientIp;
+    } else if (realIp) {
+      ipAddress = realIp;
+    } else if (forwardedFor) {
+      ipAddress = forwardedFor.split(',')[0].trim();
+    }
+
+    if (!ipAddress || ipAddress === '::1' || ipAddress === '127.0.0.1') {
+      ipAddress = '127.0.0.1 (Local Dev)';
+    }
 
     // Retrieve Geo headers if provided by reverse proxy/Cloudflare
-    const country = req.headers.get('cf-ipcountry') || req.headers.get('x-country') || 'Unknown';
-    const city = req.headers.get('cf-ipcity') || req.headers.get('x-city') || 'Unknown';
+    const country = req.headers.get('cf-ipcountry') || req.headers.get('x-country') || 'Local Dev';
+    const city = req.headers.get('cf-ipcity') || req.headers.get('x-city') || 'Localhost';
 
     // 1. Log event entry in AnalyticsLog table
     await db.analyticsLog.create({

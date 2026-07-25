@@ -70,3 +70,32 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await getAdminSession();
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) return NextResponse.json({ error: 'Asset ID required' }, { status: 400 });
+
+    const asset = await db.mediaAsset.findUnique({ where: { id } });
+    if (asset) {
+      // Physical file unlinking attempt
+      try {
+        const fullPath = path.join(process.cwd(), 'public', asset.fileUrl);
+        const fs = await import('fs/promises');
+        await fs.unlink(fullPath).catch(() => null);
+      } catch {
+        // ignore unlink error
+      }
+      await db.mediaAsset.delete({ where: { id } });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

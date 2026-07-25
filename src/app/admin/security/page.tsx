@@ -26,6 +26,19 @@ export default function AdminSecurityPage() {
     return true;
   });
 
+  const handleTerminateSession = async (sessionId?: string) => {
+    try {
+      const url = sessionId ? `/api/admin/security?sessionId=${sessionId}` : '/api/admin/security?all=true';
+      await fetch(url, { method: 'DELETE' });
+      // reload
+      const res = await fetch('/api/admin/security');
+      const d = await res.json();
+      setData(d);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="space-y-8 font-mono text-left max-w-5xl">
       <div className="flex items-center justify-between pb-4 border-b border-white/10">
@@ -38,21 +51,52 @@ export default function AdminSecurityPage() {
       </div>
 
       <GlassCard variant="glow">
-        <h4 className="text-sm font-bold text-white uppercase mb-4 flex items-center gap-2">
-          <UserCheck className="w-4 h-4 text-emerald-400" /> Active Authenticated Sessions
-        </h4>
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="text-sm font-bold text-white uppercase flex items-center gap-2">
+            <UserCheck className="w-4 h-4 text-emerald-400" /> Active Authenticated Sessions
+          </h4>
+          {data?.activeSessions?.length > 0 && (
+            <button
+              onClick={() => handleTerminateSession()}
+              className="px-3 py-1 text-[10px] rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white transition-all cursor-pointer"
+            >
+              Terminate All Sessions
+            </button>
+          )}
+        </div>
+
         <div className="space-y-2">
-          {data?.activeSessions?.map((s: any) => (
-            <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/10 text-xs">
-              <div>
-                <span className="font-bold text-white">{s.user?.name}</span> ({s.user?.email})
-                <div className="text-[10px] text-gray-400">Expires: {new Date(s.expiresAt).toLocaleString()}</div>
+          {data?.activeSessions?.length > 0 ? (
+            data.activeSessions.map((s: any) => (
+              <div key={s.id} className="flex items-center justify-between p-3.5 rounded-xl bg-black/40 border border-white/10 text-xs">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-white">{s.user?.name || 'Admin User'}</span>
+                    <span className="text-gray-400">({s.user?.email || 'admin@soundkish.dev'})</span>
+                  </div>
+                  <div className="text-[10px] text-gray-400 mt-1 flex flex-wrap items-center gap-3">
+                    <span>Started: {new Date(s.createdAt).toLocaleString()}</span>
+                    <span>Expires: {new Date(s.expiresAt).toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 text-[10px] rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
+                    Active Session
+                  </span>
+                  <button
+                    onClick={() => handleTerminateSession(s.id)}
+                    className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white transition-all cursor-pointer"
+                    title="Terminate Session"
+                  >
+                    <Key className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-              <span className="px-2 py-0.5 text-[10px] rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                Active Session
-              </span>
-            </div>
-          ))}
+            ))
+          ) : (
+            <div className="p-4 text-center text-xs text-gray-500">No active authenticated sessions.</div>
+          )}
         </div>
       </GlassCard>
 

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlowButton } from '@/components/ui/GlowButton';
+import { FileUploader } from '@/components/ui/FileUploader';
 import { User, Save, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function AdminAboutPage() {
@@ -13,10 +14,12 @@ export default function AdminAboutPage() {
     techPhilosophy: '',
     availability: '',
     values: '[]',
-    education: '[]',
+    profileImage: '',
   });
 
   const [saving, setSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
@@ -24,6 +27,7 @@ export default function AdminAboutPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data) {
+          const stats = typeof data.stats === 'string' ? JSON.parse(data.stats) : data.stats || {};
           setFormData({
             professionalIdentity: data.professionalIdentity || '',
             personalBio: data.personalBio || data.bio || '',
@@ -31,38 +35,70 @@ export default function AdminAboutPage() {
             techPhilosophy: data.techPhilosophy || '',
             availability: data.availability || '',
             values: typeof data.values === 'string' ? data.values : JSON.stringify(data.values || []),
-            education: '[]',
+            profileImage: stats.profileImage || '/hero-hacker.png',
           });
         }
       })
       .catch((err) => console.error(err));
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setMessage(null);
-
-    try {
-      const res = await fetch('/api/admin/profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      const resData = await res.json();
-
-      if (!res.ok) {
-        throw new Error(resData.error || `HTTP ${res.status}: Save failed`);
-      }
-
-      setMessage({ type: 'success', text: 'About section updated successfully!' });
-    } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Error saving about data' });
-    } finally {
-      setSaving(false);
-    }
+  const handleFieldChange = (field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setIsDirty(true);
   };
+
+  const handleSubmit = useCallback(
+    async (e?: React.FormEvent) => {
+      if (e) e.preventDefault();
+      setSaving(true);
+      setMessage(null);
+
+      try {
+        const res = await fetch('/api/admin/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            professionalIdentity: formData.professionalIdentity,
+            personalBio: formData.personalBio,
+            currentFocus: formData.currentFocus,
+            techPhilosophy: formData.techPhilosophy,
+            availability: formData.availability,
+            values: formData.values,
+            stats: {
+              profileImage: formData.profileImage,
+            },
+          }),
+        });
+
+        const resData = await res.json();
+
+        if (!res.ok) {
+          throw new Error(resData.error || `HTTP ${res.status}: Save failed`);
+        }
+
+        setIsDirty(false);
+        setLastSaved(new Date().toLocaleTimeString());
+        setMessage({ type: 'success', text: 'About section & Profile photo updated successfully!' });
+      } catch (err: any) {
+        setMessage({ type: 'error', text: err.message || 'Error saving about data' });
+      } finally {
+        setSaving(false);
+      }
+    },
+    [formData]
+  );
+
+  // Ctrl+S / Cmd+S Keyboard Save Shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSubmit();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleSubmit]);
 
   return (
     <div className="space-y-8 font-mono text-left max-w-4xl">
@@ -71,59 +107,79 @@ export default function AdminAboutPage() {
           <h1 className="text-2xl font-bold text-white uppercase flex items-center gap-2">
             <User className="w-6 h-6 text-[var(--accent-color)]" /> About The Engineer Manager
           </h1>
-          <p className="text-xs text-gray-400">Configure bio, professional identity, principles, and values.</p>
+          <p className="text-xs text-gray-400">Configure personal biography, professional identity, profile photo, and principles.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {isDirty && (
+            <span className="text-[10px] text-amber-400 font-bold px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20">
+              Unsaved Changes
+            </span>
+          )}
+          {lastSaved && <span className="text-[10px] text-gray-400">Last saved: {lastSaved}</span>}
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <GlassCard variant="default" className="space-y-4">
           <div>
-            <label className="block text-xs text-gray-400 mb-1">PROFESSIONAL IDENTITY TITLE</label>
+            <label className="block text-xs font-bold text-gray-300 mb-1 uppercase">Engineer Profile Photo</label>
+            <FileUploader
+              category="about"
+              value={formData.profileImage}
+              onUploadComplete={(url) => handleFieldChange('profileImage', url)}
+            />
+            {formData.profileImage && (
+              <p className="mt-2 text-xs text-emerald-400 font-mono">Current Photo: {formData.profileImage}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-300 mb-1 uppercase">Professional Identity Title</label>
             <input
               type="text"
               value={formData.professionalIdentity}
-              onChange={(e) => setFormData({ ...formData, professionalIdentity: e.target.value })}
-              className="w-full px-4 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white"
+              onChange={(e) => handleFieldChange('professionalIdentity', e.target.value)}
+              className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)]"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-gray-400 mb-1">PERSONAL BIOGRAPHY</label>
+            <label className="block text-xs font-bold text-gray-300 mb-1 uppercase">Personal Biography</label>
             <textarea
               rows={4}
               value={formData.personalBio}
-              onChange={(e) => setFormData({ ...formData, personalBio: e.target.value })}
-              className="w-full px-4 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white resize-none"
+              onChange={(e) => handleFieldChange('personalBio', e.target.value)}
+              className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white resize-none focus:outline-none focus:border-[var(--accent-color)]"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-gray-400 mb-1">CURRENT FOCUS</label>
+            <label className="block text-xs font-bold text-gray-300 mb-1 uppercase">Current Focus</label>
             <input
               type="text"
               value={formData.currentFocus}
-              onChange={(e) => setFormData({ ...formData, currentFocus: e.target.value })}
-              className="w-full px-4 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white"
+              onChange={(e) => handleFieldChange('currentFocus', e.target.value)}
+              className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)]"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-gray-400 mb-1">TECHNICAL PHILOSOPHY</label>
+            <label className="block text-xs font-bold text-gray-300 mb-1 uppercase">Technical Philosophy</label>
             <input
               type="text"
               value={formData.techPhilosophy}
-              onChange={(e) => setFormData({ ...formData, techPhilosophy: e.target.value })}
-              className="w-full px-4 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white"
+              onChange={(e) => handleFieldChange('techPhilosophy', e.target.value)}
+              className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)]"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-gray-400 mb-1">AVAILABILITY STATUS</label>
+            <label className="block text-xs font-bold text-gray-300 mb-1 uppercase">Availability Status</label>
             <input
               type="text"
               value={formData.availability}
-              onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
-              className="w-full px-4 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white"
+              onChange={(e) => handleFieldChange('availability', e.target.value)}
+              className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)]"
             />
           </div>
         </GlassCard>
@@ -142,7 +198,7 @@ export default function AdminAboutPage() {
         )}
 
         <GlowButton type="submit" variant="primary" isLoading={saving} leftIcon={<Save className="w-4 h-4" />}>
-          Save About Engineer Settings
+          Save About Engineer Settings (Ctrl+S)
         </GlowButton>
       </form>
     </div>

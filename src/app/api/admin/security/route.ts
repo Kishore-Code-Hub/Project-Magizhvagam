@@ -31,3 +31,28 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await getAdminSession();
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const { searchParams } = new URL(req.url);
+    const sessionId = searchParams.get('sessionId');
+    const terminateAll = searchParams.get('all') === 'true';
+
+    if (terminateAll) {
+      await db.session.deleteMany({});
+      return NextResponse.json({ success: true, message: 'All active sessions terminated.' });
+    }
+
+    if (sessionId) {
+      await db.session.delete({ where: { id: sessionId } });
+      return NextResponse.json({ success: true, message: 'Session terminated.' });
+    }
+
+    return NextResponse.json({ error: 'Session ID required' }, { status: 400 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

@@ -275,7 +275,11 @@ export default function AdminProjectsPage() {
 
           <div>
             <label className="block text-xs text-gray-400 mb-1">COVER IMAGE</label>
-            <FileUploader category="projects" onUploadComplete={(url) => setFormData({ ...formData, image: url })} />
+            <FileUploader
+              category="projects"
+              value={formData.image}
+              onUploadComplete={(url) => setFormData({ ...formData, image: url })}
+            />
             {formData.image && <p className="mt-1 text-xs text-emerald-400 font-mono">Cover: {formData.image}</p>}
           </div>
 

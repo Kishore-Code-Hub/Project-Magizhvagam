@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { CyberBadge } from '@/components/ui/CyberBadge';
-import { Palette, Save, CheckCircle, Sliders, RefreshCw } from 'lucide-react';
+import { Palette, Save, CheckCircle, Sliders, RefreshCw, Download, Upload } from 'lucide-react';
 import { DESIGN_SYSTEM, ThemePreset } from '@/lib/design-system';
 
 export default function AdminAppearancePage() {
@@ -32,6 +32,33 @@ export default function AdminAppearancePage() {
       })
       .catch((err) => console.error(err));
   }, []);
+
+  const handleExportTheme = () => {
+    const jsonStr = JSON.stringify(settings, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `theme-${settings.themePreset}-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportTheme = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target?.result as string);
+        setSettings((prev) => ({ ...prev, ...imported }));
+        setMessage('Theme imported successfully! Click Save to apply.');
+      } catch {
+        setMessage('Invalid JSON theme file.');
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const handleSelectPreset = (presetKey: ThemePreset) => {
     const preset = DESIGN_SYSTEM.colors.presets[presetKey];
@@ -147,9 +174,28 @@ export default function AdminAppearancePage() {
           </div>
         )}
 
-        <GlowButton type="submit" variant="primary" isLoading={saving} leftIcon={<Save className="w-4 h-4" />}>
-          Save Appearance Configuration
-        </GlowButton>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <GlowButton type="submit" variant="primary" isLoading={saving} leftIcon={<Save className="w-4 h-4" />}>
+            Save Appearance Configuration
+          </GlowButton>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleExportTheme}
+              className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-mono border border-white/10 flex items-center gap-2 cursor-pointer"
+            >
+              <Download className="w-4 h-4 text-cyan-400" />
+              <span>Export Theme JSON</span>
+            </button>
+
+            <label className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-mono border border-white/10 flex items-center gap-2 cursor-pointer">
+              <Upload className="w-4 h-4 text-amber-400" />
+              <span>Import Theme JSON</span>
+              <input type="file" accept=".json" onChange={handleImportTheme} className="hidden" />
+            </label>
+          </div>
+        </div>
       </form>
     </div>
   );

@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, X, Check, Image as ImageIcon, FolderOpen, Search } from 'lucide-react';
 import { Modal } from './Modal';
 
 interface FileUploaderProps {
   onUploadComplete: (url: string) => void;
+  value?: string;
   category?: string;
   accept?: string;
   label?: string;
@@ -13,13 +14,20 @@ interface FileUploaderProps {
 
 export const FileUploader: React.FC<FileUploaderProps> = ({
   onUploadComplete,
+  value,
   category = 'uploads',
   accept = 'image/*,.pdf',
   label = 'Upload File or Drag & Drop',
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(value || null);
+
+  useEffect(() => {
+    if (value) {
+      setPreview(value);
+    }
+  }, [value]);
 
   // Media Library Picker Modal State
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);

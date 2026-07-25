@@ -185,7 +185,11 @@ export default function AdminCertificatesPage() {
 
           <div>
             <label className="block text-xs text-gray-400 mb-1">ORGANIZATION LOGO</label>
-            <FileUploader category="certificates" onUploadComplete={(url) => setFormData({ ...formData, organizationLogo: url })} />
+            <FileUploader
+              category="certificates"
+              value={formData.organizationLogo}
+              onUploadComplete={(url) => setFormData({ ...formData, organizationLogo: url })}
+            />
           </div>
 
           <GlowButton type="submit" variant="primary" className="w-full" leftIcon={<Save className="w-4 h-4" />}>

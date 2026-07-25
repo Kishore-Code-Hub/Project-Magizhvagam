@@ -232,7 +232,11 @@ export default function AdminSkillsPage() {
 
           <div>
             <label className="block text-xs text-gray-400 mb-1">OFFICIAL SVG LOGO</label>
-            <FileUploader category="icons" onUploadComplete={(url) => setFormData({ ...formData, officialLogo: url })} />
+            <FileUploader
+              category="icons"
+              value={formData.officialLogo}
+              onUploadComplete={(url) => setFormData({ ...formData, officialLogo: url })}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4 pt-2">
