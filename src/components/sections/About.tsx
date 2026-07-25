@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { SectionWrapper } from '@/components/ui/SectionWrapper';
 import { SectionTitle } from '@/components/ui/SectionTitle';
@@ -8,6 +8,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { CyberBadge } from '@/components/ui/CyberBadge';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
+import { SkillProgressBar } from '@/components/ui/SkillProgressBar';
 import { ProfileData } from '@/types';
 import {
   ShieldCheck,
@@ -20,6 +21,15 @@ import {
   Award,
   Terminal,
   Compass,
+  MapPin,
+  Briefcase,
+  Rocket,
+  CheckCircle2,
+  ArrowRight,
+  Download,
+  Flame,
+  Globe,
+  Lock,
 } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from '@/components/ui/Icons';
 
@@ -27,25 +37,54 @@ interface AboutProps {
   profile: ProfileData;
 }
 
+const COLOR_TOKEN_MAP: Record<string, string> = {
+  emerald: '#00ff66',
+  cyan: '#00f0ff',
+  amber: '#ffb700',
+  purple: '#a855f7',
+  rose: '#ff0055',
+  blue: '#3b82f6',
+};
+
+const ICON_MAP: Record<string, any> = {
+  ShieldCheck,
+  Code2,
+  Cpu,
+  GraduationCap,
+  Sparkles,
+  Award,
+  Terminal,
+  Compass,
+  Rocket,
+  CheckCircle2,
+  Flame,
+  Globe,
+  Lock,
+};
+
+function getLucideIcon(name?: string, fallback: any = ShieldCheck): any {
+  if (!name) return fallback;
+  return ICON_MAP[name] || fallback;
+}
+
+function resolveColor(tokenOrHex?: string, fallback = '#00ff66'): string {
+  if (!tokenOrHex) return fallback;
+  if (COLOR_TOKEN_MAP[tokenOrHex]) return COLOR_TOKEN_MAP[tokenOrHex];
+  return tokenOrHex;
+}
+
 export default function About({ profile }: AboutProps) {
   const safeResumeUrl = profile.resumeUrl || 'https://drive.google.com';
 
-  const stats = profile.stats || {
-    yearsLearning: '2+',
-    projects: '15+',
-    certifications: '10+',
-    curiosity: '∞',
+  const aboutModules = profile.aboutModules || {
+    showEducation: true,
+    showFocus: true,
+    showRoadmap: true,
+    showSpecializations: true,
+    showStats: true,
   };
 
-  const parsedValues = React.useMemo(() => {
-    try {
-      return typeof profile.values === 'string' ? JSON.parse(profile.values) : profile.values || [];
-    } catch {
-      return ['Security First', 'Clean Code', 'Continuous Learning', 'User Privacy'];
-    }
-  }, [profile.values]);
-
-  const parsedEducation = React.useMemo(() => {
+  const parsedEducation = useMemo(() => {
     try {
       return typeof profile.education === 'string'
         ? JSON.parse(profile.education)
@@ -55,158 +94,330 @@ export default function About({ profile }: AboutProps) {
     }
   }, [profile.education]);
 
+  const academicDegree = profile.academicDegree || {
+    degree: parsedEducation[0] || 'B.E. Computer Science & Engineering',
+    college: 'SRM Valliammai Engineering College',
+    year: '2024 – 2028',
+    status: 'Active',
+  };
+
+  const focusChips = profile.focusChips && profile.focusChips.length > 0
+    ? profile.focusChips
+    : [
+        '✓ Cybersecurity',
+        '✓ AI & Neural Nets',
+        '✓ Backend Systems',
+        '✓ Cloud Infrastructure',
+        '✓ DevOps & Containers',
+        '✓ Network Security',
+      ];
+
+  const careerRoadmap = profile.careerRoadmap && profile.careerRoadmap.length > 0
+    ? profile.careerRoadmap
+    : [
+        { year: '2024', title: 'Started CSE Engineering', description: 'Foundation in computer science & security principles', iconName: 'GraduationCap', colorToken: 'emerald' },
+        { year: '2025', title: 'Full Stack & Security Projects', description: 'Building web systems and pentesting labs', iconName: 'Code2', colorToken: 'cyan' },
+        { year: '2026', title: 'AI + Cyber Threat Detection', description: 'Advanced machine learning for network intrusion', iconName: 'Cpu', colorToken: 'amber' },
+        { year: 'Goal', title: 'Security Software Engineer', description: 'Production engineering and defense-in-depth', iconName: 'ShieldCheck', colorToken: 'rose' },
+      ];
+
+  const statsCards = profile.statsCards && profile.statsCards.length > 0
+    ? profile.statsCards
+    : [
+        { id: '1', value: '15+', label: 'Projects Built', colorToken: 'emerald', iconName: 'Rocket' },
+        { id: '2', value: '10+', label: 'Certifications', colorToken: 'cyan', iconName: 'Award' },
+        { id: '3', value: '2+', label: 'Years Learning', colorToken: 'emerald', iconName: 'Flame' },
+        { id: '4', value: '∞', label: 'Curiosity', colorToken: 'amber', iconName: 'Sparkles' },
+      ];
+
+  const specializationCards = profile.specializationCards && profile.specializationCards.length > 0
+    ? profile.specializationCards
+    : [
+        { id: '1', title: 'Cybersecurity', description: 'Application Security, Threat Detection & Vulnerability Analysis', iconName: 'ShieldCheck', colorToken: 'emerald' },
+        { id: '2', title: 'AI Systems', description: 'Neural Networks, Computer Vision & Constraint Algorithms', iconName: 'Cpu', colorToken: 'cyan' },
+        { id: '3', title: 'Cloud Infra', description: 'Scalable Microservices, Docker Containers & CI/CD Pipelines', iconName: 'Globe', colorToken: 'amber' },
+        { id: '4', title: 'Networking', description: 'TCP/IP Architecture, Packet Analysis & Firewall Systems', iconName: 'Compass', colorToken: 'rose' },
+        { id: '5', title: 'Backend Systems', description: 'FastAPI, Node.js, High-Throughput REST APIs & JWT Security', iconName: 'Code2', colorToken: 'purple' },
+        { id: '6', title: 'Linux Kernel', description: 'Bash Scripting, System Administration & Access Controls', iconName: 'Terminal', colorToken: 'emerald' },
+      ];
+
+  const skillProgressList = [
+    { name: 'Python', percentage: 90, color: '#00ff66' },
+    { name: 'Cybersecurity', percentage: 88, color: '#00f0ff' },
+    { name: 'Linux Kernel & Admin', percentage: 88, color: '#ffb700' },
+    { name: 'FastAPI / Python Backend', percentage: 85, color: '#00ff66' },
+    { name: 'React / Next.js', percentage: 85, color: '#00f0ff' },
+    { name: 'Networking & TCP/IP', percentage: 82, color: '#ff0055' },
+    { name: 'SQL & Database Design', percentage: 80, color: '#7000ff' },
+  ];
+
   return (
-    <SectionWrapper id="about">
-      <SectionTitle
-        title="ABOUT THE ENGINEER"
-        subtitle="Software Engineering Rigor • Cybersecurity Research • Production Architectures"
-      />
+    <SectionWrapper id="about" className="py-24 relative overflow-hidden bg-black/40">
+      {/* Background Subtle Cyber Grids */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-950/20 via-transparent to-transparent pointer-events-none" />
 
-      <div className="p-6 sm:p-8 rounded-[24px] bg-[rgba(10,12,14,0.42)] backdrop-blur-[24px] border border-[rgba(0,255,120,0.15)] shadow-[0_25px_70px_rgba(0,255,100,0.10)]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          {/* Left Column: Engineer Profile HUD */}
-          <div className="lg:col-span-5 flex flex-col h-full">
-            <GlassCard variant="glow" className="h-full flex-1 flex flex-col justify-between p-6 sm:p-8 rounded-[24px]">
-              <div>
-                <div className="relative w-28 h-28 mx-auto mb-4 rounded-2xl overflow-hidden border-2 border-[var(--border-accent)] p-1 bg-[var(--bg-glass)] aspect-square flex-shrink-0">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-16">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto">
+          <SectionTitle
+            title="SYSTEM BRIEFING"
+            subtitle="OPERATIONAL & ACADEMIC PROFILE"
+            align="center"
+          />
+        </div>
+
+        {/* TOP SECTION: Main Profile Card & Current Focus Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column: Glass Profile Card */}
+          <div className="lg:col-span-5">
+            <GlassCard variant="glow" className="p-6 sm:p-8 rounded-3xl relative overflow-hidden">
+              <div className="flex flex-col items-center text-center space-y-4">
+                {/* Profile Image with Cyber Avatar Ring */}
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-500" />
                   <img
-                    src={(stats as any)?.profileImage || '/hero-hacker.png'}
+                    src={profile.image || '/hero-hacker.png'}
                     alt={profile.name}
-                    loading="eager"
-                    // @ts-ignore
-                    fetchPriority="high"
-                    decoding="async"
-                    className="w-full h-full object-cover rounded-xl"
+                    className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-2 border-emerald-500/80 shadow-2xl"
                   />
-                  <span className="absolute bottom-2 right-2 w-3.5 h-3.5 rounded-full bg-[var(--accent-color)] border-2 border-black animate-pulse" />
-                </div>
-
-                <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight text-center">{profile.name}</h3>
-                <p className="text-xs font-mono text-[var(--accent-color)] mt-1 mb-4 uppercase text-center">
-                  {profile.professionalIdentity || profile.headline}
-                </p>
-
-                <div className="flex flex-wrap justify-center gap-2 mb-4">
-                  <CyberBadge variant="green" size="sm">
-                    Available for Hire
-                  </CyberBadge>
-                  <CyberBadge variant="cyan" size="sm">
-                    CSE Engineer
-                  </CyberBadge>
-                </div>
-
-                {/* Quick Metrics HUD */}
-                <div className="grid grid-cols-2 gap-2.5 p-3.5 rounded-xl bg-black/40 border border-white/5 font-mono text-center mb-4">
-                  <div>
-                    <div className="text-xl font-extrabold text-[var(--accent-color)]">
-                      <AnimatedCounter value={stats.yearsLearning || '2+'} />
-                    </div>
-                    <div className="text-[10px] text-gray-400 uppercase">Years Learning</div>
-                  </div>
-                  <div>
-                    <div className="text-xl font-extrabold text-emerald-400">
-                      <AnimatedCounter value={stats.projects || '15+'} />
-                    </div>
-                    <div className="text-[10px] text-gray-400 uppercase">Projects Built</div>
-                  </div>
-                  <div>
-                    <div className="text-xl font-extrabold text-cyan-400">
-                      <AnimatedCounter value={stats.certifications || '10+'} />
-                    </div>
-                    <div className="text-[10px] text-gray-400 uppercase">Certifications</div>
-                  </div>
-                  <div>
-                    <div className="text-xl font-extrabold text-amber-400">∞</div>
-                    <div className="text-[10px] text-gray-400 uppercase">Curiosity</div>
+                  <div className="absolute bottom-1 right-1 bg-emerald-500 p-1.5 rounded-full border-2 border-black text-black">
+                    <ShieldCheck className="w-4 h-4" />
                   </div>
                 </div>
-              </div>
 
-              {/* Social Shortcuts Pinned to Bottom */}
-              <div className="flex items-center justify-center gap-3 pt-2 mt-auto">
-                {profile.socials?.github && (
-                  <a
-                    href={profile.socials.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-[var(--accent-color)] border border-white/10 transition-colors"
-                  >
-                    <GithubIcon className="w-4 h-4" />
-                  </a>
-                )}
-                {profile.socials?.linkedin && (
-                  <a
-                    href={profile.socials.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-[var(--accent-color)] border border-white/10 transition-colors"
-                  >
-                    <LinkedinIcon className="w-4 h-4" />
-                  </a>
-                )}
-                {profile.socials?.email && (
-                  <a
-                    href={profile.socials.email}
-                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-[var(--accent-color)] border border-white/10 transition-colors"
-                  >
-                    <Mail className="w-4 h-4" />
-                  </a>
-                )}
-              </div>
-            </GlassCard>
-          </div>
-
-          {/* Right Column: Narrative & Technical Core */}
-          <div className="lg:col-span-7 flex flex-col h-full">
-            <GlassCard variant="default" className="h-full flex-1 flex flex-col justify-between p-6 sm:p-8 rounded-[24px]">
-              <div>
-                <h4 className="text-base font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Terminal className="w-4 h-4 text-[var(--accent-color)]" />
-                  Personal Biography & Focus
-                </h4>
-                <p className="text-xs sm:text-sm text-gray-300 leading-relaxed mb-4 font-sans">
-                  {profile.personalBio || profile.bio}
-                </p>
-
-                {/* Current Focus */}
-                <div className="p-3.5 rounded-xl bg-black/40 border border-[var(--border-accent)] mb-4">
-                  <span className="text-[11px] font-mono text-[var(--accent-color)] uppercase tracking-wider font-bold block mb-1">
-                    Current Focus:
-                  </span>
-                  <p className="text-xs text-gray-300 font-mono">
-                    {profile.currentFocus ||
-                      'Building production-grade secure web apps & studying AI-driven threat detection.'}
+                <div>
+                  <h3 className="text-2xl font-extrabold text-white tracking-wide">{profile.name}</h3>
+                  <p className="text-sm font-mono text-emerald-400 mt-1">
+                    {profile.professionalIdentity || 'Software Engineer & Cybersecurity Researcher'}
                   </p>
                 </div>
 
-                {/* Core Values Grid */}
-                <h5 className="text-[11px] font-mono text-gray-400 uppercase tracking-widest mb-2.5">
-                  Engineering Values & Principles
-                </h5>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-                  {parsedValues.map((val: string, idx: number) => (
-                    <div
-                      key={idx}
-                      className="px-2.5 py-1.5 text-center rounded-lg bg-white/5 border border-white/10 text-[11px] font-mono text-gray-200"
+                <div className="flex flex-wrap justify-center gap-2 pt-1">
+                  <CyberBadge variant="green" size="sm">ENCRYPTION READY</CyberBadge>
+                  <CyberBadge variant="cyan" size="sm">SYSTEM CLEARANCE</CyberBadge>
+                </div>
+
+                <p className="text-sm text-gray-300 leading-relaxed font-sans pt-2">
+                  {profile.personalBio || profile.bio}
+                </p>
+
+                {/* Social & Contact Actions */}
+                <div className="pt-4 border-t border-emerald-500/20 w-full flex items-center justify-center gap-3">
+                  {profile.socials?.github && (
+                    <a
+                      href={profile.socials.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all hover:scale-105"
+                      title="GitHub Profile"
                     >
-                      {val}
-                    </div>
-                  ))}
+                      <GithubIcon className="w-5 h-5" />
+                    </a>
+                  )}
+                  {profile.socials?.linkedin && (
+                    <a
+                      href={profile.socials.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 transition-all hover:scale-105"
+                      title="LinkedIn Profile"
+                    >
+                      <LinkedinIcon className="w-5 h-5" />
+                    </a>
+                  )}
+                  {profile.socials?.email && (
+                    <a
+                      href={profile.socials.email}
+                      className="p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all hover:scale-105"
+                      title="Email Contact"
+                    >
+                      <Mail className="w-5 h-5" />
+                    </a>
+                  )}
+                  <a
+                    href={safeResumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-bold text-xs flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-[0_0_20px_rgba(0,255,102,0.3)]"
+                  >
+                    <Download className="w-4 h-4" /> RESUME
+                  </a>
                 </div>
               </div>
-
-              {/* Tech Philosophy Banner */}
-              <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-500/10 via-transparent to-transparent border-l-4 border-[var(--accent-color)] mt-2">
-                <h6 className="text-[11px] font-mono text-[var(--accent-color)] uppercase font-bold mb-0.5">
-                  Technical Philosophy
-                </h6>
-                <p className="text-xs italic text-gray-300">
-                  "{profile.techPhilosophy || 'Build simple, resilient, and audit-ready systems with defence-in-depth architecture.'}"
-                </p>
-              </div>
             </GlassCard>
+
+            {/* Academic Degree Card (Module) */}
+            {aboutModules.showEducation && (
+              <GlassCard variant="default" className="mt-6 p-6 rounded-3xl border-emerald-500/30">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    <GraduationCap className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-emerald-400 uppercase tracking-wider font-bold">
+                        ACADEMIC CLEARANCE
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 font-bold">
+                        {academicDegree.status}
+                      </span>
+                    </div>
+                    <h4 className="text-base font-bold text-white">{academicDegree.degree}</h4>
+                    <p className="text-xs text-gray-300">{academicDegree.college}</p>
+                    <p className="text-xs text-gray-400 font-mono pt-1">{academicDegree.year}</p>
+                  </div>
+                </div>
+              </GlassCard>
+            )}
+          </div>
+
+          {/* Right Column: Focus Chips & Career Roadmap */}
+          <div className="lg:col-span-7 space-y-8">
+            {/* Current Focus Chips Module */}
+            {aboutModules.showFocus && (
+              <GlassCard variant="default" className="p-6 sm:p-8 rounded-3xl space-y-4">
+                <div className="flex items-center gap-2">
+                  <Cpu className="w-5 h-5 text-emerald-400" />
+                  <h3 className="text-lg font-bold text-white uppercase tracking-wider font-mono">
+                    ACTIVE SYSTEM FOCUS & SPECS
+                  </h3>
+                </div>
+
+                <p className="text-sm text-gray-300 leading-relaxed font-sans">
+                  {profile.currentFocus || 'Building production-grade secure web apps & studying AI-driven threat detection.'}
+                </p>
+
+                {/* Focus Chips Grid */}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {focusChips.map((chip, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3 py-1.5 rounded-xl bg-black/60 border border-emerald-500/30 text-xs font-mono text-emerald-300 shadow-inner flex items-center gap-1.5"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> {chip}
+                    </span>
+                  ))}
+                </div>
+              </GlassCard>
+            )}
+
+            {/* Career Roadmap Timeline Module */}
+            {aboutModules.showRoadmap && (
+              <GlassCard variant="default" className="p-6 sm:p-8 rounded-3xl space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-emerald-400" />
+                    <h3 className="text-lg font-bold text-white uppercase tracking-wider font-mono">
+                      CAREER ROADMAP TIMELINE
+                    </h3>
+                  </div>
+                  <span className="text-xs font-mono text-emerald-400">CHRONOLOGICAL PROTOCOL</span>
+                </div>
+
+                <div className="relative pl-6 border-l-2 border-emerald-500/30 space-y-6">
+                  {careerRoadmap.map((item, idx) => {
+                    const IconComp = getLucideIcon(item.iconName, Rocket);
+                    const colorHex = resolveColor(item.colorToken, '#00ff66');
+
+                    return (
+                      <div key={idx} className="relative group">
+                        {/* Timeline Node Icon */}
+                        <div
+                          className="absolute -left-[31px] top-0 w-6 h-6 rounded-full bg-black border-2 flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                          style={{ borderColor: colorHex, color: colorHex }}
+                        >
+                          <IconComp className="w-3 h-3" />
+                        </div>
+
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-black/60 border"
+                              style={{ borderColor: `${colorHex}40`, color: colorHex }}
+                            >
+                              {item.year}
+                            </span>
+                            <h4 className="text-sm font-bold text-white">{item.title}</h4>
+                          </div>
+                          <p className="text-xs text-gray-300 font-sans">{item.description}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </GlassCard>
+            )}
           </div>
         </div>
+
+        {/* Specialization Highlight Cards Grid Module */}
+        {aboutModules.showSpecializations && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3">
+              <h3 className="text-xl font-extrabold text-white flex items-center gap-2 font-mono">
+                <ShieldCheck className="w-6 h-6 text-emerald-400" /> CORE SPECIALIZATION HIGHLIGHTS
+              </h3>
+              <span className="text-xs font-mono text-gray-400 hidden sm:inline">6 MODULE CLEARANCE</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {specializationCards.map((card, idx) => {
+                const IconComp = getLucideIcon(card.iconName, ShieldCheck);
+                const cardColor = resolveColor(card.colorToken, '#00ff66');
+
+                return (
+                  <GlassCard
+                    key={card.id || idx}
+                    variant="interactive"
+                    className="p-6 rounded-2xl flex flex-col justify-between space-y-4 group hover:border-emerald-500/50 transition-all duration-300"
+                  >
+                    <div className="space-y-3">
+                      <div
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center border bg-black/50 transition-transform duration-300 group-hover:scale-110"
+                        style={{ borderColor: `${cardColor}60`, color: cardColor }}
+                      >
+                        <IconComp className="w-6 h-6" />
+                      </div>
+                      <h4 className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors">
+                        {card.title}
+                      </h4>
+                      <p className="text-xs text-gray-300 leading-relaxed font-sans">
+                        {card.description}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 flex items-center justify-between text-[10px] font-mono text-gray-400 border-t border-emerald-500/10">
+                      <span>STATUS: OPERATIONAL</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </GlassCard>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* BOTTOM SECTION: Four Counter Cards Module */}
+        {aboutModules.showStats && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono text-center">
+            {statsCards.map((st, idx) => {
+              const IconComp = getLucideIcon(st.iconName, Rocket);
+              const cardColor = resolveColor(st.colorToken, '#00ff66');
+
+              return (
+                <GlassCard key={st.id || idx} variant="glow" className="p-5 rounded-2xl flex flex-col items-center justify-center">
+                  <div className="flex items-center justify-center gap-1.5 mb-1" style={{ color: cardColor }}>
+                    <IconComp className="w-5 h-5" />
+                    <div className="text-2xl sm:text-3xl font-extrabold">
+                      {st.value === '∞' ? '∞' : <AnimatedCounter value={st.value} />}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-300 font-bold uppercase">{st.label}</div>
+                </GlassCard>
+              );
+            })}
+          </div>
+        )}
       </div>
     </SectionWrapper>
   );

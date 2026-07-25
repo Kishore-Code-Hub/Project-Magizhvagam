@@ -36,6 +36,7 @@ export const metadata: Metadata = {
 };
 
 import AtmosphereLayers from '@/components/animation/AtmosphereLayers';
+import { BootProvider } from '@/providers/BootProvider';
 
 export default function RootLayout({
   children,
@@ -55,6 +56,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="theme-cyber-green scroll-smooth" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -63,7 +66,9 @@ export default function RootLayout({
       <body className="antialiased min-h-screen bg-[#050505] text-white relative">
         <AtmosphereLayers />
         <ThemeProvider>
-          <SmoothScroll>{children}</SmoothScroll>
+          <BootProvider>
+            <SmoothScroll>{children}</SmoothScroll>
+          </BootProvider>
         </ThemeProvider>
       </body>
     </html>

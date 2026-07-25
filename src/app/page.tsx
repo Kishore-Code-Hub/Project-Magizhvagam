@@ -10,6 +10,7 @@ import Footer from '@/components/sections/Footer';
 
 import { db } from '@/lib/db';
 import { seedDatabaseIfEmpty } from '@/lib/seed-db';
+import { INITIAL_PROFILE } from '@/lib/initial-data';
 
 export const revalidate = 0;
 
@@ -72,6 +73,12 @@ export default async function HomePage() {
         stats: safeJsonParse<any>(dbProfile.stats, profileData.stats),
         values: safeJsonParse<string[]>(dbProfile.values, profileData.values),
         education: safeJsonParse<string[]>(dbProfile.education, profileData.education),
+        aboutModules: safeJsonParse<any>(dbProfile.aboutModules, INITIAL_PROFILE.aboutModules),
+        academicDegree: safeJsonParse<any>(dbProfile.academicDegree, INITIAL_PROFILE.academicDegree),
+        focusChips: safeJsonParse<string[]>(dbProfile.focusChips, INITIAL_PROFILE.focusChips || []),
+        careerRoadmap: safeJsonParse<any[]>(dbProfile.careerRoadmap, INITIAL_PROFILE.careerRoadmap || []),
+        statsCards: safeJsonParse<any[]>(dbProfile.statsCards, INITIAL_PROFILE.statsCards || []),
+        specializationCards: safeJsonParse<any[]>(dbProfile.specializationCards, INITIAL_PROFILE.specializationCards || []),
       };
     }
 

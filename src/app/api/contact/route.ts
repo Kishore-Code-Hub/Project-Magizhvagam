@@ -58,10 +58,13 @@ export async function POST(req: NextRequest) {
         const nodemailer = (await import('nodemailer')).default;
         const decryptedPass = decryptText(smtp.encryptedSmtpPass);
 
+        const host = smtp.smtpHost?.includes('@') ? 'smtp.gmail.com' : (smtp.smtpHost || 'smtp.gmail.com');
+        const port = smtp.smtpPort || 587;
+
         const transporter = nodemailer.createTransport({
-          host: smtp.smtpHost,
-          port: smtp.smtpPort,
-          secure: smtp.smtpPort === 465,
+          host,
+          port,
+          secure: port === 465,
           auth: { user: smtp.smtpUser, pass: decryptedPass },
         });
 

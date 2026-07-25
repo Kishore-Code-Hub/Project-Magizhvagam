@@ -23,6 +23,47 @@ export const INITIAL_PROFILE: ProfileData = {
     certifications: '10+',
     curiosity: '∞',
   },
+  aboutModules: {
+    showEducation: true,
+    showFocus: true,
+    showRoadmap: true,
+    showSpecializations: true,
+    showStats: true,
+  },
+  academicDegree: {
+    degree: 'B.E. Computer Science & Engineering',
+    college: 'SRM Valliammai Engineering College',
+    year: '2024 – 2028',
+    status: 'Active',
+  },
+  focusChips: [
+    '✓ Cybersecurity',
+    '✓ AI & Neural Nets',
+    '✓ Backend Systems',
+    '✓ Cloud Infrastructure',
+    '✓ DevOps & Containers',
+    '✓ Network Security',
+  ],
+  careerRoadmap: [
+    { year: '2024', title: 'Started CSE Engineering', description: 'Foundation in computer science & security principles', iconName: 'GraduationCap', colorToken: 'emerald' },
+    { year: '2025', title: 'Full Stack & Security Projects', description: 'Building web systems and pentesting labs', iconName: 'Code2', colorToken: 'cyan' },
+    { year: '2026', title: 'AI + Cyber Threat Detection', description: 'Advanced machine learning for network intrusion', iconName: 'Cpu', colorToken: 'amber' },
+    { year: 'Goal', title: 'Security Software Engineer', description: 'Production engineering and defense-in-depth', iconName: 'ShieldCheck', colorToken: 'rose' },
+  ],
+  statsCards: [
+    { id: '1', value: '15+', label: 'Projects Built', colorToken: 'emerald', iconName: 'Rocket' },
+    { id: '2', value: '10+', label: 'Certifications', colorToken: 'cyan', iconName: 'Award' },
+    { id: '3', value: '2+', label: 'Years Learning', colorToken: 'emerald', iconName: 'Flame' },
+    { id: '4', value: '∞', label: 'Curiosity', colorToken: 'amber', iconName: 'Sparkles' },
+  ],
+  specializationCards: [
+    { id: '1', title: 'Cybersecurity', description: 'Application Security, Threat Detection & Vulnerability Analysis', iconName: 'ShieldCheck', colorToken: 'emerald' },
+    { id: '2', title: 'AI Systems', description: 'Neural Networks, Computer Vision & Constraint Algorithms', iconName: 'Cpu', colorToken: 'cyan' },
+    { id: '3', title: 'Cloud Infra', description: 'Scalable Microservices, Docker Containers & CI/CD Pipelines', iconName: 'Globe', colorToken: 'amber' },
+    { id: '4', title: 'Networking', description: 'TCP/IP Architecture, Packet Analysis & Firewall Systems', iconName: 'Compass', colorToken: 'rose' },
+    { id: '5', title: 'Backend Systems', description: 'FastAPI, Node.js, High-Throughput REST APIs & JWT Security', iconName: 'Code2', colorToken: 'purple' },
+    { id: '6', title: 'Linux Kernel', description: 'Bash Scripting, System Administration & Access Controls', iconName: 'Terminal', colorToken: 'emerald' },
+  ],
 };
 
 export const INITIAL_SKILLS: SkillData[] = [

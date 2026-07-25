@@ -11,7 +11,6 @@ export interface ProfileData {
   education?: string[];
   currentFocus?: string;
   values?: string[];
-  techPhilosophy?: string;
   availability?: string;
   languages?: string[];
   socials: {
@@ -31,6 +30,41 @@ export interface ProfileData {
     heroImage?: string;
     greeting?: string;
   };
+  aboutModules?: {
+    showEducation?: boolean;
+    showFocus?: boolean;
+    showRoadmap?: boolean;
+    showSpecializations?: boolean;
+    showStats?: boolean;
+  };
+  academicDegree?: {
+    degree: string;
+    college: string;
+    year: string;
+    status: string;
+  };
+  focusChips?: string[];
+  careerRoadmap?: {
+    year: string;
+    title: string;
+    description: string;
+    iconName?: string;
+    colorToken?: string;
+  }[];
+  statsCards?: {
+    id: string;
+    value: string;
+    label: string;
+    colorToken?: string;
+    iconName: string;
+  }[];
+  specializationCards?: {
+    id: string;
+    title: string;
+    description: string;
+    iconName: string;
+    colorToken?: string;
+  }[];
 }
 
 export interface ProjectData {

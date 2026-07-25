@@ -2,137 +2,233 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { CyberAccessState } from './types';
-import { AssetPreloader, PreloadProgress } from '@/lib/AssetPreloader';
+import { AssetPreloader, PreloadProgress } from '@/lib/preload/AssetPreloader';
+import { BootStorage } from '@/lib/boot/BootStorage';
 
 export function useCyberAccessStateMachine(onComplete?: () => void) {
-  // Start directly in TRACE state so TerminalPhase renders on 1st frame
   const [state, setState] = useState<CyberAccessState>('TRACE');
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [stageText, setStageText] = useState<string>('INITIALIZING_SYSTEM_KERNEL');
   const [loadingDuration, setLoadingDuration] = useState<number>(5.0);
+  const [reducedMotion, setReducedMotion] = useState<boolean>(false);
+
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
+  const [phaseTimer, setPhaseTimer] = useState<number>(2.2);
+  const [remainingTime, setRemainingTime] = useState<number>(5.0);
+  const [isAssetsReady, setIsAssetsReady] = useState<boolean>(false);
+
+  const startTimeRef = useRef<number>(Date.now());
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isAssetReadyRef = useRef<boolean>(false);
   const isTimerReadyRef = useRef<boolean>(false);
 
-  // Helper to mark complete
   const markComplete = useCallback(() => {
     console.log('[Phase 1 FSM] markComplete triggered');
-    if (typeof window !== 'undefined') {
-      try {
-        sessionStorage.setItem('soc_session_booted', 'true');
-      } catch {
-        // ignore
-      }
-    }
+    BootStorage.setBooted();
     setState('COMPLETE');
     onComplete?.();
   }, [onComplete]);
 
-  // Handle immediate skip
   const skipSequence = useCallback(() => {
     console.log('[Phase 1 FSM] skipSequence invoked');
     if (timerRef.current) clearTimeout(timerRef.current);
     markComplete();
   }, [markComplete]);
 
-  // Trigger authorization button
   const triggerAuthorize = useCallback(() => {
     console.log('[Phase 1 FSM] triggerAuthorize invoked');
     setState('AUTHORIZE');
   }, []);
 
-  // Fetch loading duration from appearance settings
+  // Check prefers-reduced-motion: set visual flag ONLY, do NOT skip sequence
   useEffect(() => {
-    fetch('/api/appearance')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.loadingDuration) {
-          setLoadingDuration(data.loadingDuration);
-        }
-      })
-      .catch(() => null);
+    if (typeof window !== 'undefined') {
+      setIsMobile(window.innerWidth < 768);
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        console.log('[Phase 1 FSM] prefers-reduced-motion active -> Disabling heavy visual effects');
+        setReducedMotion(true);
+      }
+    }
   }, []);
 
-  // Initial setup & URL check
+  // Fetch appearance settings for loadingDuration and returning visitor skip policy
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Check prefers-reduced-motion media query for accessibility
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-      console.log('[Phase 1 FSM] prefers-reduced-motion active -> skipping sequence');
-      markComplete();
-      return;
-    }
-
-    setIsMobile(window.innerWidth < 768);
+    startTimeRef.current = Date.now();
 
     const urlParams = new URLSearchParams(window.location.search);
     const forceBoot = urlParams.has('boot') || urlParams.get('boot') === 'true' || urlParams.has('debug');
 
     if (forceBoot) {
-      sessionStorage.removeItem('soc_session_booted');
+      BootStorage.clearBoot();
     }
 
-    const bootedInSession = sessionStorage.getItem('soc_session_booted') === 'true';
+    fetch('/api/appearance')
+      .then((res) => res.json())
+      .then((data) => {
+        const duration = parseFloat(data?.loadingDuration) || 5.0;
+        setLoadingDuration(duration);
 
-    console.log('[Phase 1 FSM] Initialized:', { bootedInSession, forceBoot });
+        const skipReturning = Boolean(data?.skipLoaderForReturning);
+        const bootedInSession = BootStorage.isBooted();
 
-    if (!forceBoot && bootedInSession) {
-      console.log('[Phase 1 FSM] Skipping: soc_session_booted is true');
-      markComplete();
-    }
+        console.log('[Phase 1 FSM] Initialized:', { bootedInSession, forceBoot, skipReturning, duration });
+
+        // ONLY skip if returning visitor skip policy is explicitly enabled in admin config
+        if (!forceBoot && bootedInSession && skipReturning) {
+          console.log('[Phase 1 FSM] Skipping: soc_session_booted is true and skipLoaderForReturning is enabled');
+          markComplete();
+        }
+      })
+      .catch(() => {
+        const bootedInSession = BootStorage.isBooted();
+        if (!forceBoot && bootedInSession) {
+          markComplete();
+        }
+      });
   }, [markComplete]);
 
-  // Start AssetPreloader pipeline & enforce minimum boot duration
+  // Telemetry tick interval (local high-frequency state)
+  useEffect(() => {
+    if (state === 'COMPLETE') return;
+
+    const interval = setInterval(() => {
+      const elapsed = (Date.now() - startTimeRef.current) / 1000;
+      setElapsedTime(elapsed);
+      setRemainingTime(Math.max(0, loadingDuration - elapsed));
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [state, loadingDuration]);
+
+  // Scale phase timing proportionally according to loadingDuration (1s - 15s)
+  const getPhaseDuration = useCallback(
+    (ratio: number, minSec = 0.3): number => {
+      return Math.max(minSec * 1000, Math.round(loadingDuration * 1000 * ratio));
+    },
+    [loadingDuration]
+  );
+
+  // Drive 6-phase cinematic sequence scaled to loadingDuration
   useEffect(() => {
     if (state === 'IDLE' || state === 'COMPLETE') return;
 
-    // 1. Trigger AssetPreloader
-    AssetPreloader.preloadAll((p: PreloadProgress) => {
-      setProgress(p.percent);
-      setStageText(p.stage);
-      if (p.percent >= 100) {
-        isAssetReadyRef.current = true;
+    // Phase 1: TRACE (45% of loadingDuration, min 1.5s gate)
+    if (state === 'TRACE') {
+      const traceDuration = getPhaseDuration(0.45, 1.5);
+      setPhaseTimer(traceDuration / 1000);
+
+      const traceTimer = setTimeout(() => {
+        isTimerReadyRef.current = true;
         checkCanAdvance();
-      }
-    });
+      }, traceDuration);
 
-    // 2. Minimum boot timer
-    const traceMs = Math.max(1000, Math.round(loadingDuration * 1000) - 800);
-    timerRef.current = setTimeout(() => {
-      isTimerReadyRef.current = true;
-      checkCanAdvance();
-    }, traceMs);
+      AssetPreloader.preloadTier1((p: PreloadProgress) => {
+        setProgress(p.percent);
+        setStageText(p.stage);
+        if (p.cmsPayload?.loadingDuration) {
+          setLoadingDuration(p.cmsPayload.loadingDuration);
+        }
+        if (p.percent >= 100) {
+          isAssetReadyRef.current = true;
+          setIsAssetsReady(true);
+          checkCanAdvance();
+        }
+      }).catch(() => {
+        isAssetReadyRef.current = true;
+        setIsAssetsReady(true);
+        checkCanAdvance();
+      });
 
-    function checkCanAdvance() {
-      if (isAssetReadyRef.current && isTimerReadyRef.current) {
-        console.log('[Phase 1 FSM] Both AssetPreloader and timer ready -> AUTHORIZE');
-        setState('AUTHORIZE');
+      function checkCanAdvance() {
+        if (isAssetReadyRef.current && isTimerReadyRef.current) {
+          console.log('[Phase 1 FSM] Assets 100% and TRACE complete -> AUTHORIZE');
+          setState('AUTHORIZE');
+        }
       }
+
+      return () => clearTimeout(traceTimer);
     }
 
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [state, loadingDuration]);
-
-  // Handle AUTHORIZE state transition
-  useEffect(() => {
+    // Phase 2: AUTHORIZE (15% of loadingDuration)
     if (state === 'AUTHORIZE') {
-      const authTimer = setTimeout(() => {
-        markComplete();
-      }, 800);
-      return () => clearTimeout(authTimer);
+      const dur = getPhaseDuration(0.15, 0.4);
+      setPhaseTimer(dur / 1000);
+      const timer = setTimeout(() => {
+        console.log('[Phase 1 FSM] AUTHORIZE complete -> DISSOLVE');
+        setState('DISSOLVE');
+      }, dur);
+      return () => clearTimeout(timer);
     }
-  }, [state, markComplete]);
+
+    // Phase 3: DISSOLVE (10% of loadingDuration)
+    if (state === 'DISSOLVE') {
+      const dur = getPhaseDuration(0.10, 0.3);
+      setPhaseTimer(dur / 1000);
+      const timer = setTimeout(() => {
+        console.log('[Phase 1 FSM] DISSOLVE complete -> BEAM');
+        setState('BEAM');
+      }, dur);
+      return () => clearTimeout(timer);
+    }
+
+    // Phase 4: BEAM (12% of loadingDuration)
+    if (state === 'BEAM') {
+      const dur = getPhaseDuration(0.12, 0.3);
+      setPhaseTimer(dur / 1000);
+      const timer = setTimeout(() => {
+        console.log('[Phase 1 FSM] BEAM complete -> RING');
+        setState('RING');
+      }, dur);
+      return () => clearTimeout(timer);
+    }
+
+    // Phase 5: RING (10% of loadingDuration)
+    if (state === 'RING') {
+      const dur = getPhaseDuration(0.10, 0.3);
+      setPhaseTimer(dur / 1000);
+      const timer = setTimeout(() => {
+        console.log('[Phase 1 FSM] RING complete -> SHUTTER');
+        setState('SHUTTER');
+      }, dur);
+      return () => clearTimeout(timer);
+    }
+
+    // Phase 6: SHUTTER (8% of loadingDuration) -> REVEAL -> COMPLETE
+    if (state === 'SHUTTER') {
+      const dur = getPhaseDuration(0.08, 0.3);
+      setPhaseTimer(dur / 1000);
+      const timer = setTimeout(() => {
+        console.log('[Phase 1 FSM] SHUTTER complete -> REVEAL');
+        setState('REVEAL');
+      }, dur);
+      return () => clearTimeout(timer);
+    }
+
+    // Phase 7: REVEAL -> COMPLETE
+    if (state === 'REVEAL') {
+      setPhaseTimer(0.1);
+      const timer = setTimeout(() => {
+        console.log('[Phase 1 FSM] Cinematic Sequence Finished -> COMPLETE');
+        markComplete();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [state, getPhaseDuration, markComplete]);
 
   return {
     state,
     isMobile,
     progress,
     stageText,
+    elapsedTime,
+    phaseTimer,
+    remainingTime,
+    loadingDuration,
+    reducedMotion,
+    isAssetsReady,
     triggerAuthorize,
     skipSequence,
   };

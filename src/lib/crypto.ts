@@ -6,10 +6,11 @@ const IV_LENGTH = 16;
 export function encryptText(text: string): string {
   if (!text) return '';
   try {
+    const sanitizedText = text.replace(/\s+/g, '');
     const iv = crypto.randomBytes(IV_LENGTH);
     const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
     const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
-    const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
+    const encrypted = Buffer.concat([cipher.update(sanitizedText, 'utf8'), cipher.final()]);
     const tag = cipher.getAuthTag();
     return `${iv.toString('hex')}:${tag.toString('hex')}:${encrypted.toString('hex')}`;
   } catch (err) {
@@ -34,7 +35,7 @@ export function decryptText(encryptedText: string): string {
     decipher.setAuthTag(tag);
 
     const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
-    return decrypted.toString('utf8');
+    return decrypted.toString('utf8').replace(/\s+/g, '');
   } catch (err) {
     console.error('Decryption error:', err);
     return '';

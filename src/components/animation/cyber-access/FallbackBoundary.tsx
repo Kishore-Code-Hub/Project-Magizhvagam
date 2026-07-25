@@ -4,7 +4,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
-  onFallback: () => void;
+  onFallback?: () => void;
 }
 
 interface State {
@@ -22,7 +22,7 @@ export default class FallbackBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('[CyberAccessSequence] Render Error captured by FallbackBoundary:', error, errorInfo);
-    this.props.onFallback();
+    this.props.onFallback?.();
   }
 
   public render() {
