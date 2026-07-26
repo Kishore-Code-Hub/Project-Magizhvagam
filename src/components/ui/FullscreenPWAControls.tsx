@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Maximize2, Minimize2, Download, RefreshCw, X, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Maximize2, Minimize2, Download, RefreshCw, X, ShieldAlert } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -12,6 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
 export const FullscreenPWAControls: React.FC = () => {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isFullscreenSupported, setIsFullscreenSupported] = useState<boolean>(true);
+  const [isStandalone, setIsStandalone] = useState<boolean>(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState<boolean>(false);
   const [isInstalled, setIsInstalled] = useState<boolean>(false);
@@ -29,9 +30,20 @@ export const FullscreenPWAControls: React.FC = () => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Check initial fullscreen support & status
+  // Check initial standalone mode, fullscreen support & status listeners
   useEffect(() => {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
+
+    // Detect if launched in PWA standalone mode
+    const standaloneMode =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true ||
+      document.referrer.includes('android-app://');
+
+    setIsStandalone(standaloneMode);
+    if (standaloneMode) {
+      setIsInstalled(true);
+    }
 
     const checkFullscreenSupport = () => {
       const enabled =
@@ -57,9 +69,9 @@ export const FullscreenPWAControls: React.FC = () => {
 
       if (currentFullscreen) {
         try {
-          sessionStorage.setItem('fullscreenPreviouslyAccepted', 'true');
+          sessionStorage.setItem('fullscreen_accepted', 'true');
         } catch {
-          // Fallback if sessionStorage restricted
+          // Fallback
         }
       }
     };
@@ -77,7 +89,7 @@ export const FullscreenPWAControls: React.FC = () => {
     };
   }, []);
 
-  // Handle Fullscreen Enter / Exit
+  // Handle Fullscreen Request (Explicit user click required by browser security)
   const toggleFullscreen = useCallback(async () => {
     if (typeof document === 'undefined') return;
 
@@ -114,25 +126,14 @@ export const FullscreenPWAControls: React.FC = () => {
         }
       }
     } catch (err) {
-      console.warn('Fullscreen toggle request was prevented:', err);
+      console.warn('Fullscreen toggle prevented or unsupported:', err);
     }
   }, []);
 
-  // PWA Registration & Install Prompt Event Handling
+  // PWA Event Listeners & SW Registration
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Detect standalone display mode
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone ||
-      document.referrer.includes('android-app://');
-
-    if (isStandalone) {
-      setIsInstalled(true);
-    }
-
-    // Capture beforeinstallprompt
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -148,13 +149,12 @@ export const FullscreenPWAControls: React.FC = () => {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    // Safari iOS detection
     const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     if (isIos && !isStandalone) {
       setShowIosPrompt(true);
     }
 
-    // Register Service Worker in production mode
+    // Register Service Worker strictly in production
     if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
@@ -171,7 +171,7 @@ export const FullscreenPWAControls: React.FC = () => {
           });
         })
         .catch((err) => {
-          console.warn('Service worker registration failed:', err);
+          console.warn('Service worker registration error:', err);
         });
 
       let refreshing = false;
@@ -187,7 +187,7 @@ export const FullscreenPWAControls: React.FC = () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
-  }, []);
+  }, [isStandalone]);
 
   // Trigger PWA Installation
   const handleInstallClick = async () => {
@@ -202,11 +202,10 @@ export const FullscreenPWAControls: React.FC = () => {
       }
       setDeferredPrompt(null);
     } catch (err) {
-      console.warn('Installation prompt error:', err);
+      console.warn('Install prompt error:', err);
     }
   };
 
-  // Reload page for SW update
   const handleReload = () => {
     if (typeof window !== 'undefined') {
       window.location.reload();
@@ -215,78 +214,78 @@ export const FullscreenPWAControls: React.FC = () => {
 
   const animProps = prefersReducedMotion
     ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
-    : { initial: { opacity: 0, scale: 0.9, y: 10 }, animate: { opacity: 1, scale: 1, y: 0 }, exit: { opacity: 0, scale: 0.9, y: 10 } };
+    : { initial: { opacity: 0, scale: 0.85, y: 8 }, animate: { opacity: 1, scale: 1, y: 0 }, exit: { opacity: 0, scale: 0.85, y: 8 } };
 
   return (
     <>
-      {/* Floating Cyber HUD Controls Container */}
-      <div className="fixed bottom-5 right-5 z-[9990] flex flex-col items-end gap-3 pointer-events-auto">
+      {/* Floating Cyber Controls Container (Bottom Right) */}
+      <div className="fixed bottom-5 right-5 z-[9990] flex items-center gap-3 pointer-events-auto">
+        {/* Service Worker Update Toast */}
         <AnimatePresence>
-          {/* Service Worker Update Toast */}
           {swUpdateAvailable && (
             <motion.div
+              key="pwa-sw-update-toast"
               {...animProps}
-              className="flex items-center gap-3 rounded-xl border border-[var(--accent-color)] bg-[rgba(5,5,5,0.92)] p-3 sm:p-4 backdrop-blur-xl shadow-[0_0_20px_rgba(0,255,102,0.25)] text-white"
+              className="flex items-center gap-3 rounded-xl border border-[var(--accent-color)] bg-[rgba(5,5,5,0.92)] p-3 backdrop-blur-xl shadow-[0_0_20px_rgba(0,255,102,0.25)] text-white"
             >
-              <RefreshCw className="h-5 w-5 text-[var(--accent-color)] animate-spin" />
-              <div className="font-mono text-xs sm:text-sm">
-                <span className="font-bold text-[var(--accent-color)]">Update Ready: </span>
-                A new version is available.
+              <RefreshCw className="h-4 w-4 text-[var(--accent-color)] animate-spin" />
+              <div className="font-mono text-xs">
+                <span className="font-bold text-[var(--accent-color)]">Update Ready</span>
               </div>
               <button
                 onClick={handleReload}
-                className="rounded-lg bg-[var(--accent-color)] px-3 py-1.5 font-mono text-xs font-bold text-black transition-all hover:brightness-110 focus:outline-none"
+                className="rounded-lg bg-[var(--accent-color)] px-2.5 py-1 font-mono text-xs font-bold text-black transition-all hover:brightness-110 focus:outline-none"
               >
                 Refresh
               </button>
             </motion.div>
           )}
+        </AnimatePresence>
 
-          {/* Install PWA HUD Button */}
+        {/* Install PWA Button */}
+        <AnimatePresence>
           {isInstallable && !isInstalled && (
             <motion.button
+              key="pwa-install-fab-button"
               {...animProps}
               onClick={handleInstallClick}
-              className="group flex items-center gap-2.5 rounded-xl border border-[var(--accent-color)]/50 bg-[rgba(10,14,11,0.85)] px-4 py-2.5 font-mono text-xs sm:text-sm font-semibold text-white backdrop-blur-xl transition-all duration-300 hover:border-[var(--accent-color)] hover:bg-[rgba(0,255,102,0.15)] hover:shadow-[0_0_20px_rgba(0,255,102,0.3)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50"
+              className="group flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full border border-[var(--accent-color)]/60 bg-[rgba(10,14,11,0.85)] text-[var(--accent-color)] backdrop-blur-xl shadow-[0_0_20px_rgba(0,255,102,0.2)] transition-all duration-300 hover:border-[var(--accent-color)] hover:bg-[rgba(0,255,102,0.15)] hover:shadow-[0_0_25px_rgba(0,255,102,0.4)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50"
               title="Install Portfolio App"
               aria-label="Install Portfolio Application"
             >
-              <Download className="h-4 w-4 text-[var(--accent-color)] transition-transform duration-300 group-hover:translate-y-0.5" />
-              <span className="tracking-wide">INSTALL APP</span>
+              <Download className="h-5 w-5 sm:h-6 sm:w-6 transition-transform duration-300 group-hover:translate-y-0.5" />
             </motion.button>
           )}
+        </AnimatePresence>
 
-          {/* Fullscreen Toggle HUD Button */}
-          {isFullscreenSupported && (
+        {/* Circular Fullscreen Toggle FAB (Hidden when running in standalone PWA mode) */}
+        <AnimatePresence>
+          {isFullscreenSupported && !isStandalone && (
             <motion.button
+              key="fullscreen-toggle-fab-button"
               {...animProps}
               onClick={toggleFullscreen}
-              className="group flex items-center gap-2.5 rounded-xl border border-white/15 bg-[rgba(10,14,11,0.85)] px-3.5 py-2.5 font-mono text-xs sm:text-sm font-semibold text-white backdrop-blur-xl transition-all duration-300 hover:border-[var(--accent-color)] hover:bg-[rgba(0,255,102,0.12)] hover:shadow-[0_0_20px_rgba(0,255,102,0.25)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50"
+              className="group flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full border border-[var(--border-accent)] bg-[rgba(10,14,11,0.85)] text-[var(--accent-color)] backdrop-blur-xl shadow-[0_0_20px_rgba(0,255,102,0.2)] transition-all duration-300 hover:border-[var(--accent-color)] hover:bg-[rgba(0,255,102,0.15)] hover:shadow-[0_0_25px_rgba(0,255,102,0.4)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50"
               title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
               aria-label={isFullscreen ? 'Exit Fullscreen Mode' : 'Enter Fullscreen Mode'}
             >
               {isFullscreen ? (
-                <>
-                  <Minimize2 className="h-4 w-4 text-[var(--accent-color)]" />
-                  <span className="hidden sm:inline tracking-wide">EXIT FULLSCREEN</span>
-                </>
+                <Minimize2 className="h-5 w-5 sm:h-6 sm:w-6 transition-transform duration-300 group-hover:scale-90" />
               ) : (
-                <>
-                  <Maximize2 className="h-4 w-4 text-[var(--accent-color)]" />
-                  <span className="hidden sm:inline tracking-wide">FULLSCREEN</span>
-                </>
+                <Maximize2 className="h-5 w-5 sm:h-6 sm:w-6 transition-transform duration-300 group-hover:scale-110" />
               )}
             </motion.button>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Safari iOS Add to Home Screen Modal / Banner (Dismissable) */}
+      {/* Safari iOS Add to Home Screen Instructions Modal */}
       <AnimatePresence>
         {showIosPrompt && !isInstalled && (
           <motion.div
+            key="pwa-ios-install-prompt-modal"
             {...animProps}
-            className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-5 sm:max-w-sm z-[9995] rounded-2xl border border-[var(--accent-color)]/40 bg-[rgba(5,5,5,0.95)] p-4 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] text-white"
+            className="fixed bottom-20 right-5 max-w-xs z-[9995] rounded-2xl border border-[var(--accent-color)]/40 bg-[rgba(5,5,5,0.95)] p-4 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] text-white"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2 font-mono text-xs font-bold text-[var(--accent-color)] uppercase tracking-wider">
@@ -302,7 +301,7 @@ export const FullscreenPWAControls: React.FC = () => {
               </button>
             </div>
             <p className="mt-2 font-mono text-xs leading-relaxed text-gray-300">
-              To install this portfolio on iOS, tap the <span className="font-bold text-white">Share</span> button in Safari and select <span className="font-bold text-[var(--accent-color)]">Add to Home Screen</span>.
+              To install on iOS, tap <span className="font-bold text-white">Share</span> in Safari and select <span className="font-bold text-[var(--accent-color)]">Add to Home Screen</span>.
             </p>
           </motion.div>
         )}
