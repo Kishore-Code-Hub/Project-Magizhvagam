@@ -24,6 +24,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
+  Music,
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -56,6 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: 'Messages / Inbox', href: '/admin/contact', icon: Inbox },
     { label: 'Media Library', href: '/admin/media', icon: ImageIcon },
     { label: 'Visual Appearance', href: '/admin/appearance', icon: Palette },
+    { label: 'Audio Engine CMS', href: '/admin/settings/audio', icon: Music },
     { label: 'Animation & Loader', href: '/admin/settings/animation', icon: Sparkles },
     { label: 'Matrix Engine', href: '/admin/matrix', icon: Terminal },
     { label: 'SMTP Mailer', href: '/admin/settings/smtp', icon: Mail },

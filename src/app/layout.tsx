@@ -1,7 +1,25 @@
 import type { Metadata } from 'next';
+import { Inter, JetBrains_Mono } from 'next/font/google';
+import { headers } from 'next/headers';
 import './globals.css';
 import SmoothScroll from '@/components/animation/SmoothScroll';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import AtmosphereLayers from '@/components/animation/AtmosphereLayers';
+import { BootProvider } from '@/providers/BootProvider';
+import { AudioProvider } from '@/providers/AudioProvider';
+import { FullscreenPWAControls } from '@/components/ui/FullscreenPWAControls';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Kishore | Cybersecurity Enthusiast & Full-Stack Engineer',
@@ -35,15 +53,27 @@ export const metadata: Metadata = {
   },
 };
 
-import AtmosphereLayers from '@/components/animation/AtmosphereLayers';
-import { BootProvider } from '@/providers/BootProvider';
-import { FullscreenPWAControls } from '@/components/ui/FullscreenPWAControls';
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headerList = await headers();
+  const forwardedFor = headerList.get('x-forwarded-for');
+  const realIp = headerList.get('x-real-ip');
+  const userAgent = headerList.get('user-agent') || '';
+  const host = headerList.get('host') || '';
+
+  const clientIp = forwardedFor
+    ? forwardedFor.split(',')[0].trim()
+    : realIp || '192.168.56.103';
+
+  const initialTelemetry = {
+    ip: clientIp,
+    userAgent,
+    host,
+  };
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Person',
@@ -55,10 +85,12 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className="theme-cyber-green scroll-smooth" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} ${jetbrainsMono.variable} theme-cyber-green scroll-smooth`}
+      suppressHydrationWarning
+    >
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <meta name="theme-color" content="#050505" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -69,15 +101,18 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="antialiased min-h-screen bg-[#050505] text-white relative">
+      <body className="antialiased min-h-screen bg-[#050505] text-white relative font-sans">
         <AtmosphereLayers />
         <ThemeProvider>
-          <BootProvider>
-            <SmoothScroll>{children}</SmoothScroll>
-            <FullscreenPWAControls />
-          </BootProvider>
+          <AudioProvider>
+            <BootProvider initialTelemetry={initialTelemetry}>
+              <SmoothScroll>{children}</SmoothScroll>
+              <FullscreenPWAControls />
+            </BootProvider>
+          </AudioProvider>
         </ThemeProvider>
       </body>
     </html>
   );
 }
+

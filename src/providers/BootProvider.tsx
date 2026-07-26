@@ -10,7 +10,19 @@ import { BootDebugPanel } from '@/components/boot/BootDebugPanel';
 import { DevDebugHud } from '@/components/debug/DevDebugHud';
 import { BootStorage } from '@/lib/boot/BootStorage';
 
-export function BootProvider({ children }: { children: React.ReactNode }) {
+export interface VisitorTelemetry {
+  ip?: string;
+  userAgent?: string;
+  host?: string;
+}
+
+export function BootProvider({
+  children,
+  initialTelemetry,
+}: {
+  children: React.ReactNode;
+  initialTelemetry?: VisitorTelemetry;
+}) {
   const [progress, setProgress] = useState<number>(0);
   const [stage, setStage] = useState<string>('INITIALIZING_SYSTEM_KERNEL');
   const [isComplete, setIsComplete] = useState<boolean>(false);
@@ -170,7 +182,7 @@ export function BootProvider({ children }: { children: React.ReactNode }) {
     >
       <FallbackBoundary onFallback={skipBoot}>
         {!isComplete && (
-          <CyberAccessSequence onComplete={handleAnimationComplete} />
+          <CyberAccessSequence onComplete={handleAnimationComplete} telemetry={initialTelemetry} />
         )}
         <div style={{ visibility: isComplete ? 'visible' : 'hidden' }}>
           {children}

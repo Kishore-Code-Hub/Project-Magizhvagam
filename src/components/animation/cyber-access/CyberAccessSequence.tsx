@@ -9,9 +9,14 @@ import { FastForward, Terminal } from 'lucide-react';
 
 interface CyberAccessSequenceProps {
   onComplete?: () => void;
+  telemetry?: {
+    ip?: string;
+    userAgent?: string;
+    host?: string;
+  };
 }
 
-function SequenceInner({ onComplete }: CyberAccessSequenceProps) {
+function SequenceInner({ onComplete, telemetry }: CyberAccessSequenceProps) {
   const {
     state,
     progress,
@@ -92,6 +97,7 @@ function SequenceInner({ onComplete }: CyberAccessSequenceProps) {
             isAuthorizing={state === 'AUTHORIZE'}
             progress={progress}
             stageText={stageText}
+            telemetry={telemetry}
           />
         )}
 

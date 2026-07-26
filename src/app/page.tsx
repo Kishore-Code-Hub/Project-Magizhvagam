@@ -1,12 +1,26 @@
 import React from 'react';
+import dynamic from 'next/dynamic';
 import Hero from '@/components/sections/Hero';
-import About from '@/components/sections/About';
-import Skills from '@/components/sections/Skills';
-import Projects from '@/components/sections/Projects';
-import Certifications from '@/components/sections/Certifications';
-import Timeline from '@/components/sections/Timeline';
-import Contact from '@/components/sections/Contact';
-import Footer from '@/components/sections/Footer';
+
+const About = dynamic(() => import('@/components/sections/About'), {
+  loading: () => <div className="min-h-[400px] flex items-center justify-center font-mono text-[#00ff66]/40 text-xs tracking-widest animate-pulse">LOADING_ABOUT_MODULE...</div>,
+});
+const Skills = dynamic(() => import('@/components/sections/Skills'), {
+  loading: () => <div className="min-h-[400px] flex items-center justify-center font-mono text-[#00ff66]/40 text-xs tracking-widest animate-pulse">LOADING_SKILLS_MODULE...</div>,
+});
+const Projects = dynamic(() => import('@/components/sections/Projects'), {
+  loading: () => <div className="min-h-[400px] flex items-center justify-center font-mono text-[#00ff66]/40 text-xs tracking-widest animate-pulse">LOADING_PROJECTS_MODULE...</div>,
+});
+const Certifications = dynamic(() => import('@/components/sections/Certifications'), {
+  loading: () => <div className="min-h-[300px] flex items-center justify-center font-mono text-[#00ff66]/40 text-xs tracking-widest animate-pulse">LOADING_CERTS_MODULE...</div>,
+});
+const Timeline = dynamic(() => import('@/components/sections/Timeline'), {
+  loading: () => <div className="min-h-[300px] flex items-center justify-center font-mono text-[#00ff66]/40 text-xs tracking-widest animate-pulse">LOADING_TIMELINE_MODULE...</div>,
+});
+const Contact = dynamic(() => import('@/components/sections/Contact'), {
+  loading: () => <div className="min-h-[300px] flex items-center justify-center font-mono text-[#00ff66]/40 text-xs tracking-widest animate-pulse">LOADING_CONTACT_MODULE...</div>,
+});
+const Footer = dynamic(() => import('@/components/sections/Footer'));
 
 import { db } from '@/lib/db';
 import { seedDatabaseIfEmpty } from '@/lib/seed-db';

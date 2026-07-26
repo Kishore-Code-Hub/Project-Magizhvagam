@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { SectionWrapper } from '@/components/ui/SectionWrapper';
 import { SectionTitle } from '@/components/ui/SectionTitle';
@@ -33,6 +34,15 @@ import {
   Flame,
   Globe,
   Lock,
+  FolderKanban,
+  CalendarClock,
+  Brain,
+  Network,
+  Database,
+  CloudCog,
+  Clock3,
+  Microscope,
+  Trophy,
 } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from '@/components/ui/Icons';
 
@@ -63,6 +73,16 @@ const ICON_MAP: Record<string, any> = {
   Flame,
   Globe,
   Lock,
+  FolderKanban,
+  CalendarClock,
+  Brain,
+  Network,
+  Database,
+  CloudCog,
+  Clock3,
+  Microscope,
+  Briefcase,
+  Trophy,
 };
 
 function getLucideIcon(name?: string, fallback: any = ShieldCheck): any {
@@ -74,10 +94,10 @@ function getSpecializationIcon(card: any): any {
   const key = `${card.iconName || ''} ${card.title || ''}`.toLowerCase();
   if (key.includes('cyber') || key.includes('shield') || key.includes('sec')) return ShieldCheck;
   if (key.includes('ai') || key.includes('brain') || key.includes('cpu') || key.includes('neural')) return Cpu;
-  if (key.includes('network') || key.includes('compass') || key.includes('tcp') || key.includes('packet')) return Compass;
+  if (key.includes('network') || key.includes('compass') || key.includes('tcp') || key.includes('packet')) return Network;
   if (key.includes('linux') || key.includes('terminal') || key.includes('bash') || key.includes('kernel')) return Terminal;
-  if (key.includes('cloud') || key.includes('infra') || key.includes('globe')) return Globe;
-  if (key.includes('backend') || key.includes('code') || key.includes('server') || key.includes('api')) return Code2;
+  if (key.includes('cloud') || key.includes('infra') || key.includes('globe')) return CloudCog;
+  if (key.includes('backend') || key.includes('code') || key.includes('server') || key.includes('api') || key.includes('sql')) return Database;
   return getLucideIcon(card.iconName, ShieldCheck);
 }
 
@@ -144,12 +164,21 @@ export default function About({ profile }: AboutProps) {
     ];
 
   const statsCards = profile.statsCards && profile.statsCards.length > 0
-    ? profile.statsCards
+    ? profile.statsCards.map((st) => {
+        let defaultIcon = 'FolderKanban';
+        if (st.label?.toLowerCase().includes('cert')) defaultIcon = 'Award';
+        if (st.label?.toLowerCase().includes('year')) defaultIcon = 'CalendarClock';
+        if (st.label?.toLowerCase().includes('curiosity')) defaultIcon = 'Brain';
+        return {
+          ...st,
+          iconName: st.iconName === 'Rocket' || st.iconName === 'Flame' || st.iconName === 'Sparkles' ? defaultIcon : st.iconName || defaultIcon,
+        };
+      })
     : [
-      { id: '1', value: '15+', label: 'Projects Built', colorToken: 'emerald', iconName: 'Rocket' },
+      { id: '1', value: '15+', label: 'Projects Built', colorToken: 'emerald', iconName: 'FolderKanban' },
       { id: '2', value: '10+', label: 'Certifications', colorToken: 'cyan', iconName: 'Award' },
-      { id: '3', value: '2+', label: 'Years Learning', colorToken: 'emerald', iconName: 'Flame' },
-      { id: '4', value: '∞', label: 'Curiosity', colorToken: 'amber', iconName: 'Sparkles' },
+      { id: '3', value: '2+', label: 'Years Learning', colorToken: 'emerald', iconName: 'CalendarClock' },
+      { id: '4', value: '∞', label: 'Curiosity', colorToken: 'amber', iconName: 'Brain' },
     ];
 
   const specializationCards = profile.specializationCards && profile.specializationCards.length > 0
@@ -157,21 +186,11 @@ export default function About({ profile }: AboutProps) {
     : [
       { id: '1', title: 'Cybersecurity', description: 'Application Security, Threat Detection & Vulnerability Analysis', iconName: 'ShieldCheck', colorToken: 'emerald' },
       { id: '2', title: 'AI Systems', description: 'Neural Networks, Computer Vision & Constraint Algorithms', iconName: 'Cpu', colorToken: 'cyan' },
-      { id: '3', title: 'Cloud Infra', description: 'Scalable Microservices, Docker Containers & CI/CD Pipelines', iconName: 'Globe', colorToken: 'amber' },
-      { id: '4', title: 'Networking', description: 'TCP/IP Architecture, Packet Analysis & Firewall Systems', iconName: 'Compass', colorToken: 'rose' },
-      { id: '5', title: 'Backend Systems', description: 'FastAPI, Node.js, High-Throughput REST APIs & JWT Security', iconName: 'Code2', colorToken: 'purple' },
+      { id: '3', title: 'Cloud Infra', description: 'Scalable Microservices, Docker Containers & CI/CD Pipelines', iconName: 'CloudCog', colorToken: 'amber' },
+      { id: '4', title: 'Networking', description: 'TCP/IP Architecture, Packet Analysis & Firewall Systems', iconName: 'Network', colorToken: 'rose' },
+      { id: '5', title: 'Backend Systems', description: 'FastAPI, Node.js, High-Throughput REST APIs & JWT Security', iconName: 'Database', colorToken: 'purple' },
       { id: '6', title: 'Linux Kernel', description: 'Bash Scripting, System Administration & Access Controls', iconName: 'Terminal', colorToken: 'emerald' },
     ];
-
-  const skillProgressList = [
-    { name: 'Python', percentage: 90, color: '#00ff66' },
-    { name: 'Cybersecurity', percentage: 88, color: '#00f0ff' },
-    { name: 'Linux Kernel & Admin', percentage: 88, color: '#ffb700' },
-    { name: 'FastAPI / Python Backend', percentage: 85, color: '#00ff66' },
-    { name: 'React / Next.js', percentage: 85, color: '#00f0ff' },
-    { name: 'Networking & TCP/IP', percentage: 82, color: '#ff0055' },
-    { name: 'SQL & Database Design', percentage: 80, color: '#7000ff' },
-  ];
 
   return (
     <SectionWrapper id="about" className="py-24 relative overflow-hidden bg-black/40">
@@ -191,17 +210,23 @@ export default function About({ profile }: AboutProps) {
         {/* TOP SECTION: Main Profile Card & Current Focus Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Glass Profile Card */}
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5 space-y-6">
             <GlassCard variant="glow" className="p-6 sm:p-8 rounded-3xl relative overflow-hidden">
               <div className="flex flex-col items-center text-center space-y-4">
                 {/* Profile Image with Cyber Avatar Ring */}
                 <div className="relative group">
                   <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-500" />
 
-                  <img
+                  <Image
                     src={normalizeImageUrl(profile.profileImage || profile.image, 'about') || '/hero-hacker.png'}
-                    alt={profile.name}
-                    className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-2 border-emerald-500/80 shadow-2xl"
+                    alt={profile.name || 'Profile photo'}
+                    width={160}
+                    height={160}
+                    quality={80}
+                    priority
+                    decoding="async"
+                    sizes="(max-width: 640px) 128px, 160px"
+                    className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-2 border-emerald-500/80 shadow-2xl transition-opacity duration-300"
                   />
                   <div className="absolute bottom-1 right-1 bg-emerald-500 p-1.5 rounded-full border-2 border-black text-black">
                     <ShieldCheck className="w-4 h-4" />
@@ -285,35 +310,10 @@ export default function About({ profile }: AboutProps) {
                 </div>
               </div>
             </GlassCard>
-
-            {/* Academic Degree Card (Module) */}
-            {aboutModules.showEducation && (
-              <GlassCard variant="default" className="mt-6 p-6 rounded-3xl border-emerald-500/30">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                    <GraduationCap className="w-6 h-6" />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono text-emerald-400 uppercase tracking-wider font-bold">
-                        ACADEMICS
-                      </span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 font-bold">
-                        {academicDegree.status}
-                      </span>
-                    </div>
-                    <h4 className="text-base font-bold text-white">{academicDegree.degree}</h4>
-                    <p className="text-xs text-gray-300">{academicDegree.college}</p>
-                    <p className="text-xs text-gray-400 font-mono pt-1">{academicDegree.year}</p>
-                  </div>
-                </div>
-              </GlassCard>
-            )}
           </div>
 
-          {/* Right Column: Core Specializations & Statistics */}
+          {/* Right Column: Core Specializations, Academic Degree Card & Statistics */}
           <div className="lg:col-span-7 space-y-6">
-
             {/* Specialization Highlight Cards Grid Module */}
             {aboutModules.showSpecializations && (
               <GlassCard variant="default" className="p-6 sm:p-8 rounded-3xl space-y-4">
@@ -354,16 +354,38 @@ export default function About({ profile }: AboutProps) {
                 </div>
               </GlassCard>
             )}
+
+            {/* Academic Degree Card (Moved Below Core Specializations on the Right Column) */}
+            {aboutModules.showEducation && (
+              <GlassCard variant="default" className="p-6 rounded-3xl border-emerald-500/30">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shrink-0">
+                    <GraduationCap className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-emerald-400 uppercase tracking-wider font-bold">
+                        ACADEMICS &amp; DEGREE
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 font-bold">
+                        {academicDegree.status}
+                      </span>
+                    </div>
+                    <h4 className="text-base font-bold text-white">{academicDegree.degree}</h4>
+                    <p className="text-xs text-gray-300">{academicDegree.college}</p>
+                    <p className="text-xs text-gray-400 font-mono pt-1">{academicDegree.year}</p>
+                  </div>
+                </div>
+              </GlassCard>
+            )}
           </div>
         </div>
-
-        {/* BOTTOM SECTION: Four Counter Cards Module */}
 
         {/* BOTTOM SECTION: Four Counter Cards Module */}
         {aboutModules.showStats && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono text-center">
             {statsCards.map((st, idx) => {
-              const IconComp = getLucideIcon(st.iconName, Rocket);
+              const IconComp = getLucideIcon(st.iconName, FolderKanban);
               const cardColor = resolveColor(st.colorToken, '#00ff66');
 
               return (
@@ -384,3 +406,4 @@ export default function About({ profile }: AboutProps) {
     </SectionWrapper>
   );
 }
+

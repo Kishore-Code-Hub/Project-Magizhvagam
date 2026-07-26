@@ -21,6 +21,8 @@ import { cn } from '@/lib/utils';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { CyberAudio } from '@/lib/CyberAudio';
 
+import { useAudio } from '@/providers/AudioProvider';
+
 interface SideDockNavProps {
   resumeUrl?: string;
   greetingText?: string;
@@ -31,6 +33,7 @@ export default function SideDockNav({
   greetingText = 'Welcome to my Hackspot',
 }: SideDockNavProps) {
   const { audioMuted, toggleAudio } = useTheme();
+  const { isMuted, toggleMute, isPlaying, togglePlay } = useAudio();
   const [activeSection, setActiveSection] = useState('hero');
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -123,18 +126,19 @@ export default function SideDockNav({
             {/* Audio Toggle */}
             <button
               onClick={() => {
+                toggleMute();
                 toggleAudio();
                 CyberAudio.playKeyClick(false);
               }}
-              className="flex items-center gap-4 px-3.5 py-2.5 rounded-xl text-gray-400 hover:text-accent hover:bg-accent/10 transition-all text-[11px] font-bold"
+              className="flex items-center gap-4 px-3.5 py-2.5 rounded-xl text-gray-400 hover:text-accent hover:bg-accent/10 transition-all text-[11px] font-bold cursor-pointer"
             >
-              {audioMuted ? (
+              {isMuted || audioMuted ? (
                 <VolumeX className="w-4 h-4 text-gray-500 flex-shrink-0" />
               ) : (
                 <Volume2 className="w-4 h-4 text-accent flex-shrink-0 animate-pulse" />
               )}
               <span className="opacity-0 group-hover/dock:opacity-100 transition-opacity duration-200 whitespace-nowrap uppercase tracking-widest">
-                {audioMuted ? 'AUDIO: OFF' : 'AUDIO: ON'}
+                {isMuted || audioMuted ? 'AUDIO: OFF' : 'AUDIO: ON'}
               </span>
             </button>
           </div>

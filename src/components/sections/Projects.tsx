@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { SectionWrapper } from '@/components/ui/SectionWrapper';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { ProjectCard, ProjectItem } from '@/components/ui/ProjectCard';
@@ -18,9 +19,16 @@ interface ProjectsProps {
 }
 
 export default function Projects({ projects = [] }: ProjectsProps) {
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string>('All Projects');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeProject, setActiveProject] = useState<ProjectItem | null>(null);
+
+  useEffect(() => {
+    try {
+      router.prefetch('/admin/login');
+    } catch {}
+  }, [router]);
 
   const categories = DESIGN_SYSTEM.categories.projects;
 

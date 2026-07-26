@@ -194,6 +194,20 @@ model AppearanceSettings {
   updatedAt     DateTime @updatedAt
 }
 
+model AudioSettings {
+  id              String   @id @default("default")
+  trackTitle      String   @default("Cyber Operations Ambient Soundtrack")
+  trackUrl        String   @default("/audio/cyber-ambient.mp3")
+  enabled         Boolean  @default(true)
+  autoplay        Boolean  @default(true)
+  loop            Boolean  @default(true)
+  volume          Int      @default(50) // 0 to 100
+  fadeInDuration  Float    @default(1.5) // in seconds
+  fadeOutDuration Float    @default(1.5) // in seconds
+  defaultMute     Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
+}
+
 model SEOSettings {
   id             String   @id @default("default")
   siteTitle      String   @default("Soundkish | Cyber & Software Engineering Portfolio")

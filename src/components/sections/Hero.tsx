@@ -15,7 +15,7 @@ interface HeroProps {
   profile: ProfileData;
 }
 
-export default function Hero({ profile }: HeroProps) {
+function HeroComponent({ profile }: HeroProps) {
   const socials = getSocials(profile.socials);
 
   if (process.env.NODE_ENV === 'development') {
@@ -168,4 +168,7 @@ export default function Hero({ profile }: HeroProps) {
     </section>
   );
 }
+
+const Hero = React.memo(HeroComponent);
+export default Hero;
 

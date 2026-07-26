@@ -12,7 +12,7 @@ interface WorkstationProps {
   glowIntensity?: number;
 }
 
-export default function CyberWorkstation({
+function CyberWorkstationComponent({
   heroImage = '/Hero-section-banner.jfif',
   mediaMode = 'image',
   fitMode = 'cover',
@@ -91,7 +91,8 @@ export default function CyberWorkstation({
               fill
               priority
               loading="eager"
-              quality={95}
+              quality={80}
+              decoding="async"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 720px"
               className={`${objectFitClass} object-center transition-transform duration-700 ease-out ${
                 isHovered ? 'scale-[1.02]' : 'scale-100'
@@ -120,4 +121,7 @@ export default function CyberWorkstation({
     </div>
   );
 }
+
+const CyberWorkstation = React.memo(CyberWorkstationComponent);
+export default CyberWorkstation;
 
