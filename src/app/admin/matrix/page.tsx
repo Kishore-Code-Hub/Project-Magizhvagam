@@ -127,13 +127,13 @@ export default function AdminMatrixPage() {
         </div>
       )}
 
-      {/* Main Studio Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Controls Panel */}
-        <div className="lg:col-span-6 space-y-6 max-h-[80vh] overflow-y-auto pr-2 no-scrollbar">
-          {/* Preset Chips */}
+      {/* Main Studio Settings Grid (2-Column Lightweight Layout) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        {/* Left Column: Presets & Character Source */}
+        <div className="space-y-6">
+          {/* Engine Presets */}
           <GlassCard variant="glow" className="space-y-3">
-            <h3 className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
+            <h3 className="text-xs font-bold text-white uppercase flex items-center gap-1.5 font-mono">
               <Sparkles className="w-4 h-4 text-[var(--accent-color)]" /> Engine Presets
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -142,7 +142,7 @@ export default function AdminMatrixPage() {
                   key={name}
                   type="button"
                   onClick={() => handleSelectPreset(name)}
-                  className={`px-3 py-1.5 text-xs rounded-xl border transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 text-xs rounded-xl border transition-all cursor-pointer font-mono ${
                     localSettings.preset === name
                       ? 'bg-[var(--accent-color)] text-black font-bold border-[var(--accent-color)] shadow-[var(--shadow-accent-glow)]'
                       : 'bg-white/5 text-gray-300 border-white/10 hover:border-white/30'
@@ -156,16 +156,16 @@ export default function AdminMatrixPage() {
 
           {/* Character Source */}
           <GlassCard variant="default" className="space-y-4">
-            <h3 className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
-              <Layers className="w-4 h-4 text-cyan-400" /> Character Source & Sets
+            <h3 className="text-xs font-bold text-white uppercase flex items-center gap-1.5 font-mono">
+              <Layers className="w-4 h-4 text-cyan-400" /> Character Source &amp; Sets
             </h3>
 
             <div>
-              <label className="block text-[11px] text-gray-400 mb-1">CHARACTER MODE</label>
+              <label className="block text-[11px] text-gray-400 mb-1 font-mono">CHARACTER MODE</label>
               <select
                 value={localSettings.characterMode}
                 onChange={(e) => handleSettingChange('characterMode', e.target.value as CharacterMode)}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)] cursor-pointer"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)] cursor-pointer font-mono"
               >
                 <option value="binary">Binary (0 1)</option>
                 <option value="katakana">Katakana (ｱ ｲ ｳ...)</option>
@@ -184,119 +184,26 @@ export default function AdminMatrixPage() {
 
             {localSettings.characterMode === 'custom' && (
               <div>
-                <label className="block text-[11px] text-gray-400 mb-1">CUSTOM KEYWORDS / TEXT (SPACE SEPARATED)</label>
+                <label className="block text-[11px] text-gray-400 mb-1 font-mono">CUSTOM KEYWORDS / TEXT (SPACE SEPARATED)</label>
                 <input
                   type="text"
                   value={localSettings.customText || ''}
                   onChange={(e) => handleSettingChange('customText', e.target.value)}
                   placeholder="KENTUCKY PYTHON FASTAPI SOC AI LINUX CYBERSECURITY"
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)]"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)] font-mono"
                 />
               </div>
             )}
           </GlassCard>
 
-          {/* Animation & Speed Controls */}
+          {/* Visual FX & Color Palette */}
           <GlassCard variant="default" className="space-y-4">
-            <h3 className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
-              <Sliders className="w-4 h-4 text-emerald-400" /> Animation & Density Sliders
+            <h3 className="text-xs font-bold text-white uppercase flex items-center gap-1.5 font-mono">
+              <Palette className="w-4 h-4 text-purple-400" /> Visual FX &amp; Color Palette
             </h3>
 
-            {/* Rain Speed */}
             <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-gray-400">Rain Fall Speed</span>
-                <span className="text-[var(--accent-color)] font-bold">{localSettings.rainSpeed.toFixed(1)}x</span>
-              </div>
-              <input
-                type="range"
-                min="0.2"
-                max="4.0"
-                step="0.1"
-                value={localSettings.rainSpeed}
-                onChange={(e) => handleSettingChange('rainSpeed', parseFloat(e.target.value))}
-                className="w-full accent-[var(--accent-color)] cursor-pointer"
-              />
-            </div>
-
-            {/* Stream Density */}
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-gray-400">Stream Density</span>
-                <span className="text-[var(--accent-color)] font-bold">{localSettings.density}%</span>
-              </div>
-              <input
-                type="range"
-                min="10"
-                max="90"
-                step="5"
-                value={localSettings.density}
-                onChange={(e) => handleSettingChange('density', parseInt(e.target.value))}
-                className="w-full accent-[var(--accent-color)] cursor-pointer"
-              />
-            </div>
-
-            {/* Trail Length */}
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-gray-400">Trail Length</span>
-                <span className="text-[var(--accent-color)] font-bold">{localSettings.trailLength} chars</span>
-              </div>
-              <input
-                type="range"
-                min="8"
-                max="40"
-                step="1"
-                value={localSettings.trailLength}
-                onChange={(e) => handleSettingChange('trailLength', parseInt(e.target.value))}
-                className="w-full accent-[var(--accent-color)] cursor-pointer"
-              />
-            </div>
-
-            {/* Font Size */}
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-gray-400">Font Size</span>
-                <span className="text-[var(--accent-color)] font-bold">{localSettings.fontSize} px</span>
-              </div>
-              <input
-                type="range"
-                min="10"
-                max="28"
-                step="1"
-                value={localSettings.fontSize}
-                onChange={(e) => handleSettingChange('fontSize', parseInt(e.target.value))}
-                className="w-full accent-[var(--accent-color)] cursor-pointer"
-              />
-            </div>
-
-            {/* Column Spacing */}
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-gray-400">Column Spacing</span>
-                <span className="text-[var(--accent-color)] font-bold">{localSettings.columnSpacing} px</span>
-              </div>
-              <input
-                type="range"
-                min="16"
-                max="64"
-                step="4"
-                value={localSettings.columnSpacing}
-                onChange={(e) => handleSettingChange('columnSpacing', parseInt(e.target.value))}
-                className="w-full accent-[var(--accent-color)] cursor-pointer"
-              />
-            </div>
-          </GlassCard>
-
-          {/* Visual FX & Glow */}
-          <GlassCard variant="default" className="space-y-4">
-            <h3 className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
-              <Palette className="w-4 h-4 text-purple-400" /> Visual FX & Color Palette
-            </h3>
-
-            {/* Opacity */}
-            <div>
-              <div className="flex justify-between text-xs mb-1">
+              <div className="flex justify-between text-xs mb-1 font-mono">
                 <span className="text-gray-400">Overall Canvas Opacity</span>
                 <span className="text-[var(--accent-color)] font-bold">{Math.round(localSettings.opacity * 100)}%</span>
               </div>
@@ -311,9 +218,8 @@ export default function AdminMatrixPage() {
               />
             </div>
 
-            {/* Glow Strength */}
             <div>
-              <div className="flex justify-between text-xs mb-1">
+              <div className="flex justify-between text-xs mb-1 font-mono">
                 <span className="text-gray-400">Glow Intensity (Blur)</span>
                 <span className="text-[var(--accent-color)] font-bold">{localSettings.glowStrength} px</span>
               </div>
@@ -328,9 +234,8 @@ export default function AdminMatrixPage() {
               />
             </div>
 
-            {/* Background Darkness */}
             <div>
-              <div className="flex justify-between text-xs mb-1">
+              <div className="flex justify-between text-xs mb-1 font-mono">
                 <span className="text-gray-400">Trail Fade Opacity</span>
                 <span className="text-[var(--accent-color)] font-bold">{localSettings.backgroundDarkness.toFixed(2)}</span>
               </div>
@@ -347,28 +252,96 @@ export default function AdminMatrixPage() {
           </GlassCard>
         </div>
 
-        {/* Right Live Interactive Preview Canvas */}
-        <div className="lg:col-span-6 sticky top-6">
-          <GlassCard variant="glow" className="p-4 relative">
-            <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
-              <span className="text-xs font-bold text-white flex items-center gap-2">
-                <Play className="w-4 h-4 text-emerald-400" /> LIVE STREAM PREVIEW
-              </span>
-              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30 animate-pulse">
-                60 FPS ACTIVE
-              </span>
+        {/* Right Column: Animation & Density Sliders */}
+        <div className="space-y-6">
+          <GlassCard variant="default" className="space-y-4">
+            <h3 className="text-xs font-bold text-white uppercase flex items-center gap-1.5 font-mono">
+              <Sliders className="w-4 h-4 text-emerald-400" /> Animation &amp; Density Sliders
+            </h3>
+
+            {/* Rain Speed */}
+            <div>
+              <div className="flex justify-between text-xs mb-1 font-mono">
+                <span className="text-gray-400">Rain Fall Speed</span>
+                <span className="text-[var(--accent-color)] font-bold">{localSettings.rainSpeed.toFixed(1)}x</span>
+              </div>
+              <input
+                type="range"
+                min="0.2"
+                max="4.0"
+                step="0.1"
+                value={localSettings.rainSpeed}
+                onChange={(e) => handleSettingChange('rainSpeed', parseFloat(e.target.value))}
+                className="w-full accent-[var(--accent-color)] cursor-pointer"
+              />
             </div>
 
-            {/* Canvas Container */}
-            <div className="relative w-full h-[520px] rounded-xl overflow-hidden bg-[#020202] border border-[var(--border-accent)]">
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="p-6 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 text-center max-w-xs">
-                  <h4 className="text-sm font-bold text-white uppercase mb-1">Portfolio Canvas HUD</h4>
-                  <p className="text-[11px] text-gray-400 font-mono">
-                    Mode: <span className="text-[var(--accent-color)] font-bold">{localSettings.characterMode}</span>
-                  </p>
-                </div>
+            {/* Stream Density */}
+            <div>
+              <div className="flex justify-between text-xs mb-1 font-mono">
+                <span className="text-gray-400">Stream Density</span>
+                <span className="text-[var(--accent-color)] font-bold">{localSettings.density}%</span>
               </div>
+              <input
+                type="range"
+                min="10"
+                max="90"
+                step="5"
+                value={localSettings.density}
+                onChange={(e) => handleSettingChange('density', parseInt(e.target.value))}
+                className="w-full accent-[var(--accent-color)] cursor-pointer"
+              />
+            </div>
+
+            {/* Trail Length */}
+            <div>
+              <div className="flex justify-between text-xs mb-1 font-mono">
+                <span className="text-gray-400">Trail Length</span>
+                <span className="text-[var(--accent-color)] font-bold">{localSettings.trailLength} chars</span>
+              </div>
+              <input
+                type="range"
+                min="8"
+                max="40"
+                step="1"
+                value={localSettings.trailLength}
+                onChange={(e) => handleSettingChange('trailLength', parseInt(e.target.value))}
+                className="w-full accent-[var(--accent-color)] cursor-pointer"
+              />
+            </div>
+
+            {/* Font Size */}
+            <div>
+              <div className="flex justify-between text-xs mb-1 font-mono">
+                <span className="text-gray-400">Font Size</span>
+                <span className="text-[var(--accent-color)] font-bold">{localSettings.fontSize} px</span>
+              </div>
+              <input
+                type="range"
+                min="10"
+                max="28"
+                step="1"
+                value={localSettings.fontSize}
+                onChange={(e) => handleSettingChange('fontSize', parseInt(e.target.value))}
+                className="w-full accent-[var(--accent-color)] cursor-pointer"
+              />
+            </div>
+
+            {/* Column Spacing */}
+            <div>
+              <div className="flex justify-between text-xs mb-1 font-mono">
+                <span className="text-gray-400">Column Spacing</span>
+                <span className="text-[var(--accent-color)] font-bold">{localSettings.columnSpacing} px</span>
+              </div>
+              <input
+                type="range"
+                min="16"
+                max="64"
+                step="4"
+                value={localSettings.columnSpacing}
+                onChange={(e) => handleSettingChange('columnSpacing', parseInt(e.target.value))}
+                className="w-full accent-[var(--accent-color)] cursor-pointer"
+              />
             </div>
           </GlassCard>
         </div>

@@ -230,7 +230,7 @@ export default function AdminLoginPage() {
               <input
                 type="email"
                 required
-                placeholder="admin@soundkish.dev"
+                placeholder="Enter the Admin Mail id"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 glass-input text-sm font-mono"

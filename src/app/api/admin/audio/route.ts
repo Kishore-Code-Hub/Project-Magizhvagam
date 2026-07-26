@@ -3,8 +3,8 @@ import { db } from '@/lib/db';
 
 const DEFAULT_AUDIO_SETTINGS = {
   id: 'default',
-  trackTitle: 'Cyber Operations Ambient Soundtrack',
-  trackUrl: '/audio/cyber-ambient.mp3',
+  trackTitle: 'Cyber Ambient Soundtrack',
+  trackUrl: '/uploads/music/webmusic.mp3',
   enabled: true,
   autoplay: true,
   loop: true,

@@ -16,6 +16,17 @@ export interface VisitorTelemetry {
   host?: string;
 }
 
+const INITIAL_GATES = {
+  themeLoaded: false,
+  cmsLoaded: false,
+  tier1ImagesDecoded: false,
+  fontsLoaded: false,
+  hydrationComplete: false,
+  routeReady: false,
+  criticalImagesResolved: false,
+  animationFinished: false,
+};
+
 export function BootProvider({
   children,
   initialTelemetry,
@@ -31,18 +42,9 @@ export function BootProvider({
   const [loadingDuration, setLoadingDuration] = useState<number>(5.0);
 
   // 8 Readiness Gates
-  const gatesRef = useRef({
-    themeLoaded: false,
-    cmsLoaded: false,
-    tier1ImagesDecoded: false,
-    fontsLoaded: false,
-    hydrationComplete: false,
-    routeReady: false,
-    criticalImagesResolved: false,
-    animationFinished: false,
-  });
+  const gatesRef = useRef({ ...INITIAL_GATES });
 
-  const [gateStatus, setGateStatus] = useState(gatesRef.current);
+  const [gateStatus, setGateStatus] = useState(INITIAL_GATES);
 
   const updateGate = useCallback((key: keyof typeof gatesRef.current, val: boolean) => {
     gatesRef.current[key] = val;

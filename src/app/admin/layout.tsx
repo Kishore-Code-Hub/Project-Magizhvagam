@@ -56,7 +56,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: 'Certifications', href: '/admin/certificates', icon: Award },
     { label: 'Messages / Inbox', href: '/admin/contact', icon: Inbox },
     { label: 'Media Library', href: '/admin/media', icon: ImageIcon },
-    { label: 'Visual Appearance', href: '/admin/appearance', icon: Palette },
     { label: 'Audio Engine CMS', href: '/admin/settings/audio', icon: Music },
     { label: 'Animation & Loader', href: '/admin/settings/animation', icon: Sparkles },
     { label: 'Matrix Engine', href: '/admin/matrix', icon: Terminal },

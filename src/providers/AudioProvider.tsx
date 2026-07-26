@@ -1,7 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { Volume2, VolumeX, Play, Pause, Music } from 'lucide-react';
+import { Music } from 'lucide-react';
+
+const STATIC_AUDIO_URL = '/uploads/music/webmusic.mp3';
 
 interface AudioContextType {
   isPlaying: boolean;
@@ -10,6 +12,7 @@ interface AudioContextType {
   enabled: boolean;
   trackTitle: string;
   autoplayBlocked: boolean;
+  isAvailable: boolean;
   togglePlay: () => void;
   toggleMute: () => void;
   setVolume: (val: number) => void;
@@ -20,8 +23,9 @@ const AudioContext = createContext<AudioContextType>({
   isMuted: false,
   volume: 50,
   enabled: true,
-  trackTitle: 'Cyber Ambient',
+  trackTitle: 'Cyber Ambient Soundtrack',
   autoplayBlocked: false,
+  isAvailable: true,
   togglePlay: () => {},
   toggleMute: () => {},
   setVolume: () => {},
@@ -37,26 +41,20 @@ export function AudioProvider({ children }: AudioProviderProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [enabled, setEnabled] = useState(true);
-  const [trackUrl, setTrackUrl] = useState('/audio/cyber-ambient.mp3');
-  const [trackTitle, setTrackTitle] = useState('Cyber Operations Ambient Soundtrack');
-  const [loop, setLoop] = useState(true);
   const [volume, setVolumeState] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+  const [isAvailable, setIsAvailable] = useState(true);
 
-  // Fetch configured Audio CMS settings
+  // 1. Fetch saved preferences on mount (API & localStorage)
   useEffect(() => {
     fetch('/api/admin/audio')
       .then((res) => res.json())
       .then((data) => {
         if (data) {
           if (typeof data.enabled === 'boolean') setEnabled(data.enabled);
-          if (data.trackUrl) setTrackUrl(data.trackUrl);
-          if (data.trackTitle) setTrackTitle(data.trackTitle);
-          if (typeof data.loop === 'boolean') setLoop(data.loop);
 
-          // Retrieve visitor preference from localStorage if available
           if (typeof window !== 'undefined') {
             try {
               const saved = localStorage.getItem('portfolio_audio_state');
@@ -75,37 +73,50 @@ export function AudioProvider({ children }: AudioProviderProps) {
           }
         }
       })
-      .catch((err) => console.error('[Audio Provider] Error fetching settings:', err));
+      .catch(() => {
+        // Silent catch for network/offline resilience
+      });
   }, []);
 
-  // Initialize Audio instance
+  // 2. Single HTML5 Audio Instance Initialization (MOUNT ONLY)
   useEffect(() => {
-    if (typeof window === 'undefined' || !enabled || !trackUrl) return;
+    if (typeof window === 'undefined') return;
 
     if (!audioRef.current) {
-      const audio = new Audio(trackUrl);
+      const audio = new Audio(STATIC_AUDIO_URL);
+      audio.preload = 'auto';
+      audio.loop = true;
       audioRef.current = audio;
-    } else {
-      audioRef.current.src = trackUrl;
     }
 
     const audio = audioRef.current;
-    audio.loop = loop;
-    audio.volume = (volume / 100);
-    audio.muted = isMuted;
+    audio.loop = true;
+    audio.preload = 'auto';
 
-    const handleEnded = () => {
-      if (!loop) setIsPlaying(false);
+    // Silent error handler if webmusic.mp3 is missing or unplayable
+    const handleError = () => {
+      setIsAvailable(false);
+      setIsPlaying(false);
     };
 
+    // Backup seamless infinite loop handler if browser native loop stalls
+    const handleEnded = () => {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(() => {});
+      }
+    };
+
+    audio.addEventListener('error', handleError);
     audio.addEventListener('ended', handleEnded);
 
     return () => {
+      audio.removeEventListener('error', handleError);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [enabled, trackUrl, loop]);
+  }, []);
 
-  // Sync volume & mute changes
+  // 3. Sync Volume & Mute properties WITHOUT reloading track or changing .src
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume / 100;
@@ -122,8 +133,9 @@ export function AudioProvider({ children }: AudioProviderProps) {
     }
   }, [volume, isMuted, isPlaying]);
 
+  // 4. Playback attempt runner
   const attemptPlay = useCallback(() => {
-    if (!audioRef.current || !enabled) return;
+    if (!audioRef.current || !enabled || !isAvailable) return;
 
     audioRef.current
       .play()
@@ -131,41 +143,43 @@ export function AudioProvider({ children }: AudioProviderProps) {
         setIsPlaying(true);
         setAutoplayBlocked(false);
       })
-      .catch((err) => {
-        console.warn('[Audio Provider] Autoplay restricted by browser policy:', err);
+      .catch(() => {
         setAutoplayBlocked(true);
         setIsPlaying(false);
       });
-  }, [enabled]);
+  }, [enabled, isAvailable]);
 
-  // Auto-play attempt on mount if enabled
+  // Initial playback attempt when enabled and available
   useEffect(() => {
-    if (enabled && trackUrl) {
+    if (enabled && isAvailable) {
       attemptPlay();
     }
-  }, [enabled, trackUrl, attemptPlay]);
+  }, [enabled, isAvailable, attemptPlay]);
 
-  // Global user interaction listener to resume audio if blocked
+  // 5. Global user interaction listener to unlock autoplay on first click/touch/keydown
   useEffect(() => {
-    if (!autoplayBlocked) return;
+    if (!autoplayBlocked || !enabled || !isAvailable) return;
 
     const handleFirstInteraction = () => {
       attemptPlay();
       window.removeEventListener('click', handleFirstInteraction);
       window.removeEventListener('keydown', handleFirstInteraction);
+      window.removeEventListener('touchstart', handleFirstInteraction);
     };
 
     window.addEventListener('click', handleFirstInteraction);
     window.addEventListener('keydown', handleFirstInteraction);
+    window.addEventListener('touchstart', handleFirstInteraction);
 
     return () => {
       window.removeEventListener('click', handleFirstInteraction);
       window.removeEventListener('keydown', handleFirstInteraction);
+      window.removeEventListener('touchstart', handleFirstInteraction);
     };
-  }, [autoplayBlocked, attemptPlay]);
+  }, [autoplayBlocked, enabled, isAvailable, attemptPlay]);
 
   const togglePlay = useCallback(() => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || !isAvailable) return;
 
     if (isPlaying) {
       audioRef.current.pause();
@@ -177,9 +191,11 @@ export function AudioProvider({ children }: AudioProviderProps) {
           setIsPlaying(true);
           setAutoplayBlocked(false);
         })
-        .catch((err) => console.error('[Audio Provider] Play failed:', err));
+        .catch(() => {
+          setIsPlaying(false);
+        });
     }
-  }, [isPlaying]);
+  }, [isPlaying, isAvailable]);
 
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => !prev);
@@ -196,8 +212,9 @@ export function AudioProvider({ children }: AudioProviderProps) {
         isMuted,
         volume,
         enabled,
-        trackTitle,
+        trackTitle: 'Cyber Ambient Soundtrack (webmusic.mp3)',
         autoplayBlocked,
+        isAvailable,
         togglePlay,
         toggleMute,
         setVolume,
@@ -205,8 +222,8 @@ export function AudioProvider({ children }: AudioProviderProps) {
     >
       {children}
 
-      {/* Floating Enable Audio Banner if autoplay was blocked */}
-      {enabled && autoplayBlocked && !isPlaying && (
+      {/* Floating Enable Audio Banner if autoplay was blocked by browser */}
+      {enabled && isAvailable && autoplayBlocked && !isPlaying && (
         <div className="fixed bottom-6 right-6 z-50 animate-bounce">
           <button
             onClick={togglePlay}

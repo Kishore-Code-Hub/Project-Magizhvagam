@@ -5,7 +5,18 @@ import { db } from '@/lib/db';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
-const ALLOWED_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.pdf', '.mp4', '.webm', '.jfif'];
+const ALLOWED_EXTENSIONS = [
+  '.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.pdf', '.mp4', '.webm', '.jfif',
+  '.mp3', '.wav', '.ogg', '.m4a', '.aac',
+];
+
+const ALLOWED_MIME_TYPES = [
+  'image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml',
+  'application/pdf', 'video/mp4', 'video/webm',
+  'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/ogg', 'audio/vorbis',
+  'audio/mp4', 'audio/x-m4a', 'audio/aac', 'audio/m4a',
+];
+
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
 
 export async function POST(req: NextRequest) {
@@ -30,6 +41,13 @@ export async function POST(req: NextRequest) {
     const ext = path.extname(file.name).toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
       return NextResponse.json({ error: `File extension '${ext}' is forbidden for security` }, { status: 400 });
+    }
+
+    const fileType = file.type?.toLowerCase() || '';
+    const isMimeAllowed = ALLOWED_MIME_TYPES.some((mime) => fileType.startsWith(mime) || fileType.includes('audio/') || fileType.includes('image/') || fileType.includes('video/'));
+    
+    if (fileType && !isMimeAllowed) {
+      return NextResponse.json({ error: `MIME type '${file.type}' is not allowed for security` }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
