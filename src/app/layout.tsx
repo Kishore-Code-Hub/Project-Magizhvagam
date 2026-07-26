@@ -37,6 +37,7 @@ export const metadata: Metadata = {
 
 import AtmosphereLayers from '@/components/animation/AtmosphereLayers';
 import { BootProvider } from '@/providers/BootProvider';
+import { FullscreenPWAControls } from '@/components/ui/FullscreenPWAControls';
 
 export default function RootLayout({
   children,
@@ -58,6 +59,11 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <meta name="theme-color" content="#050505" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -68,6 +74,7 @@ export default function RootLayout({
         <ThemeProvider>
           <BootProvider>
             <SmoothScroll>{children}</SmoothScroll>
+            <FullscreenPWAControls />
           </BootProvider>
         </ThemeProvider>
       </body>

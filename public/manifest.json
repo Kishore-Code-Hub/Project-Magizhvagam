@@ -1,0 +1,41 @@
+{
+  "id": "/",
+  "name": "Kishore Narayanan K | Cyber Security & Software Engineer",
+  "short_name": "Kishore Portfolio",
+  "description": "Official portfolio of Kishore — CSE Student, Cybersecurity Enthusiast, and AI Full-Stack Developer.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#00ff66",
+  "orientation": "any",
+  "lang": "en",
+  "categories": [
+    "portfolio",
+    "developer",
+    "cybersecurity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
