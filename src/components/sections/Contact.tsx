@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { SiLeetcode } from 'react-icons/si';
+
 import { SectionWrapper } from '@/components/ui/SectionWrapper';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlowButton } from '@/components/ui/GlowButton';
-import { CyberBadge } from '@/components/ui/CyberBadge';
-import { ProfileData } from '@/types';
+import { GithubIcon, LinkedinIcon } from '@/components/ui/Icons';
+
 import {
   Send,
   Mail,
@@ -16,10 +18,9 @@ import {
   AlertCircle,
   FileText,
   Terminal,
-  Code2,
-  ShieldAlert,
 } from 'lucide-react';
-import { GithubIcon, LinkedinIcon } from '@/components/ui/Icons';
+
+import { ProfileData } from '@/types';
 
 interface ContactProps {
   profile: ProfileData;
@@ -37,34 +38,53 @@ export default function Contact({ profile }: ContactProps) {
   const [success, setSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const safeResumeUrl = profile.resumeUrl || 'https://drive.google.com';
+  const safeResumeUrl =
+    profile.resumeUrl || 'https://drive.google.com';
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setIsSubmitting(true);
     setErrorMessage(null);
 
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(formData),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to submit message');
+        throw new Error(
+          data.error || 'Failed to submit message'
+        );
       }
 
       setSuccess(true);
-      setFormData({ name: '', email: '', subject: '', message: '' });
+
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+      });
     } catch (err: any) {
-      setErrorMessage(err.message || 'Submission error');
+      setErrorMessage(
+        err.message || 'Submission error'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -85,132 +105,272 @@ export default function Contact({ profile }: ContactProps) {
         subtitle="I'm actively looking for Software Engineering, Cybersecurity and AI Internship opportunities. If you're hiring interns, collaborating on research or building innovative products, I'd love to connect."
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Direct Links & Status HUD */}
-        <div className="lg:col-span-5 space-y-6">
-          <GlassCard variant="glow">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="w-3 h-3 rounded-full bg-[var(--accent-color)] animate-ping" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 xl:gap-8 items-stretch">
+
+        {/* ================= LEFT COLUMN ================= */}
+
+        <div className="lg:col-span-5 flex flex-col">
+
+          <GlassCard
+            variant="glow"
+            className="w-full h-full flex flex-col justify-between p-5 sm:p-6 xl:p-7">
+
+            {/* Top & Middle Content Container */}
+            <div className="flex flex-col space-y-5 sm:space-y-6">
+
+              {/* Header */}
               <div>
-                <h4 className="text-lg font-bold text-white uppercase">Direct Channels</h4>
-                <p className="text-xs font-mono text-[var(--accent-color)]">
-                  {profile.availability || 'Open for Engineering Opportunities'}
-                </p>
+
+                <h4
+                  className="font-bold uppercase tracking-wide text-white"
+                  style={{ fontSize: 'clamp(1.25rem, 1.8vw, 1.5rem)' }}
+                >
+                  DIRECT CHANNELS
+                </h4>
+
+                <div className="mt-3 flex items-center gap-3">
+
+                  <span className="relative flex h-3 w-3 shrink-0">
+
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--accent-color)] opacity-75"></span>
+
+                    <span className="relative inline-flex h-3 w-3 rounded-full bg-[var(--accent-color)]"></span>
+
+                  </span>
+
+                  <p
+                    className="font-mono leading-relaxed text-[var(--accent-color)]"
+                    style={{ fontSize: 'clamp(0.8125rem, 1.1vw, 0.9375rem)' }}
+                  >
+                    {profile.availability || "Open for Engineering Opportunities"}
+                  </p>
+
+                </div>
+
               </div>
+
+              {/* Contact Cards */}
+
+              <div className="space-y-3.5 sm:space-y-4">
+
+                {/* Email */}
+
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-4.5">
+
+                  <div className="flex items-center gap-4">
+
+                    <Mail className="w-6 h-6 sm:w-7 sm:h-7 text-[var(--accent-color)] shrink-0" />
+
+                    <div className="min-w-0 flex-1">
+
+                      <div className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-300 font-mono">
+                        Primary Email
+                      </div>
+
+                      <a
+                        href={`mailto:${profile.socials?.email ??
+                          'kishorenarayanankarthikeyan@gmail.com'
+                          }`}
+                        className="mt-1 block text-xs sm:text-sm text-gray-100 break-all hover:text-[var(--accent-color)] transition-colors"
+                        style={{ fontSize: 'clamp(0.8125rem, 1.1vw, 0.9375rem)' }}
+                      >
+                        {profile.socials?.email?.replace(
+                          'mailto:',
+                          ''
+                        ) ??
+                          'kishorenarayanankarthikeyan@gmail.com'}
+                      </a>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+                {/* Location */}
+
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-4.5">
+
+                  <div className="flex items-center gap-4">
+
+                    <MapPin className="w-6 h-6 sm:w-7 sm:h-7 text-cyan-400 shrink-0" />
+
+                    <div className="flex-1">
+
+                      <div className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-300 font-mono">
+                        Location
+                      </div>
+
+                      <p
+                        className="mt-1 text-xs sm:text-sm text-gray-100"
+                        style={{ fontSize: 'clamp(0.8125rem, 1.1vw, 0.9375rem)' }}
+                      >
+                        Chennai, Tamil Nadu, India
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
             </div>
 
-            <div className="space-y-4 font-mono text-xs sm:text-sm">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 text-gray-300">
-                <Mail className="w-5 h-5 text-[var(--accent-color)] shrink-0" />
-                <div className="truncate">
-                  <div className="text-[10px] text-gray-500 uppercase">Primary Email</div>
-                  <a href={`mailto:${profile.socials?.email || 'kishorenarayanankarthikeyan@gmail.com'}`} className="hover:text-[var(--accent-color)] text-gray-200 truncate block">
-                    {profile.socials?.email?.replace('mailto:', '') || 'kishorenarayanankarthikeyan@gmail.com'}
-                  </a>
-                </div>
-              </div>
+            {/* Bottom Section */}
 
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 text-gray-300">
-                <MapPin className="w-5 h-5 text-cyan-400 shrink-0" />
-                <div>
-                  <div className="text-[10px] text-gray-500 uppercase">Location</div>
-                  <span className="text-gray-200">Chennai</span>
-                </div>
-              </div>
-            </div>
+            <div className="mt-6 border-t border-white/10 pt-5 space-y-5">
 
-            {/* Social & Coding Profiles */}
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <h5 className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-3">
-                Looking For my Resume
-              </h5>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2.5 sm:gap-3">
+
                 {profile.socials?.github && (
+
                   <a
                     href={profile.socials.github}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-[var(--accent-color)] border border-white/10 transition-colors"
+                    className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium text-gray-300 transition-all duration-300 hover:border-[var(--accent-color)] hover:bg-white/10 hover:text-[var(--accent-color)]"
                   >
-                    <GithubIcon className="w-4 h-4" /> GitHub
+
+                    <GithubIcon className="h-5 w-5" />
+
+                    <span>GitHub</span>
+
                   </a>
+
                 )}
+
                 {profile.socials?.linkedin && (
+
                   <a
                     href={profile.socials.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-[var(--accent-color)] border border-white/10 transition-colors"
+                    className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium text-gray-300 transition-all duration-300 hover:border-[var(--accent-color)] hover:bg-white/10 hover:text-[var(--accent-color)]"
                   >
-                    <LinkedinIcon className="w-4 h-4" /> LinkedIn
+
+                    <LinkedinIcon className="h-5 w-5" />
+
+                    <span>LinkedIn</span>
+
                   </a>
+
                 )}
+
                 {profile.socials?.leetcode && (
+
                   <a
                     href={profile.socials.leetcode}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-[var(--accent-color)] border border-white/10 transition-colors"
+                    className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium text-gray-300 transition-all duration-300 hover:border-[var(--accent-color)] hover:bg-white/10 hover:text-[var(--accent-color)]"
                   >
-                    <Code2 className="w-4 h-4" /> LeetCode
+
+                    <SiLeetcode className="h-5 w-5" />
+
+                    <span>LeetCode</span>
+
                   </a>
+
                 )}
-                {profile.socials?.tryhackme && (
-                  <a
-                    href={profile.socials.tryhackme}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-[var(--accent-color)] border border-white/10 transition-colors"
-                  >
-                    <ShieldAlert className="w-4 h-4" /> TryHackMe
-                  </a>
-                )}
+
               </div>
+
+              {/* Resume */}
+
+              <div>
+
+                <h3 className="mb-2.5 text-[11px] sm:text-xs uppercase tracking-[0.25em] text-gray-400 font-mono">
+                  Looking For My Resume
+                </h3>
+
+                <GlowButton
+                  variant="outline"
+                  size="lg"
+                  className="h-11 sm:h-12 w-full text-xs sm:text-sm font-semibold"
+                  leftIcon={<FileText className="w-4 h-4 sm:w-5 sm:h-5" />}
+                  onClick={() =>
+                    window.open(safeResumeUrl, "_blank")
+                  }
+                >
+                  Download Official Resume
+                </GlowButton>
+
+              </div>
+
             </div>
 
-            {/* Resume Button */}
-            <div className="mt-6">
-              <GlowButton
-                variant="outline"
-                size="md"
-                className="w-full"
-                leftIcon={<FileText className="w-4 h-4" />}
-                onClick={() => window.open(safeResumeUrl, '_blank')}
-              >
-                Download Official Resume
-              </GlowButton>
-            </div>
           </GlassCard>
+
         </div>
 
-        {/* Right Column: Contact Message Form */}
-        <div className="lg:col-span-7">
-          <GlassCard variant="default">
-            <h4 className="text-lg font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Terminal className="w-5 h-5 text-[var(--accent-color)]" />
-              Send Message
-            </h4>
+        {/* ================= RIGHT COLUMN ================= */}
 
+        <div className="lg:col-span-7 flex flex-col">
+
+          <GlassCard
+            variant="default"
+            className="w-full h-full flex flex-col justify-between p-5 sm:p-6 xl:p-7"
+          >
+
+            <h4
+              className="mb-4 sm:mb-5 flex items-center gap-2 font-bold uppercase tracking-wider text-white"
+              style={{ fontSize: 'clamp(1.25rem, 1.8vw, 1.5rem)' }}
+            >
+
+              <Terminal className="h-5 w-5 text-[var(--accent-color)] shrink-0" />
+
+              Send Message
+
+            </h4>
             {success ? (
+
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="p-8 text-center rounded-xl bg-emerald-500/10 border border-emerald-500/30"
+                transition={{ duration: 0.35 }}
+                className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-8 sm:p-10 text-center my-auto"
               >
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-3 animate-bounce" />
-                <h5 className="text-xl font-bold text-white mb-2">Message Sent</h5>
-                <p className="text-xs font-mono text-gray-300 mb-4">
-                  Your message has been logged in the inbox. I will review and respond promptly.
+
+                <CheckCircle2 className="mb-4 h-12 w-12 sm:h-14 sm:w-14 text-emerald-400 animate-bounce" />
+
+                <h5 className="mb-2 text-xl sm:text-2xl font-bold text-white">
+                  Message Sent Successfully
+                </h5>
+
+                <p className="mb-6 max-w-md text-xs sm:text-sm font-mono leading-relaxed text-gray-300">
+                  Your message has been securely delivered to my inbox.
+                  I'll review it shortly and get back to you as soon as possible.
                 </p>
-                <GlowButton variant="outline" size="sm" onClick={() => setSuccess(false)}>
+
+                <GlowButton
+                  variant="outline"
+                  size="md"
+                  onClick={() => setSuccess(false)}
+                >
                   Send Another Message
                 </GlowButton>
+
               </motion.div>
+
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              <form
+                onSubmit={handleSubmit}
+                className="flex flex-1 flex-col space-y-4 sm:space-y-4.5 justify-between"
+              >
+
+                {/* Name & Email */}
+
+                <div className="grid grid-cols-1 gap-3.5 sm:gap-4 md:grid-cols-2">
+
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1">YOUR NAME *</label>
+
+                    <label className="mb-1.5 block text-[11px] sm:text-xs font-mono uppercase tracking-wider text-gray-400">
+                      Your Name *
+                    </label>
+
                     <input
                       type="text"
                       name="name"
@@ -218,11 +378,17 @@ export default function Contact({ profile }: ContactProps) {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="e.g. Anonymous"
-                      className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)] transition-colors"
+                      className="h-11 sm:h-12 w-full rounded-xl border border-white/10 bg-black/40 px-3.5 sm:px-4 font-mono text-xs sm:text-sm text-white placeholder:text-gray-500 transition-all focus:border-[var(--accent-color)] focus:ring-2 focus:ring-[var(--accent-color)]/20 focus:outline-none"
                     />
+
                   </div>
+
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1">YOUR EMAIL *</label>
+
+                    <label className="mb-1.5 block text-[11px] sm:text-xs font-mono uppercase tracking-wider text-gray-400">
+                      Your Email *
+                    </label>
+
                     <input
                       type="email"
                       name="email"
@@ -230,29 +396,46 @@ export default function Contact({ profile }: ContactProps) {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="anonymous@domain.com"
-                      className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)] transition-colors"
+                      className="h-11 sm:h-12 w-full rounded-xl border border-white/10 bg-black/40 px-3.5 sm:px-4 font-mono text-xs sm:text-sm text-white placeholder:text-gray-500 transition-all focus:border-[var(--accent-color)] focus:ring-2 focus:ring-[var(--accent-color)]/20 focus:outline-none"
                     />
+
                   </div>
+
                 </div>
 
+                {/* Subject */}
+
                 <div>
-                  <label className="block text-xs font-mono text-gray-400 mb-1">SUBJECT *</label>
-                  {/* Preset Suggestion Chips */}
-                  <div className="flex flex-wrap gap-1.5 mb-2">
+
+                  <label className="mb-1.5 block text-[11px] sm:text-xs font-mono uppercase tracking-wider text-gray-400">
+                    Subject *
+                  </label>
+
+                  <div className="mb-2 flex flex-wrap gap-1.5 sm:gap-2">
+
                     {subjectPresets.map((preset) => (
+
                       <button
                         key={preset}
                         type="button"
-                        onClick={() => setFormData((prev) => ({ ...prev, subject: preset }))}
-                        className={`px-2.5 py-1 text-[11px] font-mono rounded-lg border transition-all cursor-pointer ${formData.subject === preset
-                          ? 'bg-[var(--accent-color)] text-black border-[var(--accent-color)] font-bold'
-                          : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30 hover:text-white'
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            subject: preset,
+                          }))
+                        }
+                        className={`rounded-lg border px-2.5 py-1.5 text-[11px] sm:text-xs font-mono transition-all ${formData.subject === preset
+                          ? "border-[var(--accent-color)] bg-[var(--accent-color)] font-bold text-black"
+                          : "border-white/10 bg-white/5 text-gray-400 hover:border-white/30 hover:text-white"
                           }`}
                       >
                         {preset}
                       </button>
+
                     ))}
+
                   </div>
+
                   <input
                     type="text"
                     name="subject"
@@ -260,45 +443,70 @@ export default function Contact({ profile }: ContactProps) {
                     value={formData.subject}
                     onChange={handleChange}
                     placeholder="Select preset above or type subject..."
-                    className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)] transition-colors"
+                    className="h-11 sm:h-12 w-full rounded-xl border border-white/10 bg-black/40 px-3.5 sm:px-4 font-mono text-xs sm:text-sm text-white placeholder:text-gray-500 transition-all focus:border-[var(--accent-color)] focus:ring-2 focus:ring-[var(--accent-color)]/20 focus:outline-none"
                   />
+
                 </div>
 
-                <div>
-                  <label className="block text-xs font-mono text-gray-400 mb-1">MESSAGE *</label>
+                {/* Message */}
+
+                <div className="flex-1 flex flex-col min-h-[140px] sm:min-h-[160px]">
+
+                  <label className="mb-1.5 block text-[11px] sm:text-xs font-mono uppercase tracking-wider text-gray-400">
+                    Message *
+                  </label>
+
                   <textarea
                     name="message"
-                    rows={5}
                     required
+                    rows={4}
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder="Provide Your Message Here ..."
-                    className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)] transition-colors resize-none"
+                    placeholder="Tell me about your project, internship opportunity, research collaboration, or simply say hello..."
+                    className="flex-1 w-full rounded-xl border border-white/10 bg-black/40 p-3.5 sm:p-4 font-mono text-xs sm:text-sm leading-relaxed text-white placeholder:text-gray-500 transition-all duration-300 resize-none focus:border-[var(--accent-color)] focus:ring-2 focus:ring-[var(--accent-color)]/20 focus:outline-none"
                   />
                 </div>
 
+                {/* Error Message */}
+
                 {errorMessage && (
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>{errorMessage}</span>
+
+                  <div className="flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 sm:p-4">
+
+                    <AlertCircle className="mt-0.5 h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-red-400" />
+
+                    <span className="font-mono text-xs sm:text-sm text-red-300">
+                      {errorMessage}
+                    </span>
+
                   </div>
+
                 )}
+
+                {/* Submit Button */}
 
                 <GlowButton
                   type="submit"
                   variant="primary"
                   size="lg"
+                  className="h-11 sm:h-12 w-full text-xs sm:text-sm font-semibold"
                   isLoading={isSubmitting}
-                  className="w-full"
-                  rightIcon={<Send className="w-4 h-4" />}
+                  rightIcon={<Send className="h-4 w-4 sm:h-5 sm:w-5" />}
                 >
-                  Send Message
+                  {isSubmitting
+                    ? "Sending..."
+                    : "Send Message"}
                 </GlowButton>
+
               </form>
+
             )}
+
           </GlassCard>
+
         </div>
       </div>
+
     </SectionWrapper>
   );
 }
