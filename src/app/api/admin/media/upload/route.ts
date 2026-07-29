@@ -4,6 +4,7 @@ import { getAdminSession } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
+import crypto from 'crypto';
 
 const ALLOWED_EXTENSIONS = [
   '.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.pdf', '.mp4', '.webm', '.jfif',

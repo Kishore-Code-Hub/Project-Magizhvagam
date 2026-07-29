@@ -15,11 +15,13 @@ const STATIC_ASSETS = [
 const BYPASS_PATTERNS = [
   /^\/api\//,
   /^\/uploads\//,
+  /^\/audio\//,
   /^\/admin(\/.*)?$/,
   /^\/_next\/data\//,
   /^\/favicon\.ico$/,
   /^\/robots\.txt$/,
-  /^\/sitemap\.xml$/
+  /^\/sitemap\.xml$/,
+  /\.(mp3|wav|ogg|m4a|aac)(\?.*)?$/i
 ];
 
 self.addEventListener('install', (event) => {

@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { MUSIC_PATH } from '@/lib/audio/constants';
 
 const DEFAULT_AUDIO_SETTINGS = {
   id: 'default',
   trackTitle: 'Cyber Ambient Soundtrack',
-  trackUrl: '/uploads/music/webmusic.mp3',
+  trackUrl: MUSIC_PATH,
   enabled: true,
   autoplay: true,
   loop: true,
-  volume: 50,
+  volume: 25,
   fadeInDuration: 1.5,
   fadeOutDuration: 1.5,
   defaultMute: false,

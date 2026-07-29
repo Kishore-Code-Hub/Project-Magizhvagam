@@ -60,14 +60,14 @@ function CyberWorkstationComponent({
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="w-full max-w-[92vw] sm:max-w-xl lg:max-w-2xl flex items-center justify-center perspective-1000 select-none py-2 transition-all duration-700 ease-out animate-in fade-in zoom-in-95 duration-1000 mx-auto"
+      className="w-full flex items-center justify-center perspective-1000 select-none transition-all duration-700 ease-out animate-in fade-in zoom-in-95 duration-1000 mx-auto h-full"
     >
-      {/* 3D Premium Display Frame with subtle float and hover scale */}
+      {/* 3D Premium Display Frame with matching glass panel and floating effect */}
       <div
-        className={`relative w-full rounded-[28px] glass-panel border border-accent/40 bg-[#040705] p-2.5 sm:p-3.5 transition-all duration-300 ease-out animate-[float_6s_ease-in-out_infinite] will-change-transform ${
+        className={`relative w-full h-full rounded-[24px] glass-panel border border-[rgba(0,255,120,0.15)] bg-[rgba(10,12,14,0.38)] backdrop-blur-[24px] p-3 sm:p-4.5 transition-all duration-300 ease-out animate-[float_6s_ease-in-out_infinite] will-change-transform flex flex-col justify-center ${
           isHovered
             ? 'shadow-[0_0_80px_rgba(0,255,102,0.35)] -translate-y-1 scale-[1.01]'
-            : 'shadow-[0_0_60px_rgba(0,255,102,0.25)]'
+            : 'shadow-[0_30px_80px_rgba(0,255,100,0.08)]'
         }`}
         style={{
           transform: `rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) translateZ(0px)`,
@@ -76,14 +76,14 @@ function CyberWorkstationComponent({
       >
         {/* Soft Volumetric Rim Glow Layer Behind */}
         <div
-          className={`absolute -inset-4 bg-accent/20 rounded-[36px] blur-3xl pointer-events-none -z-10 transition-opacity duration-300 ${
+          className={`absolute -inset-4 bg-accent/20 rounded-[32px] blur-3xl pointer-events-none -z-10 transition-opacity duration-300 ${
             isHovered ? 'opacity-90 animate-pulse' : 'opacity-70'
           }`}
           style={{ opacity: (glowIntensity / 100) * (isHovered ? 0.95 : 0.75) }}
         />
 
-        {/* Photorealistic Workstation Artwork Frame */}
-        <div className="relative w-full h-[340px] sm:h-[440px] lg:h-[480px] rounded-[22px] overflow-hidden bg-[#020403] border border-accent/30 shadow-2xl">
+        {/* Photorealistic Workstation Artwork Frame matching height */}
+        <div className="relative w-full h-full min-h-[340px] sm:min-h-[440px] lg:min-h-[500px] rounded-[18px] overflow-hidden bg-[#020403] border border-accent/30 shadow-2xl flex-1">
           {heroImage ? (
             <Image
               src={heroImage}

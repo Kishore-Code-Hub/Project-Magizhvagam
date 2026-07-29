@@ -44,32 +44,32 @@ function HeroComponent({ profile }: HeroProps) {
       {/* Background Adaptive Performance Manager Engine */}
       <PerformanceManager />
 
-      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-14 xl:gap-20 items-stretch z-10 pl-0 lg:pl-16">
+      <div className="max-w-[1600px] mx-auto w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 lg:gap-10 items-stretch z-10 pl-0 lg:pl-16">
         
-        {/* Mobile View Stacking Order: Text Content FIRST (order-1), Hero Banner SECOND (order-2) */}
-        <div className="order-1 md:order-1 lg:order-1 lg:col-span-5 flex flex-col justify-between text-left max-w-[780px] w-full p-5 sm:p-6 md:p-7 rounded-[24px] bg-[rgba(10,12,14,0.38)] backdrop-blur-[24px] border border-[rgba(0,255,120,0.12)] shadow-[0_30px_80px_rgba(0,255,100,0.08)] space-y-3.5 sm:space-y-4">
-          {/* Plain Text Greeting - Centered on Mobile, Left-aligned on Desktop (No Pill/Border/Background) */}
-          <div className="w-full text-center md:text-left font-mono text-sm sm:text-base tracking-wide text-accent/90 font-medium select-none animate-in fade-in duration-700 mt-1 md:mt-0">
+        {/* Left Column (45% / 5 cols on lg, 50% on md): Text Content */}
+        <div className="order-1 md:order-1 lg:order-1 md:col-span-1 lg:col-span-5 flex flex-col justify-between text-left w-full p-6 sm:p-8 rounded-[24px] bg-[rgba(10,12,14,0.45)] backdrop-blur-[24px] border border-[rgba(0,255,120,0.18)] shadow-[0_30px_80px_rgba(0,255,100,0.1)] space-y-6">
+          {/* Plain Text Greeting */}
+          <div className="w-full text-center md:text-left font-mono text-sm sm:text-base tracking-wide text-accent/90 font-medium select-none animate-in fade-in duration-700">
             {greetingText}
           </div>
 
-          {/* Title Block with 780px max-width */}
-          <div className="space-y-1 font-mono max-w-[780px] break-words">
+          {/* Title Block */}
+          <div className="space-y-1.5 font-mono w-full break-words">
             <h2 className="text-xs sm:text-sm text-gray-400 font-medium tracking-wide">
               HELLO, I'M
             </h2>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-tight break-words uppercase">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight text-white leading-tight break-words uppercase">
               {profile.name || 'KISHORE_NARAYANAN_K'}
             </h1>
           </div>
 
-          {/* Typewriter Role Loop Sequence - Dynamic text scaling & flex fit */}
+          {/* Typewriter Role Loop Sequence */}
           <div className="min-h-[48px] sm:min-h-[56px] flex items-center font-mono max-w-full overflow-visible">
             <Typewriter words={profile.taglines} />
           </div>
 
-          {/* Bio paragraph with max 600px width */}
-          <p className="text-sm sm:text-base text-gray-300 font-sans leading-relaxed max-w-[600px]">
+          {/* Bio paragraph */}
+          <p className="text-sm sm:text-base text-gray-300 font-sans leading-relaxed max-w-[640px]">
             {profile.bio || profile.headline || 'I build secure, intelligent and scalable digital solutions with a strong focus on Cybersecurity, AI and real-world impact.'}
           </p>
 
@@ -81,7 +81,7 @@ function HeroComponent({ profile }: HeroProps) {
               rel="noopener noreferrer"
               aria-label="Connect with me on LinkedIn"
               title="Connect with me on LinkedIn"
-              className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-[#0A66C2] text-white border border-[#0A66C2] font-medium text-xs sm:text-sm hover:bg-white hover:text-[#0A66C2] hover:border-[#0A66C2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A66C2] transition-all duration-200 ease-in-out shadow-[0_4px_15px_rgba(10,102,194,0.35)] hover:shadow-[0_6px_20px_rgba(10,102,194,0.5)] transform hover:-translate-y-0.5 cursor-pointer"
+              className="inline-flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-[#0A66C2] text-white border border-[#0A66C2] font-medium text-xs sm:text-sm hover:bg-white hover:text-[#0A66C2] hover:border-[#0A66C2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A66C2] transition-all duration-200 ease-in-out shadow-[0_4px_15px_rgba(10,102,194,0.35)] hover:shadow-[0_6px_20px_rgba(10,102,194,0.5)] transform hover:-translate-y-0.5 cursor-pointer"
             >
               <LinkedinIcon className="w-4 h-4 shrink-0 fill-current" />
               <span>Connect with me on LinkedIn</span>
@@ -89,7 +89,7 @@ function HeroComponent({ profile }: HeroProps) {
           </div>
 
           {/* Action Buttons Row Grid Container */}
-          <div className="space-y-4 pt-3 font-mono">
+          <div className="space-y-4 pt-2 font-mono">
             {/* Primary Action Buttons Row */}
             <div className="flex flex-wrap items-center gap-3">
               <a
@@ -119,7 +119,7 @@ function HeroComponent({ profile }: HeroProps) {
               </a>
             </div>
 
-            {/* Dedicated Horizontal Social Links Row (GitHub, LinkedIn, LeetCode) - Always Rendered */}
+            {/* Dedicated Horizontal Social Links Row */}
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest font-mono">CONNECT:</span>
               <div className="flex items-center gap-2.5">
@@ -160,8 +160,8 @@ function HeroComponent({ profile }: HeroProps) {
           </div>
         </div>
 
-        {/* Right Column (7 cols): Hero Image Artwork placed SECOND (order-2) on mobile */}
-        <div className="order-2 md:order-2 lg:order-2 lg:col-span-7 flex justify-center w-full">
+        {/* Right Column (55% / 7 cols on lg, 50% on md): Hero Image Artwork */}
+        <div className="order-2 md:order-2 lg:order-2 md:col-span-1 lg:col-span-7 flex justify-center w-full h-full items-stretch">
           <CyberWorkstation heroImage={heroImage} />
         </div>
       </div>

@@ -64,7 +64,7 @@ function generateStreams(
   const activeWidth = w || 1920;
   const activeHeight = h || 1080;
   const totalLanes = Math.max(10, Math.floor(activeWidth / columnSpacing));
-  const activeDensity = density && density > 0 ? density : 45;
+  const activeDensity = density && density > 0 ? density : 40;
   const targetCount = Math.max(5, Math.floor((totalLanes * activeDensity) / 100));
 
   const availableLanes = Array.from({ length: totalLanes }, (_, i) => i);
@@ -84,7 +84,7 @@ function generateStreams(
       laneIndex: laneIdx,
       x: laneX,
       y: Math.random() * activeHeight,
-      speed: (2.5 + Math.random() * 3.5) * baseSpeed,
+      speed: (2.0 + Math.random() * 3.0) * baseSpeed,
       length,
       fontSize: baseFontSize,
       chars,
@@ -99,19 +99,15 @@ export default function MatrixEngine() {
   const streamsRef = useRef<RainStream[]>([]);
   const widthRef = useRef<number>(0);
   const heightRef = useRef<number>(0);
-  const dprRef = useRef<number>(1);
   const isTabActiveRef = useRef<boolean>(true);
   const isInitializedRef = useRef<boolean>(false);
-  const frameNumberRef = useRef<number>(0);
-  const wasVisibleRef = useRef<boolean | null>(null);
+  const lastFrameTimeRef = useRef<number>(0);
 
   const { settings } = useMatrixSettings();
   const settingsRef = useRef(settings);
 
-  // Synchronize settings changes into settingsRef and update stream density/parameters live without restarting loop
   useEffect(() => {
     settingsRef.current = settings;
-
     if (widthRef.current > 0 && heightRef.current > 0) {
       const charList = getCharList(settings.characterMode);
       streamsRef.current = generateStreams(
@@ -121,42 +117,48 @@ export default function MatrixEngine() {
         settings.fontSize || 16,
         settings.rainSpeed || 1.2,
         settings.trailLength || 22,
-        settings.density || 45,
+        settings.density || 40,
         charList
       );
     }
   }, [settings]);
 
-  // Handle visibility transitions based on route / enabled state
   const pathname = usePathname();
   const isAdminPage = pathname?.startsWith('/admin');
   const isEnabled = settings.enabled ?? true;
   const isVisible = !isAdminPage && isEnabled;
 
   useEffect(() => {
-    wasVisibleRef.current = isVisible;
-  }, [isVisible]);
-
-  // Effect A: Initialize engine EXACTLY ONCE on mount
-  useEffect(() => {
     if (isInitializedRef.current) return;
     isInitializedRef.current = true;
 
     const canvas = canvasRef.current;
-    if (!canvas) {
-      console.error('[MatrixEngine] Canvas reference missing on initialization');
-      return;
-    }
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true }) || canvas.getContext('2d');
-    if (!ctx) {
-      console.error('[MatrixEngine] Failed to initialize Canvas 2D context.');
-      return;
-    }
+    if (!ctx) return;
     ctxRef.current = ctx;
+
+    const startAnimation = () => {
+      if (animationFrameRef.current !== null) return;
+      lastFrameTimeRef.current = performance.now();
+      animationFrameRef.current = requestAnimationFrame(render);
+    };
+
+    const stopAnimation = () => {
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    };
 
     const handleVisibilityChange = () => {
       isTabActiveRef.current = !document.hidden;
+      if (document.hidden) {
+        stopAnimation();
+      } else if (isVisible) {
+        startAnimation();
+      }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
@@ -173,15 +175,12 @@ export default function MatrixEngine() {
 
       widthRef.current = width;
       heightRef.current = height;
-      dprRef.current = dpr;
 
       activeCanvas.width = Math.floor(width * dpr);
       activeCanvas.height = Math.floor(height * dpr);
       activeCanvas.style.width = `${width}px`;
       activeCanvas.style.height = `${height}px`;
 
-      activeCtx.setTransform(1, 0, 0, 1, 0, 0);
-      activeCtx.clearRect(0, 0, activeCanvas.width, activeCanvas.height);
       activeCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       const currentSettings = settingsRef.current;
@@ -193,7 +192,7 @@ export default function MatrixEngine() {
         currentSettings.fontSize || 16,
         currentSettings.rainSpeed || 1.2,
         currentSettings.trailLength || 22,
-        currentSettings.density || 45,
+        currentSettings.density || 40,
         charList
       );
     };
@@ -205,16 +204,22 @@ export default function MatrixEngine() {
     };
     window.addEventListener('resize', handleResize);
 
-    const render = () => {
+    const render = (now: number) => {
       if (!isTabActiveRef.current) {
-        animationFrameRef.current = requestAnimationFrame(render);
+        stopAnimation();
         return;
       }
 
+      // Target ~45 FPS for fluid motion without draining GPU on high refresh screens (120Hz/144Hz)
+      const elapsed = now - lastFrameTimeRef.current;
+      if (elapsed < 22) {
+        animationFrameRef.current = requestAnimationFrame(render);
+        return;
+      }
+      lastFrameTimeRef.current = now;
+
       const activeCtx = ctxRef.current;
       if (!activeCtx) return;
-
-      frameNumberRef.current++;
 
       const currentSettings = settingsRef.current;
       const width = widthRef.current;
@@ -223,16 +228,13 @@ export default function MatrixEngine() {
       const baseFontSize = currentSettings.fontSize || 16;
       const baseSpeed = currentSettings.rainSpeed || 1.2;
       const baseTrailLength = currentSettings.trailLength || 22;
-      const glowStrength = currentSettings.glowStrength ?? 6;
       const brightnessScale = currentSettings.characterBrightness ?? 1.0;
       const charList = getCharList(currentSettings.characterMode);
 
       activeCtx.globalAlpha = 1.0;
       activeCtx.globalCompositeOperation = 'source-over';
-      activeCtx.shadowBlur = 0;
-      activeCtx.shadowColor = 'transparent';
 
-      // Matte dark background trail fade with configurable darkness
+      // Matte dark background trail fade
       activeCtx.fillStyle = `rgba(5, 5, 5, ${backgroundDarkness})`;
       activeCtx.fillRect(0, 0, width, height);
 
@@ -249,18 +251,11 @@ export default function MatrixEngine() {
           const isHead = i === 0;
 
           if (isHead) {
-            activeCtx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, 0.95 * brightnessScale)})`;
-            if (glowStrength > 0) {
-              activeCtx.shadowColor = '#00FF66';
-              activeCtx.shadowBlur = glowStrength;
-            } else {
-              activeCtx.shadowBlur = 0;
-            }
+            activeCtx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, 0.98 * brightnessScale)})`;
           } else {
             const tailFade = 1 - i / stream.length;
             const alpha = Math.max(0.08, tailFade * 0.85 * brightnessScale);
             activeCtx.fillStyle = `rgba(0, 255, 102, ${alpha})`;
-            activeCtx.shadowBlur = 0;
           }
 
           if (Math.random() < 0.015) {
@@ -270,12 +265,11 @@ export default function MatrixEngine() {
           activeCtx.fillText(stream.chars[i], stream.x, charY);
         }
 
-        activeCtx.shadowBlur = 0;
         stream.y += stream.speed;
 
         if (stream.y - stream.length * (stream.fontSize * 1.1) > height) {
           stream.y = Math.random() * -200 - 30;
-          stream.speed = (2.5 + Math.random() * 3.5) * baseSpeed;
+          stream.speed = (2.0 + Math.random() * 3.0) * baseSpeed;
           stream.length = Math.floor(baseTrailLength * (0.75 + Math.random() * 0.5));
           stream.chars = Array.from({ length: stream.length }, () => getRandomChar(charList));
         }
@@ -284,18 +278,17 @@ export default function MatrixEngine() {
       animationFrameRef.current = requestAnimationFrame(render);
     };
 
-    const initialFrameId = requestAnimationFrame(render);
-    animationFrameRef.current = initialFrameId;
+    if (isVisible) {
+      startAnimation();
+    }
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', handleResize);
-      if (animationFrameRef.current !== null) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
+      stopAnimation();
       isInitializedRef.current = false;
     };
-  }, []);
+  }, [isVisible]);
 
   return (
     <div
@@ -315,8 +308,3 @@ export default function MatrixEngine() {
     </div>
   );
 }
-
-
-
-
-

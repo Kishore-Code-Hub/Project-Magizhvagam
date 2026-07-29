@@ -1,14 +1,16 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCyberAccessStateMachine } from './useCyberAccessStateMachine';
-import TerminalPhase from './TerminalPhase';
+import MatrixCenterLoader from './MatrixCenterLoader';
 import QuantumShutter from './QuantumShutter';
 import FallbackBoundary from './FallbackBoundary';
-import { FastForward, Terminal } from 'lucide-react';
+import { BootController } from '@/lib/boot/BootController';
 
 interface CyberAccessSequenceProps {
   onComplete?: () => void;
+  onReveal?: () => void;
   telemetry?: {
     ip?: string;
     userAgent?: string;
@@ -16,17 +18,11 @@ interface CyberAccessSequenceProps {
   };
 }
 
-function SequenceInner({ onComplete, telemetry }: CyberAccessSequenceProps) {
+function SequenceInner({ onComplete, onReveal }: CyberAccessSequenceProps) {
   const {
     state,
-    progress,
-    stageText,
-    elapsedTime,
-    phaseTimer,
-    remainingTime,
     triggerAuthorize,
-    skipSequence,
-  } = useCyberAccessStateMachine(onComplete);
+  } = useCyberAccessStateMachine(onComplete, onReveal);
 
   const [msgOffset, setMsgOffset] = React.useState({ x: 0, y: -40 });
 
@@ -41,19 +37,29 @@ function SequenceInner({ onComplete, telemetry }: CyberAccessSequenceProps) {
           });
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
-  // Keyboard shortcut listener: ESC to skip
+  // Filtered interaction listener (Enter, Space, Click, Tap only)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        skipSequence();
-      }
+      BootController.handleUserInteraction(e);
     };
+
+    const handlePointer = (e: MouseEvent | TouchEvent) => {
+      BootController.handleUserInteraction(e);
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [skipSequence]);
+    window.addEventListener('click', handlePointer);
+    window.addEventListener('touchstart', handlePointer);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('click', handlePointer);
+      window.removeEventListener('touchstart', handlePointer);
+    };
+  }, []);
 
   if (state === 'COMPLETE') {
     return null;
@@ -66,58 +72,57 @@ function SequenceInner({ onComplete, telemetry }: CyberAccessSequenceProps) {
       <div
         id="cyber-access-overlay"
         data-cyber-state={state}
-        className={`fixed inset-0 z-50 overflow-hidden select-none bg-[#030303] flex items-center justify-center p-4 transition-opacity duration-700 ${
+        className={`fixed inset-0 z-50 overflow-hidden select-none bg-[#030303] flex items-center justify-center p-4 transition-opacity duration-500 ${
           state === 'SHUTTER' || state === 'REVEAL' ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100'
         }`}
       >
         {/* Background ambient glow */}
         <div className="absolute inset-0 bg-radial from-[#00ff66]/10 via-transparent to-black pointer-events-none" />
 
-        {/* Top-Right SKIP Button */}
-        <div className="absolute top-5 right-6 z-50">
-          <button
-            onClick={skipSequence}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#00ff66]/10 border border-[#00ff66]/40 text-[#00ff66] hover:bg-[#00ff66]/20 text-xs font-mono font-bold tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(0,255,102,0.2)] active:scale-95 cursor-pointer"
-          >
-            <span>SKIP (ESC)</span>
-            <FastForward className="w-3.5 h-3.5 text-[#00f0ff]" />
-          </button>
-        </div>
-
-        {/* State Badge */}
-        <div className="absolute top-5 left-6 z-50 font-mono text-[10px] text-[#00ff66]/80 bg-black/80 px-2.5 py-1 rounded border border-[#00ff66]/30 pointer-events-none flex items-center gap-2">
-          <Terminal className="w-3 h-3 text-[#00ff66] animate-pulse" />
-          <span>CYBER BOOTLOADER // <span className="text-[#00f0ff] font-bold">{state}</span> [{stageText}]</span>
-        </div>
-
-        {/* Phase 1: SOC Terminal Trace & Progress Bar */}
-        {showTerminal && (
-          <TerminalPhase
-            onAuthorize={triggerAuthorize}
-            isAuthorizing={state === 'AUTHORIZE'}
-            progress={progress}
-            stageText={stageText}
-            telemetry={telemetry}
-          />
-        )}
-
-        {/* Phase 3, 4, 5: Dissolve & Light Beam & Ring Overlay Effects */}
-        {(state === 'DISSOLVE' || state === 'BEAM' || state === 'RING') && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-full h-1 bg-[#00f0ff] shadow-[0_0_50px_#00f0ff] animate-pulse" />
-            <div 
-              className="absolute font-mono text-2xl font-extrabold text-[#00ff66] tracking-[0.3em] uppercase animate-ping"
-              style={{
-                transform: `translate(${msgOffset.x}px, ${msgOffset.y}px)`,
-              }}
+        <AnimatePresence mode="wait">
+          {/* Phase 1: Center Matrix Hacker Boot Loader */}
+          {showTerminal && (
+            <motion.div
+              key="phase1-matrix-loader"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.04 }}
+              transition={{ duration: 0.35, ease: 'easeInOut' }}
+              className="w-full flex items-center justify-center"
             >
-              ACCESS GRANTED // INITIALIZING SYSTEM
-            </div>
-          </div>
-        )}
+              <MatrixCenterLoader
+                onAuthorize={triggerAuthorize}
+                isAuthorizing={state === 'AUTHORIZE'}
+              />
+            </motion.div>
+          )}
+
+          {/* Phase 2: Access Granted // Initializing System Overlay */}
+          {(state === 'DISSOLVE' || state === 'BEAM' || state === 'RING') && (
+            <motion.div
+              key="phase2-initializing-overlay"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            >
+              <div className="w-full h-1 bg-[#00f0ff] shadow-[0_0_50px_#00f0ff] animate-pulse" />
+              <div
+                className="absolute font-mono text-xl sm:text-2xl font-extrabold text-[#00ff66] tracking-[0.3em] uppercase animate-ping text-center px-4"
+                style={{
+                  transform: `translate(${msgOffset.x}px, ${msgOffset.y}px)`,
+                  textShadow: '0 0 20px rgba(0, 255, 102, 0.9), 0 0 40px rgba(0, 255, 102, 0.5)',
+                }}
+              >
+                ACCESS GRANTED // INITIALIZING SYSTEM
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Phase 6 & 7: Quantum Shutter & Welcome Screen Overlay */}
+      {/* Phase 3: Quantum Shutter & Welcome Screen Overlay */}
       <QuantumShutter active={state === 'SHUTTER' || state === 'REVEAL'} isOpening={state === 'REVEAL'} />
     </>
   );

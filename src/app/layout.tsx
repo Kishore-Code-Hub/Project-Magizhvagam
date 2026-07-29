@@ -5,8 +5,10 @@ import './globals.css';
 import SmoothScroll from '@/components/animation/SmoothScroll';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import AtmosphereLayers from '@/components/animation/AtmosphereLayers';
-import { BootProvider } from '@/providers/BootProvider';
+import AppBootGateway from '@/components/boot/AppBootGateway';
 import { AudioProvider } from '@/providers/AudioProvider';
+import { MUSIC_PATH } from '@/lib/audio/constants';
+import MuteButton from '@/components/audio/MuteButton';
 import { FullscreenPWAControls } from '@/components/ui/FullscreenPWAControls';
 
 const inter = Inter({
@@ -94,6 +96,7 @@ export default async function RootLayout({
         <meta name="theme-color" content="#050505" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="preload" href={MUSIC_PATH} as="audio" type="audio/mpeg" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
         <script
@@ -102,15 +105,16 @@ export default async function RootLayout({
         />
       </head>
       <body className="antialiased min-h-screen bg-[#050505] text-white relative font-sans">
-        <AtmosphereLayers />
-        <ThemeProvider>
-          <AudioProvider>
-            <BootProvider initialTelemetry={initialTelemetry}>
+        <AppBootGateway initialTelemetry={initialTelemetry}>
+          <AtmosphereLayers />
+          <ThemeProvider>
+            <AudioProvider>
+              <MuteButton />
               <SmoothScroll>{children}</SmoothScroll>
               <FullscreenPWAControls />
-            </BootProvider>
-          </AudioProvider>
-        </ThemeProvider>
+            </AudioProvider>
+          </ThemeProvider>
+        </AppBootGateway>
       </body>
     </html>
   );

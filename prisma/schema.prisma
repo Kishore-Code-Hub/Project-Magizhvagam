@@ -195,7 +195,7 @@ model AppearanceSettings {
 model AudioSettings {
   id              String   @id @default("default")
   trackTitle      String   @default("Cyber Operations Ambient Soundtrack")
-  trackUrl        String   @default("/audio/cyber-ambient.mp3")
+  trackUrl        String   @default("/uploads/music/webmusic.mp3")
   enabled         Boolean  @default(true)
   autoplay        Boolean  @default(true)
   loop            Boolean  @default(true)
