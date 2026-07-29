@@ -20,7 +20,7 @@ function safeJsonParse<T>(jsonString: string | null | undefined, fallback: T): T
 
 export default async function ProjectsPage() {
   let projects: ProjectData[] = INITIAL_PROJECTS;
-  let profile = INITIAL_PROFILE;
+  const profile = INITIAL_PROFILE;
 
   try {
     const dbProjects = await db.project.findMany({

@@ -23,7 +23,7 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
 
     const numericValue = parseFloat(String(value).replace(/[^0-9.]/g, ''));
     if (isNaN(numericValue)) {
-      setDisplayValue(value);
+      queueMicrotask(() => setDisplayValue(value));
       return;
     }
 

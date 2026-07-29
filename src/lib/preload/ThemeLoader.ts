@@ -12,7 +12,7 @@ export interface CMSInitialPayload {
 
 export async function fetchCMSPayload(): Promise<CMSInitialPayload> {
   const payload: CMSInitialPayload = {
-    heroImage: '/Hero-section-banner.jfif',
+    heroImage: '/Hero-section-banner.webp',
     profileImage: '/hero-hacker.png',
     projectImages: [],
     certLogos: [],

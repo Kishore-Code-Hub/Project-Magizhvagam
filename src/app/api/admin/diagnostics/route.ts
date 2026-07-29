@@ -11,7 +11,7 @@ export async function GET() {
   let dbLatency = 0;
   let mediaCount = 0;
   let auditCount = 0;
-  let failedSaves = 0;
+  const failedSaves = 0;
   let lastSave: string | null = null;
   let appearance: any = null;
 
@@ -33,7 +33,8 @@ export async function GET() {
 
     appearance = await db.appearanceSettings.findUnique({ where: { id: 'default' } });
   } catch (err: any) {
-    dbStatus = `Error: ${err.message}`;
+    dbStatus = 'Error: Database query failed';
+    console.error('[Diagnostics Error]:', err);
   }
 
   const responseTime = Date.now() - startTime;

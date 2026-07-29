@@ -13,7 +13,7 @@ interface WorkstationProps {
 }
 
 function CyberWorkstationComponent({
-  heroImage = '/Hero-section-banner.jfif',
+  heroImage = '/Hero-section-banner.webp',
   mediaMode = 'image',
   fitMode = 'cover',
   brightness = 100,

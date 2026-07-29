@@ -62,7 +62,7 @@ export default function CommandPalette() {
       const el = document.querySelector(href);
       if (el) el.scrollIntoView({ behavior: 'smooth' });
     } else {
-      window.location.href = href;
+      window.location.assign(href);
     }
   };
 

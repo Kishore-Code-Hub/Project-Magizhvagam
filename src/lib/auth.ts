@@ -3,12 +3,13 @@ import { cookies } from 'next/headers';
 import { db } from './db';
 import crypto from 'crypto';
 
-if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+const rawSecret = process.env.JWT_SECRET;
+if (process.env.NODE_ENV === 'production' && !rawSecret) {
   throw new Error('FATAL: JWT_SECRET environment variable must be explicitly defined in production!');
 }
 
 const JWT_SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'super-secret-cyber-key-change-this-in-production-2026'
+  rawSecret || 'super-secret-cyber-key-change-this-in-production-2026'
 );
 
 const COOKIE_NAME = 'admin_session_token';
@@ -65,7 +66,7 @@ export async function getAdminSession() {
     }
 
     return payload;
-  } catch (err) {
+  } catch {
     return null;
   }
 }

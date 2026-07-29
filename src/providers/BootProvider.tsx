@@ -149,7 +149,7 @@ export function BootProvider({
         }
       }
     })
-      .then((payload) => {
+      .then(() => {
         setIsPreloaded(true);
         updateGate('tier1ImagesDecoded', true);
         updateGate('fontsLoaded', true);

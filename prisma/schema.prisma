@@ -1,5 +1,3 @@
-// Prisma Schema for Master Cyber Portfolio & Headless CMS V2.0
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,53 +8,53 @@ datasource db {
 }
 
 model AdminUser {
-  id           String     @id @default(cuid())
-  email        String     @unique
+  id           String    @id @default(cuid())
+  email        String    @unique
   passwordHash String
   name         String
-  role         String     @default("ADMIN")
+  role         String    @default("ADMIN")
   totpSecret   String?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
   sessions     Session[]
 }
 
 model Session {
-  id         String    @id @default(cuid())
-  userId     String
-  user       AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash  String    @unique
-  userAgent  String?
-  ipAddress  String?
-  expiresAt  DateTime
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  userAgent String?
+  ipAddress String?
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Profile {
-  id                    String   @id @default("default")
-  name                  String   @default("Soundkish")
-  headline              String   @default("Securing Systems. Building Trust.")
-  profileImage          String   @default("/uploads/about/1784968630446-IMG_0307.JPG")
-  taglines              String   @default("[\"Cybersecurity Enthusiast\", \"AI Developer\", \"Full-Stack Developer\", \"Software Engineer\"]")
-  bio                   String   @default("I'm Soundkish, a Computer Science & Engineering student passionate about Cybersecurity, AI, and building secure software solutions for a resilient digital future.")
+  id                   String   @id @default("default")
+  name                 String   @default("Soundkish")
+  headline             String   @default("Securing Systems. Building Trust.")
+  profileImage         String   @default("/uploads/about/1784968630446-IMG_0307.webp")
+  taglines             String   @default("[\"Cybersecurity Enthusiast\", \"AI Developer\", \"Full-Stack Developer\", \"Software Engineer\"]")
+  bio                  String   @default("I'm Soundkish, a Computer Science & Engineering student passionate about Cybersecurity, AI, and building secure software solutions for a resilient digital future.")
   professionalIdentity String   @default("Software Engineer & Cybersecurity Researcher")
-  personalBio           String   @default("Deep interest in application security, penetration testing, full-stack systems architecture, and machine learning integration.")
-  education             String   @default("[\"B.E. Computer Science & Engineering\", \"Specialization in Cybersecurity & Cloud\"]")
-  currentFocus          String   @default("Building production-grade secure web apps & studying AI-driven threat detection.")
-  values                String   @default("[\"Security First\", \"Clean Code\", \"Continuous Learning\", \"User Privacy\"]")
-  availability          String   @default("Open to Internships & Software Engineering Roles")
-  languages             String   @default("[\"English\", \"Tamil\"]")
-  resumeUrl             String   @default("https://drive.google.com")
-  socials               String   @default("{\"github\":\"https://github.com\",\"linkedin\":\"https://linkedin.com\",\"email\":\"mailto:kishorenarayanankarthikeyan@gmail.com\",\"leetcode\":\"https://leetcode.com\",\"tryhackme\":\"https://tryhackme.com\",\"hackthebox\":\"https://hackthebox.com\"}")
-  stats                 String   @default("{\"yearsLearning\":\"2+\",\"projects\":\"15+\",\"certifications\":\"10+\",\"curiosity\":\"∞\"}")
-  aboutModules          String   @default("{\"showEducation\":true,\"showFocus\":true,\"showRoadmap\":true,\"showSpecializations\":true,\"showStats\":true}")
-  academicDegree        String   @default("{\"degree\":\"B.E. Computer Science & Engineering\",\"college\":\"SRM Valliammai Engineering College\",\"year\":\"2024 – 2028\",\"status\":\"Active\"}")
-  focusChips            String   @default("[\"Cybersecurity\",\"AI & Neural Nets\",\"Backend Systems\",\"Cloud Infrastructure\",\"DevOps & Containers\",\"Network Security\"]")
-  careerRoadmap         String   @default("[{\"year\":\"2024\",\"title\":\"Started CSE Engineering\",\"description\":\"Foundation in computer science & security principles\",\"iconName\":\"GraduationCap\",\"colorToken\":\"emerald\"},{\"year\":\"2025\",\"title\":\"Full Stack & Security Projects\",\"description\":\"Building web systems and pentesting labs\",\"iconName\":\"Code2\",\"colorToken\":\"cyan\"},{\"year\":\"2026\",\"title\":\"AI + Cyber Threat Detection\",\"description\":\"Advanced machine learning for network intrusion\",\"iconName\":\"Cpu\",\"colorToken\":\"amber\"},{\"year\":\"Goal\",\"title\":\"Security Software Engineer\",\"description\":\"Production engineering and defense-in-depth\",\"iconName\":\"ShieldCheck\",\"colorToken\":\"rose\"}]")
-  statsCards            String   @default("[{\"id\":\"1\",\"value\":\"15+\",\"label\":\"Projects Built\",\"colorToken\":\"emerald\",\"iconName\":\"Rocket\"},{\"id\":\"2\",\"value\":\"10+\",\"label\":\"Certifications\",\"colorToken\":\"cyan\",\"iconName\":\"Award\"},{\"id\":\"3\",\"value\":\"2+\",\"label\":\"Years Learning\",\"colorToken\":\"emerald\",\"iconName\":\"Flame\"},{\"id\":\"4\",\"value\":\"∞\",\"label\":\"Curiosity\",\"colorToken\":\"amber\",\"iconName\":\"Sparkles\"}]")
-  specializationCards   String   @default("[{\"id\":\"1\",\"title\":\"Cybersecurity\",\"description\":\"Application Security, Threat Detection & Vulnerability Analysis\",\"iconName\":\"ShieldCheck\",\"colorToken\":\"emerald\"},{\"id\":\"2\",\"title\":\"AI Systems\",\"description\":\"Neural Networks, Computer Vision & Constraint Algorithms\",\"iconName\":\"Cpu\",\"colorToken\":\"cyan\"},{\"id\":\"3\",\"title\":\"Cloud Infra\",\"description\":\"Scalable Microservices, Docker Containers & CI/CD Pipelines\",\"iconName\":\"Globe\",\"colorToken\":\"amber\"},{\"id\":\"4\",\"title\":\"Networking\",\"description\":\"TCP/IP Architecture, Packet Analysis & Firewall Systems\",\"iconName\":\"Compass\",\"colorToken\":\"rose\"},{\"id\":\"5\",\"title\":\"Backend Systems\",\"description\":\"FastAPI, Node.js, High-Throughput REST APIs & JWT Security\",\"iconName\":\"Code2\",\"colorToken\":\"purple\"},{\"id\":\"6\",\"title\":\"Linux Kernel\",\"description\":\"Bash Scripting, System Administration & Access Controls\",\"iconName\":\"Terminal\",\"colorToken\":\"emerald\"}]")
-  updatedAt             DateTime @updatedAt
+  personalBio          String   @default("Deep interest in application security, penetration testing, full-stack systems architecture, and machine learning integration.")
+  education            String   @default("[\"B.E. Computer Science & Engineering\", \"Specialization in Cybersecurity & Cloud\"]")
+  currentFocus         String   @default("Building production-grade secure web apps & studying AI-driven threat detection.")
+  values               String   @default("[\"Security First\", \"Clean Code\", \"Continuous Learning\", \"User Privacy\"]")
+  availability         String   @default("Open to Internships & Software Engineering Roles")
+  languages            String   @default("[\"English\", \"Tamil\"]")
+  resumeUrl            String   @default("https://drive.google.com")
+  socials              String   @default("{\"github\":\"https://github.com\",\"linkedin\":\"https://linkedin.com\",\"email\":\"mailto:kishorenarayanankarthikeyan@gmail.com\",\"leetcode\":\"https://leetcode.com\",\"tryhackme\":\"https://tryhackme.com\",\"hackthebox\":\"https://hackthebox.com\"}")
+  stats                String   @default("{\"yearsLearning\":\"2+\",\"projects\":\"15+\",\"certifications\":\"10+\",\"curiosity\":\"∞\"}")
+  aboutModules         String   @default("{\"showEducation\":true,\"showFocus\":true,\"showRoadmap\":true,\"showSpecializations\":true,\"showStats\":true}")
+  academicDegree       String   @default("{\"degree\":\"B.E. Computer Science & Engineering\",\"college\":\"SRM Valliammai Engineering College\",\"year\":\"2024 – 2028\",\"status\":\"Active\"}")
+  focusChips           String   @default("[\"Cybersecurity\",\"AI & Neural Nets\",\"Backend Systems\",\"Cloud Infrastructure\",\"DevOps & Containers\",\"Network Security\"]")
+  careerRoadmap        String   @default("[{\"year\":\"2024\",\"title\":\"Started CSE Engineering\",\"description\":\"Foundation in computer science & security principles\",\"iconName\":\"GraduationCap\",\"colorToken\":\"emerald\"},{\"year\":\"2025\",\"title\":\"Full Stack & Security Projects\",\"description\":\"Building web systems and pentesting labs\",\"iconName\":\"Code2\",\"colorToken\":\"cyan\"},{\"year\":\"2026\",\"title\":\"AI + Cyber Threat Detection\",\"description\":\"Advanced machine learning for network intrusion\",\"iconName\":\"Cpu\",\"colorToken\":\"amber\"},{\"year\":\"Goal\",\"title\":\"Security Software Engineer\",\"description\":\"Production engineering and defense-in-depth\",\"iconName\":\"ShieldCheck\",\"colorToken\":\"rose\"}]")
+  statsCards           String   @default("[{\"id\":\"1\",\"value\":\"15+\",\"label\":\"Projects Built\",\"colorToken\":\"emerald\",\"iconName\":\"Rocket\"},{\"id\":\"2\",\"value\":\"10+\",\"label\":\"Certifications\",\"colorToken\":\"cyan\",\"iconName\":\"Award\"},{\"id\":\"3\",\"value\":\"2+\",\"label\":\"Years Learning\",\"colorToken\":\"emerald\",\"iconName\":\"Flame\"},{\"id\":\"4\",\"value\":\"∞\",\"label\":\"Curiosity\",\"colorToken\":\"amber\",\"iconName\":\"Sparkles\"}]")
+  specializationCards  String   @default("[{\"id\":\"1\",\"title\":\"Cybersecurity\",\"description\":\"Application Security, Threat Detection & Vulnerability Analysis\",\"iconName\":\"ShieldCheck\",\"colorToken\":\"emerald\"},{\"id\":\"2\",\"title\":\"AI Systems\",\"description\":\"Neural Networks, Computer Vision & Constraint Algorithms\",\"iconName\":\"Cpu\",\"colorToken\":\"cyan\"},{\"id\":\"3\",\"title\":\"Cloud Infra\",\"description\":\"Scalable Microservices, Docker Containers & CI/CD Pipelines\",\"iconName\":\"Globe\",\"colorToken\":\"amber\"},{\"id\":\"4\",\"title\":\"Networking\",\"description\":\"TCP/IP Architecture, Packet Analysis & Firewall Systems\",\"iconName\":\"Compass\",\"colorToken\":\"rose\"},{\"id\":\"5\",\"title\":\"Backend Systems\",\"description\":\"FastAPI, Node.js, High-Throughput REST APIs & JWT Security\",\"iconName\":\"Code2\",\"colorToken\":\"purple\"},{\"id\":\"6\",\"title\":\"Linux Kernel\",\"description\":\"Bash Scripting, System Administration & Access Controls\",\"iconName\":\"Terminal\",\"colorToken\":\"emerald\"}]")
+  updatedAt            DateTime @updatedAt
 }
 
 model Project {
@@ -65,19 +63,19 @@ model Project {
   description         String
   longDescription     String?
   image               String
-  gallery             String   @default("[]") // JSON string array of image URLs
+  gallery             String   @default("[]")
   videoUrl            String?
   githubUrl           String?
   liveUrl             String?
   documentationUrl    String?
   architectureDiagram String?
-  features            String   @default("[]") // JSON string array
-  challenges          String?  
+  features            String   @default("[]")
+  challenges          String?
   solutions           String?
-  tags                String   @default("[]") // JSON array e.g. ["Python", "FastAPI", "AI"]
-  category            String   @default("Web Engineering") // Web Engineering, Cybersecurity, AI/ML, Cloud
-  status              String   @default("Completed") // Completed, In Development, Research
-  metrics             String   @default("{}") // JSON string e.g. {"stars": "45", "downloads": "1.2k"}
+  tags                String   @default("[]")
+  category            String   @default("Web Engineering")
+  status              String   @default("Completed")
+  metrics             String   @default("{}")
   featured            Boolean  @default(false)
   order               Int      @default(0)
   published           Boolean  @default(true)
@@ -90,12 +88,12 @@ model Project {
 model Skill {
   id              String   @id @default(cuid())
   name            String
-  category        String   // Languages, Frameworks, Databases, Cloud, DevOps, Cybersecurity, AI / ML, Tools, Soft Skills
-  officialLogo    String?  // SVG path, icon key, or uploaded URL
+  category        String
+  officialLogo    String?
   shortDesc       String?
   yearsExperience Float    @default(1.0)
-  proficiency     Int      @default(80) // 1 - 100
-  level           String   @default("Advanced") // Beginner, Intermediate, Advanced, Expert
+  proficiency     Int      @default(80)
+  level           String   @default("Advanced")
   featured        Boolean  @default(false)
   order           Int      @default(0)
   published       Boolean  @default(true)
@@ -113,7 +111,7 @@ model Certification {
   credentialId     String?
   credentialUrl    String?
   pdfUrl           String?
-  skillsCovered    String   @default("[]") // JSON string array
+  skillsCovered    String   @default("[]")
   description      String?
   featured         Boolean  @default(false)
   order            Int      @default(0)
@@ -128,11 +126,11 @@ model TimelineEntry {
   title           String
   subtitle        String?
   description     String
-  category        String   @default("Education") // Education, Experience, Internships, Projects, Hackathons, Certifications, Milestones
+  category        String   @default("Education")
   expandedContent String?
-  gallery         String   @default("[]") // JSON string array
+  gallery         String   @default("[]")
   iconKey         String?  @default("shield")
-  links           String   @default("[]") // JSON string array of link objects
+  links           String   @default("[]")
   isCurrent       Boolean  @default(false)
   order           Int      @default(0)
   createdAt       DateTime @default(now())
@@ -166,32 +164,32 @@ model Message {
 }
 
 model AppearanceSettings {
-  id            String   @id @default("default")
-  themePreset   String   @default("cyber-green") // cyber-green, neon-cyan, matrix-amber, dark-minimal
-  primaryColor  String   @default("#00ff66")
-  secondaryColor String  @default("#00cc52")
-  accentGlow    String   @default("rgba(0, 255, 102, 0.35)")
-  bgMain        String   @default("#050505")
-  bgCard        String   @default("rgba(10, 14, 11, 0.92)")
-  bgGlass       String   @default("rgba(0, 255, 102, 0.035)")
-  matrixSpeed   Float    @default(1.0)
-  matrixDensity Float    @default(1.0)
-  matrixColor   String   @default("#00ff66")
-  glassBlur     Int      @default(20) // in px
-  borderRadius  Int      @default(16) // in px
-  enableParticles Boolean @default(true)
-  loadingDuration Float    @default(5.0) // in seconds (1.0 to 15.0)
-  enableLoader  Boolean  @default(true)
-  skipLoaderForReturning Boolean @default(false)
-  enableScrollReveal Boolean @default(true)
-  repeatScrollReveal Boolean @default(false)
-  waitForCriticalAssets Boolean @default(true)
-  fadeDuration  Float    @default(0.7) // in seconds
-  accessGrantedHoldTime Float @default(2.0) // in seconds (0.5 to 10.0)
-  welcomeScreenHoldTime Float @default(2.0) // in seconds (0.5 to 10.0)
-  bootMsgOffsetX Int      @default(0) // in px (-200 to 200)
-  bootMsgOffsetY Int      @default(-40) // in px (-200 to 200)
-  updatedAt     DateTime @updatedAt
+  id                     String   @id @default("default")
+  themePreset            String   @default("cyber-green")
+  primaryColor           String   @default("#00ff66")
+  secondaryColor         String   @default("#00cc52")
+  accentGlow             String   @default("rgba(0, 255, 102, 0.35)")
+  bgMain                 String   @default("#050505")
+  bgCard                 String   @default("rgba(10, 14, 11, 0.92)")
+  bgGlass                String   @default("rgba(0, 255, 102, 0.035)")
+  matrixSpeed            Float    @default(1.0)
+  matrixDensity          Float    @default(1.0)
+  matrixColor            String   @default("#00ff66")
+  glassBlur              Int      @default(20)
+  borderRadius           Int      @default(16)
+  enableParticles        Boolean  @default(true)
+  loadingDuration        Float    @default(5.0)
+  enableLoader           Boolean  @default(true)
+  skipLoaderForReturning Boolean  @default(false)
+  enableScrollReveal     Boolean  @default(true)
+  repeatScrollReveal     Boolean  @default(false)
+  waitForCriticalAssets  Boolean  @default(true)
+  fadeDuration           Float    @default(0.7)
+  accessGrantedHoldTime  Float    @default(2.0)
+  welcomeScreenHoldTime  Float    @default(2.0)
+  bootMsgOffsetX         Int      @default(0)
+  bootMsgOffsetY         Int      @default(-40)
+  updatedAt              DateTime @updatedAt
 }
 
 model AudioSettings {
@@ -201,23 +199,23 @@ model AudioSettings {
   enabled         Boolean  @default(true)
   autoplay        Boolean  @default(true)
   loop            Boolean  @default(true)
-  volume          Int      @default(50) // 0 to 100
-  fadeInDuration  Float    @default(1.5) // in seconds
-  fadeOutDuration Float    @default(1.5) // in seconds
+  volume          Int      @default(50)
+  fadeInDuration  Float    @default(1.5)
+  fadeOutDuration Float    @default(1.5)
   defaultMute     Boolean  @default(false)
   updatedAt       DateTime @updatedAt
 }
 
 model SEOSettings {
-  id             String   @id @default("default")
-  siteTitle      String   @default("Soundkish | Cyber & Software Engineering Portfolio")
-  siteDescription String  @default("Production-grade portfolio of Soundkish — Cybersecurity Researcher, AI Developer, and Full-Stack Software Engineer.")
-  keywords       String   @default("Cybersecurity, Full-Stack, Software Engineer, Portfolio, Next.js, React, Penetration Testing, AI")
-  ogImage        String   @default("/og-image.png")
-  twitterCard    String   @default("summary_large_image")
-  robots         String   @default("index, follow")
-  canonicalUrl   String   @default("https://soundkish.dev")
-  updatedAt      DateTime @updatedAt
+  id              String   @id @default("default")
+  siteTitle       String   @default("Soundkish | Cyber & Software Engineering Portfolio")
+  siteDescription String   @default("Production-grade portfolio of Soundkish — Cybersecurity Researcher, AI Developer, and Full-Stack Software Engineer.")
+  keywords        String   @default("Cybersecurity, Full-Stack, Software Engineer, Portfolio, Next.js, React, Penetration Testing, AI")
+  ogImage         String   @default("/og-image.png")
+  twitterCard     String   @default("summary_large_image")
+  robots          String   @default("index, follow")
+  canonicalUrl    String   @default("https://soundkish.dev")
+  updatedAt       DateTime @updatedAt
 }
 
 model MediaAsset {
@@ -226,20 +224,20 @@ model MediaAsset {
   fileUrl   String
   mimeType  String
   sizeBytes Int
-  category  String   @default("uploads") // uploads, projects, certificates, hero, icons
+  category  String   @default("uploads")
   altText   String?
   createdAt DateTime @default(now())
 }
 
 model AnalyticsLog {
-  id         String   @id @default(cuid())
-  eventType  String   // PAGE_VIEW, PROJECT_CLICK, RESUME_DOWNLOAD, MESSAGE_SENT
-  path       String?
-  targetId   String?
-  ipAddress  String?
-  userAgent  String?
-  country    String?  @default("Unknown")
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  eventType String
+  path      String?
+  targetId  String?
+  ipAddress String?
+  userAgent String?
+  country   String?  @default("Unknown")
+  createdAt DateTime @default(now())
 
   @@index([ipAddress, createdAt])
 }
@@ -253,16 +251,16 @@ model RateLimitBucket {
 }
 
 model SMTPSettings {
-  id               String   @id @default("default")
-  smtpHost         String   @default("smtp.gmail.com")
-  smtpPort         Int      @default(587)
-  smtpUser         String   @default("")
-  encryptedSmtpPass String  @default("")
-  senderEmail      String   @default("noreply@soundkish.dev")
-  recipientEmail   String   @default("admin@soundkish.dev")
-  enabled          Boolean  @default(false)
-  notifyMode       String   @default("FIRST_VISIT") // EVERY_VISIT, FIRST_VISIT, DAILY_SUMMARY, DISABLED
-  updatedAt        DateTime @updatedAt
+  id                String   @id @default("default")
+  smtpHost          String   @default("smtp.gmail.com")
+  smtpPort          Int      @default(587)
+  smtpUser          String   @default("")
+  encryptedSmtpPass String   @default("")
+  senderEmail       String   @default("noreply@soundkish.dev")
+  recipientEmail    String   @default("admin@soundkish.dev")
+  enabled           Boolean  @default(false)
+  notifyMode        String   @default("FIRST_VISIT")
+  updatedAt         DateTime @updatedAt
 }
 
 model VisitorSession {
@@ -292,4 +290,3 @@ model AuditLog {
   ipAddress String?
   createdAt DateTime @default(now())
 }
-

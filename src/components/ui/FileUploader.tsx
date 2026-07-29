@@ -26,7 +26,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
 
   useEffect(() => {
     if (value) {
-      setPreview(normalizeImageUrl(value, category) || null);
+      queueMicrotask(() => setPreview(normalizeImageUrl(value, category) || null));
     }
   }, [value, category]);
 

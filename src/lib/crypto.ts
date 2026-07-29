@@ -1,6 +1,11 @@
 import crypto from 'crypto';
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'CyberSecurityAdminKey2026!32CharKey!'; // Must be 32 chars
+const rawEncryptionKey = process.env.ENCRYPTION_KEY;
+if (process.env.NODE_ENV === 'production' && (!rawEncryptionKey || rawEncryptionKey.length < 32)) {
+  throw new Error('FATAL: ENCRYPTION_KEY environment variable must be at least 32 characters in production!');
+}
+
+const ENCRYPTION_KEY = rawEncryptionKey || 'CyberSecurityAdminKey2026!32CharKey!'; // Must be 32 chars
 const IV_LENGTH = 16;
 
 export function encryptText(text: string): string {

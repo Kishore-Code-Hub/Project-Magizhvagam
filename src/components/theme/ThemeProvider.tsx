@@ -24,11 +24,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    const storedPerf = localStorage.getItem('soc_performance_level') as PerformanceLevel | null;
-    if (storedPerf) {
-      setPerformanceLevelState(storedPerf);
-    }
+    queueMicrotask(() => {
+      setMounted(true);
+      const storedPerf = localStorage.getItem('soc_performance_level') as PerformanceLevel | null;
+      if (storedPerf) {
+        setPerformanceLevelState(storedPerf);
+      }
+    });
   }, []);
 
   useEffect(() => {

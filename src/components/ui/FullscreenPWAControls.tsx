@@ -24,7 +24,7 @@ export const FullscreenPWAControls: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
+    queueMicrotask(() => setPrefersReducedMotion(mediaQuery.matches));
     const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
@@ -40,10 +40,12 @@ export const FullscreenPWAControls: React.FC = () => {
       (window.navigator as any).standalone === true ||
       document.referrer.includes('android-app://');
 
-    setIsStandalone(standaloneMode);
-    if (standaloneMode) {
-      setIsInstalled(true);
-    }
+    queueMicrotask(() => {
+      setIsStandalone(standaloneMode);
+      if (standaloneMode) {
+        setIsInstalled(true);
+      }
+    });
 
     const checkFullscreenSupport = () => {
       const enabled =
@@ -151,7 +153,7 @@ export const FullscreenPWAControls: React.FC = () => {
 
     const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     if (isIos && !isStandalone) {
-      setShowIosPrompt(true);
+      queueMicrotask(() => setShowIosPrompt(true));
     }
 
     // Register Service Worker strictly in production

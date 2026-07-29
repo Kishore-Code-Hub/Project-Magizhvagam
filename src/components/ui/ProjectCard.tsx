@@ -1,11 +1,10 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { GlassCard } from './GlassCard';
 import { CyberBadge } from './CyberBadge';
 import { GlowButton } from './GlowButton';
-import { ExternalLink, BookOpen, Layers, Star, Download, Eye } from 'lucide-react';
+import { ExternalLink, Star, Eye } from 'lucide-react';
 import { GithubIcon } from './Icons';
 import { normalizeImageUrl } from '@/lib/image-utils';
 
@@ -47,18 +46,11 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onSelect }) =
     }
   }, [project.tags]);
 
-  const parsedMetrics = React.useMemo(() => {
-    try {
-      return JSON.parse(project.metrics || '{}');
-    } catch {
-      return {};
-    }
-  }, [project.metrics]);
-
   return (
     <GlassCard variant="interactive" className="group flex flex-col justify-between h-full p-0 overflow-hidden">
       {/* Cover Image Container */}
       <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-black/40">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={normalizedImage}
           alt={project.title}

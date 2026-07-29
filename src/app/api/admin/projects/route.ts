@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(created);
   } catch (err: any) {
     console.error('[API /api/admin/projects POST Error]:', err);
-    return NextResponse.json({ error: `Database Error: ${err.message}` }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create project.' }, { status: 500 });
   }
 }
 
@@ -116,7 +116,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json(updated);
   } catch (err: any) {
     console.error('[API /api/admin/projects PUT Error]:', err);
-    return NextResponse.json({ error: `Database Error: ${err.message}` }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update project.' }, { status: 500 });
   }
 }
 

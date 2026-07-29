@@ -27,7 +27,7 @@ function HeroComponent({ profile }: HeroProps) {
   const safeResumeUrl = profile.resumeUrl || 'https://drive.google.com';
 
   // Read hero image and greeting settings if stored in profile.stats
-  const heroImage = (profile.stats as any)?.heroImage || '/Hero-section-banner.jfif';
+  const heroImage = (profile.stats as any)?.heroImage || '/Hero-section-banner.webp';
   const greetingText = (profile.stats as any)?.greeting || 'Welcome to my Hackspot';
 
   return (

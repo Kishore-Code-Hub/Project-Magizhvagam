@@ -21,13 +21,15 @@ export default function AdminLoginPage() {
   const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const unlocked = sessionStorage.getItem('admin_gateway_unlocked');
-      if (unlocked === 'true') {
-        setIsUnlocked(true);
+    queueMicrotask(() => {
+      if (typeof window !== 'undefined') {
+        const unlocked = sessionStorage.getItem('admin_gateway_unlocked');
+        if (unlocked === 'true') {
+          setIsUnlocked(true);
+        }
       }
-    }
-    setCheckingSession(false);
+      setCheckingSession(false);
+    });
   }, []);
 
   const handleGatewayUnlock = async (e: React.FormEvent) => {
@@ -131,7 +133,7 @@ export default function AdminLoginPage() {
                 </h2>
                 <div className="space-y-2 text-xs sm:text-sm text-gray-300 font-mono leading-relaxed bg-black/60 p-4 rounded-xl border border-red-500/20">
                   <p className="text-red-400 font-bold">&gt; Hey, culprit.</p>
-                  <p>&gt; I know you're trying to access the administrator control panel.</p>
+                  <p>&gt; I know you&apos;re trying to access the administrator control panel.</p>
                   <p>&gt; This system is continuously monitored &amp; logged.</p>
                   <p>&gt; If you are not the authorized owner of this portfolio, you do not have clearance.</p>
                   <p className="text-amber-400 font-semibold">&gt; Turn back now. Unauthorized attempts will be rejected.</p>

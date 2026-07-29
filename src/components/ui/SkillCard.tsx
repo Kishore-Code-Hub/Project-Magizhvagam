@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { GlassCard } from './GlassCard';
 import { CyberBadge } from './CyberBadge';
-import { Award, Clock, Star, Code2, Terminal, Cpu, Database, Shield, Flame, Server, Globe, Layers } from 'lucide-react';
+import { Award, Clock, Star, Code2, Terminal, Database, Shield, Server, Globe } from 'lucide-react';
 import { normalizeImageUrl } from '@/lib/image-utils';
 
 export interface SkillItem {
@@ -32,6 +32,7 @@ function renderSkillIcon(logo?: string | null, name: string = '') {
 
   // Priority 1: Normalized Uploaded Image URL
   if (normalizedLogo && (normalizedLogo.startsWith('/') || normalizedLogo.startsWith('http://') || normalizedLogo.startsWith('https://') || normalizedLogo.startsWith('data:'))) {
+    /* eslint-disable-next-line @next/next/no-img-element */
     return <img src={normalizedLogo} alt={name} className="w-6 h-6 object-contain" />;
   }
 

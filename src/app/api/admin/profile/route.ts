@@ -113,7 +113,7 @@ async function handleProfileUpdate(req: NextRequest) {
         id: 'default',
         name: body.name || 'Soundkish',
         headline: body.headline || 'Securing Systems. Building Trust.',
-        profileImage: imgUrl || '/uploads/about/1784968630446-IMG_0307.JPG',
+        profileImage: imgUrl || '/uploads/about/1784968630446-IMG_0307.webp',
         taglines: taglinesStr,
         bio: body.bio || '',
         professionalIdentity: body.professionalIdentity || 'Software Engineer & Cybersecurity Researcher',
@@ -150,7 +150,7 @@ async function handleProfileUpdate(req: NextRequest) {
     });
   } catch (err: any) {
     console.error('[API /api/admin/profile Error]:', err);
-    return NextResponse.json({ error: `Database Error: ${err.message}` }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update profile settings.' }, { status: 500 });
   }
 }
 

@@ -55,7 +55,7 @@ export default function AdminHeroPage() {
             headline: data.headline || '',
             bio: data.bio || '',
             resumeUrl: data.resumeUrl || '',
-            heroImage: stats.heroImage || '/Hero-section-banner.jfif',
+            heroImage: stats.heroImage || '/Hero-section-banner.webp',
             greeting: stats.greeting || 'Welcome to my Cyber Operations Hub',
             github: socials.github || 'https://github.com',
             linkedin: socials.linkedin || 'https://linkedin.com',

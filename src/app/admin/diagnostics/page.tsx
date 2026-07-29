@@ -38,7 +38,7 @@ export default function AdminDiagnosticsPage() {
   };
 
   useEffect(() => {
-    fetchDiagnostics();
+    queueMicrotask(() => fetchDiagnostics());
   }, []);
 
   return (

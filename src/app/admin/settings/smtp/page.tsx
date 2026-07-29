@@ -235,8 +235,8 @@ export default function AdminSMTPPage() {
               <ol className="mt-3 text-xs text-gray-300 space-y-1.5 list-decimal pl-4 font-mono leading-relaxed">
                 <li>Log into your Google Account and go to <strong className="text-white">Security Settings</strong> (<code className="text-emerald-400">myaccount.google.com/security</code>).</li>
                 <li>Ensure <strong className="text-white">2-Step Verification</strong> is enabled on your Google account.</li>
-                <li>Search for <strong className="text-white">"App Passwords"</strong> or select <strong className="text-white">2-Step Verification ➔ App Passwords</strong>.</li>
-                <li>Create an App Password named <strong className="text-emerald-400 font-bold">"Portfolio CMS"</strong>, copy the generated 16-character code, and paste it into the <strong className="text-white">App Password</strong> field above.</li>
+                <li>Search for <strong className="text-white">&quot;App Passwords&quot;</strong> or select <strong className="text-white">2-Step Verification ➔ App Passwords</strong>.</li>
+                <li>Create an App Password named <strong className="text-emerald-400 font-bold">&quot;Portfolio CMS&quot;</strong>, copy the generated 16-character code, and paste it into the <strong className="text-white">App Password</strong> field above.</li>
               </ol>
             </details>
           </div>

@@ -39,26 +39,37 @@ export async function POST(req: NextRequest) {
     }
 
     const ext = path.extname(file.name).toLowerCase();
-    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    if (!ALLOWED_EXTENSIONS.includes(ext) || ext.includes('/') || ext.includes('\\')) {
       return NextResponse.json({ error: `File extension '${ext}' is forbidden for security` }, { status: 400 });
     }
 
     const fileType = file.type?.toLowerCase() || '';
-    const isMimeAllowed = ALLOWED_MIME_TYPES.some((mime) => fileType.startsWith(mime) || fileType.includes('audio/') || fileType.includes('image/') || fileType.includes('video/'));
+    const isMimeAllowed = ALLOWED_MIME_TYPES.some((mime) => fileType === mime);
     
-    if (fileType && !isMimeAllowed) {
+    if (!isMimeAllowed) {
       return NextResponse.json({ error: `MIME type '${file.type}' is not allowed for security` }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    // Sanitize category parameter to prevent path traversal
+    const safeCategory = category.replace(/[^a-zA-Z0-9_-]/g, '');
+
     // Ensure uploads directory exists
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', category);
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', safeCategory);
+    
+    // Prevent path traversal
+    if (!uploadsDir.startsWith(path.join(process.cwd(), 'public', 'uploads'))) {
+      return NextResponse.json({ error: 'Invalid destination directory' }, { status: 400 });
+    }
+
     await mkdir(uploadsDir, { recursive: true });
 
-    // Generate safe filename with timestamp
-    const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    // Generate safe randomized filename to prevent overwrites & path traversal
+    const randomPrefix = crypto.randomBytes(8).toString('hex');
+    const safeBaseName = path.basename(file.name, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeName = `${Date.now()}-${randomPrefix}-${safeBaseName}${ext}`;
     const filePath = path.join(uploadsDir, safeName);
 
     await writeFile(filePath, buffer);

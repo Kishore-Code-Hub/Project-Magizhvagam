@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GlassCard } from './GlassCard';
 import { CyberBadge } from './CyberBadge';
-import { ChevronDown, ExternalLink, Calendar, ShieldCheck, GraduationCap, Briefcase } from 'lucide-react';
+import { ChevronDown, ExternalLink } from 'lucide-react';
 
 export interface TimelineItem {
   id: string;

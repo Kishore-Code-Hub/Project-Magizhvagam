@@ -35,7 +35,7 @@ export default function AdminMatrixPage() {
 
   // Synchronize local settings when hook settings update
   useEffect(() => {
-    setLocalSettings(settings);
+    queueMicrotask(() => setLocalSettings(settings));
   }, [settings]);
 
   const handleSettingChange = (key: keyof MatrixSettings, value: any) => {

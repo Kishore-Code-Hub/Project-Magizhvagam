@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { z } from 'zod';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 const contactSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  subject: z.string().min(3, 'Subject must be at least 3 characters'),
-  message: z.string().min(10, 'Message must be at least 10 characters'),
+  name: z.string().min(2, 'Name must be at least 2 characters').max(100),
+  email: z.string().email('Invalid email address').max(150),
+  subject: z.string().min(3, 'Subject must be at least 3 characters').max(200),
+  message: z.string().min(10, 'Message must be at least 10 characters').max(5000),
 });
 
 function sanitizeText(input: string): string {
@@ -18,21 +19,24 @@ function sanitizeText(input: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const ipAddress = req.headers.get('x-forwarded-for') || '127.0.0.1';
+    const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1';
 
-    // Basic rate limit check: max 5 messages per hour per IP
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const recentCount = await db.message.count({
-      where: {
-        ipAddress,
-        createdAt: { gte: oneHourAgo },
-      },
+    // Rate limit check: max 5 messages per 1 hour per IP
+    const rateLimit = await checkRateLimit({
+      key: `contact:${ipAddress}`,
+      limit: 5,
+      windowMs: 60 * 60 * 1000,
     });
 
-    if (recentCount >= 5) {
+    if (!rateLimit.success) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please wait an hour before submitting another message.' },
-        { status: 429, headers: { 'Retry-After': '3600' } }
+        { 
+          status: 429, 
+          headers: { 
+            'Retry-After': Math.ceil(rateLimit.resetMs / 1000).toString(),
+          },
+        }
       );
     }
 
@@ -110,6 +114,7 @@ export async function POST(req: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
-    return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
+    console.error('[Contact API Error]:', error);
+    return NextResponse.json({ error: 'Failed to submit contact message. Please try again.' }, { status: 500 });
   }
 }
