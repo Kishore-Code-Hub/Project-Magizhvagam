@@ -7,6 +7,7 @@ import SideDockNav from '@/components/nav/SideDockNav';
 import PerformanceManager from '@/components/ui/PerformanceManager';
 import CommandPalette from '@/components/ui/CommandPalette';
 import { ArrowRight, Mail, ExternalLink } from 'lucide-react';
+import { SiLeetcode } from 'react-icons/si';
 import { GithubIcon, LinkedinIcon, LeetCodeIcon } from '@/components/ui/Icons';
 import { ProfileData } from '@/types';
 import { getSocials } from '@/lib/social-utils';
@@ -26,9 +27,10 @@ function HeroComponent({ profile }: HeroProps) {
 
   const safeResumeUrl = profile.resumeUrl || 'https://drive.google.com';
 
-  // Read hero image and greeting settings if stored in profile.stats
+  // Read hero image, greeting, and name font size settings if stored in profile.stats
   const heroImage = (profile.stats as any)?.heroImage || '/Hero-section-banner.webp';
   const greetingText = (profile.stats as any)?.greeting || 'Welcome to my Hackspot';
+  const nameFontSize = (profile.stats as any)?.nameFontSize ? `${(profile.stats as any).nameFontSize}px` : undefined;
 
   return (
     <section
@@ -58,7 +60,10 @@ function HeroComponent({ profile }: HeroProps) {
             <h2 className="text-xs sm:text-sm text-gray-400 font-medium tracking-wide">
               HELLO, I'M
             </h2>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight text-white leading-tight break-words uppercase">
+            <h1
+              style={nameFontSize ? { fontSize: nameFontSize } : undefined}
+              className="text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl font-extrabold tracking-tight text-white leading-tight uppercase whitespace-nowrap overflow-hidden text-ellipsis"
+            >
               {profile.name || 'KISHORE_NARAYANAN_K'}
             </h1>
           </div>
@@ -70,7 +75,7 @@ function HeroComponent({ profile }: HeroProps) {
 
           {/* Bio paragraph */}
           <p className="text-sm sm:text-base text-gray-300 font-sans leading-relaxed max-w-[640px]">
-            {profile.bio || profile.headline || 'I build secure, intelligent and scalable digital solutions with a strong focus on Cybersecurity, AI and real-world impact.'}
+            {profile.headline || profile.bio || 'I build secure, intelligent and scalable digital solutions with a strong focus on Cybersecurity, AI and real-world impact.'}
           </p>
 
           {/* Prominent LinkedIn CTA Button */}
@@ -153,7 +158,7 @@ function HeroComponent({ profile }: HeroProps) {
                   title="LeetCode Profile"
                   className="p-2.5 rounded-xl border border-accent/50 text-gray-300 hover:text-accent hover:border-accent hover:shadow-[0_0_15px_rgba(0,255,102,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-all duration-300 hover:scale-110 bg-[#040705]/60 backdrop-blur-md cursor-pointer"
                 >
-                  <LeetCodeIcon className="w-4 h-4" />
+                  <SiLeetcode className="w-4 h-4" />
                 </a>
               </div>
             </div>

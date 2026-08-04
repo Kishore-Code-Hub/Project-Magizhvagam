@@ -1,5 +1,6 @@
 import { BootConfig } from './BootConfig';
 import { AssetPreloader, PreloadProgress } from '@/lib/preload/AssetPreloader';
+import { MusicManager } from '@/lib/audio/MusicManager';
 
 export type BootState =
   | 'IDLE'
@@ -55,7 +56,6 @@ class BootControllerEngine {
 
   public subscribe(listener: BootListener): () => void {
     this.listeners.add(listener);
-    // Emit current state immediately to new subscriber
     listener(this.state, this.progress, this.stageText);
     return () => {
       this.listeners.delete(listener);
@@ -88,12 +88,13 @@ class BootControllerEngine {
     this.state = newState;
     if (progress !== undefined) this.progress = progress;
     if (stageText !== undefined) this.stageText = stageText;
-    console.log(`[BootController] Transitioned to -> ${newState}`);
+
+    console.log(`[BootAudit] Step 2: Boot Phase Transition -> ${newState}`);
     this.notify();
 
     if (newState === 'COMPLETE' && !this.isCompleted) {
       this.isCompleted = true;
-      console.log('[BootController] Event Dispatched: BOOT_COMPLETED');
+      console.log('[BootAudit] Step 3: BOOT_COMPLETED Event Dispatched');
       for (const completeListener of this.completeListeners) {
         try {
           completeListener();
@@ -108,7 +109,7 @@ class BootControllerEngine {
   public async start(): Promise<void> {
     if (this.isStarted || this.isCompleted) return;
     this.isStarted = true;
-    console.log('[BootController] Starting pre-React boot sequence');
+    console.log('[BootAudit] Step 1: Boot Start -> Initializing pre-React Boot Controller Engine');
 
     // Fetch optional CMS appearance timing parameters asynchronously (non-blocking)
     this.fetchCMSTiming();
@@ -215,7 +216,7 @@ class BootControllerEngine {
 
   public skip() {
     if (this.isCompleted) return;
-    console.log('[BootController] Intentional Skip triggered');
+    console.log('[BootController] Intentional Skip triggered via user activation');
     if (this.activeTimer) clearTimeout(this.activeTimer);
     this.setState('SHUTTER', 100, 'SKIPPED');
     setTimeout(() => {
@@ -233,6 +234,8 @@ class BootControllerEngine {
     if (e.type === 'click' || e.type === 'touchstart') {
       const target = e.target as HTMLElement;
       if (target && target.closest('button')) return false;
+      // Trigger audio fade-in immediately within active user gesture context
+      MusicManager.fadeInPlay(1500);
       this.skip();
       return true;
     }
@@ -240,6 +243,8 @@ class BootControllerEngine {
     // Filter keyboard interaction: restrict strictly to Enter, Space
     if (e.type === 'keydown' && e.key) {
       if (BootConfig.skip.allowedKeys.includes(e.key)) {
+        // Trigger audio fade-in immediately within active user gesture context
+        MusicManager.fadeInPlay(1500);
         this.skip();
         return true;
       }

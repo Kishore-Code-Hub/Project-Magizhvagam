@@ -46,8 +46,9 @@ export function AudioProvider({ children }: AudioProviderProps) {
   const [musicState, setMusicState] = useState(() => MusicManager.getState());
 
   useEffect(() => {
-    // Single source of truth initialization
+    // Single source of truth initialization & smooth 1.5s fade-in on mount
     MusicManager.init();
+    MusicManager.fadeInPlay(1500);
 
     const unsubscribe = MusicManager.subscribe(() => {
       setMusicState(MusicManager.getState());
@@ -66,12 +67,12 @@ export function AudioProvider({ children }: AudioProviderProps) {
     if (musicState.isPlaying) {
       MusicManager.pause();
     } else {
-      MusicManager.play();
+      MusicManager.fadeInPlay(1000);
     }
   }, [musicState.isPlaying]);
 
   const play = useCallback(() => {
-    MusicManager.play();
+    MusicManager.fadeInPlay(1000);
   }, []);
 
   const pause = useCallback(() => {
@@ -79,8 +80,6 @@ export function AudioProvider({ children }: AudioProviderProps) {
   }, []);
 
   const setVolume = useCallback((val: number) => {
-    // Convert 0-100 scale to 0-1 scale
-    const target = val > 1 ? val / 100 : val;
     MusicManager.init();
   }, []);
 

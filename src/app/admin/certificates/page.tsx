@@ -20,6 +20,7 @@ export default function AdminCertificatesPage() {
     credentialId: '',
     credentialUrl: '',
     pdfUrl: '',
+    galleryImages: [] as string[],
     description: '',
     featured: false,
   });
@@ -47,6 +48,7 @@ export default function AdminCertificatesPage() {
       credentialId: '',
       credentialUrl: '',
       pdfUrl: '',
+      galleryImages: [],
       description: '',
       featured: false,
     });
@@ -55,6 +57,15 @@ export default function AdminCertificatesPage() {
 
   const handleOpenEdit = (cert: any) => {
     setEditingCert(cert);
+    let parsedGallery: string[] = [];
+    try {
+      if (typeof cert.gallery === 'string') {
+        parsedGallery = JSON.parse(cert.gallery || '[]');
+      } else if (Array.isArray(cert.gallery)) {
+        parsedGallery = cert.gallery;
+      }
+    } catch {}
+
     setFormData({
       title: cert.title,
       issuer: cert.issuer,
@@ -63,6 +74,7 @@ export default function AdminCertificatesPage() {
       credentialId: cert.credentialId || '',
       credentialUrl: cert.credentialUrl || '',
       pdfUrl: cert.pdfUrl || '',
+      galleryImages: parsedGallery,
       description: cert.description || '',
       featured: cert.featured,
     });
@@ -78,7 +90,19 @@ export default function AdminCertificatesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const method = editingCert ? 'PUT' : 'POST';
-    const body = editingCert ? { id: editingCert.id, ...formData } : formData;
+    const payload = {
+      title: formData.title,
+      issuer: formData.issuer,
+      organizationLogo: formData.organizationLogo,
+      issueDate: formData.issueDate,
+      credentialId: formData.credentialId,
+      credentialUrl: formData.credentialUrl,
+      pdfUrl: formData.pdfUrl,
+      gallery: JSON.stringify(formData.galleryImages),
+      description: formData.description,
+      featured: formData.featured,
+    };
+    const body = editingCert ? { id: editingCert.id, ...payload } : payload;
 
     await fetch('/api/admin/certificates', {
       method,
@@ -97,7 +121,7 @@ export default function AdminCertificatesPage() {
           <h1 className="text-2xl font-bold text-white uppercase flex items-center gap-2">
             <Award className="w-6 h-6 text-[var(--accent-color)]" /> Certifications CMS
           </h1>
-          <p className="text-xs text-gray-400">Manage professional certificates, credential IDs, and verification URLs.</p>
+          <p className="text-xs text-gray-400">Manage professional certificates, credential IDs, verification URLs, and image galleries.</p>
         </div>
 
         <GlowButton variant="primary" size="sm" onClick={handleOpenAdd} leftIcon={<Plus className="w-4 h-4" />}>
@@ -140,10 +164,10 @@ export default function AdminCertificatesPage() {
             <div className="p-4 pt-0 flex items-center justify-between border-t border-white/5">
               <span className="text-[10px] text-gray-500 font-mono">{cert.issueDate}</span>
               <div className="flex items-center gap-2">
-                <button onClick={() => handleOpenEdit(cert)} className="p-1.5 rounded-lg bg-white/5 text-gray-300 hover:text-white">
+                <button onClick={() => handleOpenEdit(cert)} className="p-1.5 rounded-lg bg-white/5 text-gray-300 hover:text-white cursor-pointer">
                   <Edit2 className="w-4 h-4" />
                 </button>
-                <button onClick={() => handleDelete(cert.id)} className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:text-red-300">
+                <button onClick={() => handleDelete(cert.id)} className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:text-red-300 cursor-pointer">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -225,17 +249,14 @@ export default function AdminCertificatesPage() {
           <div className="space-y-4 pt-2 border-t border-white/10">
             <div>
               <label className="block text-xs font-bold text-emerald-400 mb-1">
-                FULL CERTIFICATE PREVIEW IMAGE (pdfUrl)
+                PRIMARY CERTIFICATE PREVIEW IMAGE (pdfUrl)
               </label>
               <FileUploader
                 category="certificates"
-                label="Upload Full Certificate Image or Drag & Drop"
+                label="Upload Primary Certificate Image or Drag & Drop"
                 value={formData.pdfUrl}
                 onUploadComplete={(url) => setFormData({ ...formData, pdfUrl: url })}
               />
-              {formData.pdfUrl && (
-                <p className="mt-1 text-[11px] text-emerald-400 font-mono">Image: {formData.pdfUrl}</p>
-              )}
             </div>
 
             <div>
@@ -246,6 +267,53 @@ export default function AdminCertificatesPage() {
                 value={formData.organizationLogo}
                 onUploadComplete={(url) => setFormData({ ...formData, organizationLogo: url })}
               />
+            </div>
+
+            {/* Additional Certification Proof Images Gallery */}
+            <div className="space-y-3 pt-3 border-t border-white/10">
+              <label className="block text-xs font-bold text-cyan-400 mb-1 uppercase">
+                ADDITIONAL CERTIFICATE IMAGES ({formData.galleryImages.length})
+              </label>
+
+              {formData.galleryImages.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-2">
+                  {formData.galleryImages.map((imgUrl, idx) => (
+                    <div key={idx} className="relative group rounded-xl overflow-hidden border border-white/10 bg-black/60 aspect-video">
+                      <img src={imgUrl} alt={`Proof Image ${idx + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextGallery = formData.galleryImages.filter((_, i) => i !== idx);
+                          setFormData({ ...formData, galleryImages: nextGallery });
+                        }}
+                        className="absolute top-1 right-1 p-1 rounded-full bg-red-500 text-white opacity-90 hover:opacity-100 hover:scale-110 transition-all cursor-pointer"
+                        title="Remove Image"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/80 text-[9px] font-mono text-gray-300">
+                        #{idx + 1}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <FileUploader
+                category="certificates"
+                label={`Upload Additional Image #${formData.galleryImages.length + 1} (or Drag & Drop)`}
+                onUploadComplete={(url) => {
+                  if (url) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      galleryImages: [...prev.galleryImages, url],
+                    }));
+                  }
+                }}
+              />
+              <p className="text-[10px] text-gray-400 font-mono">
+                Upload 3rd, 4th, 5th+ additional certificate proof images or verification documents.
+              </p>
             </div>
           </div>
 

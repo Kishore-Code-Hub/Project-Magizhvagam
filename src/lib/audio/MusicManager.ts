@@ -13,118 +13,170 @@ class MusicManagerEngine {
   private audio: HTMLAudioElement | null = null;
   private isPlayingState: boolean = false;
   private isMutedState: boolean = false;
-  private volumeState: number = 0.25; // Default 25% volume
+  private volumeState: number = 0.25; // Default 25% target volume
   private autoplayBlockedState: boolean = false;
   private listeners: Set<() => void> = new Set();
-  private isInitialized: boolean = false;
+  private fadeAnimId: number | null = null;
+  private gestureListenerAttached: boolean = false;
+  private cleanupGestureListeners: (() => void) | null = null;
 
   constructor() {
-    if (typeof window !== 'undefined') {
-      Promise.resolve().then(() => this.init());
-    }
+    // Lazily initialized single audio engine
   }
 
+  /**
+   * Pre-buffers the audio file during boot without initiating playback
+   */
   public init() {
     if (typeof window === 'undefined') return;
 
     if (!this.audio) {
+      console.log('[MusicManager] Step 4: MusicManager.init() -> Instantiating HTMLAudioElement');
       const audio = new Audio();
       audio.preload = 'auto';
       audio.loop = true;
-      audio.volume = this.volumeState;
+      audio.volume = this.isMutedState ? 0 : this.volumeState;
       audio.muted = this.isMutedState;
 
-      // Append version query parameter to ensure clean cache busting from old cached audio
       const versionedSrc = `${MUSIC_PATH}?v=webmusic_v1`;
       audio.src = versionedSrc;
 
       audio.addEventListener('play', () => {
         this.isPlayingState = true;
         this.autoplayBlockedState = false;
-        this.logDebug('PLAY');
         this.notifyListeners();
       });
 
       audio.addEventListener('pause', () => {
         this.isPlayingState = false;
-        this.logDebug('PAUSE');
         this.notifyListeners();
       });
 
       audio.addEventListener('error', (e) => {
-        console.warn('[MusicManager] Audio element playback error:', e, 'src:', audio.src);
+        console.warn('[MusicManager] Audio playback error:', e);
         this.isPlayingState = false;
         this.notifyListeners();
       });
 
       this.audio = audio;
     }
-
-    if (!this.isInitialized) {
-      this.isInitialized = true;
-      this.play();
-    }
   }
 
-  public play(): Promise<void> {
+  /**
+   * Smooth Cinematic Audio Fade-In Playback
+   */
+  public fadeInPlay(durationMs: number = 1500): Promise<void> {
     if (typeof window === 'undefined') return Promise.resolve();
+    this.init();
+
     const audio = this.audio;
     if (!audio) return Promise.resolve();
 
-    audio.volume = this.isMutedState ? 0 : this.volumeState;
+    if (this.isPlayingState && audio.volume > 0) {
+      return Promise.resolve(); // Already playing smoothly
+    }
+
+    if (this.fadeAnimId) {
+      cancelAnimationFrame(this.fadeAnimId);
+      this.fadeAnimId = null;
+    }
+
+    const hasUserActivation = typeof navigator !== 'undefined' && (navigator as any).userActivation
+      ? (navigator as any).userActivation.hasBeenActive
+      : 'unknown';
+
+    console.log(`[MusicManager] Step 5: MusicManager.fadeInPlay() invoked. UserActivation.hasBeenActive: ${hasUserActivation}`);
+
+    const targetVol = this.isMutedState ? 0 : this.volumeState;
+    audio.volume = 0; // Start at 0 for smooth fade-in
+
+    console.log('[MusicManager] Step 6: Invoking audio.play() promise');
 
     return audio
       .play()
       .then(() => {
+        console.log('✅ [MusicManager] Step 7: audio.play() RESOLVED successfully! Audio playback active.');
         this.isPlayingState = true;
         this.autoplayBlockedState = false;
-        this.logDebug('PLAY_SUCCESS');
+        if (this.cleanupGestureListeners) {
+          this.cleanupGestureListeners();
+        }
         this.notifyListeners();
+
+        // Perform smooth volume ramp from 0 to targetVol over durationMs
+        const startTime = performance.now();
+
+        const step = (now: number) => {
+          const elapsed = now - startTime;
+          const progress = Math.min(1, elapsed / durationMs);
+
+          if (this.audio && !this.isMutedState) {
+            this.audio.volume = targetVol * progress;
+          }
+
+          if (progress < 1) {
+            this.fadeAnimId = requestAnimationFrame(step);
+          } else {
+            if (this.audio && !this.isMutedState) {
+              this.audio.volume = targetVol;
+            }
+            this.fadeAnimId = null;
+          }
+        };
+
+        this.fadeAnimId = requestAnimationFrame(step);
       })
-      .catch((err) => {
+      .catch((err: Error) => {
+        console.log(`ℹ️ [MusicManager] Step 7: audio.play() REJECTED by browser policy: ${err.name} - ${err.message}. Arming silent gesture fallback.`);
         this.autoplayBlockedState = true;
         this.isPlayingState = false;
-        this.logDebug('PLAY_BLOCKED');
-        this.setupAutoplayGestureListener();
         this.notifyListeners();
-        return Promise.reject(err);
+        this.setupAutoplayGestureListener(durationMs);
+        return Promise.resolve();
       });
   }
 
-  private setupAutoplayGestureListener() {
-    if (typeof window === 'undefined') return;
+  private setupAutoplayGestureListener(durationMs: number) {
+    if (typeof window === 'undefined' || this.gestureListenerAttached) return;
+    this.gestureListenerAttached = true;
 
-    const handleFirstGesture = () => {
-      if (this.audio) {
-        this.audio.play().then(() => {
-          this.autoplayBlockedState = false;
-          this.logDebug('AUTOPLAY_UNLOCKED');
-          this.notifyListeners();
-        }).catch(() => {});
-      }
+    const handleFirstGesture = (e: Event) => {
+      console.log(`[MusicManager] Trusted User Gesture Detected: ${e.type}. Starting audio playback.`);
+      this.fadeInPlay(durationMs);
       cleanup();
     };
 
     const cleanup = () => {
-      window.removeEventListener('click', handleFirstGesture);
-      window.removeEventListener('touchstart', handleFirstGesture);
-      window.removeEventListener('keydown', handleFirstGesture);
-      window.removeEventListener('scroll', handleFirstGesture);
-      window.removeEventListener('pointerdown', handleFirstGesture);
+      this.gestureListenerAttached = false;
+      this.cleanupGestureListeners = null;
+      window.removeEventListener('click', handleFirstGesture, true);
+      window.removeEventListener('touchstart', handleFirstGesture, true);
+      window.removeEventListener('keydown', handleFirstGesture, true);
+      window.removeEventListener('pointerdown', handleFirstGesture, true);
+      window.removeEventListener('scroll', handleFirstGesture, true);
     };
 
-    window.addEventListener('click', handleFirstGesture, { once: true });
-    window.addEventListener('touchstart', handleFirstGesture, { once: true });
-    window.addEventListener('keydown', handleFirstGesture, { once: true });
-    window.addEventListener('scroll', handleFirstGesture, { once: true });
-    window.addEventListener('pointerdown', handleFirstGesture, { once: true });
+    this.cleanupGestureListeners = cleanup;
+
+    window.addEventListener('click', handleFirstGesture, { capture: true, once: true });
+    window.addEventListener('touchstart', handleFirstGesture, { capture: true, once: true });
+    window.addEventListener('keydown', handleFirstGesture, { capture: true, once: true });
+    window.addEventListener('pointerdown', handleFirstGesture, { capture: true, once: true });
+    window.addEventListener('scroll', handleFirstGesture, { capture: true, once: true });
+  }
+
+  public play(): Promise<void> {
+    return this.fadeInPlay(1000);
   }
 
   public pause() {
+    if (this.fadeAnimId) {
+      cancelAnimationFrame(this.fadeAnimId);
+      this.fadeAnimId = null;
+    }
     if (this.audio) {
       this.audio.pause();
       this.isPlayingState = false;
-      this.logDebug('PAUSED');
       this.notifyListeners();
     }
   }
@@ -135,7 +187,6 @@ class MusicManagerEngine {
       this.audio.muted = muted;
       this.audio.volume = muted ? 0 : this.volumeState;
     }
-    this.logDebug('SET_MUTE');
     this.notifyListeners();
   }
 
@@ -152,17 +203,6 @@ class MusicManagerEngine {
       isPlaying: this.isPlayingState,
       autoplayBlocked: this.autoplayBlockedState,
     };
-  }
-
-  public logDebug(actionTag: string = 'STATE_CHECK') {
-    const state = this.getState();
-    console.log(`🎵 [MusicManager DEBUG:${actionTag}]`, {
-      'Loaded Music Path': state.musicPath,
-      'Current Audio Src': state.audioSrc,
-      'Current Volume': `${Math.round(state.volume * 100)}%`,
-      'Current Muted State': state.isMuted,
-      'Current Playback State': state.isPlaying ? 'PLAYING' : 'PAUSED',
-    });
   }
 
   public subscribe(listener: () => void): () => void {

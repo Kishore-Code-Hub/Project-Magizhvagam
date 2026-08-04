@@ -3,6 +3,7 @@
 import { ImagePreloader } from './ImagePreloader';
 import { preloadFonts } from './FontPreloader';
 import { fetchCMSPayload, CMSInitialPayload } from './ThemeLoader';
+import { MusicManager } from '@/lib/audio/MusicManager';
 
 export interface PreloadProgress {
   percent: number;
@@ -42,6 +43,9 @@ class PriorityAssetPreloader {
     }
 
     console.log('[Boot Engine] Tier 1 Critical Asset Preloading Started');
+
+    // Pre-buffer audio track in parallel during boot without starting playback
+    MusicManager.init();
 
     onProgress?.({
       percent: 10,

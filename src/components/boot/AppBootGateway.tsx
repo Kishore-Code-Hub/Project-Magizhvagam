@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { BootController } from '@/lib/boot/BootController';
+import { BootController, BootState } from '@/lib/boot/BootController';
 import CyberAccessSequence from '@/components/animation/cyber-access/CyberAccessSequence';
 
 export interface VisitorTelemetry {
@@ -17,30 +17,43 @@ export function AppBootGateway({
   children: React.ReactNode;
   initialTelemetry?: VisitorTelemetry;
 }) {
+  const [bootState, setBootState] = useState<BootState>(() => BootController.getState());
   const [isBootComplete, setIsBootComplete] = useState<boolean>(() => BootController.isComplete());
 
   const handleBootComplete = useCallback(() => {
-    console.log('[AppBootGateway] Boot Sequence Completed -> Mounting React Application Tree');
+    console.log('[AppBootGateway] Boot Complete -> Finalizing Application Gate');
     setIsBootComplete(true);
   }, []);
 
   useEffect(() => {
-    // If already complete, ensure state is set
     if (BootController.isComplete()) {
       setIsBootComplete(true);
       return;
     }
 
-    // Subscribe to BOOT_COMPLETED event
-    const unsubscribe = BootController.onComplete(handleBootComplete);
+    const unsubState = BootController.subscribe((newState) => {
+      setBootState(newState);
+      if (newState === 'COMPLETE') {
+        setIsBootComplete(true);
+      }
+    });
 
-    // Start BootController
+    const unsubComplete = BootController.onComplete(handleBootComplete);
+
     BootController.start();
 
     return () => {
-      unsubscribe();
+      unsubState();
+      unsubComplete();
     };
   }, [handleBootComplete]);
+
+  // Mount application tree right as shutter sequence starts (SHUTTER / REVEAL / COMPLETE)
+  const shouldMountApp =
+    isBootComplete ||
+    bootState === 'SHUTTER' ||
+    bootState === 'REVEAL' ||
+    bootState === 'COMPLETE';
 
   return (
     <>
@@ -53,7 +66,11 @@ export function AppBootGateway({
         </div>
       )}
 
-      {isBootComplete && children}
+      {shouldMountApp && (
+        <div className={`w-full min-h-screen ${!isBootComplete ? 'relative z-0' : ''}`}>
+          {children}
+        </div>
+      )}
     </>
   );
 }

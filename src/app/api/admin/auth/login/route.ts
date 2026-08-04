@@ -8,11 +8,11 @@ export async function POST(req: NextRequest) {
   try {
     const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1';
 
-    // Rate Limiting: Max 5 login attempts per 15 minutes per IP
+    // Rate Limiting: Max 5 login attempts per 5 minutes per IP
     const rateLimit = await checkRateLimit({
       key: `login:${ipAddress}`,
       limit: 5,
-      windowMs: 15 * 60 * 1000,
+      windowMs: 5 * 60 * 1000,
     });
 
     if (!rateLimit.success) {

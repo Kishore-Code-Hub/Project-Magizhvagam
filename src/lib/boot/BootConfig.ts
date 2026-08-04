@@ -27,7 +27,7 @@ export const BootConfig = {
   criticalAssets: {
     heroImage: '/Hero-section-banner.webp',
     profileImage: '/hero-hacker.png',
-    musicPath: '/music/cyber-theme.mp3',
+    musicPath: '/uploads/music/webmusic.mp3',
     fonts: ['--font-sans', '--font-mono'],
   },
 

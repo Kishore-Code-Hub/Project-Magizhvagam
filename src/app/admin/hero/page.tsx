@@ -9,6 +9,7 @@ import { Sparkles, Save, CheckCircle, AlertCircle, Plus, Trash2, ArrowUp, ArrowD
 export default function AdminHeroPage() {
   const [formData, setFormData] = useState({
     name: '',
+    nameFontSize: 30,
     headline: '',
     bio: '',
     resumeUrl: '',
@@ -52,6 +53,7 @@ export default function AdminHeroPage() {
           const socials = typeof data.socials === 'string' ? JSON.parse(data.socials) : data.socials || {};
           setFormData({
             name: data.name || '',
+            nameFontSize: stats.nameFontSize ? parseInt(stats.nameFontSize, 10) : 30,
             headline: data.headline || '',
             bio: data.bio || '',
             resumeUrl: data.resumeUrl || '',
@@ -126,6 +128,7 @@ export default function AdminHeroPage() {
             stats: {
               heroImage: formData.heroImage,
               greeting: formData.greeting,
+              nameFontSize: formData.nameFontSize,
             },
           }),
         });
@@ -161,21 +164,27 @@ export default function AdminHeroPage() {
   }, [handleSubmit]);
 
   return (
-    <div className="space-y-8 font-mono text-left max-w-4xl">
-      <div className="flex items-center justify-between pb-4 border-b border-white/10">
+    <div className="space-y-8 font-mono text-left max-w-5xl">
+      {/* Top Header Banner */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div>
           <h1 className="text-2xl font-bold text-white uppercase flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-[var(--accent-color)]" /> Hero & Identity Manager
+            <Sparkles className="w-6 h-6 text-[var(--accent-color)]" /> Hero & Identity Management
           </h1>
-          <p className="text-xs text-gray-400">Control public greeting, titles, typewriter role loops, and hero media.</p>
+          <p className="text-xs text-gray-400">Configure hero greetings, full name, main headline, social profiles, and workstation artwork.</p>
         </div>
+
         <div className="flex items-center gap-3">
-          {isDirty && (
-            <span className="text-[10px] text-amber-400 font-bold px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20">
-              Unsaved Changes
-            </span>
-          )}
-          {lastSaved && <span className="text-[10px] text-gray-400">Last saved: {lastSaved}</span>}
+          {lastSaved && <span className="text-[10px] text-gray-400">Saved: {lastSaved}</span>}
+          <GlowButton
+            variant="primary"
+            size="sm"
+            onClick={() => handleSubmit()}
+            disabled={saving}
+            leftIcon={<Save className="w-4 h-4" />}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </GlowButton>
         </div>
       </div>
 
@@ -192,7 +201,21 @@ export default function AdminHeroPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-300 mb-1 uppercase">Engineer Full Name</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-bold text-gray-300 uppercase">Engineer Full Name</label>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-gray-400">Name Font Size: <strong className="text-[var(--accent-color)]">{formData.nameFontSize || 30}px</strong></span>
+                <input
+                  type="range"
+                  min="16"
+                  max="54"
+                  step="1"
+                  value={formData.nameFontSize || 30}
+                  onChange={(e) => handleFieldChange('nameFontSize', parseInt(e.target.value, 10))}
+                  className="w-28 accent-[var(--accent-color)] cursor-pointer"
+                />
+              </div>
+            </div>
             <input
               type="text"
               value={formData.name}
@@ -203,11 +226,11 @@ export default function AdminHeroPage() {
 
           <div>
             <label className="block text-xs font-bold text-gray-300 mb-1 uppercase">Main Headline / Subtitle</label>
-            <input
-              type="text"
+            <textarea
+              rows={2}
               value={formData.headline}
               onChange={(e) => handleFieldChange('headline', e.target.value)}
-              className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)]"
+              className="w-full px-4 py-2.5 text-xs sm:text-sm font-mono rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-[var(--accent-color)] resize-none"
             />
           </div>
 

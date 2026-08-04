@@ -36,10 +36,11 @@ export default function Projects({ projects = [] }: ProjectsProps) {
     return projects.filter((p) => {
       const matchesCategory =
         selectedCategory === 'All Projects' || p.category === selectedCategory;
+      const tagsStr = typeof p.tags === 'string' ? p.tags : JSON.stringify(p.tags || []);
       const matchesSearch =
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.tags.toLowerCase().includes(searchQuery.toLowerCase());
+        (p.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tagsStr.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
   }, [projects, selectedCategory, searchQuery]);

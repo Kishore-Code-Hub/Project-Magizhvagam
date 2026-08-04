@@ -111,6 +111,7 @@ model Certification {
   credentialId     String?
   credentialUrl    String?
   pdfUrl           String?
+  gallery          String   @default("[]")
   skillsCovered    String   @default("[]")
   description      String?
   featured         Boolean  @default(false)

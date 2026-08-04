@@ -18,6 +18,7 @@ export interface CertificationItem {
   credentialId?: string | null;
   credentialUrl?: string | null;
   pdfUrl?: string | null;
+  gallery?: string | null;
   skillsCovered: string;
   description?: string | null;
   featured: boolean;
@@ -29,6 +30,7 @@ interface CertificateCardProps {
 
 export const CertificateCard: React.FC<CertificateCardProps> = ({ cert }) => {
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
+  const [activeImageIndex, setActiveImageIndex] = React.useState(0);
 
   const parsedSkills = React.useMemo(() => {
     try {
@@ -38,7 +40,28 @@ export const CertificateCard: React.FC<CertificateCardProps> = ({ cert }) => {
     }
   }, [cert.skillsCovered]);
 
-  const certificateImg = normalizeImageUrl(cert.pdfUrl || cert.organizationLogo, 'certificates');
+  const allImages = React.useMemo(() => {
+    const list: string[] = [];
+    if (cert.pdfUrl) list.push(cert.pdfUrl);
+
+    try {
+      const parsedGallery = typeof cert.gallery === 'string' ? JSON.parse(cert.gallery || '[]') : cert.gallery;
+      if (Array.isArray(parsedGallery)) {
+        parsedGallery.forEach((url: string) => {
+          if (url && !list.includes(url)) list.push(url);
+        });
+      }
+    } catch {}
+
+    if (cert.organizationLogo && !list.includes(cert.organizationLogo)) {
+      list.push(cert.organizationLogo);
+    }
+
+    return list.map((u) => normalizeImageUrl(u, 'certificates')).filter(Boolean) as string[];
+  }, [cert.pdfUrl, cert.gallery, cert.organizationLogo]);
+
+  const primaryImg = allImages[0] || normalizeImageUrl(cert.pdfUrl || cert.organizationLogo, 'certificates');
+  const activeImg = allImages[activeImageIndex] || primaryImg;
 
   return (
     <>
@@ -46,12 +69,15 @@ export const CertificateCard: React.FC<CertificateCardProps> = ({ cert }) => {
         <div className="space-y-4">
           {/* Recruiter-Friendly Equal Height Banner Container (h-52) */}
           <div
-            onClick={() => setIsPreviewOpen(true)}
+            onClick={() => {
+              setActiveImageIndex(0);
+              setIsPreviewOpen(true);
+            }}
             className="w-full h-52 sm:h-56 overflow-hidden rounded-2xl bg-black/80 border border-emerald-500/30 relative group-hover:border-emerald-500/70 transition-all duration-300 cursor-pointer shadow-lg"
           >
-            {certificateImg ? (
+            {primaryImg ? (
               <img
-                src={certificateImg}
+                src={primaryImg}
                 alt={cert.title}
                 className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
               />
@@ -74,6 +100,13 @@ export const CertificateCard: React.FC<CertificateCardProps> = ({ cert }) => {
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+            
+            {allImages.length > 1 && (
+              <div className="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/80 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold">
+                {allImages.length} IMAGES
+              </div>
+            )}
+
             <div className="absolute bottom-3 right-3 p-2 rounded-xl bg-black/80 text-emerald-400 border border-emerald-500/30 opacity-0 group-hover:opacity-100 transition-opacity">
               <Maximize2 className="w-4 h-4" />
             </div>
@@ -163,22 +196,44 @@ export const CertificateCard: React.FC<CertificateCardProps> = ({ cert }) => {
         </div>
       </GlassCard>
 
-    {certificateImg && (
+    {activeImg && (
       <Modal
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
-        title={`${cert.title} — Verified Credential Preview`}
+        title={`${cert.title} — Credential & Proof Documents (${activeImageIndex + 1} of ${allImages.length})`}
         maxWidth="4xl"
       >
         <div className="space-y-4">
-          <div className="rounded-xl overflow-hidden bg-black/80 border border-emerald-500/30 flex items-center justify-center max-h-[75vh]">
+          <div className="rounded-xl overflow-hidden bg-black/80 border border-emerald-500/30 flex items-center justify-center max-h-[70vh]">
             <img
-              src={certificateImg}
-              alt={cert.title}
-              className="max-h-[75vh] w-auto object-contain"
+              src={activeImg}
+              alt={`${cert.title} Image ${activeImageIndex + 1}`}
+              className="max-h-[70vh] w-auto object-contain"
             />
           </div>
-          <div className="flex items-center justify-between text-xs font-mono text-gray-300">
+
+          {/* Multiple Image Selector Strip */}
+          {allImages.length > 1 && (
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 pt-1 border-t border-white/10">
+              <span className="text-[10px] font-mono text-gray-400 shrink-0 uppercase font-bold">ALL IMAGES ({allImages.length}):</span>
+              {allImages.map((imgUrl, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setActiveImageIndex(i)}
+                  className={`w-16 h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                    activeImageIndex === i
+                      ? 'border-emerald-400 scale-105 shadow-[0_0_12px_rgba(0,255,102,0.5)]'
+                      : 'border-white/20 opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <img src={imgUrl} alt={`Proof Thumbnail ${i + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between text-xs font-mono text-gray-300 pt-1">
             <div>Issuer: <span className="text-emerald-400 font-bold">{cert.issuer}</span></div>
             {cert.credentialUrl && (
               <GlowButton

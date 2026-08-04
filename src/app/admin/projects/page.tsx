@@ -145,10 +145,18 @@ export default function AdminProjectsPage() {
           <GlassCard key={proj.id} variant="default" className="flex flex-col justify-between p-0 overflow-hidden">
             <div className="relative h-40 w-full bg-black/40">
               <img src={proj.image} alt={proj.title} className="w-full h-full object-cover" />
-              <div className="absolute top-2 left-2">
+              <div className="absolute top-2 left-2 flex items-center gap-1.5 flex-wrap">
                 <CyberBadge variant="green" size="sm">
                   {proj.category}
                 </CyberBadge>
+                <CyberBadge variant="cyan" size="sm">
+                  {proj.status || 'Completed'}
+                </CyberBadge>
+                {proj.featured && (
+                  <CyberBadge variant="amber" size="sm">
+                    Featured
+                  </CyberBadge>
+                )}
               </div>
             </div>
 
@@ -163,13 +171,13 @@ export default function AdminProjectsPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleOpenEdit(proj)}
-                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white"
+                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white cursor-pointer"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(proj.id)}
-                    className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white"
+                    className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -207,6 +215,33 @@ export default function AdminProjectsPage() {
                   </option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">PROJECT STATUS *</label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                className="w-full px-4 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white"
+              >
+                <option value="Completed">Completed</option>
+                <option value="In Development">In Development</option>
+                <option value="Working on">Working on</option>
+                <option value="Beta / Maintenance">Beta / Maintenance</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">TECH TAGS (JSON or Comma-Separated)</label>
+              <input
+                type="text"
+                placeholder='["MongoDB", "Express", "React"]'
+                value={formData.tags}
+                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                className="w-full px-4 py-2 text-xs font-mono rounded-xl bg-black/40 border border-white/10 text-white"
+              />
             </div>
           </div>
 
@@ -280,7 +315,28 @@ export default function AdminProjectsPage() {
               value={formData.image}
               onUploadComplete={(url) => setFormData({ ...formData, image: url })}
             />
-            {formData.image && <p className="mt-1 text-xs text-emerald-400 font-mono">Cover: {formData.image}</p>}
+          </div>
+
+          <div className="flex items-center gap-6 pt-2">
+            <label className="flex items-center gap-2 text-xs text-gray-300 font-mono cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.featured}
+                onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                className="accent-[var(--accent-color)] w-4 h-4 cursor-pointer"
+              />
+              <span>Featured Project</span>
+            </label>
+
+            <label className="flex items-center gap-2 text-xs text-gray-300 font-mono cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.published}
+                onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
+                className="accent-[var(--accent-color)] w-4 h-4 cursor-pointer"
+              />
+              <span>Published on Website</span>
+            </label>
           </div>
 
           <GlowButton type="submit" variant="primary" className="w-full" leftIcon={<Save className="w-4 h-4" />}>

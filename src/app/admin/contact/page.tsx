@@ -42,7 +42,11 @@ export default function AdminContactPage() {
     fetch('/api/admin/messages')
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) setMessages(data);
+        if (Array.isArray(data)) {
+          setMessages(data);
+        } else if (data && Array.isArray(data.messages)) {
+          setMessages(data.messages);
+        }
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
